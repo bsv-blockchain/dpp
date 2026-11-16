@@ -5,6 +5,14 @@ import { loadEpcisSources, type EpcisSourceConfig } from './epcis/sources.js'
 
 export type Network = 'main' | 'test'
 
+/**
+ * Where the EPCIS exchange keeps what it retains. `mongodb` is the adapter this application is built and tested on:
+ * the application database, or memory when there is none. `file` is the module's file-system adapter over a folder.
+ * It passes the same adapter suite and exists so that the storage can be replaced and a restore can be shown to land
+ * in another adapter; it is not offered as a second production database.
+ */
+export type EpcisStorageChoice = { kind: 'mongodb' } | { kind: 'file'; dir: string }
+
 export interface Config {
   network: Network
   port: number
@@ -20,14 +28,32 @@ export interface Config {
   passportHost: string
   gs1Prefix: string
   registry: { url?: string; token?: string }
+  /**
+   * The index's evidence export, read when this application is exported: the bearer its complete export wants, when
+   * it wants one, and the exporter identity key to hold its packages to. Without the key, the one its capability
+   * document names is used and recorded.
+   */
+  indexExport: { token?: string; exporterKey?: string }
   /** Profiles held by a binding in a folder of your own, and the binding digests this deployment trusts for them. */
   customProfiles: { dirs: string[]; trustedBindingDigests: string[] }
+  /**
+   * Where bound profiles are resolved from. Unset, the two sector bindings are read from the folder the profiles
+   * package ships. Set, they are read from this folder, which holds a profile bundle as a restore installs it, and
+   * the package's own folder is not read.
+   */
+  profileBundleDir?: string
+  /**
+   * The validation engine for profiles held by a binding. Without an address the JSON-LD and SHACL libraries run in
+   * this process. With one, a validator service at that address is asked, and the token is sent to it and nowhere
+   * else. The token is read here once and is never printed.
+   */
+  validator: { url?: string; token?: string }
   /**
    * EPCIS exchange: the folder the pinned GS1 files are provisioned into and read from, whether start-up may fetch
    * them, and the query sources a pull may be made from. A source's credential is read through a function and is
    * never a plain member of this object.
    */
-  epcis: { gs1Dir: string; gs1Offline: boolean; sources: EpcisSourceConfig[] }
+  epcis: { gs1Dir: string; gs1Offline: boolean; sources: EpcisSourceConfig[]; storage: EpcisStorageChoice }
   livePublishing: boolean
   spendCapSatoshis: number
   /** DPP_TEST_WALLET=1: the scaffold check's switch for the test wallet on the configured root key. */
@@ -89,6 +115,26 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   for (const digest of trustedBindingDigests) {
     if (!/^[0-9a-f]{64}$/.test(digest)) throw new Error(`TRUSTED_BINDING_DIGESTS holds "${digest}", which is not a binding digest: each entry is the SHA-256 of a binding.json, 64 lower-case hexadecimal characters`)
   }
+  const epcisStorage = text(env, 'EPCIS_STORAGE') ?? 'mongodb'
+  if (epcisStorage !== 'mongodb' && epcisStorage !== 'file') throw new Error('EPCIS_STORAGE must be mongodb or file')
+  // A mistake in the validator's address stops the start and is named. The value is not repeated: an address can carry a secret someone put there.
+  const validatorUrl = text(env, 'VALIDATOR_URL')?.replace(/\/+$/, '')
+  const validatorToken = text(env, 'VALIDATOR_TOKEN')
+  if (validatorUrl != null) {
+    let parsed: URL | undefined
+    try {
+      parsed = new URL(validatorUrl)
+    } catch {
+      // Reported below.
+    }
+    if (parsed == null || (parsed.protocol !== 'http:' && parsed.protocol !== 'https:')) throw new Error('VALIDATOR_URL must be the http or https address of a validator service')
+    if (parsed.username !== '' || parsed.password !== '') throw new Error('VALIDATOR_URL carries user information: set the service\'s token in VALIDATOR_TOKEN')
+    if (parsed.search !== '' || parsed.hash !== '') throw new Error('VALIDATOR_URL carries a query or a fragment: give the address only')
+  }
+  if (validatorToken != null && validatorUrl == null) throw new Error('VALIDATOR_TOKEN is set without VALIDATOR_URL: the token belongs to a validator service, so name its address or remove the token')
+  if (validatorToken != null && !/^[\x21-\x7e]+$/.test(validatorToken)) throw new Error('VALIDATOR_TOKEN must be visible ASCII with no spaces')
+  const indexExporterKey = text(env, 'INDEX_EXPORTER_KEY')
+  if (indexExporterKey != null && !/^0[23][0-9a-f]{64}$/.test(indexExporterKey)) throw new Error('INDEX_EXPORTER_KEY must be a compressed public key: 66 lower-case hexadecimal characters starting 02 or 03')
   return {
     network,
     port: Number(text(env, 'PORT') ?? 3000),
@@ -108,8 +154,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     passportHost: text(env, 'PASSPORT_HOST') ?? 'localhost:3000',
     gs1Prefix: text(env, 'GS1_PREFIX') ?? '952',
     registry: { url: text(env, 'REGISTRY_URL')?.replace(/\/+$/, ''), token: text(env, 'REGISTRY_TOKEN') },
+    indexExport: { token: text(env, 'INDEX_EXPORT_TOKEN'), exporterKey: indexExporterKey },
     customProfiles: { dirs: list(env, 'CUSTOM_PROFILE_DIRS'), trustedBindingDigests },
-    epcis: { gs1Dir: text(env, 'DPP_GS1_ARTEFACTS_DIR') ?? 'local/gs1', gs1Offline: text(env, 'DPP_GS1_ARTEFACTS_OFFLINE') === 'true', sources: loadEpcisSources(env) },
+    profileBundleDir: text(env, 'PROFILE_BUNDLE_DIR'),
+    validator: { url: validatorUrl, token: validatorToken },
+    epcis: {
+      gs1Dir: text(env, 'DPP_GS1_ARTEFACTS_DIR') ?? 'local/gs1',
+      gs1Offline: text(env, 'DPP_GS1_ARTEFACTS_OFFLINE') === 'true',
+      sources: loadEpcisSources(env),
+      storage: epcisStorage === 'file' ? { kind: 'file', dir: text(env, 'EPCIS_STORAGE_DIR') ?? 'local/epcis-store' } : { kind: 'mongodb' },
+    },
     livePublishing,
     spendCapSatoshis: Number(text(env, 'SPEND_CAP_SATOSHIS') ?? 20_000),
     testWallet: text(env, 'DPP_TEST_WALLET') === '1',

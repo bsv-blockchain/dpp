@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/validator.schema.json",
+  "title": "DPP validator service contract, dpp-validator/1",
+  "description": "Every body that crosses the wire between an application and a validator service (spec/services.md section 7): the engine behind the json-ld-expand and shacl steps of a profile held by a binding (spec/profiles.md section 7), run in another process. The service is an engine and nothing more. It holds no profile, binding or registry, makes no trust decision and fetches nothing: each request carries the document and every rule file the operation needs, each file as base64 beside its SHA-256, and the service holds the bytes to that digest before its engine sees them. Four routes, all JSON in UTF-8. GET /health answers 200 with health, or 503 with refusal when no engine is running. GET /capabilities answers 200 with capabilities. POST /expand takes expandRequest and answers 200 with expandAnswer. POST /validate takes validateRequest and answers 200 with validateAnswer. A 200 from either operation carries the engine's own result, including a result that says the engine could not finish. Every other status carries refusal: 400 request-invalid, 401 unauthorised, 404 not-found, 405 method-not-allowed, 413 request-too-large, 415 unsupported-media-type, 422 digest-mismatch or capability-unavailable, 503 busy or engine-unavailable. A service MAY require a bearer token on the two operations. A caller MUST treat anything other than a 200 that validates here as an operation that could not run, which a validator reports as unknown and never as a pass. A body with a member this schema does not name is refused by either side.",
+  "anyOf": [
+    { "$ref": "#/$defs/expandRequest" },
+    { "$ref": "#/$defs/validateRequest" },
+    { "$ref": "#/$defs/expandAnswer" },
+    { "$ref": "#/$defs/validateAnswer" },
+    { "$ref": "#/$defs/capabilities" },
+    { "$ref": "#/$defs/health" },
+    { "$ref": "#/$defs/refusal" }
+  ],
+  "$defs": {
+    "contract": { "const": "dpp-validator/1", "description": "The contract an answer is made under. A caller refuses an answer that names any other." },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "content": { "type": "string", "contentEncoding": "base64", "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$", "description": "The file's exact bytes in base64 with padding, in its canonical form: the text an encoder writes for those bytes, with no stray bits in the last group." },
+    "capability": { "enum": ["json-schema-2020-12", "shacl-core", "shacl-sparql-constraints"], "description": "What an engine can check, in the words a binding uses for what it requires (packages/dpp-profiles/schemas/profile-binding-v1.schema.json)." },
+    "capabilityList": { "type": "array", "items": { "type": "string" }, "uniqueItems": true, "description": "The capabilities of the engine that produced the answer. A caller relies only on the values capability names and ignores any other." },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uri", "sha256", "content"],
+      "properties": {
+        "uri": { "type": "string", "minLength": 1, "description": "The URI documents name the context by. Each URI appears once in a request." },
+        "sha256": { "$ref": "#/$defs/sha256", "description": "The SHA-256 of the bytes in content. The service refuses the request with digest-mismatch when they differ." },
+        "content": { "$ref": "#/$defs/content" }
+      }
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "mediaType", "sha256", "content"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1, "description": "The name the binding gives the file. The service uses it only to name the file in an error." },
+        "mediaType": { "type": "string", "minLength": 1, "description": "The RDF serialisation of the file. A service lists the ones it reads in its capability document, and answers engine-error for any other." },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "content": { "$ref": "#/$defs/content" }
+      }
+    },
+    "expandRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document", "contexts"],
+      "description": "The body of POST /expand: one JSON-LD document and every context it may use. The engine uses these contexts and no others. A context the document names, or that one of these contexts imports, and that is not in the list is answered context-not-listed, and nothing is fetched.",
+      "properties": {
+        "document": { "description": "The JSON-LD document, as JSON." },
+        "contexts": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/context" } }
+      }
+    },
+    "validateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nquads", "shapes", "background"],
+      "description": "The body of POST /validate: RDF data, the shapes to validate it against and the background data the shapes read. The data graph is the background files and the data together.",
+      "properties": {
+        "nquads": { "type": "string", "description": "The data as N-Quads: what an expansion answered." },
+        "shapes": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/file" } },
+        "background": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/file" } },
+        "requires": { "type": "array", "items": { "$ref": "#/$defs/capability" }, "description": "The capabilities the caller requires of the engine for this validation. A service whose engine lacks one MUST refuse with capability-unavailable and MUST NOT validate: an engine that cannot evaluate a kind of constraint reports no finding for it, and that silence would read as a pass." }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "reason", "detail"],
+      "properties": {
+        "ok": { "const": false },
+        "reason": { "type": "string" },
+        "detail": { "type": "string", "description": "One sentence for a person. Its wording is each implementation's own, and no caller decides anything from it." }
+      }
+    },
+    "expansion": {
+      "description": "What the engine made of one document. context-not-listed and document-invalid are findings about the document, which a validator reports as a failure: a context that was not sent, and a document its contexts do not fully define, such as a member no context defines. timeout and engine-error say the engine could not finish, which a validator reports as unknown.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ok", "nquads"],
+          "properties": { "ok": { "const": true }, "nquads": { "type": "string", "description": "The document as N-Quads." } }
+        },
+        { "allOf": [{ "$ref": "#/$defs/failure" }, { "properties": { "reason": { "enum": ["context-not-listed", "document-invalid", "timeout", "engine-error"] } } }] }
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "constraint"],
+      "description": "One validation result. A member the engine's result does not have is left out.",
+      "properties": {
+        "severity": { "enum": ["Violation", "Warning", "Info"], "description": "The local name of the result's sh:resultSeverity." },
+        "constraint": { "type": "string", "description": "The local name of the result's sh:sourceConstraintComponent, such as MinCountConstraintComponent or SPARQLConstraintComponent." },
+        "focusNode": { "type": "string", "description": "The focus node: an IRI, or a blank node as _: and its label." },
+        "path": { "type": "string", "description": "The result path: the predicate IRI alone for one plain property, and SPARQL property path syntax, with each IRI in angle brackets, for anything longer." },
+        "message": { "type": "string", "description": "The first sh:resultMessage." },
+        "value": { "type": "string", "description": "The value that broke the constraint: an IRI, a literal's lexical form, or a blank node as _: and its label." }
+      }
+    },
+    "validation": {
+      "description": "What the engine found. A success lists every result of severity Violation, Warning or Info, in the engine's order, and an empty list when there is none. Which severities block is the binding's rule and the caller's to apply. timeout and engine-error say the engine could not finish.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ok", "findings"],
+          "properties": { "ok": { "const": true }, "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } } }
+        },
+        { "allOf": [{ "$ref": "#/$defs/failure" }, { "properties": { "reason": { "enum": ["timeout", "engine-error"] } } }] }
+      ]
+    },
+    "expandAnswer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "capabilities", "result"],
+      "description": "The body of a 200 from POST /expand.",
+      "properties": {
+        "contract": { "$ref": "#/$defs/contract" },
+        "capabilities": { "$ref": "#/$defs/capabilityList" },
+        "result": { "$ref": "#/$defs/expansion" }
+      }
+    },
+    "validateAnswer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "capabilities", "result"],
+      "description": "The body of a 200 from POST /validate. A caller that required capabilities MUST treat an answer whose capabilities lack one of them as an operation that could not run.",
+      "properties": {
+        "contract": { "$ref": "#/$defs/contract" },
+        "capabilities": { "$ref": "#/$defs/capabilityList" },
+        "result": { "$ref": "#/$defs/validation" }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "engine", "capabilities", "mediaTypes", "limits"],
+      "description": "The body of a 200 from GET /capabilities: which engine answers, what it can check and the limits it runs under.",
+      "properties": {
+        "contract": { "$ref": "#/$defs/contract" },
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "version", "libraries"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "version": { "type": "string", "minLength": 1 },
+            "libraries": { "type": "object", "additionalProperties": { "type": "string" }, "description": "The libraries the engine runs, each with the version installed." }
+          }
+        },
+        "capabilities": { "$ref": "#/$defs/capabilityList" },
+        "mediaTypes": { "type": "array", "items": { "type": "string" }, "description": "The media types the engine reads shapes and background files in." },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["maxRequestBytes", "timeoutMs", "concurrency", "queueLimit"],
+          "properties": {
+            "maxRequestBytes": { "type": "integer", "minimum": 0, "description": "The largest request body the service reads." },
+            "timeoutMs": { "type": "integer", "minimum": 0, "description": "How long one operation may run before the service answers timeout." },
+            "concurrency": { "type": "integer", "minimum": 0, "description": "How many operations run at once." },
+            "queueLimit": { "type": "integer", "minimum": 0, "description": "How many more may wait before the service answers busy." }
+          }
+        }
+      }
+    },
+    "health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "ok"],
+      "description": "The body of a 200 from GET /health.",
+      "properties": { "contract": { "$ref": "#/$defs/contract" }, "ok": { "const": true } }
+    },
+    "refusal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "error"],
+      "description": "The body of every answer that is not 200. The request was not run, or no answer could be made for it.",
+      "properties": {
+        "contract": { "$ref": "#/$defs/contract" },
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "detail"],
+          "properties": {
+            "code": { "enum": ["request-invalid", "unauthorised", "not-found", "method-not-allowed", "request-too-large", "unsupported-media-type", "digest-mismatch", "capability-unavailable", "busy", "engine-unavailable"] },
+            "detail": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

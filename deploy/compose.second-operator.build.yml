@@ -1,0 +1,21 @@
+# Build from source, for the second operator: added to
+# deploy/compose.second-operator.yml exactly as deploy/compose.build.yml is
+# added to deploy/compose.yml, with deploy/build.env beside the env file.
+#
+#   docker compose -f deploy/compose.second-operator.yml -f deploy/compose.second-operator.build.yml \
+#     --env-file deploy/operator-b.env --env-file deploy/build.env up -d --build
+#
+# It builds the same index image under the same local tag, so a machine that
+# already built it for the first operator builds nothing again.
+services:
+  overlay-b:
+    image: ${OVERLAY_LOCAL_IMAGE:-dpp-overlay:local}
+    pull_policy: never
+    build:
+      context: ..
+      dockerfile: packages/dpp-overlay/Dockerfile
+      args:
+        SOURCE_REVISION: ${SOURCE_REVISION:-unknown}
+        SOURCE_STATE: ${SOURCE_STATE:-unknown}
+        RELEASE_SET: ${RELEASE_SET:-unknown}
+        PACKAGE_VERSION: ${OVERLAY_PACKAGE_VERSION:-unknown}

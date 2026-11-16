@@ -1,6 +1,6 @@
 # Export, import and recovery
 
-Index operators and teams replacing a provider can use this guide to back up an index or restore one passport's evidence to a replacement. Choose the archive below, restore it, then verify what it recovered.
+Index operators and teams replacing a provider can use this guide to back up an index, restore one passport's evidence to a replacement, or move a whole application to another deployment. Choose the archive below, restore it, then verify what it recovered.
 
 ## Recovery prerequisites
 
@@ -20,6 +20,8 @@ Index operators and teams replacing a provider can use this guide to back up an 
 | The bounded package, `GET /evidence-package` | One passport's newest 500 states: each raw transaction, its BEEF with the merkle path once the index has one, the publisher policy chain, spend observations and a report, inventoried in a signed manifest | States beyond the newest 500, which it declares absent; restricted tiers | Anyone, from an index that sets `EXPORTER_PRIVATE_KEY` (otherwise 503) |
 | The complete export, `GET /evidence-export`, a reference package feature | Every state of one passport, in signed parts over one snapshot | Restricted tiers; the report, which the reader produces over the joined parts | Anyone holding the source index's `EXPORT_TOKEN` when it sets one. The hosted reference sets one and does not give it to outsiders, so use this route on your own index or ask the source operator |
 | A registry export | The claims a registry holds and their evidence, under the [registry contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml) | Token history, restricted material, keys | Depends on the registry |
+| An EPCIS recovery snapshot | Everything an EPCIS exchange holds for the source scopes it covers: every retained original, and the import records, observations, conflict decisions and pull state that no source can rebuild | Credentials, which the replacement's operator configures again; by default every cursor, so an unfinished pull replays from its bounds; token history, which is the index's | The operator of the application that runs the exchange, through `exportEpcisRecovery` |
+| A complete application export | For the passports selected: the index's signed evidence for each, the application's own journal with each sealed owner tier, its brands, offers and claims, the profile bundle those passports declare and the EPCIS recovery snapshot, under one manifest the application signs | Keys, credentials, sign-in accounts and the files GS1 publishes, which it names by address and digest | The operator of the application, with the reference application's `export` command ([move an application](#move-an-application-to-another-provider)) |
 | The custody keys | The ability to spend or update the passport, which restoring public evidence does not recover | | Only their holder: no export recovers a lost key |
 
 | Term or limit | Meaning |
@@ -39,7 +41,7 @@ The Compose preset backs up its MongoDB volume. Its [restart, back up and restor
 
 ```sh
 docker compose -f deploy/compose.yml --env-file deploy/operator.env stop
-docker run --rm -v dpp-overlay_mongo-data:/data -v "$PWD":/out mongo:7 tar czf /out/mongo-data.tgz /data
+docker run --rm -v dpp-overlay_mongo-data:/data -v "$PWD":/out "$(docker compose -f deploy/compose.yml --env-file deploy/operator.env config --images | grep '^mongo')" tar czf /out/mongo-data.tgz /data
 docker compose -f deploy/compose.yml --env-file deploy/operator.env start
 ```
 
@@ -203,6 +205,83 @@ EXPORT_TOKEN=<source export token> EXPORTER_IDENTITY_KEY=<source exporter identi
 | `the export does not join:` | One sentence per coverage problem, such as `part 1: signed by <key>, not the expected <key>` or `part 2 is the last part received and is not final` | Do not restore. Fetch again from the start. |
 | `GET /evidence-export answered 410` (`snapshot-expired`) or `400` (`cursor-invalid`) | Snapshot older than ten minutes, or a source restart invalidated every cursor | Start again without a cursor. Never mix snapshots: that archive was complete at neither point. |
 
+## Move an EPCIS exchange to another store
+
+An application that imports or pulls EPCIS events through `@bsv/dpp-credentials/epcis-exchange` holds records an index does not: which request each import answers, how each event arrived, what was decided about a conflict and how far each pull got. They leave as a recovery snapshot and arrive through a restore. This is an authorised path for the operator of the exchange. A public evidence package never carries these records.
+
+1. **Quiesce the source.** Stop accepting imports and starting pulls. Run `recoverEpcisExchange(storage)`, which finishes or discards interrupted work. An export refuses as `unfinished-work` while anything is journalled.
+2. **Export.** `exportEpcisRecovery({ storage })` returns the files, one inventory entry for each and a descriptor. It refuses a store that is not consistent and names what is wrong. Pass the credentials the deployment was configured with as `credentials` and the export also refuses if any exported byte holds one.
+3. **Carry it.** Put the files in a `dpp-evidence-package@1` whose disclosure is `all-tiers` and which declares itself a recovery backup, list the entries in its manifest and sign it. Keep the package where you keep other restricted backups: it holds every source document and the operational history of the exchange.
+4. **Restore into an empty store.** At the replacement, verify the package as any package, then call `restoreEpcisRecovery({ storage, source, inventory })`. It checks the snapshot before it writes, reads every original back and holds it to its digest, rebuilds the index and checks the invariants of the exchange. If the process stops, run the same call again: it resumes.
+5. **Provision credentials and endpoints.** No credential is in a snapshot. Configure each source at the replacement: its address, its permitted origins and how its credential is obtained. If the same source is reached at another address there, declare it with `remapEpcisSourceEndpoint`.
+6. **Resume.** Accept imports again and run each pull with its own `queryId`. A retry of a request the old store acknowledged answers the same import. An interrupted pull continues, or replays from its retained bounds, and skips no page. A carried cursor at an origin you did not permit at the replacement is never requested: the run ends as `partial-history`, `pagination-target-refused`, until you declare the source's address and permitted origins with `remapEpcisSourceEndpoint`, which drops that cursor.
+
+| If the restore answers | Do this |
+|---|---|
+| `reconciliation-required` | The destination already holds a record that differs under the same identity. Nothing was written. Restore into an empty store, or reconcile each listed collision yourself; nothing is overwritten for you |
+| `destination-unfinished-work` | Run `recoverEpcisExchange` on the destination, or finish the restore that is pending there |
+| `checkpoint-imports-omitted`, `resolution-observations-omitted`, `original-missing`, `record-missing` | The snapshot is incomplete. Ask the source operator for a new export; a missing record cannot be rebuilt from the documents |
+| `original-altered`, `record-altered`, `descriptor-inventory-mismatch` | The package is not what its exporter assembled. Do not restore it |
+| `snapshot-inconsistent`, `record-misfiled` | The snapshot does not hold together: a record of one source scope stands on a record of another, the descriptor says something the records do not, or cursor material is carried that the descriptor says was left out. Do not restore it |
+| `not-a-recovery-snapshot` | You were given the public form. It restores nothing; ask for a recovery snapshot |
+
+The default snapshot leaves every cursor out. A snapshot taken with `cursors: 'include'` lets a pull resume without replaying, against the same endpoint, and holds page tokens: treat it as you treat the credentials it is used with. [Move an exchange to another store](../interoperability/epcis.md#move-an-exchange-to-another-store) has the layout, every refusal and a runnable example.
+
+The module's tests export from each of its two storage adapters and restore into the other, with the restore stopped before and after every durable call. The reference application carries the snapshot inside its complete export and restores it with its own command, which the next section describes.
+
+## Move an application to another provider
+
+An application holds more than an index does: its journal of every passport with the sealed owner tiers, the hand-on offers and acceptance records, the profiles its passports declare and whatever its EPCIS exchange retained. The reference application, the one `@bsv/create-dpp-app` scaffolds, exports all of it as one `dpp-evidence-package@1` and restores it into another deployment. The two commands are run on the host by the deployment's operator, with the API and its worker stopped. Neither is served over HTTP.
+
+| Step | Where | Command or action |
+|---|---|---|
+| 1. Export | The deployment you are leaving | Stop the API. `npm run export -- --out <folder>` writes the authorised export and prints the exporter identity key, which is the application's publisher key |
+| 2. Carry separately | Out of band | The wallet's root key and file, by the wallet's own recovery. `BRAND_ROOT_SECRET` and `MANAGED_IDENTITY_SECRET`. Each EPCIS source's credential. None of these is in the package |
+| 3. Prepare the replacement | The new deployment | Its own database and settings; an index that admits the same publisher key, joined with `npm run connect-index` or `npm run go-live`; the store and the profile source it is to use (`EPCIS_STORAGE`, `PROFILE_BUNDLE_DIR`); the binding digests it trusts for any profile of your own |
+| 4. Restore | The new deployment, API stopped | `npm run restore -- --from <folder> --exporter-key <key from step 1>`. It verifies everything, then writes, then reports |
+| 5. Reprovision | The new deployment | Each source's credential in its settings. If a source is now reached at another address, set the address and run `npm run epcis-remap -- --source <name>` once. The GS1 files are obtained at start, or placed by hand |
+| 6. Resume | The new deployment | Start the API. Each unfinished pull continues under its own query name. Passports are read and written as before |
+
+**What the package carries, names and leaves out.** The manifest says each of the three, and the descriptor `application/application-export.json` repeats it in a form a program reads.
+
+| | Authorised export | Public export (`--public`) |
+|---|---|---|
+| Disclosure the manifest declares | `all-tiers`, `recoveryBackup: true` | `public`, `recoveryBackup: false` |
+| The index's signed evidence for each passport | Carried, as the index exported it | Carried |
+| How each passport verified at export | Carried | Carried |
+| The application's journal, with each sealed owner tier | Carried. The tier stays ciphertext | Left out |
+| Acceptance records, brands, offers, claims | Carried | Left out |
+| Profile bundle: each binding, its files, notices and licence text | Carried | Carried |
+| EPCIS exchange | The recovery snapshot of every source scope | The public form of the scopes named with `--public-source`, with no provenance, operational record or cursor |
+| How each EPCIS source was configured | Its address and whether it had a credential | Left out |
+| Cursors of pulls | Left out unless `--cursors include` is given | Never |
+| The files GS1 publishes | Named by address and digest in `completeness.withheld`. Never carried | The same |
+| Wallet keys, secrets, tokens and source credentials | Never carried. Every byte is searched for each configured secret before the folder is written | The same |
+| Sign-in accounts, sessions, memberships | Never carried | Never carried |
+
+A package that carries more than one passport names the export in its manifest's `passportId`, not one passport (`spec/portable-evidence.md` section 2). Each passport's own evidence sits in a folder of its own as the package the index signed, so a reader who wants one passport inspects that folder under the index's exporter key.
+
+**What the restore checks before it writes.** The manifest's signature under the exporter key you gave. Every file against the manifest, both ways: none missing, none altered, none unlisted. Each journal as a lineage that verifies, about the passport it is filed under. The index's signature on its evidence, and that the index and the journal describe the same transactions. The profile bundle against the replacement's own trusted binding digests and the digests the carried states declare. The EPCIS snapshot by the checks of [move an EPCIS exchange](#move-an-epcis-exchange-to-another-store). Then it compares the package with what the replacement holds: an equal record is left, and a different record under the same identity stops the restore before anything is written.
+
+| If the restore answers | It means |
+|---|---|
+| `exporter-unexpected`, `signature-invalid` | The package is not signed by the key you named. Check the key with the operator who exported |
+| `package-incomplete` | A file the manifest lists, or a record the descriptor counts, is not in the package. The answer names it. Ask for a new export |
+| `file-altered`, `file-unlisted` | The folder is not what was signed. Do not restore it |
+| `profile-refused` | The bundle's binding is not one the replacement accepts. `bundle-binding-substituted` means it carries another definition under a profile's name: the exporter's signature gives a binding no authority. `bundle-binding-untrusted` means the digest is not on your trusted list: review the binding before you add it |
+| `epcis-refused` | The snapshot failed the module's checks. The answer carries the module's code, as in the table above |
+| `index-evidence-refused`, `journal-invalid`, `records-inconsistent` | A passport's evidence does not verify, or two parts of the package describe different things |
+| `reconciliation-required` | The replacement already holds a different record under the same identity. Nothing was written, and nothing is overwritten for you |
+| `not-a-recovery-package` | You were given the public form. It restores nothing |
+
+**What is rebuilt, not carried.** The exchange's index of identifiers, from the retained originals. The index's records of each passport, from each state's own bytes, which the restore announces to the index the replacement has joined. A restore run again later announces them again and changes no record, so it is also how a replacement that joined its index afterwards gets its states there.
+
+**What a restore is not.** It writes no state, signs nothing and moves no custody. Continuing to write is a separate, authorised operation, and it needs the keys: the wallet's, which travel by the wallet's own recovery, and the secrets brand and recipient keys are derived from. A replacement without them reads and verifies every passport and can write none.
+
+**What cannot be recovered this way.** A lost key. Sign-in accounts, sessions and brand memberships, which the export does not carry and which a deployment that uses sign-in moves by its own means. Anything the first deployment did not retain. A state whose send was never answered for, which stays the operator's to resolve.
+
+The exercise that holds the reference application to this is `packages/create-dpp-app/template/apps/api/test/exit-exercise.test.ts`, and `deploy/evidence/exit-exercise.json` records a run of it with its numbers and its limits. It builds a deployment on MongoDB with a battery and a textile passport and an EPCIS exchange, exports it, stops its database and its index, and restores into a deployment that keeps the exchange in the file-system adapter and reads profiles from the installed bundle, with every other host out of reach. Both deployments ran in one test process against the reference index's code with its header checks off and the test wallet, so the run proves no inclusion in a block, and no exit between two independently operated deployments has been exercised.
+
 ## Check the result
 
 1. Use the [passport lookup](../reference/contracts.md#find-passport-records) with `INDEX_URL` set to the replacement.
@@ -227,6 +306,9 @@ Inclusion across the chain: verified.
 - Keep custody keys in the recovery plan separately.
 - An export cannot recover evidence the source did not retain, and a package or export never carries the restricted tiers.
 - Registry claims are a separate archive with no token history, restricted material or keys, so replacing a provider can need an index export, a registry export and separately kept custody access.
+- An index's package and export do not hold what an EPCIS exchange retained. The application that runs the exchange exports that as [a recovery snapshot](#move-an-epcis-exchange-to-another-store), and no snapshot carries a credential.
+- An index's package and export hold token history. They do not hold the files that define a profile held by a binding, which a reader needs to validate a payload under that profile. An application carries those as a [profile bundle](../packages/dpp-profiles.md#carry-a-profile-to-another-deployment) in a package it assembles, and the replacement registers them against its own trusted binding digests.
+- A complete application export carries no key, no credential and no sign-in account. A passing profile validation at the replacement says a document satisfies its profile. It never says that disclosed data is what a state's `payload_owner_hash` commits to: that is the owner-tier check, made against the stored ciphertext.
 
 The complete export is a feature of the reference index package, outside the standard, and its tests are local and synthetic. The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) marks durable independent publication a gap. Other known limits are on [known limitations](limitations.md).
 
@@ -236,6 +318,8 @@ The complete export is a feature of the reference index package, outside the sta
 |---|---|
 | One passport within the package bound | [Package operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/overlay.yaml), [package schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/evidence-package.schema.json) |
 | A longer history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md), [part schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/schemas/evidence-export.schema.json), the [overlay package's description](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#get-evidence-packagepassportid) |
+| An EPCIS exchange | `spec/epcis-interoperability.md` section 8; `contracts/epcis-recovery.schema.json`; `packages/dpp-credentials/test/epcis-recovery.test.ts` |
+| A whole application | `spec/portable-evidence.md` section 2; `packages/create-dpp-app/template/apps/api/src/portability/`; `packages/create-dpp-app/template/apps/api/test/exit-exercise.test.ts`; `deploy/evidence/exit-exercise.json` |
 | Registry-held claims | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml) |
 | The reference's own restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/test/evidenceExportParts.test.ts), which walk 505 states through two parts |
 

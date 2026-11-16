@@ -1,0 +1,541 @@
+{
+  "check": "scripts/image-contents-check.mjs",
+  "recordedAt": "2026-11-15",
+  "docker": "29.1.3",
+  "releaseSet": "dpp-release-2026-11",
+  "sourceRevision": "4524bbab8d76beac5da8ea4797d2c1f4fa844bfd",
+  "sourceState": "working-tree",
+  "failures": 0,
+  "forbidden": {
+    "gs1Digests": 6,
+    "profileFileDigests": 49,
+    "testFileDigests": 193
+  },
+  "images": {
+    "dpp-overlay": {
+      "reference": "parity-dpp-overlay:test",
+      "id": "sha256:eb72e525321ceb5679859c732ef7632435ae5fdd11fe66baab57e0a2ca9f1f43",
+      "platform": "linux/arm64",
+      "root": "/repo",
+      "files": 12013,
+      "gs1": 0,
+      "profileFiles": 0,
+      "environmentFiles": 0,
+      "testFiles": 0,
+      "mongoServerFiles": 0,
+      "privateFiles": 0,
+      "bytes": 299879400,
+      "ownFiles": 416,
+      "installedPackages": 48,
+      "packagesWithLicenceFile": 48,
+      "packagesWithoutLicenceFile": [],
+      "mongodbDriver": "7.6.0 (Apache-2.0)",
+      "top": [
+        "LICENSE",
+        "NOTICE",
+        "PATENTS",
+        "package-lock.json",
+        "package.json",
+        "packages/create-dpp-app/package.json",
+        "packages/dpp-credentials/package.json",
+        "packages/dpp-overlay/dist",
+        "packages/dpp-overlay/package.json",
+        "packages/dpp-profiles/dist",
+        "packages/dpp-profiles/frozen.json",
+        "packages/dpp-profiles/generated",
+        "packages/dpp-profiles/manifests",
+        "packages/dpp-profiles/package.json",
+        "packages/dpp-profiles/schemas",
+        "packages/dpp-protocol/dist",
+        "packages/dpp-protocol/package.json",
+        "packages/dpp-protocol/schemas"
+      ]
+    },
+    "dpp-validator": {
+      "reference": "parity-dpp-validator:test",
+      "id": "sha256:2a680f1f46b9037d5ea3dcd951bff4142090b719e61acc21e8ce8f9d3d97e75c",
+      "platform": "linux/arm64",
+      "root": "/app",
+      "files": 16683,
+      "gs1": 0,
+      "profileFiles": 0,
+      "environmentFiles": 0,
+      "testFiles": 0,
+      "mongoServerFiles": 0,
+      "privateFiles": 0,
+      "bytes": 313936704,
+      "ownFiles": 15,
+      "installedPackages": 413,
+      "packagesWithLicenceFile": 339,
+      "packagesWithoutLicenceFile": [
+        {
+          "name": "@comunica/actor-bindings-aggregator-factory-average",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-bindings-aggregator-factory-count",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-bindings-aggregator-factory-group-concat",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-bindings-aggregator-factory-max",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-bindings-aggregator-factory-min",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-bindings-aggregator-factory-sample",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-bindings-aggregator-factory-sum",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-bindings-aggregator-factory-wildcard-count",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-expression-evaluator-factory-default",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-replace",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-unary-minus",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-unary-plus",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-uuid",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-boolean",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-date",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-datetime",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-day-time-duration",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-decimal",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-double",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-duration",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-float",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-integer",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-string",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-time",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-xsd-to-year-month-duration",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-function-factory-term-year",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-extend",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-filter",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-group",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-join",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-leftjoin",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-minus",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-orderby",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-path-alt",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-path-inv",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-path-link",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-path-nps",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-path-one-or-more",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-path-seq",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-path-zero-or-more",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-path-zero-or-one",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-update-clear",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-update-create",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-update-deleteinsert",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-update-drop",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-query-operation-update-load",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-hash",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-multi-bind",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-multi-bind-source",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-multi-empty",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-multi-smallest",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-multi-smallest-filter-bindings",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-nestedloop",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-none",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-single",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-inner-symmetrichash",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-minus-hash",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-optional-bind",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-optional-hash",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-join-optional-nestedloop",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-parse-jsonld/node_modules/undici-types",
+          "version": "5.26.5",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-rdf-update-quads-rdfjs-store",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/actor-term-comparator-factory-expression-evaluator",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/bus-bindings-aggregator-factory",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/bus-expression-evaluator-factory",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/bus-term-comparator-factory",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/context-entries/node_modules/undici-types",
+          "version": "5.26.5",
+          "licence": "MIT"
+        },
+        {
+          "name": "@comunica/mediator-join-coefficients-fixed",
+          "version": "5.4.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "@rubensworks/saxes",
+          "version": "6.0.1",
+          "licence": "ISC"
+        },
+        {
+          "name": "asyncjoin",
+          "version": "1.2.5",
+          "licence": "MIT"
+        },
+        {
+          "name": "cross-fetch/node_modules/tr46",
+          "version": "0.0.3",
+          "licence": "MIT"
+        },
+        {
+          "name": "hash.js",
+          "version": "1.1.7",
+          "licence": "MIT"
+        },
+        {
+          "name": "imurmurhash",
+          "version": "0.1.4",
+          "licence": "MIT"
+        },
+        {
+          "name": "negotiate",
+          "version": "1.0.1"
+        }
+      ],
+      "mongodbDriver": null,
+      "top": [
+        "LICENSE",
+        "NOTICE",
+        "PATENTS",
+        "THIRD-PARTY-NOTICES.txt",
+        "licence-inventory.json",
+        "package-lock.json",
+        "package.json",
+        "packages/dpp-profiles/dist",
+        "packages/dpp-profiles/package.json"
+      ]
+    }
+  },
+  "archives": {
+    "@bsv/dpp-protocol": {
+      "version": "0.3.0-beta.10",
+      "filename": "bsv-dpp-protocol-0.3.0-beta.10.tgz",
+      "sha256": "bd7f6d969cc273edbe2366ac898dec74874a2d5835ee871f1fd85ded07ca07e2",
+      "files": 98,
+      "gs1": 0,
+      "profileFiles": 0,
+      "environmentFiles": 0,
+      "testFiles": 0,
+      "mongoServerFiles": 0,
+      "privateFiles": 0,
+      "dependencies": [
+        "@bsv/sdk"
+      ]
+    },
+    "@bsv/dpp-overlay": {
+      "version": "0.4.0-beta.13",
+      "filename": "bsv-dpp-overlay-0.4.0-beta.13.tgz",
+      "sha256": "992a425af6b22cec151fbfa08d56a73e821c89dad2bce5ca18fef52b121a78f3",
+      "files": 130,
+      "gs1": 0,
+      "profileFiles": 0,
+      "environmentFiles": 0,
+      "testFiles": 0,
+      "mongoServerFiles": 0,
+      "privateFiles": 0,
+      "dependencies": [
+        "@bsv/dpp-profiles",
+        "@bsv/dpp-protocol",
+        "@bsv/overlay",
+        "@bsv/sdk",
+        "@bsv/wallet-toolbox-client",
+        "mongodb"
+      ]
+    },
+    "@bsv/dpp-profiles": {
+      "version": "0.3.0-beta.10",
+      "filename": "bsv-dpp-profiles-0.3.0-beta.10.tgz",
+      "sha256": "78a832de90ed62adcc1697c206c6b5317e312091dee08918b3b59f1988d991b9",
+      "files": 210,
+      "gs1": 0,
+      "profileFiles": 16,
+      "environmentFiles": 0,
+      "testFiles": 0,
+      "mongoServerFiles": 0,
+      "privateFiles": 0,
+      "bundledBindings": [
+        "eu-battery@1",
+        "eu-textile@1"
+      ],
+      "dependencies": [
+        "canonicalize"
+      ]
+    },
+    "@bsv/dpp-credentials": {
+      "version": "0.2.0-beta.6",
+      "filename": "bsv-dpp-credentials-0.2.0-beta.6.tgz",
+      "sha256": "fc1fc536f051b8c1603c9bef43c3c29a43f7e3630b731cda010d4a2396e1cc75",
+      "files": 90,
+      "gs1": 0,
+      "profileFiles": 0,
+      "environmentFiles": 0,
+      "testFiles": 0,
+      "mongoServerFiles": 0,
+      "privateFiles": 0,
+      "dependencies": [
+        "@digitalbazaar/credentials-context",
+        "@digitalbazaar/data-integrity",
+        "@digitalbazaar/data-integrity-context",
+        "@digitalbazaar/ecdsa-multikey",
+        "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite",
+        "@digitalbazaar/multikey-context",
+        "ajv",
+        "ajv-formats",
+        "did-context",
+        "jsonld-signatures"
+      ]
+    }
+  },
+  "mongodb": {
+    "image": "mongo:7.0.48",
+    "digest": "sha256:9896df581dfd0718b7abe112f4c37598d0986c54060e4ec1384997e6503c8c71",
+    "licence": "SSPL-1.0",
+    "resolvedAt": "2026-11-15"
+  }
+}

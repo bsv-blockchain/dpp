@@ -19,11 +19,19 @@
  * a strict TypeScript project. One sentence per assertion, naming what it
  * covered; never a score; exit 1 when any sentence does not hold.
  *
+ * Last, the two narrower installations, each in a project of its own: the
+ * protocol package alone, which runs the whole lifecycle offline, and the
+ * index with the two packages it depends on, whose dpp-index command is
+ * started, asked for its health and capabilities and stopped. Neither holds
+ * an engine library of the validator service, and neither needs that
+ * service to be running anywhere.
+ *
  *   node scripts/consumer-check.mjs                    # after scripts/release-candidates.mjs
  *   KEEP_CONSUMER=1 node scripts/consumer-check.mjs    # leave the temporary project behind
  */
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, cpSync } from 'node:fs'
+import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -209,8 +217,24 @@ out.push(['dpp-credentials/epcis-exchange: an import without the provisioned GS1
 // A pull from a source with no base address requests nothing, and says so by name.
 const linkMissing = await epcisExchange.pullEpcisEvents({ storage: exchangeStore, source: { sourceId: 'consumer-check', permittedOrigins: [], policy: { policyId: 'consumer-check@1' } }, queryId: 'query-1', query: {}, fetch: () => { throw new Error('nothing may be requested') } })
 out.push(['dpp-credentials/epcis-exchange: a pull from a source with no base address answers source-link-missing, requests nothing and keeps nothing', linkMissing.outcome === 'source-link-missing' && linkMissing.completion === 'failed' && linkMissing.pull === undefined && exchangeStore.state.records.size === 0 && typeof epcisExchange.getEpcisPull === 'function'])
+// A recovery export of a store that holds no source scope says so by name, a restore with no descriptor is refused before anything is written, and neither changes the store.
+const nothingToCarry = await epcisExchange.exportEpcisRecovery({ storage: exchangeStore })
+const noSnapshot = await epcisExchange.restoreEpcisRecovery({ storage: exchangeStore, source: epcisExchange.epcisRecoveryFiles(new Map()), inventory: [] })
+out.push(['dpp-credentials/epcis-exchange: a recovery export of an empty store answers no-source-scope, a restore without a descriptor answers descriptor-missing, and neither writes anything', nothingToCarry.ok === false && nothingToCarry.code === 'no-source-scope' && noSnapshot.ok === false && noSnapshot.code === 'descriptor-missing' && exchangeStore.state.bytes.size === 0 && exchangeStore.state.records.size === 0 && typeof epcisExchange.verifyEpcisRecovery === 'function' && typeof epcisExchange.exportEpcisPublicEvidence === 'function'])
 out.push(['dpp-credentials: the root exports the GS1 provisioning functions and the three pinned EPCIS files', typeof credentials.provisionGs1Artefacts === 'function' && typeof credentials.verifyGs1Artefacts === 'function' && credentials.EPCIS_GS1_ARTEFACTS.length === 3 && credentials.verifyGs1Artefacts({ dir: join(process.cwd(), 'gs1-not-provisioned') }).ok === false])
 out.push(['dpp-credentials: the dpp-gs1-artefacts executable is installed', existsSync(join('node_modules', '.bin', 'dpp-gs1-artefacts'))])
+// The validator service and its client install with the profiles package and need nothing more to load. This consumer
+// did not install the engine libraries, so a client with no service to ask answers that the engine could not run,
+// never a result, and the service refuses to start and names a library it lacks. Which one it names first depends on
+// what another package brought in: the credentials package depends on a JSON-LD processor of its own.
+out.push(['dpp-profiles: the dpp-validator executable is installed', existsSync(join('node_modules', '.bin', 'dpp-validator'))])
+const validatorClient = await import('@bsv/dpp-profiles/validator-client')
+const unanswered = await validatorClient.createValidatorClient({ url: 'http://127.0.0.1:9', timeoutMs: 2000 }).jsonLd.toRdf({ document: {}, contexts: [] })
+out.push(['dpp-profiles/validator-client: with no service at its address the engine answers that it could not run and returns no result', unanswered.ok === false && (unanswered.reason === 'engine-error' || unanswered.reason === 'timeout')])
+const validatorService = await import('@bsv/dpp-profiles/validator-service')
+let notStarted
+try { const started = await validatorService.startValidatorService(); await started.close() } catch (e) { notStarted = e }
+out.push(['dpp-profiles/validator-service: without the engine libraries installed the service does not start and names one it lacks', notStarted instanceof Error && notStarted.message.includes('The validation engine did not load') && /\\b(n3@2\\.13\\.12|shacl-engine@1\\.1\\.3|jsonld@9\\.0\\.0)\\b/.test(notStarted.message)])
 console.log(JSON.stringify(out))
 `)
   const outcome = JSON.parse(run(['node', 'consumer.mjs'], dir).trim().split('\n').at(-1))
@@ -234,6 +258,8 @@ console.log(JSON.stringify(out))
       }
     }
     say(existsSync(join(pkgDir, 'LICENSE')) || existsSync(join(pkgDir, 'LICENSE.md')), `${c.name} carries its licence file.`)
+    const notices = ['NOTICE', 'PATENTS'].filter((file) => !existsSync(join(pkgDir, file)) || !readFileSync(join(pkgDir, file)).equals(readFileSync(join(root, file))))
+    say(notices.length === 0, `${c.name} carries the repository's NOTICE and PATENTS, byte for byte${notices.length === 0 ? '' : `, but not ${notices.join(' or ')}`}.`)
   }
 
   // 4. The types: a strict TypeScript project importing every package and every credentials subpath, using a declaration from each.
@@ -247,7 +273,7 @@ import { readManifest, type ProfileManifest, type InteroperabilityProfileId, typ
 import { parseStrictJsonBytes, type Credential } from '@bsv/dpp-credentials'
 import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/dpp-credentials/exchange'
 import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/dpp-credentials/epcis-source'
-import { importEpcisSource, pullEpcisEvents, type EpcisExchangeStorage, type EpcisFetch, type EpcisImportRecord, type EpcisImportOutcome, type EpcisPullOutcome, type EpcisPullSource } from '@bsv/dpp-credentials/epcis-exchange'
+import { exportEpcisRecovery, importEpcisSource, pullEpcisEvents, restoreEpcisRecovery, type EpcisExchangeStorage, type EpcisFetch, type EpcisImportRecord, type EpcisImportOutcome, type EpcisPullOutcome, type EpcisPullSource, type EpcisRecoveryExportRefusal, type EpcisRecoveryRefusal, type EpcisRecoverySource, type ExportedEpcisRecovery, type RestoredEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'
 import type { Transaction } from '@bsv/sdk'
 export const hostOptions: OverlayHttpOptions = { host: '127.0.0.1', network: 'test' }
 export const startHost: typeof startOverlayService = startOverlayService
@@ -280,6 +306,13 @@ export const transport: EpcisFetch = fetch
 export async function pull(storage: EpcisExchangeStorage, source: EpcisPullSource): Promise<EpcisPullOutcome> {
   return pullEpcisEvents({ storage, source, queryId: 'query', query: { perPage: 10 }, fetch })
 }
+// A snapshot's own inventory is what a restore is handed, when no larger manifest carries it.
+export async function snapshot(storage: EpcisExchangeStorage): Promise<ExportedEpcisRecovery | EpcisRecoveryExportRefusal> {
+  return exportEpcisRecovery({ storage })
+}
+export async function restore(storage: EpcisExchangeStorage, source: EpcisRecoverySource, taken: ExportedEpcisRecovery): Promise<RestoredEpcisRecovery | EpcisRecoveryRefusal> {
+  return restoreEpcisRecovery({ storage, source, inventory: taken.inventory })
+}
 `)
   writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { module: 'NodeNext', moduleResolution: 'NodeNext', target: 'ES2022', strict: true, noEmit: true, skipLibCheck: false, types: ['node'] }, files: ['types.ts'] }))
   try {
@@ -293,6 +326,73 @@ export async function pull(storage: EpcisExchangeStorage, source: EpcisPullSourc
 } finally {
   if (process.env.KEEP_CONSUMER === '1') console.log(`consumer project kept at ${dir}`)
   else rmSync(dir, { recursive: true, force: true })
+}
+
+// 5. The two narrower installations: the protocol alone, and the index alone. Each is a project of its own, so
+// nothing the full installation above brought in can stand in for something these lack.
+const ENGINE_LIBRARIES = ['jsonld', 'n3', 'shacl-engine']
+const narrow = (label, names) => {
+  const project = mkdtempSync(join(tmpdir(), `dpp-consumer-${label}-`))
+  writeFileSync(join(project, 'package.json'), JSON.stringify({ name: `dpp-consumer-${label}`, private: true, type: 'module', version: '0.0.0' }, null, 2))
+  const specs = names.map((name) => { const c = record.candidates.find((x) => x.name === name); return fromRegistry ? `${c.name}@${c.version}` : join(candidateDir, c.filename) })
+  run(['npm', 'install', '--save-exact', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund', '--registry', NPM_REGISTRY, '--cache', join(project, '.npm-cache'), ...specs], project)
+  return { project, has: (name) => existsSync(join(project, 'node_modules', ...name.split('/'), 'package.json')) }
+}
+const freePort = () => new Promise((done, fail) => { const server = createServer(); server.once('error', fail); server.listen(0, '127.0.0.1', () => { const { port } = server.address(); server.close(() => done(port)) }) })
+const hasAll = (names) => names.every((name) => record.candidates.some((c) => c.name === name))
+
+if (hasAll(['@bsv/dpp-protocol'])) {
+  let protocolOnly
+  try {
+    protocolOnly = narrow('protocol', ['@bsv/dpp-protocol'])
+    const beside = ['@bsv/dpp-profiles', '@bsv/dpp-overlay', '@bsv/dpp-credentials', 'mongodb', ...ENGINE_LIBRARIES].filter((name) => protocolOnly.has(name))
+    say(protocolOnly.has('@bsv/dpp-protocol') && beside.length === 0, `protocol-only installation: @bsv/dpp-protocol installs with @bsv/sdk and no other package of the set, no database driver and no engine library of the validator service${beside.length === 0 ? '' : `, but it brought ${beside.join(', ')}`}.`)
+    cpSync(join(root, 'examples/lifecycle-v2.mjs'), join(protocolOnly.project, 'lifecycle-v2.mjs'))
+    run(['node', 'lifecycle-v2.mjs'], protocolOnly.project)
+    say(true, 'protocol-only installation: the lifecycle example issues, updates, transfers and retires a passport and verifies each step offline, with no index and no validator service.')
+  } catch (error) {
+    say(false, `the protocol-only installation could not be checked: ${error.stderr ?? error.message}`)
+  } finally {
+    if (protocolOnly != null && process.env.KEEP_CONSUMER !== '1') rmSync(protocolOnly.project, { recursive: true, force: true })
+  }
+}
+
+if (hasAll(['@bsv/dpp-protocol', '@bsv/dpp-profiles', '@bsv/dpp-overlay'])) {
+  let indexOnly
+  let child
+  try {
+    indexOnly = narrow('index', ['@bsv/dpp-protocol', '@bsv/dpp-profiles', '@bsv/dpp-overlay'])
+    const beside = ['@bsv/dpp-credentials', ...ENGINE_LIBRARIES].filter((name) => indexOnly.has(name))
+    say(indexOnly.has('@bsv/dpp-overlay') && beside.length === 0, `index-only installation: @bsv/dpp-overlay installs with the two packages it depends on, without the credentials package and without an engine library of the validator service${beside.length === 0 ? '' : `, but it brought ${beside.join(', ')}`}.`)
+    const driver = JSON.parse(readFileSync(join(indexOnly.project, 'node_modules', 'mongodb', 'package.json'), 'utf8')).version
+    const expectedDriver = set.runtime.dependencies.find((d) => d.name === 'mongodb')?.version
+    say(driver === expectedDriver, `index-only installation: the database driver resolved to mongodb@${driver}, the release set's runtime (${expectedDriver}), which is what the index image installs.`)
+    const port = await freePort()
+    const key = JSON.parse(readFileSync(join(root, 'fixtures', 'chain-v2.json'), 'utf8')).custodianKey
+    let output = ''
+    // A clean environment: none of this shell's settings, no database, and no validator address anywhere.
+    child = spawn(join(indexOnly.project, 'node_modules', '.bin', 'dpp-index'), [], { cwd: indexOnly.project, env: { PATH: process.env.PATH, HOME: process.env.HOME ?? tmpdir(), SERVICE_IDENTITY_KEY: key, NETWORK: 'test', CHAIN_TRACKER: 'scripts-only', HOST: '127.0.0.1', PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] })
+    child.stdout.on('data', (chunk) => { output += chunk })
+    child.stderr.on('data', (chunk) => { output += chunk })
+    const ended = new Promise((done) => child.once('exit', (code) => done(code)))
+    let health
+    for (let attempt = 0; attempt < 100 && health == null && child.exitCode == null; attempt++) {
+      try { const response = await fetch(`http://127.0.0.1:${port}/health`, { signal: AbortSignal.timeout(1000) }); if (response.status === 200) health = await response.json() } catch { await new Promise((wait) => setTimeout(wait, 200)) }
+    }
+    say(health?.status === 'ok' && health.topic === 'tm_dpp', `index-only installation: the dpp-index command starts from the installed package and answers GET /health${health == null ? `, but it did not: ${output.trim().split('\n').slice(-3).join(' | ')}` : ''}.`)
+    if (health != null) {
+      const capabilities = await (await fetch(`http://127.0.0.1:${port}/capabilities`)).json()
+      say(Array.isArray(capabilities.profiles) && capabilities.profiles.length > 0, 'index-only installation: it names its capabilities, with no validator service running and none configured.')
+    }
+    child.kill('SIGTERM')
+    const code = await ended
+    say(code === 0, `index-only installation: told to stop, the command closed with exit code ${code}.`)
+  } catch (error) {
+    say(false, `the index-only installation could not be checked: ${error.stderr ?? error.message}`)
+  } finally {
+    if (child != null && child.exitCode == null) child.kill('SIGKILL')
+    if (indexOnly != null && process.env.KEEP_CONSUMER !== '1') rmSync(indexOnly.project, { recursive: true, force: true })
+  }
 }
 console.log(failures === 0 ? 'Every sentence above holds.' : 'At least one sentence above does not hold.')
 process.exit(failures === 0 ? 0 : 1)

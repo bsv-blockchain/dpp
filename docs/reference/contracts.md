@@ -1,6 +1,6 @@
 # Contracts and schemas
 
-This page lists every HTTP route of the index and the registry with what it takes and what it answers, and maps the JSON schemas to the documents they define. Implementers and operators can use it to make requests and interpret responses. The linked contracts take precedence where this page differs.
+This page lists every HTTP route of the index, the registry and the validator service with what it takes and what it answers, and maps the JSON schemas to the documents they define. Implementers and operators can use it to make requests and interpret responses. The linked contracts take precedence where this page differs.
 
 The index (overlay in the reference software) admits passport states and claim anchors and answers lookups. The registry validates and keeps signed claims. They are separate services; do not assume they share an address.
 
@@ -161,6 +161,19 @@ The answer names its contract and checks, with a shared `report` when the subjec
 
 The GS1 resolver a registry may run is the [GS1 discovery](../interoperability/gs1-discovery.md) profile's, outside the registry contract. EPCIS import and passport projection routes are the reference application's own, not a contract of the standard ([interoperability](../interoperability/README.md)).
 
+## Validator service routes
+
+`contracts/validator.schema.json` defines every body of the `dpp-validator/1` contract: the validation engine for [profiles held by a binding](../packages/dpp-profiles.md#validate-a-profile-defined-outside-the-package), reached in another process. No role requires it. An application that runs its engines in process, an index and a registry never call it. [Run the engines as a service](../packages/dpp-profiles.md#run-the-engines-as-a-service) starts one.
+
+| Route | Access | Request | Success | Errors |
+|---|---|---|---|---|
+| `GET /health` | Open | | 200 `{ "contract": "dpp-validator/1", "ok": true }` | 503 `engine-unavailable` |
+| `GET /capabilities` | Open | | 200: the engine, the version of each library it runs, what it can check and its limits | |
+| `POST /expand` | Bearer token when the service sets one | JSON `{ "document", "contexts": [{ "uri", "sha256", "content" }] }`, each context as base64 beside its SHA-256 | 200 `{ "contract", "capabilities", "result" }`, the result being `{ "ok": true, "nquads" }` or `{ "ok": false, "reason", "detail" }` | 400 `request-invalid`, 401 `unauthorised`, 413 `request-too-large`, 415 `unsupported-media-type`, 422 `digest-mismatch`, 503 `busy` or `engine-unavailable` |
+| `POST /validate` | Bearer token when the service sets one | JSON `{ "nquads", "shapes": [...], "background": [...], "requires": [...] }`, each file as `{ "path", "mediaType", "sha256", "content" }` | 200 `{ "contract", "capabilities", "result" }`, the result being `{ "ok": true, "findings": [...] }` or `{ "ok": false, "reason", "detail" }` | As `/expand`, and 422 `capability-unavailable` when the engine lacks a capability in `requires` |
+
+A 200 carries the engine's own result, including one that says it could not finish: `timeout` or `engine-error`. Read anything other than a 200 that fits the schema as an operation that could not run, which a validator reports as `unknown` and never as `pass`. A redirect is such an answer: do not follow it. The service fetches no context and keeps nothing from a request.
+
 ## Schemas
 
 | Schema | Defines |
@@ -174,7 +187,9 @@ The GS1 resolver a registry may run is the [GS1 discovery](../interoperability/g
 | [native-evidence-extension.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/native-evidence-extension.schema.json) | A reference, carried inside a credential in another representation, to evidence already on chain in the native records |
 | [epcis-import.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/epcis-import.schema.json) | The record of one retained EPCIS import and its per-event results |
 | `contracts/epcis-import-v1.schema.json` | Import record version 1, which the link above shows, for validating a stored version 1 record; `contracts/epcis-import.schema.json` in the tree is version 2, which requires the request digest, the idempotency rule and the document's validity |
-| `contracts/epcis-exchange-records.schema.json` | The other durable records of an EPCIS exchange, each with its own type and version: observations, conflict decisions, association index entries, retention entries, the journal of unfinished work, and the state of each query pull with the pages it acknowledged |
+| `contracts/epcis-exchange-records.schema.json` | The other durable records of an EPCIS exchange, each with its own type and version: observations, conflict decisions, association index entries, retention entries, the journal of unfinished work, the state of each query pull with the pages it acknowledged, and the record of each recovery snapshot restored into a store with where each original was placed |
+| `contracts/epcis-recovery.schema.json` | The descriptor of an EPCIS exchange snapshot, `epcis-recovery.json`: every file the snapshot needs, the source scopes covered, the boundary it was taken at, what was left out and what is claimed, for an authorised recovery snapshot and for the public form |
+| `contracts/validator.schema.json` | Every body a validator service exchanges under `dpp-validator/1`: the two requests, their answers, the capability document, the health answer and the refusal |
 | [profile-evidence.schema.json](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/profile-evidence.schema.json) | The shapes a profile field takes when its value is more than a scalar: a claim's evidence, a certification, a measurement |
 | [release-set.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/release/release-set.schema.json) | A [release set](release-sets.md) |
 | [manifest.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json), [baseline.schema.json](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline.schema.json), [selection.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selection.schema.json) | The [conformance](conformance.md) ledger, a recommended baseline and a release's claim selection |

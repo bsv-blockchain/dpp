@@ -2,7 +2,7 @@
   "releaseSet": "dpp-release-2026-11",
   "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, which keeps external credential verification and the EPCIS source helpers and no longer contains the parked VSC compatibility profile, its Ed25519Signature2020 and bbs-2023 proof suites or the EPCIS-to-SEAL mappings. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; the native claim names its state by outpoint; the index contract is 0.14.0-draft, with per-publisher write tokens bound to one key and one use and self-service registration through POST /register, a wallet-signed dpp-index-registration@1 request that appends an operator-signed policy version and returns those tokens, and the registry contract 0.6.0, which adds the envelope of the parked epcis-event-vc@1, refuses a submission of the parked vsc-seal-json-v1 as unsupported and defines no status list publication. From 12 November 2026 the native claim carries no evidence facets; the index contract separates a core, version 1, from versioned extensions, and its refusal codes are informative; the registry contract is the minimum every registry serves and has no legacy intake, so a historical UORA body is refused while stored historical records stay readable; the one export format is dpp-evidence-package@1 per passport, signed by the BRC-42 child of the exporter's identity key named in its capability document, and the multi-part export and the index's history pages are reference features of @bsv/dpp-overlay; and the application interoperability API contract is the reference application's own. The custody profile is managed-custody@2, the one custody profile: the custodian signs its acceptance records with a derived key through the wallet's createSignature, and dpp-managed-acceptance@1 records are read and never written. From 12 November 2026 the owner-signed transfer for version 1 lineages is removed from the standard, and the holder instruction record and record version 3, the token carrier, are parked outside it, so the set names record versions 1 and 2 and verification report version 2. From the same day the selection requires one claim per role under native-baseline@2, the one baseline a claim names, with gs1-identifier-discipline and profile-governance, and withholds every other claim, among them those of the optional custody, exchange and EPCIS profiles. From the same day passport projections and the publication policy are reference features of @bsv/dpp-profiles, whose source and projection schemas moved from contracts/ into that package; the GS1 discovery specification keeps only the DPP identifier rules; the publisher policy chain, write tokens, registration operations and synchronisation are reference features of @bsv/dpp-overlay, with SHIP/SLAP discovery and federated-operators@1 parked; the drafts battery@3, textile@3 and textile@4 are parked with their bytes unchanged; and spec/rules.md section 4 is the one definition of the canonical JSON the native documents use. From 14 November 2026 no package carries a GS1 file: GS1 publishes its EPCIS and resolver schemas and contexts under its own terms, so the packages pin them by address, SHA-256 and length, each deployment obtains them from GS1, and EPCIS validation refuses by name until the pinned schema is provisioned. From the same day the directly signed EPCIS event profile, epcis-event-vc@1, is parked while its representation is reconsidered: its module stays in the repository and @bsv/dpp-protocol no longer exports it, its manifest reads parked, and its rows and its claim are in the ledger archive, so the selection no longer names it. From the same day the sector profiles first published as manifests, battery@2, battery@3, battery@4, textile@1, textile@2, textile@3 and textile@4, are retired: their manifests and generated files stay in @bsv/dpp-profiles byte for byte at their frozen digests, nothing is issued, prepared or validated under them, a payload that declares one is reported unknown with the cause profile-retired, and the profile registry reports the identity as retired. eu-battery@1 and eu-textile@1, held by bindings the package ships, replace them, with no converter and no reader of the retired rules. general@1 and general@2 are unaffected, and the battery demonstration row is in the ledger archive. From the same day @bsv/dpp-credentials has the ./epcis-exchange entry point, durable EPCIS source exchange over storage the application supplies: file import with exact-byte retention and idempotent requests, arrival records, conflict decisions, a rebuildable associations index, original-byte export and recovery, with an in-memory and a file-system storage adapter and the shared suite every adapter must pass, and a bounded pull of the standard EPCIS events query over a transport the application supplies, whose pages go through the same import and whose checkpoint moves only after a page is retained. The import record contract is version 2, which requires the request digest, with version 1 kept beside it, and the other durable records of an exchange have their own contract. It is no EPCIS repository, has no capture interface and does not query. Package publication does not establish deployment readiness or product qualification.",
+  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, which keeps external credential verification and the EPCIS source helpers and no longer contains the parked VSC compatibility profile, its Ed25519Signature2020 and bbs-2023 proof suites or the EPCIS-to-SEAL mappings. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; the native claim names its state by outpoint; the index contract is 0.14.0-draft, with per-publisher write tokens bound to one key and one use and self-service registration through POST /register, a wallet-signed dpp-index-registration@1 request that appends an operator-signed policy version and returns those tokens, and the registry contract 0.6.0, which adds the envelope of the parked epcis-event-vc@1, refuses a submission of the parked vsc-seal-json-v1 as unsupported and defines no status list publication. From 12 November 2026 the native claim carries no evidence facets; the index contract separates a core, version 1, from versioned extensions, and its refusal codes are informative; the registry contract is the minimum every registry serves and has no legacy intake, so a historical UORA body is refused while stored historical records stay readable; the one export format is dpp-evidence-package@1 per passport, signed by the BRC-42 child of the exporter's identity key named in its capability document, and the multi-part export and the index's history pages are reference features of @bsv/dpp-overlay; and the application interoperability API contract is the reference application's own. The custody profile is managed-custody@2, the one custody profile: the custodian signs its acceptance records with a derived key through the wallet's createSignature, and dpp-managed-acceptance@1 records are read and never written. From 12 November 2026 the owner-signed transfer for version 1 lineages is removed from the standard, and the holder instruction record and record version 3, the token carrier, are parked outside it, so the set names record versions 1 and 2 and verification report version 2. From the same day the selection requires one claim per role under native-baseline@2, the one baseline a claim names, with gs1-identifier-discipline and profile-governance, and withholds every other claim, among them those of the optional custody, exchange and EPCIS profiles. From the same day passport projections and the publication policy are reference features of @bsv/dpp-profiles, whose source and projection schemas moved from contracts/ into that package; the GS1 discovery specification keeps only the DPP identifier rules; the publisher policy chain, write tokens, registration operations and synchronisation are reference features of @bsv/dpp-overlay, with SHIP/SLAP discovery and federated-operators@1 parked; the drafts battery@3, textile@3 and textile@4 are parked with their bytes unchanged; and spec/rules.md section 4 is the one definition of the canonical JSON the native documents use. From 14 November 2026 no package carries a GS1 file: GS1 publishes its EPCIS and resolver schemas and contexts under its own terms, so the packages pin them by address, SHA-256 and length, each deployment obtains them from GS1, and EPCIS validation refuses by name until the pinned schema is provisioned. From the same day the directly signed EPCIS event profile, epcis-event-vc@1, is parked while its representation is reconsidered: its module stays in the repository and @bsv/dpp-protocol no longer exports it, its manifest reads parked, and its rows and its claim are in the ledger archive, so the selection no longer names it. From the same day the sector profiles first published as manifests, battery@2, battery@3, battery@4, textile@1, textile@2, textile@3 and textile@4, are retired: their manifests and generated files stay in @bsv/dpp-profiles byte for byte at their frozen digests, nothing is issued, prepared or validated under them, a payload that declares one is reported unknown with the cause profile-retired, and the profile registry reports the identity as retired. eu-battery@1 and eu-textile@1, held by bindings the package ships, replace them, with no converter and no reader of the retired rules. general@1 and general@2 are unaffected, and the battery demonstration row is in the ledger archive. From the same day @bsv/dpp-credentials has the ./epcis-exchange entry point, durable EPCIS source exchange over storage the application supplies: file import with exact-byte retention and idempotent requests, arrival records, conflict decisions, a rebuildable associations index, original-byte export and recovery, with an in-memory and a file-system storage adapter and the shared suite every adapter must pass, and a bounded pull of the standard EPCIS events query over a transport the application supplies, whose pages go through the same import and whose checkpoint moves only after a page is retained. From 15 November 2026 the same entry point takes an exchange out of one store as an authorised recovery snapshot, files with one dpp-evidence-package@1 inventory entry each beside a descriptor, and restores a snapshot into another store with every identity kept and only the place of the bytes relocated; a snapshot carries no credential and is separate from public evidence. The import record contract is version 2, which requires the request digest, with version 1 kept beside it, and the other durable records of an exchange and the descriptor of a recovery snapshot have their own contracts. It is no EPCIS repository, has no capture interface and does not query. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-11.json",
   "runtime": {
@@ -115,10 +115,12 @@
       "name": "@bsv/dpp-profiles",
       "version": "0.3.0-beta.10",
       "directory": "packages/dpp-profiles",
-      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports; the retired sector profiles as frozen files, read for inspection and never written or validated under; profile bindings for externally defined profiles, with the profile registry, the binding payload validator and the product-to-passport identity rules",
+      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports; the retired sector profiles as frozen files, read for inspection and never written or validated under; profile bindings for externally defined profiles, with the profile registry, the binding payload validator and the product-to-passport identity rules; profile bundles that carry those bindings and their files in an evidence package, restored through the destination's own trusted digests; a validator service that runs the JSON-LD and SHACL engines in another process under the dpp-validator/1 contract (./validator-service), the client an application configures in the engines' place (./validator-client), and the dpp-validator executable that starts the service",
       "entryPoints": [
         ".",
         "./validation-engine",
+        "./validator-client",
+        "./validator-service",
         "./manifests/*",
         "./schemas/*",
         "./generated/*",
@@ -133,7 +135,11 @@
       ],
       "nodeBuiltins": [
         "node:crypto",
-        "node:fs"
+        "node:fs",
+        "node:http",
+        "node:path",
+        "node:url",
+        "node:worker_threads"
       ],
       "support": [
         {
@@ -153,6 +159,24 @@
           "types": true,
           "sideEffects": false,
           "notes": "The JSON-LD and SHACL engines for profiles held by a binding. Importing it loads nothing; createValidationEngine loads jsonld, n3 and shacl-engine, which the caller installs and the package does not depend on."
+        },
+        {
+          "entryPoint": "./validator-client",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The JSON-LD and SHACL engines answered by a validator service over the dpp-validator/1 contract. Importing it loads nothing and creating a client opens no connection; a service that cannot be used answers as an engine that could not run, never as a pass."
+        },
+        {
+          "entryPoint": "./validator-service",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The validation engine behind a network call. Importing it starts nothing; startValidatorService listens, and runs the engine in threads it can stop, loading jsonld, n3 and shacl-engine there, which the caller installs and the package does not depend on. The dpp-validator executable calls it."
         },
         {
           "entryPoint": "./manifests/*",
@@ -177,7 +201,7 @@
           "carries": [
             "schemas/*.schema.json"
           ],
-          "notes": "The manifest, binding, identity, exchange, operator and interoperability schemas. The GS1 resolver schemas are pinned by digest in GS1_RESOLVER_ARTEFACTS and are not carried."
+          "notes": "The manifest, binding, bundle descriptor, identity, exchange, operator and interoperability schemas. The GS1 resolver schemas are pinned by digest in GS1_RESOLVER_ARTEFACTS and are not carried."
         },
         {
           "entryPoint": "./generated/*",
@@ -210,7 +234,7 @@
       "name": "@bsv/dpp-credentials",
       "version": "0.2.0-beta.6",
       "directory": "packages/dpp-credentials",
-      "role": "external W3C Verifiable Credential 2.0 verification under ecdsa-rdfc-2019 over P-256 from did:web issuers, with authenticated Bitstring Status List status and bounded did:web resolution (./exchange), and the EPCIS source helpers, which pin the EPCIS 2.0.1 artefacts by digest and read the schema from a folder the deployment provisions from GS1 (./epcis-source), and durable EPCIS source exchange over storage the application supplies, with its two storage adapters, the shared adapter suite and a bounded pull of the standard events query over a transport the application supplies (./epcis-exchange); the root re-exports the EPCIS source helpers, strict parsing and did:web resolution, exports the GS1 provisioning functions and loads no proof suite, and the dpp-gs1-artefacts executable fetches and verifies the GS1 files. The parked VSC draft compatibility profile, its two proof suites and the EPCIS-to-SEAL mappings are no longer in the package, which keeps the owned context and schema artefacts their parked manifests pin",
+      "role": "external W3C Verifiable Credential 2.0 verification under ecdsa-rdfc-2019 over P-256 from did:web issuers, with authenticated Bitstring Status List status and bounded did:web resolution (./exchange), and the EPCIS source helpers, which pin the EPCIS 2.0.1 artefacts by digest and read the schema from a folder the deployment provisions from GS1 (./epcis-source), and durable EPCIS source exchange over storage the application supplies, with its two storage adapters, the shared adapter suite, a bounded pull of the standard events query over a transport the application supplies, and the authorised recovery export and restore that move an exchange to another store (./epcis-exchange); the root re-exports the EPCIS source helpers, strict parsing and did:web resolution, exports the GS1 provisioning functions and loads no proof suite, and the dpp-gs1-artefacts executable fetches and verifies the GS1 files. The parked VSC draft compatibility profile, its two proof suites and the EPCIS-to-SEAL mappings are no longer in the package, which keeps the owned context and schema artefacts their parked manifests pin",
       "entryPoints": [
         ".",
         "./exchange",
@@ -267,7 +291,7 @@
           "browser": "unsupported",
           "types": true,
           "sideEffects": false,
-          "notes": "Durable EPCIS source exchange; server only: it validates against the provisioned GS1 schema, and its file-system storage adapter reads and writes one folder. Loading it opens no database and reaches no network; a query pull requests only through the transport it is handed."
+          "notes": "Durable EPCIS source exchange; server only: it validates against the provisioned GS1 schema, and its file-system storage adapter reads and writes one folder. Loading it opens no database and reaches no network; a query pull requests only through the transport it is handed, and a recovery export or restore reads and writes only the storage it is handed and, for a snapshot on disk, the folder it is given."
         },
         {
           "entryPoint": "./artifacts/*",
@@ -391,8 +415,18 @@
     },
     {
       "path": "contracts/epcis-exchange-records.schema.json",
-      "sha256": "247e1b86567aba85a488b99e6ff2e171dc6bce5c932b2fa64a44f0a2f840b54a",
-      "pins": "the other durable records of an EPCIS exchange: observations, conflict decisions, association index entries, retention entries, the journal, and the state of each query pull with the pages it acknowledged"
+      "sha256": "dbbc4ab52d87a5fcbfb2fd44342550851f401b676e53e8a0bdae7658b8d6a925",
+      "pins": "the other durable records of an EPCIS exchange: observations, conflict decisions, association index entries, retention entries, the journal, the state of each query pull with the pages it acknowledged, and the record of each recovery snapshot restored into a store with where each original was placed"
+    },
+    {
+      "path": "contracts/epcis-recovery.schema.json",
+      "sha256": "87464c91edef5be1bf853dfe5d14089f151352b1a2dc851d646b67af85bb4e24",
+      "pins": "the descriptor of an EPCIS exchange snapshot, format 1: every file the snapshot needs, the source scopes covered, the boundary, what is left out and what is claimed, for an authorised recovery snapshot and for the public form"
+    },
+    {
+      "path": "contracts/validator.schema.json",
+      "sha256": "e6dedc9ed9f1173363e961682592692465ee8563c077b591330d84747fa3aceb",
+      "pins": "the wire contract of the validator service, dpp-validator/1: the two engine operations, the capability document and the refusals"
     },
     {
       "path": "contracts/profile-evidence.schema.json",
@@ -455,5 +489,59 @@
     "dockerfile": "packages/dpp-overlay/Dockerfile",
     "preset": "deploy/compose.yml",
     "tag": "dpp-overlay:0.4.0"
+  },
+  "images": {
+    "registry": "ghcr.io/bsv-blockchain",
+    "preset": "deploy/compose.yml",
+    "own": [
+      {
+        "name": "dpp-overlay",
+        "service": "overlay",
+        "package": "@bsv/dpp-overlay",
+        "dockerfile": "packages/dpp-overlay/Dockerfile",
+        "runtime": {
+          "node": "22.23.4",
+          "baseImage": "node:22.23.4-slim"
+        },
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ],
+        "digestVariable": "OVERLAY_IMAGE_DIGEST",
+        "digest": "unpublished"
+      },
+      {
+        "name": "dpp-validator",
+        "service": "validator",
+        "package": "@bsv/dpp-profiles",
+        "dockerfile": "packages/dpp-profiles/validator-image/Dockerfile",
+        "runtime": {
+          "node": "22.23.4",
+          "baseImage": "node:22.23.4-slim"
+        },
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ],
+        "digestVariable": "VALIDATOR_IMAGE_DIGEST",
+        "digest": "unpublished"
+      }
+    ],
+    "thirdParty": [
+      {
+        "name": "mongo",
+        "service": "mongo",
+        "repository": "mongo",
+        "tag": "7.0.48",
+        "digest": "sha256:9896df581dfd0718b7abe112f4c37598d0986c54060e4ec1384997e6503c8c71",
+        "resolvedAt": "2026-11-15",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ],
+        "licence": "SSPL-1.0",
+        "distribution": "MongoDB Community Server, named by the preset and pulled by the operator from its publisher. No image, package, bundle or mirror of this repository contains it."
+      }
+    ]
   }
 }

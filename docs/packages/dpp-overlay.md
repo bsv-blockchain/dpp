@@ -2,7 +2,7 @@
 
 Developers and operators building custom integrations can use `@bsv/dpp-overlay` to embed an index or run one over HTTP. Its library components and server admit passport states and claim anchors, then answer lookups for those records.
 
-For a new index, follow [Run an index from source](../operate/README.md): the repository's Docker Compose preset builds this runtime's image and runs it with MongoDB, so no installation is needed.
+For a new index, follow [Run an index from source](../operate/README.md): the repository's Docker Compose preset runs this runtime's image with MongoDB, so no installation is needed.
 
 An app connecting to an existing index over HTTP needs its URL and access settings; it does not need this hosting package.
 
@@ -38,7 +38,7 @@ The source candidate exports its library at `@bsv/dpp-overlay` and HTTP host at 
 
 ## Install
 
-Install directly for custom embedding or configuration. The Compose preset builds the runtime from source and needs no installation.
+Install directly for custom embedding or configuration. The Compose preset runs the same runtime as an image and needs no installation: the npm package and the image are the same built files ([images](../reference/release-sets.md#images)).
 
 **Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now:
 

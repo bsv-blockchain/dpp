@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/profiles/schemas/profile-bundle-v1.schema.json",
+  "title": "DPP profile bundle descriptor, format 1",
+  "description": "The descriptor of a profile bundle (spec/profiles.md section 7, spec/portable-evidence.md section 2): the file profile-bundle.json in the folder of a dpp-evidence-package@1 that carries profiles held by bindings. It says which profiles the bundle covers, which files it names and does not carry, and what it does not establish. Every path is relative to the folder the descriptor is in. Each covered profile has a folder named id@version there, holding binding.json in its exact bytes, every artefact the binding lists that is carried, and the notices listed here. The descriptor gives no binding any authority: a destination registers a carried binding only when its own trusted list holds the binding's digest. Rules that relate one member to another, such as a profile being listed once, are stated in the specification and checked when a bundle is opened.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "profiles", "licences", "omitted", "limits"],
+  "properties": {
+    "format": { "const": "dpp-profile-bundle" },
+    "version": { "const": "1", "description": "The format of this file." },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The profiles the bundle covers.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["profile", "bindingDigest", "notices"],
+        "properties": {
+          "profile": { "$ref": "#/$defs/profile" },
+          "bindingDigest": { "$ref": "#/$defs/sha256", "description": "The SHA-256 of the carried binding.json. It says which bytes the bundle carries and gives them no authority." },
+          "notices": { "type": "array", "items": { "$ref": "#/$defs/path" }, "description": "The notices carried for this profile, by the paths the binding's source.notices gives." }
+        }
+      }
+    },
+    "licences": {
+      "type": "array",
+      "description": "Every licence a carried file is under, as its binding names it.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["licence"],
+        "properties": {
+          "licence": { "type": "string", "minLength": 1 },
+          "path": { "$ref": "#/$defs/path", "description": "Where the bundle carries the licence text. Absent: the licence is named and its text is not carried." }
+        }
+      }
+    },
+    "omitted": {
+      "type": "array",
+      "description": "Every file the bundle names and does not carry.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["uri", "sha256", "byteLength", "reason"],
+        "properties": {
+          "uri": { "type": "string", "pattern": "^[a-z][a-z0-9+.-]*:[^\\s]+$", "description": "The address its publisher publishes it at." },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "byteLength": { "type": "integer", "minimum": 1 },
+          "reason": { "const": "provisioned-by-destination", "description": "The destination obtains the file for itself and checks it against this digest." },
+          "requiredBy": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The binding artefacts that are this file. Absent: no carried binding lists it, and the exporter names it for the deployment's other checks.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["profile", "path"],
+              "properties": {
+                "profile": { "$ref": "#/$defs/profile" },
+                "path": { "$ref": "#/$defs/path", "description": "The artefact's path, as its binding gives it." }
+              }
+            }
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "description": "What a bundle does not establish. The values are fixed, so no bundle can claim more.",
+      "additionalProperties": false,
+      "required": ["profiles", "trust", "ownerCommitment"],
+      "properties": {
+        "profiles": { "const": "bindings-only", "description": "Only profiles held by a binding are carried. A manifest-format profile ships with the package that publishes it." },
+        "trust": { "const": "destination-trusted-digests", "description": "Whether a carried binding may be used is decided by the destination's own trusted digests, never by the bundle or by the signature on the package around it." },
+        "ownerCommitment": { "const": "not-established", "description": "Validation under a carried profile, of a whole payload or of a disclosed part, is no statement that a restricted part is the one a record commits to in payload_owner_hash." }
+      }
+    }
+  },
+  "$defs": {
+    "profile": { "type": "string", "pattern": "^[a-z][a-z0-9-]*@[1-9][0-9]*$", "description": "id@version." },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "path": {
+      "type": "string",
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9_@-][A-Za-z0-9._@-]*(/[A-Za-z0-9_@-][A-Za-z0-9._@-]*)*$",
+      "description": "A relative file name with no empty, dot or dot-dot segment."
+    }
+  }
+}

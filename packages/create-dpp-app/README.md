@@ -35,8 +35,10 @@ The app's Compose file starts only its database, so connecting a separately oper
 - Wallet: `@bsv/wallet-toolbox` as a library, service-owned, keys in a SQLite file.
 - Custody: managed, the platform signs for signed-in users; the party interface keeps self-custody open.
 - Identifiers: GS1 Digital Links under the demonstration prefix 952 until you set a licensed one.
-- Validation: Ajv for manifest profiles; `jsonld`, `n3` and `shacl-engine`, at the versions `@bsv/dpp-profiles` is tested with, for profiles held by a binding. Nothing is fetched while validating.
+- Validation: Ajv for manifest profiles; `jsonld`, `n3` and `shacl-engine`, at the versions `@bsv/dpp-profiles` is tested with, for profiles held by a binding. Nothing is fetched while validating. With `VALIDATOR_URL` set, the same two engines are asked of a validator service through `@bsv/dpp-profiles/validator-client` instead, and a service that does not answer blocks a write as missing libraries do.
 - EPCIS: `@bsv/dpp-credentials/epcis-exchange` for import, pull and export, over a MongoDB storage adapter the template carries. An event is supplied data, kept apart from every passport: an import signs nothing and never reaches the wallet.
+
+- Moving: `export` and `restore` commands that carry the whole application as one signed `dpp-evidence-package@1` and restore it into another deployment, calling the profile bundle of `@bsv/dpp-profiles` and the recovery snapshot of `@bsv/dpp-credentials/epcis-exchange`. No package carries a key or a credential.
 
 Every opinion is a file you can change. The standard itself prefers none of them.
 
@@ -81,6 +83,8 @@ Two things in the template are copies or inventions, and the package's tests hol
 - The battery and textile examples in `template/apps/api/src/sector-examples.ts` were written for the starter: invented organisations and values, under the GS1 demonstration prefix 952. The template carries no third-party product document.
 
 The web app has no test runner. The modules that decide what a form writes and where a finding is shown, under `template/apps/web/src/lib/bound/`, touch neither the page nor the network, and the API's tests exercise them (`apps/api/test/sector-forms.test.ts`). The same holds for the words the events page puts on an import, a pull and an event, in `template/apps/web/src/lib/epcis.ts` (`apps/api/test/epcis-web.test.ts`). The pages themselves are type-checked by the build.
+
+The generated app's exit exercise, `apps/api/test/exit-exercise.test.ts`, builds one deployment, exports it, stops its database and its index, and restores into a second deployment with another store and another source of profiles. `npm run starter:check -- --exit-record deploy/evidence/exit-exercise.json` writes the record of that run. Both deployments are in one test process, with the reference index's code, the test wallet and the development session standing in for an index, a wallet and sign-in: the record says so.
 
 The generated app's EPCIS tests need the pinned GS1 files and one MongoDB node in memory. `npm run starter:check` hands the generated app the repository's own GS1 cache, `node_modules/.cache/dpp-gs1`, when a test run has filled it; otherwise the app's test set-up fetches the files from `https://ref.gs1.org`. The MongoDB binary is the one the `@bsv/dpp-overlay` tests use, from the same cache.
 

@@ -22,7 +22,7 @@ The published release uses **`@bsv/dpp-protocol`**, the new name for the library
 | You want to | Start here | What to install |
 | --- | --- | --- |
 | Create a new application | [Create an application](create-dpp-app.md) | Use `@bsv/create-dpp-app`. It includes the application files and selected dependencies |
-| Run a new index | [Run an index from source](../operate/README.md) | Nothing: the repository's Compose preset builds `@bsv/dpp-overlay` into its image. The index starter is [retired](create-dpp-index.md) |
+| Run a new index | [Run an index from source](../operate/README.md) | Nothing: the index image of the repository's Compose preset is `@bsv/dpp-overlay`. The index starter is [retired](create-dpp-index.md) |
 | Connect your app to an existing index | [Choose index access](../start/choose-components-and-services.md#decide-which-services-to-run-or-use) | No index package is needed just for HTTP access; obtain the URL and scoped access settings |
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
 | Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay.md) | Install the runtime directly as an alternative to the Compose preset |

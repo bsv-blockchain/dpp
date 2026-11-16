@@ -1,6 +1,8 @@
 # Run an index from source
 
-Operators can use this guide to run an index from the overlay image and the repository's Docker Compose preset, check its admission and access settings, and hand an application its connection file. The preset runs an index and a persistent MongoDB, not a complete passport platform. It is the supported way to run a new index; the retired index starter's projects [move to it](../packages/create-dpp-index.md#move-a-generated-project).
+Operators can use this guide to run an index from the overlay image and the repository's Docker Compose preset, check its admission and access settings, and hand an application its connection file. The preset runs an index, a persistent MongoDB and the validator service an application calls, not a complete passport platform. It is the supported way to run a new index; the retired index starter's projects [move to it](../packages/create-dpp-index.md#move-a-generated-project).
+
+The preset pulls its images by digest and builds nothing. The images of the current release set are not published yet, so until they are, [build them from source](#build-from-source) with the same preset; every other step of this guide is the same either way.
 
 Read [limitations](limitations.md) and [the hosted reference](../deployment.md) first. [Choose packages and services](../start/choose-components-and-services.md) covers an arranged provider and other capabilities your task may need. The [environment example](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/operator.env.example) lists this preset's configuration.
 
@@ -9,11 +11,19 @@ Read [limitations](limitations.md) and [the hosted reference](../deployment.md) 
 | Input | Source or preparation |
 |---|---|
 | Container tools | Install Docker with Docker Compose. |
-| Repository | Obtain the [source checkout](../packages/README.md#source-access); run commands from its root. |
+| Repository | Obtain the [source checkout](../packages/README.md#source-access); run commands from its root. Once the images are published, `deploy/compose.yml`, `deploy/operator.env.example` and an empty `deploy/config/` folder are all the preset needs. |
 | Publisher key | Publisher's compressed public identity key: for a generated application, the key its `npm run wallet` prints; that command's first run generates the application's wallet root key into its `.env`. Use the fixture lookup only for an empty local rehearsal. |
 | Access and custody settings | Operator's policy and writer arrangements, entered below before startup. |
 
-The preset builds from this repository and keeps admitted records in a named MongoDB volume. It starts no writer, wallet or attestation registry.
+The preset keeps admitted records in a named MongoDB volume. It starts no writer, wallet or attestation registry.
+
+| Service | What it runs | Licence |
+|---|---|---|
+| `overlay` | The index: `@bsv/dpp-overlay`, the same built files the npm package ships, started by the same entry point | Apache-2.0, with its dependencies under their own terms |
+| `validator` | The [validator service](../packages/dpp-profiles.md#run-the-engines-as-a-service) of `@bsv/dpp-profiles` | Apache-2.0, with its engine libraries under their own terms |
+| `mongo` | MongoDB Community Server 7.0, pinned by digest and pulled from its publisher | Server Side Public License, not this repository's licence ([licence and reuse](../contribute/licence.md#the-operator-preset)) |
+
+The index never calls the validator: it admits and serves states and checks no industry rule. An application calls it when it validates a product document under a profile held by a binding, and [reaches it on purpose](#give-an-application-the-validator). To run the index and its database without the validator, start the index by name: add `overlay` to the end of the start command below.
 
 1. Create the local environment file once. If it exists, edit it without overwriting its values:
 
@@ -52,17 +62,21 @@ That key belongs to synthetic data; use the actual publisher key for a deploymen
 
 4. Generate any operator-wide secret with `openssl rand -hex 32` ([known limitations](limitations.md#index-host)). `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` are optional and shared by everyone receiving them, so leave them empty when each application gets its own tokens below; `EXPORT_TOKEN` is the complete-export secret. Leave `SERVER_PRIVATE_KEY` empty.
 
-To publish the HTTP port on loopback only, behind a TLS proxy on the same host, set `OVERLAY_PORT=127.0.0.1:8080`. To use a managed MongoDB, set `MONGO_URL` to its authenticated URI; the bundled MongoDB is reachable only on the Compose network and publishes no port.
+To publish the HTTP port on loopback only, behind a TLS proxy on the same host, set `OVERLAY_PORT=127.0.0.1:8080`. To use another database, set `MONGO_URL` to its authenticated URI; the bundled MongoDB is reachable only on the Compose network and publishes no port.
+
+The env file also carries the image pins, in a block rendered from the release set: `DPP_IMAGE_REGISTRY` and one digest for each image. Leave that block as the example has it. A digest is the only thing the preset accepts there; with one empty, or with a tag in its place, it refuses to start.
 
 ## Start and inspect
 
-1. Start the preset and query both open inspection routes:
+1. Start the preset and query both open inspection routes. From published images:
 
 ```sh
-docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --build
+docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d
 curl --fail http://localhost:8080/health
 curl --fail http://localhost:8080/capabilities
 ```
+
+Until the images are published that command stops with `required variable OVERLAY_IMAGE_DIGEST is missing a value`. Use the [source build](#build-from-source) instead, then run the two `curl` commands.
 
 2. Compare the responses with this configuration:
 
@@ -85,6 +99,8 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env logs --tail=
 
 | Failure | Interpretation |
 |---|---|
+| `required variable ..._IMAGE_DIGEST is missing a value` | The env file pins no digest for that image: the set's images are unpublished, or the image block was edited. [Build from source](#build-from-source), or restore the block from `deploy/operator.env.example`. |
+| `invalid reference format` | Something other than a `sha256:` digest is in a digest setting. A tag is not accepted. |
 | Host stops | A missing identity key or invalid policy can prevent startup. |
 | Connection refused | Host may be starting, failed or exposed on another `OVERLAY_PORT`. |
 | Export answers 503 | Export unavailable, commonly without `EXPORTER_PRIVATE_KEY`. It does not mean the passport has no history. |
@@ -101,6 +117,27 @@ The [Compose source](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f
 Follow [broadcast and proofs](wallet-broadcast-proofs.md), [export and recovery](export-import-recovery.md), and [peer synchronisation](federation.md) for exchange or replication. Overlay beta.10 onwards can also discover peers and advertise when configured, options parked outside the standard; see the federation guide.
 
 Stored records and cursors have different lifetimes: per-process cursor secrets invalidate existing resumable cursors on restart. The [export ledger entries](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) describe the tested scope.
+
+### Build from source
+
+A contributor, or an operator before the images are published, builds both images from the checkout with the same preset. Two files are added to the command: `deploy/compose.build.yml`, which replaces the two pinned references with a build, and `deploy/build.env`, which stands in for the digests the preset requires. MongoDB is still pulled by its pinned digest.
+
+```sh
+docker compose -f deploy/compose.yml -f deploy/compose.build.yml --env-file deploy/operator.env --env-file deploy/build.env up -d --build
+```
+
+Use the same four options, in the same order, in every later `docker compose` command of this guide, so that Compose reads the same configuration. `node scripts/release-images.mjs build` builds the same two images labelled with the source revision and the release set, and `node scripts/release-images.mjs inspect dpp-overlay=dpp-overlay:local` reads those labels back.
+
+### Give an application the validator
+
+The validator service publishes no port. It is on a Compose network of its own, `validation`, which MongoDB is not on.
+
+| The application runs | Give it access by | Its validator client is set to |
+|---|---|---|
+| In a container on the same Docker host | Joining that container to the preset's `dpp-overlay_validation` network | `http://validator:8090` |
+| Outside Docker, or on another host | Adding `-f deploy/compose.validator-port.yml` to the start command, with `VALIDATOR_TOKEN` set in the env file. The port is published on the loopback address unless `VALIDATOR_PUBLISH` names another; put a TLS proxy in front for another host | That address, with the token |
+
+The application passes the address, and the token where one is set, to `createValidatorClient` from `@bsv/dpp-profiles/validator-client`. A validator that is stopped or unreachable gives `unknown`, never a pass.
 
 ### Connect an application
 
@@ -134,6 +171,7 @@ Run the command again to rotate: it issues a new pair and revokes the pair the s
 | Component | Responsibility |
 |---|---|
 | Index and MongoDB | Admit and retain records; index holds the publisher's public identity key. |
+| Validator service | Answers JSON-LD expansion and SHACL validation over the files a request carries. Holds no profile and no passport data, and is called by the application, never by the index. |
 | Client or application service | Supply wallet operations, submit records and request evidence. |
 | Writer's wallet | Hold signing access. |
 | Separate attestation registry | Store claims when needed. |
@@ -154,7 +192,8 @@ Keep these roles separate in deployment configuration.
 
 | Configure | Source |
 |---|---|
-| Index and database containers | [Compose preset](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/compose.yml) |
+| Index, database and validator containers | [Compose preset](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/compose.yml), with `deploy/compose.build.yml` and `deploy/compose.validator-port.yml` beside it |
+| Image names and digests | The `images` member of the [release set](../reference/release-sets.md#images), rendered into the env example |
 | Environment and policy files | [Environment example](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/operator.env.example), [host configuration](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/src/index.ts) |
 | Wallet, broadcast and proof retrieval | [Integration guide](wallet-broadcast-proofs.md) |
 | Another operator | [Federation](federation.md) |

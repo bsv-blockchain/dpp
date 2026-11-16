@@ -11,7 +11,7 @@ Electronic Product Code Information Services (EPCIS) is the GS1 standard for obs
 | `epcis-vsc@2` | Maps the same way after deciding each CBV 2.0 disposition through a published crosswalk, refuses error declarations, and names why an event has no SEAL. | Parked, never current |
 | `epcis-event-vc@1` | Signs an event as it stands, as a W3C credential keyed by its CBV 2.0 Event Hash ID, with the party's own key, for anchoring beside a passport. | Parked |
 
-`@bsv/dpp-credentials` implements `epcis-json@1` in two entry points. `./epcis-source` holds the pure pieces: strict parsing, validation, digests and arrival classification. `./epcis-exchange` is the durable part: it imports a file into storage you supply, records how each event arrived, and exports the original bytes ([import, retain and export](#import-retain-and-export)). It also pulls pages of events from a source through the standard events query, and gives each page to the same import ([pull events from a source](#pull-events-from-a-source)). The two mapping profiles are parked with the VSC profile, and their manifests say so with the status `parked`: no release requires them, the programme does not currently develop them, and from `@bsv/dpp-credentials` 0.2.0-beta.6 their code is no longer in the package ([parked: map events to SEALs](#parked-map-events-to-seals)). The direct route, which signs an event without a mapping, is parked as well ([parked: sign an event](#parked-sign-an-event)).
+`@bsv/dpp-credentials` implements `epcis-json@1` in two entry points. `./epcis-source` holds the pure pieces: strict parsing, validation, digests and arrival classification. `./epcis-exchange` is the durable part: it imports a file into storage you supply, records how each event arrived, and exports the original bytes ([import, retain and export](#import-retain-and-export)). It also pulls pages of events from a source through the standard events query, and gives each page to the same import ([pull events from a source](#pull-events-from-a-source)). And it takes a store out as a recovery snapshot and restores it into another store ([move an exchange to another store](#move-an-exchange-to-another-store)). The two mapping profiles are parked with the VSC profile, and their manifests say so with the status `parked`: no release requires them, the programme does not currently develop them, and from `@bsv/dpp-credentials` 0.2.0-beta.6 their code is no longer in the package ([parked: map events to SEALs](#parked-map-events-to-seals)). The direct route, which signs an event without a mapping, is parked as well ([parked: sign an event](#parked-sign-an-event)).
 
 The current candidate, `dpp-release-2026-11`, carries the `epcis-json@1` source helpers, which are strict parsing under the disclosed limits, validation against the pinned schema, event-body digests and arrival classification. From 12 November 2026 its selection claims no optional profile, so it withholds `epcis-source-import-1`, the claim on those helpers. The earlier `epcis-source-exchange-1`, whose rows also covered the parked `epcis-vsc@1` mapping, moved to the ledger archive the same day. The durable import record, the separation from token operations and the pull client are left out of `epcis-source-import-1`. From 14 November 2026 the package's `./epcis-exchange` tests exercise all three in public, the pull client against a fixture server the tests start on the local machine. Their ledger rows stay tested.
 
@@ -211,7 +211,7 @@ Call `recoverEpcisExchange(storage)` when you open a store, before you accept an
 
 One process writes to a store at a time. Calls on one storage object are taken in turn, and the file adapter locks its folder. Every batch carries expectations, so two writers that do share a database cannot record contradictory results: the one that loses classifies again, or answers the other's import. Run recovery only while no writer is active. `checkEpcisExchangeInvariants(storage)` lists every breach of these promises, and lists none on a sound store.
 
-Every durable record carries its own version and has a JSON Schema: the import record in `contracts/epcis-import.schema.json`, version 2, and the observations, decisions, index entries, journal, pull records and page records in `contracts/epcis-exchange-records.schema.json`. A record stored under version 1 of the import contract validates under `contracts/epcis-import-v1.schema.json`.
+Every durable record carries its own version and has a JSON Schema: the import record in `contracts/epcis-import.schema.json`, version 2, and the observations, decisions, index entries, journal, pull records, page records and the records of a restore in `contracts/epcis-exchange-records.schema.json`. A record stored under version 1 of the import contract validates under `contracts/epcis-import-v1.schema.json`.
 
 ### The complete exercise
 
@@ -476,6 +476,182 @@ EPCIS_INTEROP_ENDPOINT=https://events.example.org/epcis EPCIS_INTEROP_BEARER_TOK
 
 It prints the version headers the server reported, the query parameters exercised, the pages and events retrieved and the outcome, and writes `epcis-interop-report.json`. The head of the script lists every variable: the credential, the filters, the page size, the local-test option and where the report goes. The credential goes to the endpoint's origin only and is not written to the report. The script captures nothing, so the endpoint must already hold events the query matches.
 
+## Move an exchange to another store
+
+A store holds more than documents. Which request an import answers, how each event arrived, what was decided about a conflict and how far a pull got are records no source can rebuild. `exportEpcisRecovery` takes all of it out of one store as a **recovery snapshot**, and `restoreEpcisRecovery` puts it into another: a different folder, a different database or a different adapter. The identities, the receipt times, the decisions and the query bounds arrive as they were. Only where the bytes are kept changes.
+
+| A recovery snapshot | It is not |
+|---|---|
+| Every retained original, in its exact bytes | Public evidence. It is for the operator authorised to run the exchange; [the public form](#the-public-form) is the other path |
+| Every import record, observation, conflict decision, pull record and page record of the source scopes it covers | A second export format. It is files with one inventory entry each, for a `dpp-evidence-package@1` that the exporter assembles and signs |
+| A descriptor, `epcis-recovery.json`, naming every file, the scopes, the boundary and what was left out | A carrier of credentials. None is in it, and you configure them again at the destination |
+| Taken at one moment, with no unfinished work | The associations index, the retention entries or the journal. The first two are rebuilt at the destination and the journal is empty when a snapshot is taken |
+
+### Take a snapshot
+
+```js
+import { exportEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'
+
+const snapshot = await exportEpcisRecovery({
+  storage,
+  // sourceIds: ['factory-a'],        // default: every source scope the store holds
+  // cursors: 'include',              // default 'exclude': see "Credentials and cursors"
+  // credentials: [configured],       // every exported byte is searched for each, and the export is refused if one is found
+})
+if (!snapshot.ok) throw new Error(`${snapshot.code}: ${snapshot.detail}`)
+
+snapshot.files      // Map of path to exact bytes, the descriptor included
+snapshot.inventory  // one entry per file: path, category, mediaType, byteLength, sha256, represents, representation
+snapshot.descriptor // what epcis-recovery.json holds
+snapshot.manifest   // what the carrying manifest says beside its inventory: disclosure, snapshots and withheld lines
+```
+
+The export changes nothing in the store. The same store gives the same bytes, apart from the time in the descriptor, and the snapshot's identity is the digest of what it carries.
+
+| In the snapshot's folder, `epcis/` by default | Inventory category and `representation` | What it is |
+|---|---|---|
+| `originals/<sha256>` | `evidence`, `dpp-epcis-original@1` | One retained original, under the media type it arrived with. Bytes two imports share are carried once |
+| `records/import/<name>.json` | `reports`, `dpp-epcis-import@2` | An import record: the request binding, the receipt time, the provenance, the policy and every event's result |
+| `records/observation/<name>.json` | `reports`, `dpp-epcis-observation@1` | One observation of an event under its source scope |
+| `records/resolution/<name>.json` | `reports`, `dpp-epcis-conflict-resolution@1` | A conflict decision. Every observation it names is carried with it |
+| `records/pull/<name>.json` | `reports`, `dpp-epcis-pull@1` | A pull: its query and bounds, the limits, how the latest run ended, the pass, the watermark and the checkpoint |
+| `records/pull-page/<name>.json` | `reports`, `dpp-epcis-pull-page@1` | One page a pull acknowledged, with the import that holds it |
+| `epcis-recovery.json` | `reports`, `dpp-epcis-recovery@1` | The descriptor. Schema: `contracts/epcis-recovery.schema.json` |
+
+Each record file is the record in RFC 8785 canonical JSON, under a name its own content gives. A reader never trusts the name: it works out where a record belongs from what the record says.
+
+A package that carries a recovery snapshot declares disclosure `all-tiers` and `recoveryBackup: true`, which `snapshot.manifest.disclosure` gives you. Add the entries of `snapshot.inventory` to your manifest unchanged, one `completeness.snapshots` entry per source scope and the `withheld` lines, and sign the manifest as you sign any other ([portable evidence](https://github.com/bsv-blockchain/dpp/blob/3f11c0b35300fe2169d7eb9f84d40c7b64a94c55/spec/portable-evidence.md), section 2).
+
+### The boundary
+
+A snapshot must never hold a checkpoint without the imports it stands on, or a decision without the observations it decided between. The storage interface has no snapshot isolation, so the export gets there in three steps.
+
+1. **It takes the store's turn.** No import, conflict decision, index rebuild or recovery of the same process runs while the export reads.
+2. **It reads twice.** It reads every record it will carry, reads the retained bytes, and reads the records again. The reading stands only when no work is journalled at either reading and every record is at the same revision both times. A pull moves its checkpoint outside the store's turn, and another process shares none of it, so this is what catches a writer that got in between. The export reads again, up to four times, and then refuses as `store-unstable`.
+3. **It checks what it is about to hand over.** The snapshot is laid out by itself and held to `checkEpcisExchangeInvariants`, the same check a store is held to.
+
+It refuses as `unfinished-work` while anything is journalled, and does not finish or discard that work. Run `recoverEpcisExchange` first, as you do when a store is opened. Recovery removes bytes and must run with no other call in flight, which an export cannot promise.
+
+What this assumes, plainly: one process writes to a store. The second reading detects another writer by revision, which every adapter that passes the shared suite keeps. It cannot detect a writer that changes records behind the module's back and puts a revision back where it was. A pull that is under way is not stopped. Its record is carried as it stood, and at the destination it resumes as an interrupted run does.
+
+### Check and restore
+
+```js
+import { epcisRecoveryDirectory, restoreEpcisRecovery, verifyEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'
+
+const source = epcisRecoveryDirectory('/var/recovery/package')   // or epcisRecoveryFiles(map) for files in memory
+const checked = await verifyEpcisRecovery(source, { inventory })  // `inventory`: the entries of the package's signed manifest
+if (!checked.ok) throw new Error(`${checked.code}: ${checked.detail}`)
+
+const restored = await restoreEpcisRecovery({ storage: destination, source, inventory })
+if (!restored.ok) throw new Error(`${restored.code}: ${restored.detail}`)
+restored.outcome      // 'restored', 'resumed' or 'unchanged'
+restored.relocations  // where each original went
+```
+
+Verify the package's signature and inventory with `inspectEvidencePackage` first, as for any package. The restore then makes its own checks before it writes anything: the descriptor against that inventory, every file against its length and SHA-256, every record against its version and the place its content gives it, and the whole snapshot against the invariants. `verifyEpcisRecovery` makes the same checks with no destination.
+
+The durable steps, in order:
+
+| Step | What is durable | If the process stops here |
+|---|---|---|
+| 1. Journal `restore` | The store says a restore is unfinished | Run the restore again. `recoverEpcisExchange` reports `restore-pending` and leaves it; an export is refused |
+| 2. Originals | Each put, read back from the destination and held to its digest, then its relocation record | The same |
+| 3. Imports | Each import with its hold on the bytes and the observations it made, in one batch | The same |
+| 4. Decisions | Every conflict decision | The same |
+| 5. Pages, then pulls | Every page record, and only then the pull record that holds the checkpoint | The same |
+| 6. Index | The associations, rebuilt from what the destination now holds | The same |
+| 7. Restore record | Which snapshot was restored, written as the journal entry is cleared | The restore again answers `unchanged` |
+
+A record the destination already holds and that equals the snapshot's is left alone, so a restore that stopped anywhere is run again with the same snapshot and finishes. Restore while nothing else writes to the destination, and accept imports and pulls once it has answered.
+
+### What is preserved and what is relocated
+
+Every logical identity is kept: `sourceId`, `importId`, `requestId`, `requestDigest`, each event's identity and every `resolutionId` and `pullId`. So are the receipt times, the provenance, each event's recorded result and the decisions. A restore re-evaluates nothing: a document is not validated again, and a record says what was recorded when the source arrived.
+
+`bytesRef` is the one member that says where a store keeps bytes, and it is relocated through a checked mapping. Each reference in the snapshot is paired with exactly one original, and each original is given exactly one destination reference: `sha256:<hex>` by default, which is what an import into the destination writes, or what your `locate` function answers.
+
+```js
+await restoreEpcisRecovery({ storage: destination, source, inventory, locate: ({ sha256 }) => `vault-b:${sha256}` })
+```
+
+The snapshot is never changed. The destination keeps one `epcis-restore` record per snapshot and one `epcis-relocation` record per original, with the reference it was exported under, the file that carried it and the reference the restored records carry. `listEpcisRestores` and `listEpcisRelocations` read them.
+
+### What is refused
+
+Each refusal has its own `code`, and a refusal before step 1 has written nothing.
+
+| `code` | The snapshot or the destination |
+|---|---|
+| `checkpoint-imports-omitted` | A pull's checkpoint stands on an import or a page record the snapshot does not hold |
+| `resolution-observations-omitted` | A conflict decision names an observation the snapshot does not hold |
+| `original-missing`, `original-altered` | An original is absent, or is not the bytes it is named by |
+| `record-missing`, `record-altered` | A record is absent, changed, or not in the canonical form an export writes |
+| `descriptor-inventory-mismatch` | The descriptor and the package's inventory do not name the same files with the same digests |
+| `record-version-unknown` | A record is of a version this module does not read. It is never restored as if it were understood |
+| `record-misfiled` | A record is of another type, or sits under a name that is not its own |
+| `descriptor-missing`, `descriptor-invalid` | There is no descriptor, or it is not a format 1 descriptor |
+| `not-a-recovery-snapshot` | The snapshot is the public form |
+| `snapshot-inconsistent` | The snapshot breaks an invariant of the exchange when taken by itself; a record of one source scope stands on a record of another; the descriptor's account of a scope or a pull is not what the records say; or a record carries a cursor or a page token the descriptor says was left out, or a cursor whose address holds more than the standard query parameters |
+| `relocation-invalid` | The mapping of byte references is not one to one |
+| `destination-unfinished-work` | The destination has work journalled, or another restore pending |
+| `reconciliation-required` | The destination holds a record that differs from the snapshot's under the same identity |
+| `destination-original-unverified`, `destination-inconsistent` | An original did not read back as its digest, or the destination breaks an invariant after the restore. The restore is left unfinished |
+
+`reconciliation-required` lists every collision and writes nothing. A destination that already acknowledged another document under the same source scope and request identifier collides as `request-bound-to-other-bytes`; any other difference is `record-differs`. Nothing is overwritten and nothing is merged: restore into an empty store, or reconcile each collision yourself. Records of another source scope in the destination are left alone, and two scopes are never merged because they use the same event identifier or the same endpoint. Two scopes read from one endpoint hold the same page bytes, each under its own import; a snapshot in which one scope's page names the other scope's import of those bytes, or one scope's observation names an import of the other, is refused as `snapshot-inconsistent`.
+
+### Credentials and cursors
+
+No credential is in a snapshot. A pull record holds only whether one was configured. Before you run a pull at the destination, configure the source there as you did before: its address, its permitted origins and the function that obtains its credential. Until you do, the source answers `source-authentication-required`, and nothing is lost by having asked.
+
+A cursor is the address of the next page, and it may be sensitive. By default a snapshot carries none: not the cursor of a checkpoint, not the one a pending page named, and not the page token in the provenance of a page. That token is the one difference between a stored import record of a pulled page and the exported one. With `cursors: 'include'` they are carried for an operator who will resume against the same endpoint; a cursor whose address holds anything but the standard query parameters is left out even then, and the descriptor says so for that pull. The page tokens that pull's earlier pages were asked for with are standard parameters and are still carried in that mode; take the default if they are not to leave.
+
+A restore holds the records to what the descriptor says of cursors. A snapshot whose descriptor says `excluded` and whose records carry a cursor or a page token is refused, and so is one that carries a cursor with a non-standard address, whatever its descriptor says. What you read in the descriptor before you store or send a snapshot is what the snapshot holds.
+
+`credentials` is a last check, not the protection. Hand the export the credentials the deployment was configured with and it searches every exported byte for each, in the forms a source could echo one in, and refuses as `credential-in-snapshot` naming the file. A source document that quotes your credential is the case it catches.
+
+### Carry on after the restore
+
+- **A retry.** A client that never heard its answer sends the same request to the new store. It gets the same import, with its original receipt time, and no second receipt is written. The same `requestId` with other bytes is still `request-conflict`.
+- **An interrupted pull.** Run the same `queryId` under the same `sourceId`. A page that was retained and not yet acknowledged is acknowledged from its receipt. Then the pull continues from its cursor, or, when the cursor was left out, has expired or is rejected by the source, replays the pass from its retained bounds and recognises the pages it already holds. No page is skipped and no new source is begun.
+- **A carried cursor the destination does not permit.** A cursor is checked against the permitted origins of the source as you configured it at the destination, before every request. One that names another origin is never requested: the run ends as `partial-history` with the reason `pagination-target-refused`, and it ends that way again until you act. Declare the source's address and permitted origins with `remapEpcisSourceEndpoint`, which drops a cursor they do not permit even when the address is the one the pull is already bound to, and the next run replays the pass from its bounds.
+- **A source at another address.** A query name is bound to the address it first ran against, so pointing it elsewhere is refused as `pull-conflict`. When it is the same source, say so once:
+
+```js
+import { remapEpcisSourceEndpoint } from '@bsv/dpp-credentials/epcis-exchange'
+
+await remapEpcisSourceEndpoint({ storage, sourceId: 'factory-a', baseUrl: 'https://events.example/epcis', permittedOrigins: ['https://events.example'], remappedAt: new Date().toISOString(), remappedBy: 'operator' })
+```
+
+Every pull of the source is bound to the new address and records the change. The source scope, the pull, its pages and every import keep their identities, and each import still names the origin it was really read from. A cursor is kept only when its address is permitted under the new configuration; otherwise it is dropped and the pass replays. Declaring the address a pull is already bound to writes nothing, unless a cursor is not permitted under the origins you declare: then the cursor is dropped and the declaration is recorded. A different source takes its own `sourceId`.
+
+### The public form
+
+`exportEpcisPublicEvidence` gives what a public package may carry. You supply the access policy, because nothing in the module knows which sources you may publish.
+
+```js
+import { exportEpcisPublicEvidence } from '@bsv/dpp-credentials/epcis-exchange'
+
+const open = await exportEpcisPublicEvidence({ storage, allow: (record) => publishable.has(record.importId) })
+```
+
+It carries each allowed original and its import record with `sourceLocation` reduced to its kind, so no file name, endpoint, query or page token leaves. It carries no observation, no decision and no pull state. Its descriptor says `public-evidence`, claims `bounded` and not recoverable, and a restore refuses it by name. The record still holds the `sourceId`, the `requestId` and the policy identifier: leave an import out with `allow` if those are not yours to publish.
+
+### Limits
+
+- A snapshot is held in memory as it is assembled and as it is restored, with one file and one inventory entry per record. Cover fewer source scopes at a time for a large store.
+- A snapshot moves an exchange between stores of this module. Its records carry identifiers the module derives, so it is not a format another implementation of the exchange is expected to read.
+- A restore checks records against their versions, their identities and the invariants. It does not run the JSON Schemas at run time; the package's tests hold every exported record to them.
+- Nothing stops an import from being accepted while a restore is unfinished. Do not accept any until the restore has answered.
+
+### Run the example
+
+```sh
+node examples/recover-epcis.mjs
+```
+
+It fills a store in memory with two source scopes that use one event identifier and a decided conflict, takes a snapshot, lists the snapshot's entries in the manifest of a `dpp-evidence-package@1` and signs and inspects that package with `@bsv/dpp-protocol`, restores the snapshot into a folder through the file-system adapter against the signed inventory, retries an acknowledged request there, and then shows the public form and three snapshots refused by name. It reaches no source and needs no credential, and it exits with a failure if any of those answers is not the one named.
+
 ## Keep the source with the result
 
 Retain the exact source bytes and their findings with anything derived from them. Never invent a custody event or measurement to complete output.
@@ -514,7 +690,8 @@ The profile itself is unchanged. Under it, a party that observed or performed a 
 |---|---|
 | Select parsing and digest behaviour, and read the parked mapping | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/spec/epcis-interoperability.md) |
 | Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/contracts/epcis-import.schema.json), version 1 as that commit carries it, kept as `contracts/epcis-import-v1.schema.json`; version 2 is `contracts/epcis-import.schema.json` in this tree |
-| Store observations, conflict decisions, index entries, the journal, pull records and page records | `contracts/epcis-exchange-records.schema.json` |
+| Store observations, conflict decisions, index entries, the journal, pull records, page records and the records of a restore | `contracts/epcis-exchange-records.schema.json` |
+| Read or write the descriptor of a recovery snapshot | `contracts/epcis-recovery.schema.json`; `packages/dpp-credentials/src/epcis-exchange/recovery.ts`; `examples/recover-epcis.mjs` |
 | Pull from a source, or try the client against your own endpoint | `packages/dpp-credentials/src/epcis-exchange/pull.ts`; `examples/pull-epcis.mjs`; `scripts/epcis-pull-interop.mjs` |
 | Use reference parsing and the durable import | [Credentials package](../packages/dpp-credentials.md) |
 | Run every selected case; the parked mapping outcomes stay pinned beside them | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json), and `fixtures/vectors/dpp/interoperability/epcis/v2.json` for `epcis-vsc@2` |

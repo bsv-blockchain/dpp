@@ -51,6 +51,10 @@ export const EPCIS_RECORD_KINDS = {
   pull: 'pull',
   /** One record per page a pull acknowledged, in order, with the import that holds it. */
   pullPage: 'pull-page',
+  /** One record per recovery snapshot restored into this store: which snapshot, when, and what it covered. Not rebuildable from any source. */
+  restore: 'restore',
+  /** One record per original a restore placed: the reference it was exported under and where this store holds it. */
+  relocation: 'relocation',
 } as const;
 
 export const EPCIS_IMPORT_VERSION = '2';
@@ -118,6 +122,8 @@ export const importJournalKey = (importKey: string): string => `import.${importK
 export const resolutionJournalKey = (scopeKey: string): string => `resolution.${scopeKey}`;
 export const discardJournalKey = (sha256: string): string => `discard.${sha256}`;
 export const REBUILD_JOURNAL_KEY = 'rebuild.associations';
+export const restoreJournalKey = (snapshotId: string): string => `restore.${snapshotId}`;
+export const relocationKey = (snapshotId: string, sha256: string): string => `${snapshotId}.${sha256}`;
 
 /* ------------------------------ import record ---------------------------- */
 
@@ -318,13 +324,72 @@ export type EpcisJournalRecord =
   | { recordType: 'epcis-journal'; recordVersion: typeof EPCIS_RECORD_VERSION; entry: 'import'; importId: string; startedAt: string }
   | { recordType: 'epcis-journal'; recordVersion: typeof EPCIS_RECORD_VERSION; entry: 'resolution'; conflictId: string; resolutionId: string; startedAt: string }
   | { recordType: 'epcis-journal'; recordVersion: typeof EPCIS_RECORD_VERSION; entry: 'rebuild'; startedAt: string }
-  | { recordType: 'epcis-journal'; recordVersion: typeof EPCIS_RECORD_VERSION; entry: 'discard'; sha256: string; startedAt: string };
+  | { recordType: 'epcis-journal'; recordVersion: typeof EPCIS_RECORD_VERSION; entry: 'discard'; sha256: string; startedAt: string }
+  /** A restore of a recovery snapshot that has begun and is not finished. Only the restore can finish it, because only it holds the snapshot. */
+  | { recordType: 'epcis-journal'; recordVersion: typeof EPCIS_RECORD_VERSION; entry: 'restore'; snapshotId: string; startedAt: string };
 
 export interface EpcisRetentionRecord {
   recordType: 'epcis-retention';
   recordVersion: typeof EPCIS_RECORD_VERSION;
   sha256: string;
   importId: string;
+}
+
+/* --------------------------------- restores ------------------------------ */
+
+/** How many records of each kind a recovery snapshot carried into a store. */
+export interface EpcisRestoreCounts {
+  originals: number;
+  imports: number;
+  observations: number;
+  resolutions: number;
+  pulls: number;
+  pullPages: number;
+}
+
+/**
+ * One recovery snapshot restored into this store. Written once, in the batch
+ * that ends the restore, so its presence says the restore finished. It is how
+ * a restored record is traced to the snapshot it came from: the snapshot
+ * itself is never changed.
+ */
+export interface EpcisRestoreRecord {
+  recordType: 'epcis-restore';
+  recordVersion: typeof EPCIS_RECORD_VERSION;
+  restoreId: string;
+  /** The snapshot's identity, as its descriptor gives it. */
+  snapshotId: string;
+  /** The SHA-256 of the descriptor file the restore read. */
+  descriptorSha256: string;
+  /** When the snapshot was taken, as its descriptor says. */
+  snapshotTakenAt: string;
+  /** Every source scope the snapshot covered. */
+  sourceIds: string[];
+  /** Whether the snapshot carried the cursors of its pulls. */
+  cursors: 'excluded' | 'included';
+  counts: EpcisRestoreCounts;
+  startedAt: string;
+  restoredAt: string;
+}
+
+/** Where one original of a restored snapshot went. The snapshot names bytes by the reference its store used; this store names them its own way. */
+export interface EpcisRelocationRecord {
+  recordType: 'epcis-relocation';
+  recordVersion: typeof EPCIS_RECORD_VERSION;
+  snapshotId: string;
+  sha256: string;
+  byteLength: number;
+  /** The `bytesRef` the import records of the snapshot carry for these bytes. */
+  exportedRef: string;
+  /** The file of the snapshot that carried them, relative to its descriptor. */
+  path: string;
+  /** The `bytesRef` the restored import records carry. The bytes were read back from this store and matched their digest before this was written. */
+  destinationRef: string;
+}
+
+/** The identity of a restore: one per snapshot and store. */
+export function epcisRestoreId(snapshotId: string): string {
+  return `urn:bsv:dpp:epcis:restore:sha256:${snapshotId}`;
 }
 
 /* ---------------------------------- pulls -------------------------------- */
@@ -510,8 +575,21 @@ export interface EpcisPullRecord {
   totals: { bytes: number; events: EpcisPullEventCounts };
   /** Every reason the retained events are not the complete history of the source. */
   completenessLimits: string[];
+  /** Every time an operator declared that this source is reached at another address, oldest first. Absent when the address never changed. */
+  endpointRemaps?: EpcisPullEndpointRemap[];
   createdAt: string;
   updatedAt: string;
+}
+
+/** One declaration that the same source is now reached at another address. The source scope, the pull and everything retained under them keep their identities. */
+export interface EpcisPullEndpointRemap {
+  remappedAt: string;
+  /** Who declared it, as the application names them. Never a credential. */
+  remappedBy?: string;
+  from: { baseUrl: string; definitionDigest: string };
+  to: { baseUrl: string; definitionDigest: string };
+  /** What became of the checkpoint's cursor: there was none, its address is permitted under the new configuration and it was kept, or it was dropped and the pass replays from its bounds. */
+  cursor: 'none' | 'kept' | 'dropped';
 }
 
 /** One acknowledged page. Written once, in the batch that moves the checkpoint past it. */

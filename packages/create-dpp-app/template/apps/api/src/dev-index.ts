@@ -19,6 +19,8 @@ export interface DevIndex {
   callbackToken: string
   /** The development operator's identity key, which signs the policy and, with registration on, each appended version. */
   operatorKey: string
+  /** The identity key this index signs its evidence packages under: a fixed development key, set apart from the operator's and the publisher's. */
+  exporterIdentityKey: string
   /** Under approval, what the operator's command line would do: append the version and mark the key approved. */
   approve?: (publisherKey: string) => Promise<void>
   close: () => Promise<void>
@@ -88,12 +90,16 @@ export async function startDevIndex(options: DevIndexOptions): Promise<DevIndex>
     options.registration == null
       ? undefined
       : { mode: options.registration, signingKey: operatorKey, indexUrl: 'http://127.0.0.1', custodyProfile: topics.declaredCustodyProfile(managedAcceptance), store: new topics.InMemoryRegistrationStore(), rateLimitPerHour: 1_000, trustProxy: false }
+  // The index signs evidence packages, as an operator's does once EXPORTER_PRIVATE_KEY is set, so an export of this application
+  // can be made and read back in development. The key is fixed and public knowledge, like every key of this index.
+  const exporterKey = PrivateKey.fromHex('55'.repeat(32))
   const service = await host.startOverlayService(engine, {
     port: 0,
     host: '127.0.0.1',
     network,
     submitToken,
     proofToken: callbackToken,
+    exportIdentityKey: exporterKey.toHex(),
     components: { records, engineStorage: storage, lookupServices, publisherPolicy: policy, managedAcceptance, ...(publisherTokens == null ? {} : { publisherTokens }), ...(registration == null ? {} : { registration }) },
   })
   const url = `http://127.0.0.1:${service.port}`
@@ -106,5 +112,5 @@ export async function startDevIndex(options: DevIndexOptions): Promise<DevIndex>
         const version = await topics.appendRegistrationVersion(policy, registration.store, operatorKey, { add: { key: publisherKey, role: 'state-publisher' } }, new Date())
         await registration.store.saveRegistration({ ...record, status: 'approved', policyVersion: version.policyVersion, decidedAt: new Date().toISOString() })
       }
-  return { url, submitToken, callbackToken, operatorKey: operatorKey.toPublicKey().toString(), ...(approve == null ? {} : { approve }), close: service.close }
+  return { url, submitToken, callbackToken, operatorKey: operatorKey.toPublicKey().toString(), exporterIdentityKey: exporterKey.toPublicKey().toString(), ...(approve == null ? {} : { approve }), close: service.close }
 }

@@ -97,6 +97,10 @@ The candidate application also writes and reads product documents under `eu-batt
 
 It also imports EPCIS 2.0 documents, pulls events from a source you configure and exports what it received, byte for byte ([EPCIS exchange](create-dpp-app.md#epcis-exchange)). It does this by calling `@bsv/dpp-credentials/epcis-exchange` and supplies only the storage, the routes and the pages. Keep that boundary when you build on it:
 
+It chooses its validation engine by setting: with no `VALIDATOR_URL` the engines run in the API's process, and with one a validator service is asked through `@bsv/dpp-profiles/validator-client` ([the validation engine](create-dpp-app.md#the-validation-engine)). A service that does not answer blocks a write under a bound profile exactly as missing libraries do, and never reads as a pass.
+
+It can be moved. Its `export` command writes the whole application as one signed `dpp-evidence-package@1`, and its `restore` command verifies such a package against what the new deployment trusts before it writes anything ([export and restore](create-dpp-app.md#export-and-restore)). Both call `exportProfileBundle`, `exportEpcisRecovery` and their counterparts and add only the application's own records. Neither is a passport operation: a restore writes no state, and continuing to write needs the keys, which no package carries.
+
 | Rule | Why |
 |---|---|
 | Call the module for import, pull, export and recovery | A second implementation drifts from the first, and from the records the contract describes |
@@ -250,11 +254,11 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 ### 2.4 Start the index
 
 ```sh
-docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --build
+docker compose -f deploy/compose.yml -f deploy/compose.build.yml --env-file deploy/operator.env --env-file deploy/build.env up -d --build
 curl --fail http://localhost:8080/health
 ```
 
-Your index is at `http://localhost:8080`, or the `OVERLAY_PORT` you set. The first run builds the image, so it is slower. If `curl` is refused, the index may still be starting: retry after a few seconds, and if it stays down, read the logs as [run an index from source](../operate/README.md) shows.
+Your index is at `http://localhost:8080`, or the `OVERLAY_PORT` you set. This command builds the index and validator images from your checkout, because the images of the current release set are not published yet; once they are, the preset pulls them by digest and the two added files are not needed ([build from source](../operate/README.md#build-from-source)). The first run builds the images, so it is slower. If `curl` is refused, the index may still be starting: retry after a few seconds, and if it stays down, read the logs as [run an index from source](../operate/README.md) shows.
 
 ### 2.5 Confirm it names your key
 

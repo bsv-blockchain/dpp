@@ -1,0 +1,253 @@
+// The export and the restore, on the parts the exit exercise does not reach:
+// a passport that was handed on, with its acceptance record, its offer and a
+// lifecycle claim; the index's complete export in place of its bounded
+// package; a deployment that already holds something else under an identity
+// the package carries; and an export that would have carried a secret.
+//
+// Everything runs in this process with no services: the records are in
+// memory, the wallet is the test wallet, and each platform has an index of
+// its own with in-memory storage and its header checks off. The second
+// platform holding the same keys as the first stands in for the wallet's own
+// recovery. No reading here is a statement about inclusion in a block.
+import { createHash } from 'node:crypto'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { PrivateKey } from '@bsv/sdk'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { acceptanceCommitment, acceptanceRecordsInPackage, evidencePackageSigner, evidencePackageSigningKey, inspectEvidencePackage, signEvidenceManifest, type EvidencePackageManifest } from '@bsv/dpp-protocol'
+import { createMemoryEpcisStorage } from '@bsv/dpp-credentials/epcis-exchange'
+import { loadConfig } from '../src/config.js'
+import { mintPassportId } from '../src/identifiers.js'
+import { openPlatform, type Platform } from '../src/platform.js'
+import { exportApplication, type ExportedApplication } from '../src/portability/export.js'
+import { EXPORT_SCOPE_PREFIX, PortabilityRefused, asNumberArrays, exportScopeId, passportFolder, readPackageFolder, stableJson, writePackageFolder } from '../src/portability/package.js'
+import { restoreApplication, verifyApplicationPackage, type RestoreReport } from '../src/portability/restore.js'
+import { samplePayload } from '../src/profiles.js'
+
+const settings = { NETWORK: 'main', PASSPORT_HOST: 'passports.example.com', GS1_PREFIX: '952', LIVE_PUBLISHING: 'false' }
+const config = loadConfig(settings)
+const policy = { host: config.passportHost, prefix: config.gs1Prefix }
+const brandId = 'brand-portable-1'
+const scratch = mkdtempSync(join(tmpdir(), 'dpp-portability-'))
+
+let first: Platform
+let second: Platform
+let passportId: string
+let otherId: string
+let claimCode: string
+let exported: ExportedApplication
+const exchange = () => ({ storage: createMemoryEpcisStorage(), sources: [] })
+
+const refusal = async (attempt: Promise<unknown>): Promise<PortabilityRefused> => {
+  try {
+    await attempt
+  } catch (cause) {
+    if (cause instanceof PortabilityRefused) return cause
+    throw cause
+  }
+  throw new Error('nothing was refused')
+}
+const trust = (platform: Platform) => ({ exporterKey: platform.wallet.identityKey, trustedBindingDigests: [] })
+
+beforeAll(async () => {
+  first = await openPlatform({ config, mode: 'test', log: () => {} })
+  second = await openPlatform({ config, mode: 'test', log: () => {} })
+  const brand = first.parties.brand(brandId)
+  await first.store.saveBrand({ id: brandId, name: 'Portable brand', identityKey: brand.identityKey, did: brand.did, createdAt: '2026-03-01T00:00:00.000Z' })
+  passportId = mintPassportId(policy, '100000201', 'PORT-0001')
+  otherId = mintPassportId(policy, '100000202', 'PORT-0002')
+  const payload = samplePayload('general@2', true)
+  await first.writer.issue({ brandId, brand, passportId, profile: 'general@2', payload, ownerFields: { serviceNotes: 'first revision' } })
+  await first.writer.update({ record: (await first.store.getPassport(passportId))!, actor: brand, payload: { ...payload, careNote: 'revised' }, ownerFields: { serviceNotes: 'second revision' } })
+  // The hand-on: an offer, its acceptance by claim code, and a TRANSFER that commits to the acceptance record.
+  const offered = await first.custody.offer({ record: (await first.store.getPassport(passportId))!, holder: brand, terms: { word: 'Passed on' } })
+  claimCode = offered.claimCode!
+  await first.custody.accept({ requestId: offered.offer.requestId, claimCode })
+  await first.claims.sign({ passport: (await first.store.getPassport(passportId))!, issuer: first.parties.member('inspector-7'), eventType: 'Disposition' })
+  await first.writer.issue({ brandId, brand, passportId: otherId, profile: 'general@2', payload, ownerFields: {} })
+})
+
+afterAll(async () => {
+  await first.close()
+  await second.close()
+  rmSync(scratch, { recursive: true, force: true })
+})
+
+describe('the export of an application', () => {
+  it('carries a handed-on passport whole, under one signed manifest, with the index\'s complete export in place of its bounded package', async () => {
+    exported = await exportApplication({ platform: first, epcis: exchange(), access: 'authorised-recovery', indexRoute: 'complete' })
+    const { manifest, descriptor, files } = exported
+    expect(manifest.passportId).toBe(exportScopeId([passportId, otherId]))
+    expect(manifest.passportId.startsWith(EXPORT_SCOPE_PREFIX)).toBe(true)
+    expect(manifest.signature.signer).toBe(evidencePackageSigner(first.wallet.identityKey, manifest.passportId))
+    // It inspects as any evidence package does: its structure, its inventory against the files and the exporter's signature.
+    expect(inspectEvidencePackage(manifest, asNumberArrays(files), { expectedSigner: exported.exporter.signer })).toMatchObject({ structureValid: true, inventoryVerified: true, signatureValid: true, failures: [], recoveryBackup: true })
+    expect(descriptor).toMatchObject({ access: 'authorised-recovery', selection: 'all-passports', profiles: { carried: [], named: ['general@2'] }, epcis: { scopes: [], reason: 'the exchange holds no source scope' }, records: { brands: 1, offers: 1, claims: 1 } })
+    expect(manifest.completeness.withheld).toContain('profile general@2 defined-by-the-profiles-package')
+    const handedOn = descriptor.passports.find((passport) => passport.passportId === passportId)!
+    expect(handedOn).toMatchObject({ profile: 'general@2', states: 3, acceptanceRecords: 1, claims: 1, index: { form: 'export-parts', parts: 1, states: 3 } })
+    expect(descriptor.passports.find((passport) => passport.passportId === otherId)!.index).toMatchObject({ form: 'export-parts', states: 1 })
+
+    // The acceptance record is an authority entry, in the form a reader of any evidence package finds it.
+    const record = (await first.store.getPassport(passportId))!
+    const commitment = acceptanceCommitment(record.acceptanceRecords[0]!)
+    const carried = acceptanceRecordsInPackage(manifest, asNumberArrays(files))
+    expect(carried).toHaveLength(1)
+    expect(carried[0]).toMatchObject({ path: `${passportFolder(passportId)}/authority/${commitment}.json`, represents: `sha256:${commitment}` })
+    expect(carried[0]!.failure).toBeUndefined()
+    // The index's own signature on each part is carried and still verifies under the index's exporter key.
+    const coverage = JSON.parse(new TextDecoder().decode(files.get(`${passportFolder(passportId)}/index/part-1/coverage.json`)!)) as { final: boolean; nextCursor?: unknown; signature: { signer: string } }
+    expect(coverage.final).toBe(true)
+    expect(coverage).not.toHaveProperty('nextCursor')
+    expect(coverage.signature.signer).toBe(evidencePackageSigner(first.devIndex!.exporterIdentityKey, passportId))
+    // No key, and no claim code: only the digest the offer was accepted against.
+    const everything = Buffer.concat([...files.values()].map((bytes) => Buffer.from(bytes)))
+    expect(everything.includes(Buffer.from(claimCode))).toBe(false)
+    expect(everything.includes(Buffer.from('11'.repeat(32)))).toBe(false)
+    expect(everything.includes(Buffer.from(config.brandRootSecret))).toBe(false)
+  })
+
+  it('carries the bounded package by default, and a selection of passports under a name of its own', async () => {
+    const one = await exportApplication({ platform: first, epcis: exchange(), access: 'authorised-recovery', passportIds: [otherId] })
+    expect(one.descriptor).toMatchObject({ selection: 'listed-passports', records: { brands: 1, offers: 0, claims: 0 } })
+    expect(one.descriptor.passports).toHaveLength(1)
+    expect(one.descriptor.passports[0]!.index).toMatchObject({ form: 'package', states: 1, exporter: first.devIndex!.exporterIdentityKey })
+    expect(one.manifest.passportId).toBe(exportScopeId([otherId]))
+    expect(one.manifest.passportId).not.toBe(exported.manifest.passportId)
+    // A signature made for one selection does not verify as the signature of another.
+    expect(inspectEvidencePackage({ ...one.manifest, passportId: exported.manifest.passportId }, asNumberArrays(one.files)).signatureValid).toBe(false)
+    const unknown = await refusal(exportApplication({ platform: first, epcis: exchange(), access: 'authorised-recovery', passportIds: ['https://passports.example.com/01/09521000002039/21/NOT-HELD'] }))
+    expect(unknown.code).toBe('passport-unknown')
+  })
+
+  it('gives a public form with no journal, no offer, no claim and nothing of the exchange unless a source is named', async () => {
+    const open = await exportApplication({ platform: first, epcis: exchange(), access: 'public-evidence' })
+    expect(open.manifest.disclosure).toEqual({ scope: 'public', recoveryBackup: false })
+    expect(open.descriptor).toMatchObject({ access: 'public-evidence', records: { brands: 0, offers: 0, claims: 0 }, epcis: { scopes: [], reason: 'no source scope was named as one a public export may carry' } })
+    // The index's own evidence carries its publisher policy under authority, which is public. This application's acceptance records sit beside the journal, and are not here.
+    expect([...open.files.keys()].filter((path) => path.endsWith('/journal.json') || /^passports\/[0-9a-f]{64}\/authority\//.test(path) || path.startsWith('application/offers/') || path.startsWith('application/claims/') || path.startsWith('application/brands/'))).toEqual([])
+    expect(open.manifest.completeness.withheld).toEqual(expect.arrayContaining(['application passport-journals not-public', 'application brands-offers-claims not-public', 'epcis-exchange every-source-scope not-public']))
+    // The sealed owner tiers are in no file of it, in the journal's form or as bytes.
+    const everything = Buffer.concat([...open.files.values()].map((bytes) => Buffer.from(bytes)))
+    for (const state of (await first.store.getPassport(passportId))!.states) {
+      expect(everything.includes(Buffer.from(state.ownerTier!.ciphertext))).toBe(false)
+      expect(everything.includes(Buffer.from(state.ownerTier!.ciphertext, 'base64'))).toBe(false)
+    }
+    // A restore refuses it by name.
+    expect((await refusal(verifyApplicationPackage({ manifestText: JSON.stringify(open.manifest), files: open.files }, trust(first)))).code).toBe('not-a-recovery-package')
+  })
+
+  it('refuses to hand over an export that holds a secret this deployment was configured with', async () => {
+    const secret = 'REGISTRY-TOKEN-CANARY-71D0E4B2'
+    const leaky = await openPlatform({ config: loadConfig({ ...settings, REGISTRY_URL: 'https://registry.example', REGISTRY_TOKEN: secret }), mode: 'test', log: () => {} })
+    try {
+      const brand = leaky.parties.brand(brandId)
+      // The secret reached a record: here, a brand somebody named after it.
+      await leaky.store.saveBrand({ id: brandId, name: `Brand ${secret}`, identityKey: brand.identityKey, did: brand.did, createdAt: '2026-03-01T00:00:00.000Z' })
+      await leaky.writer.issue({ brandId, brand, passportId: mintPassportId(policy, '100000203', 'PORT-LEAK-1'), profile: 'general@2', payload: samplePayload('general@2', true), ownerFields: {} })
+      const refused = await refusal(exportApplication({ platform: leaky, epcis: exchange(), access: 'authorised-recovery' }))
+      expect(refused.code).toBe('secret-in-export')
+      expect(refused.message).toMatch(/application\/brands\/[0-9a-f]{64}\.json holds a secret/)
+      expect(refused.message).not.toContain(secret)
+    } finally {
+      await leaky.close()
+    }
+  })
+})
+
+describe('the restore of an application', () => {
+  let folder: string
+  let report: RestoreReport
+
+  it('reads a package back from its folder and restores it: every state is given to the index, and the passports read as they did', async () => {
+    folder = join(scratch, 'export')
+    writePackageFolder(folder, exported.manifest, exported.files)
+    // An export is never written over anything.
+    expect(() => writePackageFolder(folder, exported.manifest, exported.files)).toThrow(/already holds files/)
+    const verified = await verifyApplicationPackage(readPackageFolder(folder), trust(first))
+    expect(verified.journals.map((record) => record.passportId).sort()).toEqual([passportId, otherId].sort())
+    expect(verified.offers).toHaveLength(1)
+    expect(verified.claims).toHaveLength(1)
+    expect(await second.store.listPassports()).toEqual([])
+
+    report = await restoreApplication({ verified, platform: second, epcis: exchange(), rebuildIndex: true })
+    expect(report).toMatchObject({
+      outcome: 'restored',
+      passports: { unchanged: [] },
+      records: { brands: { written: 1, unchanged: 0 }, offers: { written: 1, unchanged: 0 }, claims: { written: 1, unchanged: 0 } },
+      profiles: { resolver: 'package', filesWritten: 0, registered: [], notRegistered: [] },
+      index: { rebuilt: true, announced: 4, admitted: 4, duplicate: 0, notAnnounced: [] },
+      readings: { compared: 2, same: 2, different: [], notCompared: [] },
+    })
+    expect(report.epcis).toBeUndefined()
+    expect(stableJson(await second.store.getPassport(passportId))).toBe(stableJson(await first.store.getPassport(passportId)))
+    expect((await second.index.lineage(passportId)).map((tx) => tx.id('hex'))).toEqual((await first.index.lineage(passportId)).map((tx) => tx.id('hex')))
+    expect((await second.read(passportId)).lineage.map((state) => state.op)).toEqual(['ISSUE', 'UPDATE', 'TRANSFER'])
+  })
+
+  it('changes nothing the second time, and lets the recipient carry on with the claim code they accepted with', async () => {
+    const again = await restoreApplication({ verified: await verifyApplicationPackage(readPackageFolder(folder), trust(first)), platform: second, epcis: exchange(), rebuildIndex: true })
+    expect(again).toMatchObject({ outcome: 'unchanged', passports: { written: [] }, records: { brands: { written: 0, unchanged: 1 }, offers: { written: 0, unchanged: 1 }, claims: { written: 0, unchanged: 1 } }, index: { announced: 4, admitted: 0, duplicate: 4 }, readings: { compared: 2, same: 2 } })
+
+    // The offer's claim code was never stored and is not in the package. Its digest is, so the recipient's code is recognised here.
+    const offer = (await second.store.listOffers({ passportId }))[0]!
+    expect(offer.claimCodeHash).toBe(createHash('sha256').update(claimCode).digest('hex'))
+    // The recipient's key is derived from a secret this deployment was given by its operator, not from the package. With it the holder retires the passport here.
+    const record = (await second.store.getPassport(passportId))!
+    const retired = await second.writer.retire({ record, actor: second.custody.holderOf(record), reason: 'recycled' })
+    expect(retired.entry).toMatchObject({ op: 'RETIRE', index: 'admitted' })
+    expect((await second.read(passportId)).lineage.map((state) => state.op)).toEqual(['ISSUE', 'UPDATE', 'TRANSFER', 'RETIRE'])
+  })
+
+  it('never overwrites: a deployment that now holds another journal under the same identifier is left as it is', async () => {
+    const before = stableJson(await second.store.listPassports())
+    const refused = await refusal(restoreApplication({ verified: await verifyApplicationPackage(readPackageFolder(folder), trust(first)), platform: second, epcis: exchange(), rebuildIndex: true }))
+    expect(refused.code).toBe('reconciliation-required')
+    expect(refused.data.collisions).toEqual([{ kind: 'passport', identity: passportId }])
+    expect(refused.message).toContain('Nothing was written.')
+    expect(stableJson(await second.store.listPassports())).toBe(before)
+  })
+
+  it('refuses index evidence that was changed, a manifest that names another export, and a folder that is not a package', async () => {
+    const resign = async (name: string, change: (dir: string, manifest: EvidencePackageManifest) => void): Promise<string> => {
+      const dir = join(scratch, name)
+      writePackageFolder(dir, exported.manifest, exported.files)
+      const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')) as EvidencePackageManifest
+      change(dir, manifest)
+      manifest.inventory = manifest.inventory.filter((entry) => existsSync(join(dir, entry.path))).map((entry) => {
+        const bytes = readFileSync(join(dir, entry.path))
+        return { ...entry, byteLength: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }
+      })
+      const key = evidencePackageSigningKey(PrivateKey.fromHex('11'.repeat(32)), manifest.passportId)
+      // Signed as the exporter signs: by the key its identity derives for the name the manifest now carries.
+      const signature = { suite: manifest.signature.suite, signer: key.toPublicKey().toString() }
+      writeFileSync(join(dir, 'manifest.json'), JSON.stringify(await signEvidenceManifest({ ...manifest, signature }, { sign: (preimage) => key.sign(preimage).toDER() as number[] })))
+      return dir
+    }
+    // A transaction of the index's evidence is changed, and the outer manifest is signed again for the changed bytes. The index's own signature no longer covers them.
+    const part = `${passportFolder(passportId)}/index/part-1`
+    const transaction = [...exported.files.keys()].find((path) => path.startsWith(`${part}/transactions/`))!
+    const tampered = await resign('tampered', (dir) => {
+      const bytes = readFileSync(join(dir, transaction))
+      bytes[10] = bytes[10]! ^ 1
+      writeFileSync(join(dir, transaction), bytes)
+    })
+    const evidence = await refusal(verifyApplicationPackage(readPackageFolder(tampered), trust(first)))
+    expect(evidence.code).toBe('index-evidence-refused')
+    expect(evidence.data.passportId).toBe(passportId)
+
+    // A manifest signed, correctly, under the name of another selection than the passports the package carries.
+    const scope = await resign('scope', (_dir, manifest) => {
+      manifest.passportId = exportScopeId([passportId])
+    })
+    expect((await refusal(verifyApplicationPackage(readPackageFolder(scope), trust(first)))).code).toBe('export-scope-mismatch')
+
+    // A package about one passport, as an index exports it, is not an export of an application.
+    const single = await first.index.evidencePackage(passportId)
+    if (!('envelope' in single)) throw new Error('the index gave no package')
+    expect((await refusal(verifyApplicationPackage({ manifestText: JSON.stringify(single.envelope.manifest), files: new Map() }, trust(first)))).code).toBe('not-an-application-export')
+    expect((await refusal(verifyApplicationPackage({ files: new Map() }, trust(first)))).code).toBe('manifest-missing')
+    expect(() => readPackageFolder(join(scratch, 'not-there'))).toThrow(/There is no folder/)
+  })
+})

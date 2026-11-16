@@ -47,7 +47,8 @@ describe('configuration', () => {
   })
 
   it('reads the EPCIS query sources, and keeps each credential behind a function', () => {
-    expect(loadConfig({}).epcis).toEqual({ gs1Dir: 'local/gs1', gs1Offline: false, sources: [] })
+    // The store is the application database unless a folder is chosen: the default says so.
+    expect(loadConfig({}).epcis).toEqual({ gs1Dir: 'local/gs1', gs1Offline: false, sources: [], storage: { kind: 'mongodb' } })
     const secret = 'configured-credential-93be11'
     const config = loadConfig({
       DPP_GS1_ARTEFACTS_DIR: '/var/lib/dpp/gs1',
@@ -96,6 +97,41 @@ describe('configuration', () => {
       [{ ...base, EPCIS_SOURCE_SUPPLIER_A_BEARER_TOKEN: secret, EPCIS_SOURCE_SUPPLIER_A_HEADER_NAME: 'X-Api-Key', EPCIS_SOURCE_SUPPLIER_A_HEADER_VALUE: secret }, /more than one credential set/],
     ]
     for (const [env, expected] of cases) {
+      let message = ''
+      try {
+        loadConfig(env)
+      } catch (cause) {
+        message = (cause as Error).message
+      }
+      expect(message, JSON.stringify(Object.keys(env))).toMatch(expected)
+      expect(message).not.toContain(secret)
+    }
+  })
+
+  it('chooses the EPCIS store, the profile resolver and the validation engine by setting', () => {
+    const plain = loadConfig({})
+    expect(plain.epcis.storage).toEqual({ kind: 'mongodb' })
+    expect(plain.profileBundleDir).toBeUndefined()
+    expect(plain.validator).toEqual({ url: undefined, token: undefined })
+    expect(loadConfig({ EPCIS_STORAGE: 'file' }).epcis.storage).toEqual({ kind: 'file', dir: 'local/epcis-store' })
+    expect(loadConfig({ EPCIS_STORAGE: 'file', EPCIS_STORAGE_DIR: '/var/lib/dpp/epcis' }).epcis.storage).toEqual({ kind: 'file', dir: '/var/lib/dpp/epcis' })
+    expect(() => loadConfig({ EPCIS_STORAGE: 'postgres' })).toThrow('EPCIS_STORAGE must be mongodb or file')
+    expect(loadConfig({ PROFILE_BUNDLE_DIR: 'local/profile-bundle' }).profileBundleDir).toBe('local/profile-bundle')
+    expect(loadConfig({ VALIDATOR_URL: 'http://validator:8090/', VALIDATOR_TOKEN: 'a-token' }).validator).toEqual({ url: 'http://validator:8090', token: 'a-token' })
+    expect(loadConfig({ INDEX_EXPORT_TOKEN: 'export-token', INDEX_EXPORTER_KEY: `02${'ab'.repeat(32)}` }).indexExport).toEqual({ token: 'export-token', exporterKey: `02${'ab'.repeat(32)}` })
+    expect(() => loadConfig({ INDEX_EXPORTER_KEY: 'not-a-key' })).toThrow(/INDEX_EXPORTER_KEY must be a compressed public key/)
+  })
+
+  it('refuses a validator setting it cannot use, by name and without repeating it', () => {
+    const secret = 'validator-token-5c1d9e'
+    for (const [env, expected] of [
+      [{ VALIDATOR_URL: 'ftp://validator.example/' }, /VALIDATOR_URL must be the http or https address/],
+      [{ VALIDATOR_URL: 'not an address' }, /VALIDATOR_URL must be the http or https address/],
+      [{ VALIDATOR_URL: `https://operator:${secret}@validator.example` }, /VALIDATOR_URL carries user information/],
+      [{ VALIDATOR_URL: `https://validator.example/?token=${secret}` }, /VALIDATOR_URL carries a query or a fragment/],
+      [{ VALIDATOR_TOKEN: secret }, /VALIDATOR_TOKEN is set without VALIDATOR_URL/],
+      [{ VALIDATOR_URL: 'https://validator.example', VALIDATOR_TOKEN: `${secret} with a space` }, /VALIDATOR_TOKEN must be visible ASCII/],
+    ] as const) {
       let message = ''
       try {
         loadConfig(env)

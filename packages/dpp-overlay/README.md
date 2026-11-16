@@ -2,7 +2,9 @@
 
 The maintained DPP index runtime.
 
-**To run a new index, use the repository's operator preset.** [`deploy/`](../../deploy/README.md) builds this package's image from [`Dockerfile`](Dockerfile) and runs it with a persistent MongoDB on Docker Compose, configured from one env file; `dpp-index connection` then writes the connection file an application server reads. This page covers direct integration and the runtime configuration both routes share. An application that only connects to an existing index over HTTP needs no hosting package.
+**To run a new index, use the repository's operator preset.** [`deploy/`](../../deploy/README.md) runs this package's image, pinned by digest, with a persistent MongoDB on Docker Compose, configured from one env file; `dpp-index connection` then writes the connection file an application server reads. This page covers direct integration and the runtime configuration both routes share. An application that only connects to an existing index over HTTP needs no hosting package.
+
+**One runtime, two deliveries.** The npm package with its `dpp-index` command and the `dpp-overlay` image built from [`Dockerfile`](Dockerfile) are the same built files, started by the same code and configured by the same environment. The image is labelled with the source revision, the release set and this package's version, and `scripts/delivery-parity.mjs` in the repository holds the two to one another over HTTP. Installing the package brings no validator service and no validation engine: the index never calls one.
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
@@ -55,6 +57,8 @@ Configuration uses environment variables. The executable can load an explicit `-
 ```
 docker build -f packages/dpp-overlay/Dockerfile -t dpp-overlay .
 ```
+
+That build is labelled `unknown`. `node scripts/release-images.mjs build`, run from the repository root, passes the four build arguments that label an image with its source revision, its release set and this package's version, and `node scripts/release-images.mjs inspect dpp-overlay=dpp-overlay:local` reads them back. The image carries `LICENSE`, `NOTICE` and `PATENTS` and the MongoDB driver, never a MongoDB server: the database is a separate program, which the preset pulls from its publisher under that publisher's licence ([the preset's images and licences](../../deploy/README.md#images-and-licences)).
 
 ## Configuration
 

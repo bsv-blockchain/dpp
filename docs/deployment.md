@@ -49,6 +49,19 @@ These are documented rules; the latest capability check did not exercise authent
 
 The operator does not distribute tokens for general use. To publish, [run your own index](operate/README.md) or arrange access with a compatible provider. For a token or a hosted peer arrangement, [contact the programme](start/choose-your-path.md#contact-the-programme).
 
+## Run the same services yourself
+
+The hosted reference runs the packages a release set names. The same index is delivered two ways, as the npm package `@bsv/dpp-overlay` with its `dpp-index` command and as the `dpp-overlay` image, and they are the same runtime.
+
+| You want | Use | Leaves out |
+|---|---|---|
+| The record library only | `@bsv/dpp-protocol` from npm | Every other package, any database and the validator service |
+| An index in your own host | `@bsv/dpp-overlay` from npm | The validator service and its engine libraries |
+| An index as an operator | The [Compose preset](operate/README.md), starting the `overlay` service by name | The validator service |
+| An index and a validator service | The whole [Compose preset](operate/README.md) | Your application, which calls both over the network |
+
+The preset pulls each image by digest. The images of the current candidate set are not published yet, so today the preset [builds them from source](operate/README.md#build-from-source). The preset's database is MongoDB Community Server under the Server Side Public License, which is not this repository's licence ([the operator preset](contribute/licence.md#the-operator-preset)).
+
 ## Passports to try
 
 Two live passports to look up with the [passport lookup](reference/contracts.md#find-passport-records). Each identifier is under the demonstration prefix 952 at `dpp.bsvb.net`, a host that resolves it: a 307 to the passport page, or the linkset on request.

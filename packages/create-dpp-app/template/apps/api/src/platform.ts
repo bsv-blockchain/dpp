@@ -106,10 +106,12 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     }
   }
 
-  // Built once: the engine, the two bindings the profiles package ships and any folder the configuration trusts.
+  // Built once: the engine the configuration chose, the bound profiles from the package's folder or from a bundle, and any folder the configuration trusts.
   const profiles = await openBoundProfiles({
     customProfileDirs: config.customProfiles.dirs,
     trustedBindingDigests: config.customProfiles.trustedBindingDigests,
+    ...(config.profileBundleDir == null ? {} : { profileBundleDir: config.profileBundleDir }),
+    validator: config.validator,
     ...(options.loadEngineLibrary == null ? {} : { loadEngineLibrary: options.loadEngineLibrary }),
     log,
   })

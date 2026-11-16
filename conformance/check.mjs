@@ -19,6 +19,7 @@
  * rows for the role; every report
  * in fixtures/evidence-v1.json and fixtures/evidence-v2.json validates
  * against the report schema with its checks in the schema's order; the example capability document validates;
+ * the operator preset under deploy/ names the images the current release set records, each by digest;
  * and the recorded dependency licences match what is installed.
  *
  * Findings print one sentence each, as GOVERNANCE.md requires of every
@@ -39,6 +40,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dependencyManifest } from '../scripts/lib/dependency-manifest.mjs'
 import { RELEASE_ARCHIVE, SELECTION_ARCHIVE, releaseSetPath, selectionMisplacement, setMisplacement } from '../scripts/lib/candidates.mjs'
+import { presetFindings } from '../scripts/lib/images.mjs'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { assessClaims, assessSelection, readRows, readSources } from './assess.mjs'
@@ -360,6 +362,36 @@ for (const path of [...setFiles('release'), ...setFiles(RELEASE_ARCHIVE)]) {
     if (actual === a.sha256) note(`${set.releaseSet} artefact ${a.path} has the recorded digest.`)
     else defect(`${set.releaseSet} artefact ${a.path} has digest ${actual.slice(0, 12)}…, not the recorded ${a.sha256.slice(0, 12)}…; review the change and run conformance/pin-sources.mjs.`)
   }
+  // The images: the set is the one place the registry, the names and the
+  // digests are written, and the operator preset under deploy/ is held to
+  // it. No preset file names an image by tag alone or builds one; the build
+  // files name local tags only; each Dockerfile runs the Node the set
+  // records and labels the image with its release.
+  if (set.images != null) {
+    for (const finding of presetFindings(set, root)) (finding.ok ? note : defect)(`${set.releaseSet} images: ${finding.sentence}`)
+    // A service the preset runs under a licence that is not this repository's
+    // is said so where an operator reads: the licence page and the preset's
+    // own guide name it and its licence, apart from the repository's code.
+    for (const entry of set.images.thirdParty.filter((e) => e.licence === 'SSPL-1.0')) {
+      for (const page of ['docs/contribute/licence.md', 'deploy/README.md']) {
+        const text = existsSync(join(root, page)) ? readFileSync(join(root, page), 'utf8') : ''
+        if (text.includes('MongoDB Community Server') && text.includes('Server Side Public License')) note(`${set.releaseSet} images: ${page} says the preset runs MongoDB Community Server under the Server Side Public License.`)
+        else defect(`${set.releaseSet} images: ${page} does not say that the preset runs MongoDB Community Server under the Server Side Public License (${entry.name}, ${entry.licence}).`)
+      }
+    }
+  }
+}
+
+// 4c. The package that downloads a MongoDB server for the tests is a
+// development dependency of every workspace that names it, so it is never
+// installed with a published package and never enters an image.
+for (const dir of readdirSync(join(root, 'packages'))) {
+  const path = join(root, 'packages', dir, 'package.json')
+  if (!existsSync(path)) continue
+  const manifest = JSON.parse(readFileSync(path, 'utf8'))
+  const shipped = Object.keys({ ...manifest.dependencies, ...manifest.optionalDependencies, ...manifest.peerDependencies }).filter((name) => /mongodb-memory-server/.test(name))
+  if (shipped.length > 0) defect(`${manifest.name} names ${shipped.join(', ')} outside devDependencies; the test-time MongoDB server must stay out of everything published.`)
+  else if (Object.keys(manifest.devDependencies ?? {}).some((name) => /mongodb-memory-server/.test(name))) note(`${manifest.name} names the test-time MongoDB server as a development dependency only.`)
 }
 
 // 5. The capability document.

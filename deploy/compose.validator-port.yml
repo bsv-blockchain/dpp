@@ -1,0 +1,25 @@
+# Give an application outside the preset's validation network access to the
+# validator service, on purpose: added to deploy/compose.yml, it publishes
+# the service's port on this machine and requires a bearer token.
+#
+#   docker compose -f deploy/compose.yml -f deploy/compose.validator-port.yml \
+#     --env-file deploy/operator.env up -d
+#
+# Without this file the service publishes no port and only a container on
+# the validation network reaches it. With it, the port is published on the
+# loopback address unless VALIDATOR_PUBLISH names another, and docker compose
+# refuses to start until VALIDATOR_TOKEN is set, because a request carries a
+# product document, the restricted part included when an authorised reader
+# validates. The contract has no transport security of its own
+# (spec/services.md section 7): for a caller on another host, publish on
+# loopback and put a TLS terminator in front, as for the index.
+#
+# The application then sets the address and the token as the two settings of
+# its validator client, createValidatorClient({ url, token }) from
+# @bsv/dpp-profiles/validator-client.
+services:
+  validator:
+    ports:
+      - "${VALIDATOR_PUBLISH:-127.0.0.1:8090}:8090"
+    environment:
+      VALIDATOR_TOKEN: ${VALIDATOR_TOKEN:?set VALIDATOR_TOKEN before publishing the validator service's port}

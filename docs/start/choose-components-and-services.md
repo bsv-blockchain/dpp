@@ -26,8 +26,8 @@ The standard defines roles and rules; packages implement some rules; services ru
 
 ## Pick only the packages your task uses
 
-1. For a new application, use [the application starter](../packages/create-dpp-app.md). `@bsv/create-dpp-app` creates the app and declares selected dependencies. Deployment needs an existing index provider or an index of your own.
-2. For a new reference index, use [Run an index from source](../operate/README.md). The repository's Docker Compose preset builds `@bsv/dpp-overlay` into its image and runs it with MongoDB; do not install the runtime separately. The retired index starter is [replaced by it](../packages/create-dpp-index.md).
+1. For a new application, use [the application starter](../packages/create-dpp-app.md). `@bsv/create-dpp-app` creates the app and declares selected dependencies. Deployment needs an existing index provider or an index of your own. In the source candidate the app validates in its own process or, by one setting, through a validator service, and its `export` and `restore` commands move it to another deployment.
+2. For a new reference index, use [Run an index from source](../operate/README.md). The repository's Docker Compose preset runs the `@bsv/dpp-overlay` image with MongoDB and the validator service, each image pinned by digest; do not install the runtime separately. The retired index starter is [replaced by it](../packages/create-dpp-index.md).
 3. To connect to an existing compatible index over HTTP, use its operator-supplied connection settings. No index package is needed.
 
 These libraries are code components. Dependencies included by a starter or another package are already supplied.
@@ -36,7 +36,7 @@ These libraries are code components. Dependencies included by a starter or anoth
 |---|---|
 | `@bsv/dpp-protocol` | Passport records, verification and native lifecycle claim helpers; select when using these reference helpers |
 | `@bsv/dpp-profiles` | Profile manifests, payload schemas and supported helpers; select for its product data or interoperability tooling |
-| `@bsv/dpp-overlay` | Index runtime, topics and lookups; built into the Compose preset's image, installed directly only for a custom or embedded index |
+| `@bsv/dpp-overlay` | Index runtime, topics and lookups; the Compose preset's index image is this package, installed directly only for a custom or embedded index |
 | `@bsv/dpp-credentials` | Verification of W3C credentials other parties issue in the supported external profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers), and EPCIS source import; select for those formats. Native lifecycle claims do not require it. |
 
 ### Runtime and version choice
@@ -66,7 +66,18 @@ There is no released turnkey application service or registry package. [Applicati
 | Additional index peers | Replication, availability or interoperability goals require them | Agree admission compatibility and data flow with operators. Not required for every first integration. |
 | Product and restricted-evidence storage | Promised retention of data and referenced artefacts | Application storage or provider, with access and recovery arrangements |
 
-One deployment can supply several capabilities. MongoDB belongs to the reference index preset; the standard does not mandate it for every implementation.
+One deployment can supply several capabilities. MongoDB belongs to the reference index preset; the standard does not mandate it for every implementation, and it is under its own licence, the Server Side Public License ([the operator preset](../contribute/licence.md#the-operator-preset)).
+
+### Four ways to install
+
+| You need | Install | What it leaves out |
+|---|---|---|
+| To read, write or verify passport records in your own code | `@bsv/dpp-protocol` alone (protocol-only) | Every other package of the set, any database driver, the validator service and its engine libraries |
+| An index inside your own process or host | `@bsv/dpp-overlay`, which brings `@bsv/dpp-protocol` and `@bsv/dpp-profiles`, and its `dpp-index` command (index-only, by npm) | The credentials package, the validator service and its engine libraries. The index never calls a validator |
+| An index as an operator | The Compose preset's `overlay` and `mongo` services, started by naming `overlay` (index-only, by image) | The validator service, which is not started |
+| An index and a validator service for applications | The whole Compose preset | The application, which is yours: it validates industry data and imports EPCIS events, and connects to the validator and to the index over the network |
+
+The npm command and the image are the same runtime. The clean consumer check installs the first two in projects of their own and runs them, and the delivery parity check starts the index both ways and asks both the same things ([images](../reference/release-sets.md#images)).
 
 ## What the existing hosted services allow
 

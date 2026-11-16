@@ -16,6 +16,8 @@
  *                     events query of a configured source
  * - pull-transport.ts one page of a pull: where a request may go, what it
  *                     carries and how much of the answer is read
+ * - recovery.ts       authorised recovery: a snapshot of a store, the
+ *                     public form of one, and the restore into another store
  * - adapter-suite.ts  the shared suite every storage adapter must pass
  *
  * How records are keyed inside a store is not part of this entry point: a
@@ -61,6 +63,7 @@ export {
   epcisPullDefinitionDigest,
   epcisPullId,
   epcisRequestDigest,
+  epcisRestoreId,
   type EpcisAssociationGranularity,
   type EpcisAssociationRecord,
   type EpcisAssociationRole,
@@ -75,6 +78,7 @@ export {
   type EpcisProvenance,
   type EpcisPullCompletion,
   type EpcisPullCursor,
+  type EpcisPullEndpointRemap,
   type EpcisPullEventCounts,
   type EpcisPullLeniency,
   type EpcisPullPageRecord,
@@ -87,8 +91,11 @@ export {
   type EpcisPullServerVersions,
   type EpcisPullSourceScope,
   type EpcisQueryProvenance,
+  type EpcisRelocationRecord,
   type EpcisResolutionDisposition,
   type EpcisResolutionRecord,
+  type EpcisRestoreCounts,
+  type EpcisRestoreRecord,
   type EpcisRetentionRecord,
   type EpcisSourceOutcome,
 } from './epcis-exchange/records.js';
@@ -107,4 +114,5 @@ export {
 } from './epcis-exchange/pull-transport.js';
 export * from './epcis-exchange/pull.js';
 export * from './epcis-exchange/exchange.js';
+export * from './epcis-exchange/recovery.js';
 export * from './epcis-exchange/adapter-suite.js';

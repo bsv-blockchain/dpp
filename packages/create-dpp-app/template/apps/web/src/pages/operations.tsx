@@ -70,7 +70,7 @@ function OperationsPage() {
         <>
           {ops.data.profiles == null || (ops.data.profiles.engine.available && ops.data.profiles.refused.length === 0) ? null : (
             <Section title="Profiles">
-              {ops.data.profiles.engine.available ? null : <ErrorNotice error={new Error(ops.data.profiles.engine.problem ?? 'The validation libraries did not load.')} title="The validation engine is not available" />}
+              {ops.data.profiles.engine.available ? null : <ErrorNotice error={new Error(ops.data.profiles.engine.problem ?? 'The validation engine cannot be used: its libraries did not load, or the validator service did not answer.')} title="The validation engine is not available" />}
               {ops.data.profiles.refused.length === 0 ? null : (
                 <ul className="divide-y rounded-lg border text-sm">
                   {ops.data.profiles.refused.map((refusal) => (

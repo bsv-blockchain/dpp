@@ -1,14 +1,60 @@
-# The reference index node with persistent storage: one MongoDB, one node,
-# both data and configuration on named volumes and an env file, so a restart
-# or a host move keeps every admitted state. The image is this repository's
-# (packages/dpp-overlay/Dockerfile), built from the repository root. This is
-# the operator preset: everything an index operator runs, with the
-# application's connection file issued by the node's own command line.
+# The operator preset: the reference index, its database and the validator
+# service, each from a pinned image, with data and configuration on named
+# volumes and an env file, so a restart or a host move keeps every admitted
+# state. Nothing here is built: an operator needs this file, an env file and
+# Docker, not a checkout of the repository.
 #
 #   cp deploy/operator.env.example deploy/operator.env   # then fill it in
-#   docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --build
+#   docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d
 #   docker compose -f deploy/compose.yml --env-file deploy/operator.env exec -T overlay \
 #     node packages/dpp-overlay/dist/cli.js connection > deploy/app.env
+#
+# The images. Every image is named by digest. The two this repository builds
+# are named through DPP_IMAGE_REGISTRY and a digest variable each, set in the
+# env file from the release set; neither has a default and neither takes a
+# tag, so with a digest missing docker compose refuses to start. MongoDB is
+# named by tag and digest here: the tag says which version the digest was
+# resolved from, and the digest is what is pulled. The release set records
+# all three (release/README.md, Images), and scripts/release-images.mjs
+# renders them into this directory and holds this file to them.
+#
+# To build the two images from a source checkout instead, add the build file
+# and its env file (deploy/README.md, Build from source):
+#
+#   docker compose -f deploy/compose.yml -f deploy/compose.build.yml \
+#     --env-file deploy/operator.env --env-file deploy/build.env up -d --build
+#
+# Three services:
+#
+#   mongo      MongoDB Community Server, which its publisher licenses under
+#              the Server Side Public License. It is a separate program from
+#              the index, reached over the network through a driver, and it
+#              is not part of any image or package of this repository:
+#              Docker pulls it from its publisher. docs/contribute/licence.md
+#              says what that means for an operator.
+#   overlay    The index: @bsv/dpp-overlay, the same built code the npm
+#              package ships, started by the same entry point.
+#   validator  The validator service: the JSON-LD and SHACL engines of
+#              @bsv/dpp-profiles behind the dpp-validator/1 contract.
+#
+# Who calls the validator. The index never does: it admits and serves
+# passport states and checks no industry rule. An application calls it, when
+# it validates a product document under a profile held by a binding, through
+# the client of @bsv/dpp-profiles/validator-client with the service's address
+# as its setting. The preset runs the service so that an operator has one;
+# running it moves no validation into the index.
+#
+# How an application reaches it. The service publishes no port. It is on a
+# network of its own, validation, which MongoDB is not on, so a container
+# that joins it reaches http://validator:8090 and nothing else of this
+# preset. An application outside Docker, or on another host, is given access
+# on purpose by adding deploy/compose.validator-port.yml, which publishes the
+# port on this machine's loopback address and requires VALIDATOR_TOKEN.
+#
+# To run the index without the validator, start the index by name, which
+# also starts its database and nothing else:
+#
+#   docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d overlay
 #
 # What the node does and does not do is unchanged from running it by hand:
 # it admits and serves, it does not broadcast, proofs reach it through
@@ -19,7 +65,7 @@ name: dpp-overlay
 
 services:
   mongo:
-    image: mongo:7
+    image: mongo:7.0.48@sha256:9896df581dfd0718b7abe112f4c37598d0986c54060e4ec1384997e6503c8c71
     restart: unless-stopped
     command: ["mongod", "--bind_ip_all"]
     volumes:
@@ -31,10 +77,7 @@ services:
       retries: 12
 
   overlay:
-    build:
-      context: ..
-      dockerfile: packages/dpp-overlay/Dockerfile
-    image: ${OVERLAY_IMAGE:-dpp-overlay:local}
+    image: ${DPP_IMAGE_REGISTRY:?set DPP_IMAGE_REGISTRY to the registry of this release set's images}/dpp-overlay@${OVERLAY_IMAGE_DIGEST:?set OVERLAY_IMAGE_DIGEST to the sha256 digest of the published dpp-overlay image. A tag is not accepted. To build from source see deploy/README.md}
     restart: unless-stopped
     depends_on:
       mongo:
@@ -57,7 +100,7 @@ services:
     environment:
       PORT: "8080"
       # The bundled MongoDB, reachable only on this Compose network. Set
-      # MONGO_URL to a managed database's authenticated URI instead; the
+      # MONGO_URL to another database's authenticated URI instead; the
       # bundled one then holds nothing.
       MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017}
       MONGO_DB: ${MONGO_DB:-dpp}
@@ -116,6 +159,56 @@ services:
       interval: 15s
       timeout: 5s
       retries: 8
+
+  validator:
+    image: ${DPP_IMAGE_REGISTRY:?set DPP_IMAGE_REGISTRY to the registry of this release set's images}/dpp-validator@${VALIDATOR_IMAGE_DIGEST:?set VALIDATOR_IMAGE_DIGEST to the sha256 digest of the published dpp-validator image. A tag is not accepted. To build from source see deploy/README.md}
+    restart: unless-stopped
+    # The service keeps nothing at all: every rule file arrives in a request
+    # and nothing a request carries is logged or kept. It runs exactly as the
+    # index does, as the image's unprivileged node user on a read-only
+    # filesystem with no capabilities, under an init that passes the stop
+    # signal on.
+    user: node
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 30s
+    # No published port. Callers reach it on the validation network only,
+    # until deploy/compose.validator-port.yml is added on purpose.
+    expose:
+      - "8090"
+    networks:
+      - validation
+    environment:
+      # Every address of the container, which is its own network namespace.
+      VALIDATOR_HOST: "0.0.0.0"
+      VALIDATOR_PORT: "8090"
+      # Optional on the validation network; required once the port is
+      # published. The two operations then need it as a bearer.
+      VALIDATOR_TOKEN: ${VALIDATOR_TOKEN:-}
+      # The limits the service runs under, each with the default of
+      # packages/dpp-profiles/src/validator-command.ts when left empty.
+      VALIDATOR_TIMEOUT_MS: ${VALIDATOR_TIMEOUT_MS:-}
+      VALIDATOR_CONCURRENCY: ${VALIDATOR_CONCURRENCY:-}
+      VALIDATOR_QUEUE_LIMIT: ${VALIDATOR_QUEUE_LIMIT:-}
+      VALIDATOR_MAX_REQUEST_BYTES: ${VALIDATOR_MAX_REQUEST_BYTES:-}
+      VALIDATOR_WORKER_MEMORY_MB: ${VALIDATOR_WORKER_MEMORY_MB:-}
+    healthcheck:
+      test: ["CMD", "node", "packages/dpp-profiles/dist/validator-cli.js", "health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 6
+
+networks:
+  # The index and its database. MongoDB runs here without authentication, so
+  # nothing else joins this network.
+  default: {}
+  # The validator alone. An application's container joins this one.
+  validation: {}
 
 volumes:
   mongo-data:

@@ -39,6 +39,12 @@ MANAGED_IDENTITY_SECRET=
 INDEX_URL=https://dpp-overlay-testnet.bsvb.net
 INDEX_SUBMIT_TOKEN=
 INDEX_CALLBACK_TOKEN=
+# Only for `npm run export`, which carries the index's own signed evidence for each passport. The token is the
+# one the index wants for its complete export, where its operator set one and gave it to you; a passport of up
+# to 500 states needs none. The key is the index's exporter identity key, to hold its packages to. Empty uses
+# the key the index's capability document names.
+INDEX_EXPORT_TOKEN=
+INDEX_EXPORTER_KEY=
 
 # The host passports are minted under: https://<PASSPORT_HOST>/01/<gtin>/21/<serial>
 PASSPORT_HOST=localhost:3000
@@ -54,6 +60,19 @@ GS1_PREFIX=952
 # the DPP packages ship, eu-battery@1 and eu-textile@1, need neither setting.
 CUSTOM_PROFILE_DIRS=
 TRUSTED_BINDING_DIGESTS=
+# Where the bound profiles are read from. Empty reads the two sector profiles from the folder the profiles
+# package ships. A folder here is read as a profile bundle instead, and the package's folder is not read:
+# `npm run restore` installs the bundle of the package it restores into it. A relative folder is read from
+# this file's directory. Trust is the same either way (README, Where the profiles are read from).
+PROFILE_BUNDLE_DIR=
+
+# The validation engine for profiles held by a binding. Empty runs the JSON-LD and SHACL libraries in the
+# API's own process. An address asks a validator service there instead: the DPP operator preset runs one, and
+# `npx dpp-validator` starts one on 127.0.0.1:8090. The token is the one that service requires, if any. It is
+# sent to that address only and is never logged. A service that does not answer blocks writes under a bound
+# profile and never reads as a pass (README, The validation engine).
+VALIDATOR_URL=
+VALIDATOR_TOKEN=
 
 # EPCIS exchange: importing EPCIS 2.0 documents, pulling events from a source and exporting what was received.
 # Documents are checked against three files GS1 publishes under its own terms, which this project does not
@@ -63,6 +82,12 @@ TRUSTED_BINDING_DIGESTS=
 # Without the files the API still starts, and refuses every import and pull by name.
 DPP_GS1_ARTEFACTS_DIR=local/gs1
 DPP_GS1_ARTEFACTS_OFFLINE=false
+# Where the exchange keeps what it retains. mongodb is the application database above, and the store this
+# application is built and tested on. file keeps it in EPCIS_STORAGE_DIR through the file-system adapter the
+# DPP packages ship: one process, one disk, no replication. It shows the store can be replaced and is not
+# offered as a second production database.
+EPCIS_STORAGE=mongodb
+EPCIS_STORAGE_DIR=local/epcis-store
 
 # The EPCIS query sources this app may pull from: names, comma-separated, each of lower-case letters, digits
 # and hyphens. Nothing about a source comes from a request. For a source named supplier-a set, with the name in

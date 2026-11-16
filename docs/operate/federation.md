@@ -19,7 +19,7 @@ Peer exchange is optional for readers and writers. Every release supports the na
 | Mode | Inputs and source |
 |---|---|
 | All checkout procedures | [Reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`. Run every command from its root. |
-| Static-peer rehearsal | First index from the Compose preset at `http://localhost:8080` ([run a service](README.md)), started with `--build` at least once. The second preset has no build step and uses the first's `dpp-overlay:local` image. Obtain the first index's admission settings and publisher keys from its operator. |
+| Static-peer rehearsal | First index from the Compose preset at `http://localhost:8080` ([run a service](README.md)). The second preset pins the same index image by digest; built from source, it takes `-f deploy/compose.second-operator.build.yml` and `--env-file deploy/build.env` as well and uses the `dpp-overlay:local` image the first build made ([build from source](README.md#build-from-source)). Obtain the first index's admission settings and publisher keys from its operator. |
 | Header checks | Your WhatsOnChain API key. Synchronisation asks the header source once per admitted state; without a key it paces itself to about three requests a second. |
 | Another operator | Its reachable base URL, publisher keys and their oldest state times; independently obtain its identity key to check a signed policy. |
 | Optional discovery, parked | A release supporting discovery, your `PUBLIC_URL`, and optionally chosen tracker URLs and a host limit. |

@@ -181,8 +181,10 @@ A profile does not have to be one of the manifests this package publishes. A dat
 | Validator | `bindingPayloadValidator`: the function a verifier passes as `payloadValidator`. It checks a public payload, which is what any reader has |
 | Access split | A binding's optional `access` member: which top-level properties of the product document are public. `prepareBoundPayload` is the writer's call, and `authorisedPayloadValidator` checks both parts together ([split a product](#split-a-product-into-public-and-restricted-parts)) |
 | Engine adapter | `@bsv/dpp-profiles/validation-engine`: JSON-LD and SHACL engines over libraries you install |
+| Validator service | `dpp-validator` and `@bsv/dpp-profiles/validator-service`: the same engines in another process. `@bsv/dpp-profiles/validator-client` is what an application configures in their place ([run the engines as a service](#run-the-engines-as-a-service)) |
 | Example profiles | `examples/custom-profile/` in the repository: `example-bottle@1` uses every step, `example-notebook@1` uses a schema only |
 | Bundled bindings | `eu-battery@1` and `eu-textile@1`, shipped under `bindings/` with their artefacts and notices. `BUNDLED_BINDING_DIGESTS` is their trusted digest list and `registerBundledBindings(registry)` registers them from the package folder ([EU battery and textile bindings](../profiles/eu-sector-bindings.md)) |
+| Profile bundle | `exportProfileBundle`, `openProfileBundle` and `registerProfileBundle`: the files that carry a binding and everything it lists inside an evidence package, so another deployment validates from the package alone ([carry a profile](#carry-a-profile-to-another-deployment)) |
 
 ### The payload under a binding
 
@@ -238,7 +240,96 @@ npm install --save-exact jsonld@9.0.0 n3@2.13.12 shacl-engine@1.1.3
 | `sparql: false` | Builds the engine without SPARQL constraints. It declares `shacl-core` only, so a binding that requires `shacl-sparql-constraints` answers `unknown` |
 | `load` | How a library is loaded by name. A bundler cannot follow the default dynamic import, so a bundled application passes a function that imports each name statically |
 
-The adapter uses only the contexts the binding lists, refuses any other and never fetches. It keeps nothing between calls. The time limit is a deadline and cannot interrupt work that does not yield: run the engine in a worker you can stop if you must bound the time itself. To use another SHACL engine, implement `JsonLdEngine` and `ShaclEngine` and pass them in place of the adapter's.
+The adapter uses only the contexts the binding lists, refuses any other and never fetches. It keeps nothing between calls. The time limit is a deadline and cannot interrupt work that does not yield: the [validator service](#run-the-engines-as-a-service) runs the engine in a thread it stops at the limit. To use another SHACL engine, implement `JsonLdEngine` and `ShaclEngine` and pass them in place of the adapter's.
+
+### Run the engines as a service
+
+The JSON-LD and SHACL engines can run in another process, as a validator service. Your application then installs none of the three libraries and asks the service through `@bsv/dpp-profiles/validator-client`. Use this when several applications share one engine, or when you want the engine and its 413 packages kept out of your application's image.
+
+The service is an engine and nothing more. Your registry, the binding digest, the access split and the identity check stay in your application. Each request carries the product document and the binding's rule files, and the service holds every file to the SHA-256 sent with it. It fetches nothing and keeps nothing between requests.
+
+1. Start the service. From a checkout, after `npm ci` and `npm run build`:
+
+```sh
+node packages/dpp-profiles/dist/validator-cli.js
+```
+
+In a project that has installed a publication carrying this entry point, with the three libraries beside it, the same command is `npx dpp-validator`. As an image, built from the repository root:
+
+```sh
+docker build -f packages/dpp-profiles/validator-image/Dockerfile -t dpp-validator .
+docker run --rm -p 127.0.0.1:8090:8090 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true dpp-validator
+```
+
+The [operator preset](../operate/README.md#give-an-application-the-validator) runs the same image as its `validator` service, pinned by digest, with no published port: an application joins the preset's `validation` network, or the operator publishes the port on purpose behind a token.
+
+Each prints one JSON line naming its address, engine and limits, then one line per request. Neither the command nor the image is published yet: both are in the unpublished candidate `dpp-release-2026-11`.
+
+2. Check it from another terminal:
+
+```sh
+curl --fail http://127.0.0.1:8090/health
+curl --fail http://127.0.0.1:8090/capabilities
+```
+
+`/capabilities` names the engine, the version of each library it runs, `shacl-core` and `shacl-sparql-constraints`, and its limits.
+
+3. Configure your application to use it. Only the engines change:
+
+```js
+import { createValidationEngine } from '@bsv/dpp-profiles/validation-engine'
+import { createValidatorClient } from '@bsv/dpp-profiles/validator-client'
+
+// With VALIDATOR_URL set the engines are the service's. Without it they are the libraries in this process.
+const url = process.env.VALIDATOR_URL
+const engines = url ? createValidatorClient({ url, token: process.env.VALIDATOR_TOKEN }) : await createValidationEngine()
+const validate = bindingPayloadValidator({ registry, engines: { jsonSchema: ajv, ...engines } })
+```
+
+`createValidatorClient` opens no connection. `await engines.probe?.()` at start asks the service what it is, for your log, and never throws.
+
+**A service you cannot use is never a pass.** Each row gives `unknown` with `schema-unavailable` and the cause `validator-unavailable`, as a missing engine does:
+
+| What happened | What the step says |
+|---|---|
+| Nothing answers at the address, or the service is stopped | `could not be reached` |
+| No answer within the client's `timeoutMs`, 15 000 by default | `did not answer within 15000 ms` |
+| A redirect. The client follows none, so the document and the token reach the configured address only | `answered with a redirect, which is not followed` |
+| Any status other than 200, such as 401 without the token or 503 when the service is busy | `answered 503 (busy)` |
+| An answer that is not the contract's, or larger than `maxResponseBytes`, 8 MiB by default | `did not answer as the contract describes` |
+| A service whose engine lacks a capability the binding requires | `lacks a capability the binding requires` |
+| An operation over the service's time limit, which the service stops | `did not finish (timeout)` |
+
+A failure your application decides by itself, such as the identity check, is still a failure while the service is down.
+
+**Settings.** The command and the image read the environment and nothing else. A value it cannot read stops the command with exit code 2 and names the variable.
+
+| Variable | Default | Sets |
+|---|---|---|
+| `VALIDATOR_HOST` | `127.0.0.1`; the image sets `0.0.0.0` | The address to listen on |
+| `VALIDATOR_PORT` | `PORT`, else `8090` | The port |
+| `VALIDATOR_TOKEN` | none | A bearer token the two operations then require. `/health` and `/capabilities` stay open |
+| `VALIDATOR_TIMEOUT_MS` | `10000` | How long one operation may run, and how long a request may wait for its turn |
+| `VALIDATOR_CONCURRENCY` | `2` | How many operations run at once: the number of engine threads |
+| `VALIDATOR_QUEUE_LIMIT` | `16` | How many more may wait before the service answers `busy` |
+| `VALIDATOR_MAX_REQUEST_BYTES` | `8388608` | The largest request body read. A request for `eu-battery@1` is about 0.9 MB |
+| `VALIDATOR_WORKER_MEMORY_MB` | `512` | The heap one engine thread may use before it is stopped and replaced |
+
+`dpp-validator health` exits 0 when the service these settings describe answers `/health`. The image uses it as its health check.
+
+**Time limit.** The service runs the engine in threads of its own. An operation that passes `VALIDATOR_TIMEOUT_MS` is answered `timeout` and its thread is ended, so the work stops even when it never yields. A replacement thread then loads the engine again, which takes a fraction of a second, and requests wait for it in the queue. This is stronger than the adapter's own limit, which only discards a late result. `startValidatorService({ engines })` serves another engine you supply over the same contract; the service cannot stop that engine's work, says so in its answer, and keeps the work's place among the running operations until it ends.
+
+**Access and transport.** The service speaks plain HTTP and, without `VALIDATOR_TOKEN`, answers anyone who can reach its port. Run it on the loopback address or on a private container network that only your application joins. A request carries the product document, the restricted part included when an authorised reader validates, and the token travels in a header, so across any other network put the service behind a TLS terminator of your own and give the client an `https:` address. The service makes no outbound connection: the image passes its vectors with no network at all.
+
+**What is in the image.** The seven built files of the service, the three libraries and what they depend on, 413 packages installed from a lockfile of the image's own, and `LICENSE`, `NOTICE`, `PATENTS`, `licence-inventory.json` and `THIRD-PARTY-NOTICES.txt`. It holds no profile, binding, context or shapes file: every rule file arrives in a request. `packages/dpp-profiles/validator-image/licence-inventory.json` lists every package with its version and licence: 383 MIT, 10 ISC, 7 BSD-2-Clause, 5 BlueOak-1.0.0, 4 BSD-3-Clause, 2 Apache-2.0, one `(WTFPL OR MIT)` and one FreeBSD. The index image installs none of them.
+
+**Replace it.** `contracts/validator.schema.json` defines every body of the `dpp-validator/1` contract and `spec/services.md` §7 the rules around them. Any service that keeps both is a replacement: point `VALIDATOR_URL` at it. Hold a replacement to the same vectors before you rely on it:
+
+```sh
+node scripts/validator-parity.mjs --url http://127.0.0.1:8090
+```
+
+The script runs the vectors of both sector bindings and both example profiles with the engine in process and through the service, and reports any answer that differs. `node scripts/validator-image-check.mjs --image dpp-validator` runs the same vectors against the image, with no network and from outside it, and checks what the image holds.
 
 ### Register a profile and validate a payload
 
@@ -450,6 +541,117 @@ A `pass` in the authorised view says the rejoined document satisfies the profile
 | `profile-retired` | The identifier and version belong to a [retired profile](#retired-profiles), whose identity is never given another definition |
 | `artefact-unavailable`, `artefact-length-mismatch`, `artefact-digest-mismatch` | A listed file was not supplied, or is not the file the binding records. `artefact` names it |
 
+### Carry a profile to another deployment
+
+A profile held by a binding is a set of files, so it can leave with the records that declare it. `exportProfileBundle` produces a **profile bundle**: the files and the inventory entries that put a profile inside a `dpp-evidence-package@1`. A deployment that has only the package registers the same profile from it and validates with no network, because nothing in validation fetches a context ([profiles](https://github.com/bsv-blockchain/dpp/blob/3f11c0b35300fe2169d7eb9f84d40c7b64a94c55/spec/profiles.md) section 7, [portable evidence](https://github.com/bsv-blockchain/dpp/blob/3f11c0b35300fe2169d7eb9f84d40c7b64a94c55/spec/portable-evidence.md) section 2).
+
+A bundle is not a second export format. Its files are ordinary inventory entries in the `schemas` category, and the exporter lists them in the manifest it already signs.
+
+| In the bundle's folder, `profiles/` by default | What it is |
+|---|---|
+| `<id>@<version>/binding.json` | The binding file in its exact bytes, so its SHA-256 is the `profile_binding_sha256` the records declare |
+| `<id>@<version>/<path>` | Each artefact the binding lists, at the path the binding gives, with its media type, length and SHA-256 in the inventory |
+| `<id>@<version>/<notice>` | Each notice the binding lists in `source.notices`, such as the `NOTICE.md` beside a bundled binding |
+| `licences/<name>.txt` | The text of a licence the carried files are under, where you supply it |
+| `profile-bundle.json` | The descriptor: the profiles covered, each with its binding digest, the licences, every file named and not carried, and three fixed limits. Schema: `@bsv/dpp-profiles/schemas/profile-bundle-v1.schema.json` |
+
+Three things a bundle never does:
+
+- **It never makes a binding trusted.** The destination's registry accepts a binding only when its digest is on the list that deployment's operator configured. The exporter's signature on the package says who assembled the bytes and nothing about who may define a profile.
+- **It never carries a file its publisher does not let others pass on.** Such a file is named in the descriptor by address, SHA-256 and length, and the destination obtains it for itself. Files GS1 publishes are always treated this way: an artefact at a `gs1.org` address, or with the digest of a pinned GS1 file, is left out whatever you ask.
+- **It never says anything about `payload_owner_hash`.** Validating a payload, or a disclosed part of one, under a restored profile says whether it satisfies the profile. Comparing a restricted part with the record's commitment stays the [record model's](https://github.com/bsv-blockchain/dpp/blob/3f11c0b35300fe2169d7eb9f84d40c7b64a94c55/spec/record-model.md#7-the-owner-tier-binding) check.
+
+#### Export a bundle
+
+```js
+import { bundledBindingLicenceTexts, bundledBindingNotices, exportProfileBundle } from '@bsv/dpp-profiles'
+
+// `registry` already holds the profiles: everything exported is read back from it, as it was held to its digest.
+const bundle = await exportProfileBundle({
+  registry,
+  profiles: ['eu-battery@1'],                 // default: every profile the registry holds by a binding
+  readNotice: bundledBindingNotices(),         // the notices of the bundled bindings; read your own profiles' notices from their folders
+  licenceTexts: bundledBindingLicenceTexts(),  // the licence text those notices point to
+})
+if (!bundle.ok) throw new Error(`${bundle.code}: ${bundle.detail}`)
+
+// bundle.files      Map of package path to exact bytes, the descriptor included
+// bundle.inventory  one entry per file, ready for the manifest's inventory
+// bundle.manifest   { profiles, withheld }: for the manifest's `profiles` and `completeness.withheld`
+```
+
+Add `bundle.inventory` to the inventory of the manifest you sign, `bundle.manifest.profiles` to its `profiles` and `bundle.manifest.withheld` to its `completeness.withheld`, and write `bundle.files` beside the package's other files. The same registry and input give the same bytes.
+
+| Option | Use |
+|---|---|
+| `profiles` | Which registered profiles to carry, each as `id@version` |
+| `readNotice` | Reads a notice a binding lists. The registry does not hold notices, because nothing validates against them |
+| `licenceTexts` | Licence texts to carry, each under the name the bindings give the licence |
+| `provisioned` | Files your deployment obtains for itself, such as `GS1_RESOLVER_ARTEFACTS` here and `EPCIS_GS1_ARTEFACTS` of `@bsv/dpp-credentials`: each is named in the descriptor, and an artefact with the same digest is left out |
+| `root` | The folder the bundle sits in, inside the package. Default `profiles` |
+
+The export is refused, and nothing is produced, as `no-profile`, `profile-not-registered`, `profile-not-bound` for a manifest-format profile, `notice-unavailable` when a notice a binding lists cannot be read, or `artefact-path-collision`. A manifest-format profile such as `general@2` ships with this package and is never carried.
+
+#### Restore from a bundle
+
+```js
+import { BUNDLED_BINDINGS, BUNDLED_BINDING_DIGESTS, bindingPayloadValidator, createProfileRegistry, openProfileBundle, profileBundleDirectory, registerProfileBundle } from '@bsv/dpp-profiles'
+
+// The folder the package was unpacked into. For a package held in memory use profileBundleFiles(map).
+const opened = await openProfileBundle(profileBundleDirectory('/var/lib/dpp/restore/package'))
+if (!opened.ok) throw new Error(`${opened.code}: ${opened.detail}`)
+
+// Trust is this deployment's own list. Nothing in the package adds to it.
+const registry = createProfileRegistry({ trustedBindingDigests: BUNDLED_BINDING_DIGESTS })
+for (const result of await registerProfileBundle(registry, opened.bundle, { expected: BUNDLED_BINDINGS })) {
+  if (!result.ok) console.error(`${result.profile} was not restored (${result.code}): ${result.detail}`)
+}
+
+const validate = bindingPayloadValidator({ registry, engines })
+```
+
+Inspect the package first with `inspectEvidencePackage` from `@bsv/dpp-protocol`, which checks every file against the inventory and the manifest's signature. That check and this one answer different questions, and a package can pass the first and be refused here.
+
+`registerProfileBundle` returns one result per profile and never throws for a refusal. A refused profile is not registered, so a payload that declares it validates as `unknown` with `profile-unknown`, never `pass`.
+
+| `code` | Cause |
+|---|---|
+| `bundle-descriptor-missing`, `bundle-descriptor-invalid` | From `openProfileBundle`: the folder holds no `profile-bundle.json`, or it is not strict JSON, not the format's structure, or contradicts itself |
+| `bundle-profile-absent` | The bundle does not cover a profile you asked for |
+| `bundle-binding-missing`, `bundle-binding-mismatch` | The bundle lists the profile and does not hold its binding file, or holds another file than the one its descriptor names |
+| `bundle-binding-untrusted` | The binding's digest is not on your registry's trusted list. `registration` holds the registry's own refusal |
+| `bundle-binding-substituted` | You already hold the profile, or passed the digest to expect in `expected`, and the bundle carries another binding under that name. The registry is not asked |
+| `bundle-binding-misfiled` | A trusted binding was listed under another profile's name. It is registered as the profile it defines, in `registered`, and the name it was listed under is not |
+| `bundle-artefact-missing` | The bundle is incomplete: it lacks a file the binding lists and does not name it as left out. `artefact` names it |
+| `bundle-artefact-not-provisioned` | The bundle names the file by address and digest, and you did not supply it. Obtain it from its publisher and pass a `provisioned` resolver |
+| `bundle-artefact-altered` | A file is not the length or SHA-256 the trusted binding records. `artefact` names it |
+| `bundle-registration-refused` | Any other [registration refusal](#when-registration-is-refused), in `registration` |
+
+`expected` takes the binding digest you expect for a profile: from your configuration, from `BUNDLED_BINDINGS`, or from the `profile_binding_sha256` your records declare. It narrows what is accepted and never widens it.
+
+For a file the bundle names and does not carry, pass `provisioned`, a resolver over the folder where you keep the files you obtained. This one keeps each file under its SHA-256. Whatever it returns is held to the length and SHA-256 the binding records:
+
+```js
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+const provisioned = (artefact) => {
+  try { return new Uint8Array(readFileSync(join('/var/lib/dpp/provisioned', artefact.sha256))) } catch { return undefined }
+}
+await registerProfileBundle(registry, opened.bundle, { provisioned })
+```
+
+To use the bundle as the profile resolver of your own start-up code, `opened.bundle.bindingBytes(profile)` returns the binding file and `opened.bundle.resolverFor(profile)` is the `resolveArtefact` that `registry.register` takes.
+
+A restored deployment can pass the profiles on in turn. `opened.bundle.noticeBytes(profile, path)` and `opened.bundle.licenceTexts()` return the notices and licence texts the bundle carries, in the forms `exportProfileBundle` takes, and the bundle it then exports is the same one byte for byte.
+
+In a repository checkout:
+
+| Command | What it shows |
+|---|---|
+| `node examples/portable-profile.mjs` | Exports the two example profiles into a signed package, switches the network off, restores them into a second registry from the package folder and gets the same answer for every payload vector. It then shows a correctly signed package refused for a substituted binding and for an altered shapes file, and an incomplete one answered `unknown` |
+| `node examples/portable-profile.mjs --keep <folder>` | The same, leaving the package in `<folder>` to look at |
+
 ## Retired profiles
 
 The sector profiles first published as manifests are retired from 14 November 2026 ([profiles](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md), the section on versions, freezing, retirement and migration). Retiring a profile changes what the package does with it and nothing it says.
@@ -603,6 +805,8 @@ The package computes data-file paths in its own directory at call time; bundlers
 |---|---|
 | `@bsv/dpp-profiles` | Manifest access, applicability, mapping, identifier and projection helpers, the profile registry and the binding validator, in Node |
 | `@bsv/dpp-profiles/validation-engine` | JSON-LD and SHACL engines for profiles held by a binding, in Node. Loads its libraries only when `createValidationEngine` is called |
+| `@bsv/dpp-profiles/validator-client` | The same two engines, answered by a validator service. Loads nothing and opens no connection until an engine is asked |
+| `@bsv/dpp-profiles/validator-service` | `startValidatorService`: the engines behind the `dpp-validator/1` contract, in Node. Starts nothing on import; the `dpp-validator` command calls it |
 | `@bsv/dpp-profiles/manifests/*` | Profile manifests, as JSON |
 | `@bsv/dpp-profiles/schemas/*` | Manifest, binding and supporting schemas |
 | `@bsv/dpp-profiles/generated/*` | Generated payload schemas and profile documents |

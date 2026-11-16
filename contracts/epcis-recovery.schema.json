@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/epcis-recovery.schema.json",
+  "title": "DPP EPCIS exchange recovery descriptor, format 1",
+  "description": "The descriptor of an EPCIS exchange snapshot (spec/epcis-interoperability.md section 8, spec/portable-evidence.md section 2): the file epcis-recovery.json in the folder of a dpp-evidence-package@1 that carries the retained originals of an EPCIS exchange and, in an authorised recovery snapshot, the durable records that cannot be rebuilt from them. It names every file the snapshot needs, the source scopes it covers, the boundary it was taken at, what it leaves out and what it claims. Every path is relative to the folder the descriptor is in. An original sits at originals/<sha256> and a record at records/<kind>/<name>.json, in canonical JSON (RFC 8785), under the name its own content gives. The descriptor is not a second export format and is not signed by itself: every file it names is one inventory entry of the package that carries it, and the exporter's signature covers the inventory. Rules that relate one member to another, such as the snapshot identity being the digest of the inventory, are stated in the specification and checked when a snapshot is read.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "access", "snapshot", "selection", "scopes", "cursors", "inventory", "omitted", "completeness", "limits"],
+  "properties": {
+    "format": { "const": "dpp-epcis-recovery" },
+    "version": { "const": "1", "description": "The format of this file." },
+    "access": { "enum": ["authorised-recovery", "public-evidence"], "description": "Which of the two access paths this is. authorised-recovery: for the operator authorised to run the exchange, and the only form that can be restored. public-evidence: what a public package may carry, which is no operational record." },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshotId", "takenAt", "boundary", "isolation"],
+      "description": "The boundary the snapshot was taken at.",
+      "properties": {
+        "snapshotId": { "$ref": "#/$defs/sha256", "description": "SHA-256 over the RFC 8785 form of an object with exactly the members access, format, inventory and version of this descriptor. The same content has the same identity whenever it was exported." },
+        "takenAt": { "$ref": "#/$defs/dateTime" },
+        "boundary": { "const": "no-unfinished-work", "description": "No unfinished work was journalled when the snapshot was taken." },
+        "isolation": { "const": "stable-revisions", "description": "Every record carried was read twice at the same revision, so all of them stood together at one moment." }
+      }
+    },
+    "selection": { "enum": ["all-scopes", "listed-scopes"], "description": "Whether every source scope the store held is covered, or only the ones asked for." },
+    "scopes": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The source scopes covered. Two scopes are never merged because they share an event identifier or an endpoint.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sourceId", "originals", "imports", "observations", "resolutions", "pulls"],
+        "properties": {
+          "sourceId": { "$ref": "#/$defs/name", "description": "The source scope, exactly as the records name it." },
+          "originals": { "type": "integer", "minimum": 0, "description": "How many distinct originals the scope's imports retain. Bytes two scopes share are counted in each." },
+          "imports": { "type": "integer", "minimum": 0 },
+          "observations": { "type": "integer", "minimum": 0 },
+          "resolutions": { "type": "integer", "minimum": 0 },
+          "pulls": {
+            "type": "array",
+            "description": "The pulls of the scope: the definition each query name is bound to, how the latest run ended and how far it got.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pullId", "queryId", "definitionDigest", "baseUrl", "status", "pagesAcknowledged", "cursor"],
+              "properties": {
+                "pullId": { "type": "string", "maxLength": 128, "pattern": "^urn:bsv:dpp:epcis:pull:sha256:[0-9a-f]{64}$" },
+                "queryId": { "$ref": "#/$defs/name" },
+                "definitionDigest": { "$ref": "#/$defs/sha256" },
+                "baseUrl": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "The address the query name is bound to. It holds no credential." },
+                "status": { "enum": ["running", "exhausted", "stopped-at-limit", "failed"] },
+                "pagesAcknowledged": { "type": "integer", "minimum": 0 },
+                "cursor": { "enum": ["none", "excluded", "included", "excluded-non-standard"], "description": "What became of the pull's cursor. none: it had none. excluded: it was left out. included: it is carried. excluded-non-standard: cursors were asked for and this one was left out, because its address carries more than the standard query parameters." }
+              }
+            }
+          }
+        }
+      }
+    },
+    "cursors": { "enum": ["excluded", "included"], "description": "Whether the cursors of pulls were asked for. Excluded is the default, and leaves out every cursor and every page token." },
+    "inventory": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every file the snapshot needs. A snapshot missing one of them is not this snapshot.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "kind", "sha256", "byteLength"],
+        "properties": {
+          "path": { "$ref": "#/$defs/path" },
+          "kind": { "enum": ["original", "import", "observation", "resolution", "pull", "pull-page", "public-import"], "description": "original: the exact bytes a source supplied. import: an import record (epcis-import.schema.json, version 2). observation, resolution, pull, pull-page: the records of epcis-exchange-records.schema.json. public-import: an import record as a public package carries it, with sourceLocation reduced to its kind." },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "byteLength": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "omitted": {
+      "type": "array",
+      "description": "Everything the snapshot leaves out, and why.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["what", "reason"],
+        "properties": {
+          "what": { "enum": ["associations-index", "retention-entries", "journal", "restore-history", "credentials", "cursors", "other-scopes", "operational-records", "provenance"] },
+          "reason": { "enum": ["derived", "empty-at-boundary", "never-carried", "excluded", "not-selected", "not-public"], "description": "derived: rebuilt at the destination. empty-at-boundary: there was none when the snapshot was taken. never-carried: no snapshot holds it. excluded: left out of this one. not-selected: outside the scopes asked for. not-public: a public package may not carry it." },
+          "count": { "type": "integer", "minimum": 0, "description": "How many values were left out, where that can be counted." }
+        }
+      }
+    },
+    "completeness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim", "recoverable"],
+      "properties": {
+        "claim": { "enum": ["complete-for-scopes", "bounded"], "description": "complete-for-scopes: every retained original and durable record of the covered scopes at the boundary. bounded: only what the access policy allowed." },
+        "recoverable": { "type": "boolean", "description": "True only for an authorised recovery snapshot: a deployment can be restored from it." }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "description": "What a snapshot does not carry or establish. The values are fixed, so no snapshot can claim more.",
+      "additionalProperties": false,
+      "required": ["credentials", "derivedIndexes", "interpretation", "origin"],
+      "properties": {
+        "credentials": { "const": "never-carried", "description": "No credential, key or secret-bearing address is carried. The destination's operator provisions them." },
+        "derivedIndexes": { "const": "rebuilt-at-destination", "description": "The associations index and the retention entries are rebuilt at the destination from what is carried." },
+        "interpretation": { "const": "as-recorded", "description": "Each record is restored as it was recorded. A later re-evaluation of a source is a separate result and replaces nothing." },
+        "origin": { "const": "not-established", "description": "A carried original says what was received. It never says who made it or that an event in it happened." }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "dateTime": { "type": "string", "maxLength": 64, "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "path": {
+      "type": "string",
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9_@-][A-Za-z0-9._@-]*(/[A-Za-z0-9_@-][A-Za-z0-9._@-]*)*$",
+      "description": "A relative file name with no empty, dot or dot-dot segment."
+    }
+  }
+}

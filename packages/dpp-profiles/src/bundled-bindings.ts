@@ -16,7 +16,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { profileBindingDigest } from './profile-binding.js'
-import type { ProfileRegistry, RegistrationResult } from './profile-registry.js'
+import type { BindingProfile, ProfileRegistry, RegistrationResult } from './profile-registry.js'
 
 /** Every binding the package ships, with the SHA-256 of its `binding.json`. */
 export const BUNDLED_BINDINGS = [
@@ -54,6 +54,14 @@ export interface RegisterBundledBindingsOptions {
 
 const reasonOf = (cause: unknown): string => (cause instanceof Error ? cause.message : String(cause))
 
+/** The folder that holds one folder per bundled profile: the one given, or the package's own `bindings/`. */
+function bindingsDirectory(given: URL | undefined): URL {
+  // A path given as text would be read as a relative URL and land somewhere else, so it is refused by name.
+  if (given != null && !(given instanceof URL && given.protocol === 'file:')) throw new TypeError('directory must be a file: URL, such as pathToFileURL(folder)')
+  // A base without a trailing slash would resolve each profile beside the folder, not inside it.
+  return given == null ? new URL('../bindings/', import.meta.url) : new URL(given.href.endsWith('/') ? given.href : `${given.href}/`)
+}
+
 /**
  * Registers the bundled bindings into a registry, reading each from the
  * package folder. One result per profile, in order, in the registry's own
@@ -72,11 +80,7 @@ export async function registerBundledBindings(registry: ProfileRegistry, options
     if (entry == null) throw new TypeError(`${JSON.stringify(profile)} is not a bundled binding; expected one of ${BUNDLED_BINDINGS.map((candidate) => candidate.profile).join(', ')}`)
     return entry
   })
-  const given = options.directory
-  // A path given as text would be read as a relative URL and land somewhere else, so it is refused by name.
-  if (given != null && !(given instanceof URL && given.protocol === 'file:')) throw new TypeError('directory must be a file: URL, such as pathToFileURL(folder)')
-  // A base without a trailing slash would resolve each profile beside the folder, not inside it.
-  const directory = given == null ? new URL('../bindings/', import.meta.url) : new URL(given.href.endsWith('/') ? given.href : `${given.href}/`)
+  const directory = bindingsDirectory(options.directory)
 
   const results: Array<RegistrationResult | BundledBindingRefusal> = []
   for (const { profile, bindingDigest } of entries) {
@@ -98,4 +102,48 @@ export async function registerBundledBindings(registry: ProfileRegistry, options
     results.push(await registry.register({ bindingBytes, resolveArtefact: (artefact) => new Uint8Array(readFileSync(new URL(artefact.path, folder))) }))
   }
   return results
+}
+
+/** The name the bundled bindings give the licence their files are under. */
+export const BUNDLED_BINDING_LICENCE = 'Apache-2.0'
+
+/**
+ * What `exportProfileBundle` takes as `readNotice` for the bundled bindings:
+ * a notice read from the package folder, by the path the binding lists it
+ * under. It answers `undefined` for a profile the package does not bundle, a
+ * bundled name registered from other bytes included, so an exporter with
+ * profiles of its own asks this first and its own folders next. A notice
+ * that is missing from the folder is `undefined` too, and the export is then
+ * refused, because the bundled files are not passed on without the notice
+ * that accounts for them.
+ */
+export function bundledBindingNotices(options: { directory?: URL } = {}): (profile: Pick<BindingProfile, 'profile' | 'bindingDigest'>, path: string) => Uint8Array | undefined {
+  const directory = bindingsDirectory(options.directory)
+  return (profile, path) => {
+    const entry = BUNDLED_BINDINGS.find((candidate) => candidate.profile === profile.profile && candidate.bindingDigest === profile.bindingDigest)
+    // A notice path is a relative file name with no dot or dot-dot segment, as the binding format requires, and it is checked again here because it becomes part of a file name.
+    if (entry == null || !/^[A-Za-z0-9_@-][A-Za-z0-9._@-]*(\/[A-Za-z0-9_@-][A-Za-z0-9._@-]*)*$/u.test(path)) return undefined
+    try {
+      return new Uint8Array(readFileSync(new URL(path, new URL(`${entry.profile}/`, directory))))
+    } catch {
+      return undefined
+    }
+  }
+}
+
+/**
+ * What `exportProfileBundle` takes as `licenceTexts` for the bundled
+ * bindings: the licence text their notices point to, which is the `LICENSE`
+ * file at the root of this package. Inside the package that file travels
+ * beside the bindings. A bundle leaves the package, so it carries the text
+ * itself. Empty when the file is not where the package keeps it, as after a
+ * bundler moved the code, and the bundle then names the licence without
+ * carrying its text.
+ */
+export function bundledBindingLicenceTexts(): Array<{ licence: string; bytes: Uint8Array; mediaType: string; fileName: string }> {
+  try {
+    return [{ licence: BUNDLED_BINDING_LICENCE, bytes: new Uint8Array(readFileSync(new URL('../LICENSE', import.meta.url))), mediaType: 'text/plain', fileName: `${BUNDLED_BINDING_LICENCE}.txt` }]
+  } catch {
+    return []
+  }
 }

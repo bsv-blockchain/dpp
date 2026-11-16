@@ -16,7 +16,7 @@ node scripts/consumer-check.mjs          # verifies the tarball bytes against th
 node scripts/implementer-bundle.mjs      # assembles the specifications, contracts, fixtures and conformance material as a portable archive with a digest manifest
 ```
 
-The packer refuses a set that is not a candidate, a package whose manifest version differs from the set's, and a manifest that does not export an entry point the set names. It records the source revision and whether the tree was clean, the SHA-256 of the set file itself, the selection the set names as its qualification gate, the image tag the set declares, and for each tarball its SHA-256 and npm integrity, so an approval refers to concrete bytes rather than a branch. The consumer check first holds every tarball in `release/candidates/` to that record: a missing candidate, an unexpected file, a changed byte or a mismatched integrity is a refusal before anything is installed, and `conformance/test/release-scripts.test.mjs` exercises each refusal. It then installs the candidates into a fresh project as the external consumer of `spec/conformance.md` §2: development dependencies omitted, no workspace links and no path back to this checkout; every runtime entry point the set declares imported, including the `@bsv/dpp-credentials` subpaths; the reader path run on the version 2 chain and the acceptance record; the profile manifests, generated schemas, GS1 schemas, VSC artefacts and EPCIS artefacts read from inside the packages; the declarations of all packages and the `@bsv/dpp-credentials` subpaths type-checked by a strict TypeScript project; the licence file present in each tarball; and no private, test or environment file inside any tarball. Each sentence names the assertion it made, so a reader sees what was covered rather than a summary. CI runs both on every change (`consumer` job) and builds and smokes the image (`image` job).
+The packer refuses a set that is not a candidate, a package whose manifest version differs from the set's, and a manifest that does not export an entry point the set names. It copies the repository's `NOTICE` and `PATENTS` into each package that publishes them, because the pack runs no script, and refuses an archive that lacks one or the licence. It records the source revision and whether the tree was clean, the SHA-256 of the set file itself, the selection the set names as its qualification gate, the images the set declares with their digests, and for each tarball its SHA-256 and npm integrity, so an approval refers to concrete bytes rather than a branch. The consumer check first holds every tarball in `release/candidates/` to that record: a missing candidate, an unexpected file, a changed byte or a mismatched integrity is a refusal before anything is installed, and `conformance/test/release-scripts.test.mjs` exercises each refusal. It then installs the candidates into a fresh project as the external consumer of `spec/conformance.md` §2: development dependencies omitted, no workspace links and no path back to this checkout; every runtime entry point the set declares imported, including the `@bsv/dpp-credentials` subpaths; the reader path run on the version 2 chain and the acceptance record; the profile manifests, generated schemas, GS1 schemas, VSC artefacts and EPCIS artefacts read from inside the packages; the declarations of all packages and the `@bsv/dpp-credentials` subpaths type-checked by a strict TypeScript project; the licence file and the repository's `NOTICE` and `PATENTS` present in each tarball; no private, test or environment file inside any tarball; and, in projects of their own, the protocol package alone running the lifecycle offline and the index alone starting its `dpp-index` command, neither with an engine library of the validator service. Each sentence names the assertion it made, so a reader sees what was covered rather than a summary. CI runs both on every change (`consumer` job), builds and smokes the image (`image` job), and holds the images to the packed packages (`delivery` job).
 
 The bundle is what an independent implementer receives: `spec/`, `contracts/`, `fixtures/`, the conformance baselines, ledger, schemas and selections, the licence and the implementer documentation, with a manifest naming the release set and its digest, the source revision, and the SHA-256 of every file. It carries no reference runtime code, and it is distributable without npm.
 
@@ -24,7 +24,7 @@ The bundle is what an independent implementer receives: `spec/`, `contracts/`, `
 
 The selected npm candidates are published by `.github/workflows/publish.yaml`, run manually with `dryRun` defaulting to `true`. It publishes through npm trusted publishing with GitHub OIDC, always with provenance, and no package is published by hand. The app starter, which pins a set, has its own workflow, `publish-starter.yaml`, on the same terms. Nothing publishes on merge. The workflow builds, type-checks, tests, packs, checks an external consumer, qualifies the selected claims, and builds and smokes the operator image before preparing publication.
 
-The workflow publishes npm packages only. The operator image is exercised locally and its registry publication needs a separate reviewed operator release. A successful npm publication alone does not change the release set to `released` or establish deployment readiness.
+The workflow publishes npm packages only. The images have a workflow of their own, [below](#images). A successful npm publication alone does not change the release set to `released` or establish deployment readiness.
 
 ### Review the exact plan
 
@@ -65,6 +65,36 @@ The second command installs exact versions from public npm in a fresh directory 
 
 A partial publication is not announced as a complete release. Qualification still withholds federated operation and version 1.0 readiness, and the standard makes no European system conformance or product-compliance claim. Package publication changes none of that.
 
+## Images
+
+A set names its images in its `images` member: the registry, each image this repository builds with its Dockerfile, the exact Node version it runs, its platforms and its digest, and each image the operator preset runs that somebody else publishes, by tag and digest with the day the digest was resolved and its licence. The set is the one place these are written. An image that has not been published records the word `unpublished`, never a tag.
+
+```
+node scripts/release-images.mjs check                      # hold deploy/ and the Dockerfiles to the set
+node scripts/release-images.mjs render                     # write the image block of deploy/operator.env.example and the third-party references from the set
+node scripts/release-images.mjs build --prefix parity- --tag test   # build both images for this machine, labelled with the revision, the set and the package version
+node scripts/release-images.mjs inspect dpp-overlay=parity-dpp-overlay:test dpp-validator=parity-dpp-validator:test   # read the labels back and hold them to the set
+node scripts/image-contents-check.mjs --overlay-image parity-dpp-overlay:test --validator-image parity-dpp-validator:test   # read every file of both images and of each packed archive
+node scripts/delivery-parity.mjs --overlay-image parity-dpp-overlay:test --validator-image parity-dpp-validator:test        # hold the npm and image deliveries to one another
+```
+
+To change the registry, edit `images.registry` in the set and run `render`; nothing else names it. The conformance checker runs the same rules as `check`, so a preset file that names an image by tag, a floating third-party image or an env example edited by hand is a defect.
+
+The parity check starts the index twice, from a clean consumer's `dpp-index` command and from the operator preset, gives both the same settings and asks both the same things over HTTP: the configuration each refuses at start, the contract with a write refused until a token is issued, the evidence exports, a stop and start, a restore from one into the other, and a database that goes away and returns. It then runs every profile vector through a clean consumer's validator client against the preset's validator service, the `dpp-validator` command, a second implementation of the contract, and no service at all. `--npm-runtime image` runs the consumers on the Node version the set records, whatever this machine has. `deploy/evidence/` holds the recorded results.
+
+### Publish the images
+
+The images are published by `.github/workflows/publish-images.yaml`, run manually with `dryRun` defaulting to `true`, under the same approval as the npm packages: the SHA-256 of the publication plan above. It has never run.
+
+| Step | What happens |
+|---|---|
+| Every run | Builds, type-checks, tests, packs, checks an external consumer, qualifies the selected claims, writes the publication plan, builds both images for the runner, reads their contents, and holds the two deliveries to one another. |
+| Dry run | Builds both images for `linux/amd64` and `linux/arm64` into local archives. Nothing is pushed. |
+| With `dryRun: false` and `approval` | Reproduces the approved plan from the committed revision, signs in to the registry the set names, pushes each image by digest, with no tag, reads each back by that digest, holds its platforms and labels to the set, and starts the unchanged preset from the published digests for the parity check. |
+| Afterwards, by a maintainer | `node scripts/release-images.mjs pin dpp-overlay=sha256:… dpp-validator=sha256:…` records the digests from the uploaded `release/image-digests.json` in the set and renders the env example from them. That is a reviewed change; the workflow writes nothing to the repository. Recording a digest changes the set file, so its digest changes with it. |
+
+For `ghcr.io` the workflow signs in with its own token and needs no secret; the organisation must allow the workflow to create the two packages. Any other registry needs its sign-in added to the workflow first, and the workflow refuses until then. `scripts/publish-images.mjs` refuses to execute outside the workflow, from a tree with changes, under a digest that is not the plan's, and for a set whose images are already recorded as published.
+
 ## What a consumer does with it
 
 The hosted reference application consumes exact npm package versions, and the hosted registry consumes the packages as vendored tarballs packed from a named revision; each names the set it is aligned to and the revision it was packed from. The generic example with no brand, wallet or account prerequisite is `examples/lifecycle-v2.mjs` in this repository; the recommended journey through the set is in [`../docs/quick-start.md`](../docs/quick-start.md), and the support declaration of every entry point is in [`../docs/packages/support-table.md`](../docs/packages/support-table.md).
@@ -73,4 +103,4 @@ For a step-by-step walkthrough of this profile release, see [publishing a profil
 
 ## Index starter, retired
 
-`@bsv/create-dpp-index` is no longer released from this repository. Its published `0.1.0-beta.1` stays on npm, pinned to the superseded `dpp-release-2026-10-10`; marking it deprecated there is a maintainer action. An operator runs the index this set's image builds, `packages/dpp-overlay/Dockerfile`, with the Compose preset in [`../deploy/`](../deploy/README.md), whose `dpp-index connection` writes an application's connection file.
+`@bsv/create-dpp-index` is no longer released from this repository. Its published `0.1.0-beta.1` stays on npm, pinned to the superseded `dpp-release-2026-10-10`; marking it deprecated there is a maintainer action. An operator runs the index image of this set, built from `packages/dpp-overlay/Dockerfile`, with the Compose preset in [`../deploy/`](../deploy/README.md), whose `dpp-index connection` writes an application's connection file.

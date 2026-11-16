@@ -95,7 +95,22 @@ The API validates the whole document against the passport identifier it is about
 
 A check that could not run is shown as **Not checked**, never as passed. After a hand-on the restricted part stays sealed to the holder who wrote it, so the new holder's authorised view is not checked until they write an update.
 
-**The validation engine.** The API depends on `jsonld`, `n3` and `shacl-engine` at the versions `@bsv/dpp-profiles` is tested with, and builds the engine once at start. It reads every context from the binding's folder and fetches nothing. If the libraries are missing the API still starts and says so: a profile held by a binding then cannot be written, and its readings say not checked.
+**The validation engine.** The engine that checks a product document is a setting, and the application is the same either way (`apps/api/src/validation-engine.ts`).
+
+| `VALIDATOR_URL` | Where the JSON-LD and SHACL engines run | What it needs |
+|---|---|---|
+| Unset, the default | In the API's own process | `jsonld`, `n3` and `shacl-engine`, which `apps/api` depends on at the versions `@bsv/dpp-profiles` is tested with |
+| The address of a validator service | In that service, asked through the client of `@bsv/dpp-profiles/validator-client` | The service's address, and `VALIDATOR_TOKEN` when it requires a token |
+
+The service is an engine and nothing more. The registry, the binding digests you trust, the split into public and restricted parts and the comparison with the passport identifier all stay in the API. The service is sent the product document and the rule files of its binding, so point `VALIDATOR_URL` only at a service you would show a restricted product document to. The token is sent to that address and nowhere else, and is never logged or returned.
+
+Three ways to have a service: the validator of the DPP repository's operator preset, which an index operator runs; `npx dpp-validator` in this project, which starts the same code on `127.0.0.1:8090` and reads `VALIDATOR_HOST`, `VALIDATOR_PORT` and `VALIDATOR_TOKEN`; or any other service that keeps the `dpp-validator/1` contract.
+
+Whichever engine is chosen, one rule holds: an engine that cannot be used is never a pass. Libraries that did not load, and a service that is stopped, slow, behind a wrong token or answering something else, all give the same result. A profile held by a binding cannot be written, the form says so with the reason, and every reading says **Not checked**. The API asks a service again whenever the health answer, the form or the Operations page is loaded, so a service that comes back is used without restarting the API. Libraries that did not load need a restart. `apps/api/test/validation-engine.test.ts` runs the same passports through both engines, then stops the service.
+
+In both modes every context and rule file is read from the binding, and nothing is fetched.
+
+**Where the profiles are read from.** By default the two sector bindings are read from the folder the profiles package ships. With `PROFILE_BUNDLE_DIR` set they are read from a profile bundle in that folder, which is where a [restore](#export-and-restore) installs the profiles a package carries, and the package's own folder is not read. Trust does not change with the source: a sector profile is accepted only under the digest your installed profiles package publishes for it, and any other binding only when its digest is in `TRUSTED_BINDING_DIGESTS`.
 
 **A profile of your own.** Put its `binding.json` and the files it names in a folder ([how to write a binding](https://github.com/bsv-blockchain/dpp/blob/main/docs/packages/dpp-profiles.md#write-a-binding)), then name the folder and trust its binding in `.env`:
 
@@ -156,7 +171,72 @@ A reader takes its answer between two looks at the log document, and takes it ag
 
 Two things to know about that store. A batch is one MongoDB document until it is applied, so a single record or batch past 15 MiB is refused, with nothing written. The limits in force, 2 MiB a document and 100 events a page, keep an ordinary document far below that. A document made of hundreds of thousands of very short identifiers can pass it, and its import is then refused as `record-too-large`. And the markers deleted records leave are not removed: there is one small one for each finished import.
 
+**Another store.** `EPCIS_STORAGE=file` keeps the exchange in a folder, `EPCIS_STORAGE_DIR` (`local/epcis-store`), through the file-system adapter that `@bsv/dpp-credentials/epcis-exchange` ships. It passes the same adapter suite and is handed to the module as the same six methods. It is here to show that the store is a boundary you can replace, and it is what the exit exercise restores into. It is one process on one machine's disk, with no replication: MongoDB is the store this application is built and tested on, and the file adapter is not offered as a second production database. An adapter for another database is yours to write against the same suite.
+
 **At start.** Before it accepts a request the API runs the module's recovery, which finishes or discards whatever a stopped process left, and logs what it did. Recovery assumes nothing else is writing to the store. Start one API process at a time, so that one is not importing while another recovers.
+
+## Export and restore
+
+The whole application can be exported as one signed evidence package and restored into another deployment: another host, another database, another provider. Both are operator commands, run on the host with the API and its worker stopped. There is no route for either. The API has no operator role, and a signed-in member of a brand is not the operator of the deployment, so the authorisation is the one the deployment already rests on: whoever can run a command with its settings.
+
+```sh
+npm run export -- --out ../my-dpp-export            # everything, for your own recovery or a move
+npm run export -- --out ../my-dpp-public --public    # only what anyone may hold
+npm run restore -- --from ../my-dpp-export --exporter-key <publisher key of the deployment that exported>
+```
+
+An export is one `dpp-evidence-package@1`: a folder of files under a manifest, `manifest.json`, that this application signs with a key derived from its publisher key. Every file is listed once in the manifest, with its length and SHA-256.
+
+| In the folder | What it is | Authorised export | Public export |
+|---|---|---|---|
+| `passports/<n>/index/` | The index's own signed evidence for the passport, exactly as the index exported it: transactions, proofs, its publisher policy and its report | Carried | Carried |
+| `passports/<n>/reading.json` | How the passport verified here when it was exported: each check and each finding, no values | Carried | Carried |
+| `passports/<n>/journal.json` | This application's journal: each state's bytes, its sealed owner tier, who holds the passport | Carried | Left out |
+| `passports/<n>/authority/` | Each acceptance record a hand-on commits to | Carried | Left out |
+| `application/brands/`, `offers/`, `claims/` | The brands, hand-on offers and lifecycle claims that belong to those passports | Carried | Left out |
+| `profiles/` | The profile bundle of `@bsv/dpp-profiles`: each binding the passports declare, every file it lists, its notices and licence text | Carried | Carried |
+| `epcis/` | The EPCIS exchange, from `@bsv/dpp-credentials/epcis-exchange` | The recovery snapshot of every source scope: originals, import records, observations, conflict decisions and pull state | The public form, and only of the source scopes you name with `--public-source` |
+| `application/application-export.json` | The descriptor: what the export covers, what it names without carrying, and what it leaves out | Carried | Carried |
+
+Neither export holds a key, a wallet file, a secret or a credential, and before a folder is written every byte is searched for each secret this deployment was configured with. The files GS1 publishes are named in the manifest by address and digest and are never carried. An authorised export does hold restricted records, sealed as they were: treat the folder as you treat the database. A public export is not a backup, and a restore refuses it.
+
+**Restoring.** Configure the new deployment first: its own `MONGO_URL`, its index, and whichever store and profile source it is to use. Then run `restore`. In order, it:
+
+1. Verifies the package before it writes anything: the manifest's signature under the exporter key you gave, every file against the manifest, each journal as a lineage that verifies, the index's signature on its evidence, the profile bundle against the digests this deployment trusts, and the EPCIS snapshot by the module's own checks.
+2. Compares the package with what the deployment already holds. An equal record is left alone. A different record under the same identity stops the restore with nothing written: a restore never overwrites.
+3. Restores the exchange into the configured store, installs the profile bundle into `PROFILE_BUNDLE_DIR` when that is set, and writes the journals, brands, offers and claims.
+4. Rebuilds what is derived: the exchange's index of identifiers, and the index's records of each passport, by announcing each state's own bytes to the index this deployment has joined.
+5. Reads every passport again here and compares the result with `reading.json`, check for check.
+
+It ends with a report of what it wrote, what it left, what you still have to provide and anything that needs attention. Run twice, it changes nothing the second time.
+
+| A package that | Is refused as |
+|---|---|
+| Is signed by another key than the one you gave | `exporter-unexpected` |
+| Lacks a file its manifest lists, or a record its descriptor counts | `package-incomplete`, naming what is missing |
+| Holds a file that is not the bytes the manifest lists, or one the manifest does not list | `file-altered`, `file-unlisted` |
+| Carries another definition under a profile's name, whoever signed it | `profile-refused` (`bundle-binding-substituted` or `bundle-binding-untrusted`) |
+| Carries a pull checkpoint without its imports, a conflict decision without its observations, or an altered original | `epcis-refused`, with the module's own code |
+| Is a public export | `not-a-recovery-package` |
+
+**What an export does not carry, and you provide at the new deployment.**
+
+| What | How it gets there |
+|---|---|
+| The wallet's root key and file | The wallet's own recovery. Set `WALLET_ROOT_KEY` to the same key, and restore or rebuild the wallet file |
+| `BRAND_ROOT_SECRET` and `MANAGED_IDENTITY_SECRET` | Your own handling of secrets. Brand, recipient and member keys are derived from them, so they must be the same |
+| The index's address and this application's tokens | `npm run connect-index` or `npm run go-live`. The index must admit the same publisher key |
+| Each EPCIS source's credential | The `EPCIS_SOURCE_<NAME>_` settings. The restore's report names each source and says whether its credential is set |
+| The GS1 files | The API obtains them at start, or you place them |
+| Sign-in accounts, sessions and brand memberships | Not carried. See below |
+
+Without the keys the new deployment reads and verifies every passport and can write none of them. That is the custody rule and no export changes it: continuing to sign needs the authorised keys, and they travel by the wallet's own recovery, never in a package.
+
+**After a restore.** An unfinished pull continues once its source's credential is set. A cursor is left out of an export unless you pass `--cursors include`, so the pull asks again from its retained bounds and recognises what it already holds: no page is skipped and no event is kept twice. If the source is now reached at another address, set that address in `.env` and run `npm run epcis-remap -- --source <name>` once, which binds every pull of the source to it and keeps the source's identity. A request a client sends again answers the import it made before, with no new receipt.
+
+**What cannot be recovered this way.** A lost key. Sign-in: accounts, sessions and memberships are not exported, and a brand is tied to its sign-in organisation by its identifier, so a deployment that uses sign-in must move the sign-in collections of its database by its own means or attach members to the restored brands again. The index's own state beyond these passports. The daily spend counter. Anything the first deployment never retained.
+
+`apps/api/test/exit-exercise.test.ts` is the whole of this as a test: it builds a deployment on MongoDB with a battery and a textile passport and an EPCIS exchange, exports it, switches it off, restores into a deployment that keeps the exchange in the file adapter and reads profiles from the bundle, with every upstream host out of reach, and continues there.
 
 ## Going live
 
@@ -205,7 +285,9 @@ docker build -t my-dpp .
 docker run -p 3000:3000 --env-file .env -v dpp-local:/app/local my-dpp
 ```
 
-One container serves the API and the web app. Run one instance with `WORKER=with-api` (the default), or several API instances with `WORKER=off` and exactly one with `WORKER=only`, so the unattended duties run once. Each API instance runs the EPCIS recovery when it starts, which assumes no other instance is importing at that moment: start them one at a time. The volume at `/app/local` holds the wallet file and the GS1 files.
+One container serves the API and the web app. Run one instance with `WORKER=with-api` (the default), or several API instances with `WORKER=off` and exactly one with `WORKER=only`, so the unattended duties run once. Each API instance runs the EPCIS recovery when it starts, which assumes no other instance is importing at that moment: start them one at a time. The volume at `/app/local` holds the wallet file and the GS1 files, and with `EPCIS_STORAGE=file` or `PROFILE_BUNDLE_DIR` their folders too.
+
+`deploy/compose.yml` starts MongoDB for the application, named by tag and digest so that every machine runs the same image. MongoDB Community Server is its publisher's program under the Server Side Public License. It is pulled from its publisher and is not part of this project.
 
 ## Next steps
 
@@ -216,6 +298,8 @@ Things this starter leaves to you, each a known path:
 - **Server-rendered passport pages.** The public page renders in the browser. If crawlers or no-JavaScript readers matter, serve a plain HTML view of it from the API at the page's own path, not at the identifier's.
 - **Self-custody.** Let a brand or a holder sign from their own BRC-100 wallet: implement a `Party` backed by a wallet connection in the browser, and let a transfer go to a key the holder's wallet derived.
 - **Who sees which events.** Every signed-in user sees every import and may start a pull, as with the wallet and operations pages. Scope them to a brand if your users should not see each other's.
+- **An operator role.** Export and restore are commands on the host because the API has no operator to authorise. If you want them over HTTP, add the role first.
+- **Moving sign-in.** An export carries no account, session or membership. Moving them with a deployment is yours to do.
 - **More of EPCIS.** This starter imports files, pulls from the standard query interface and exports originals. It captures nothing, subscribes to nothing, reads no XML and maps no event to a passport state. A page for recording a decision on two bodies under one event identifier is yours to add: the route is `POST /api/epcis/conflicts/:conflictId/resolutions`.
 - **Credentials and federation.** The rest of `@bsv/dpp-credentials` and a second index that synchronises with yours are documented in the standard.
 - **A wallet storage server.** For several API instances, replace the SQLite file with the toolbox client against a wallet storage server.

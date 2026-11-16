@@ -1524,10 +1524,35 @@ export function whatsOnChainKnows(network: 'main' | 'test', apiKey?: string): (t
   }
 }
 
-/** The engine as the environment describes it, plus what the routes work on and whatever it has to close. */
+/**
+ * The engine as the environment describes it, plus what the routes work on and whatever it has to close.
+ *
+ * A setting refused after the database connection is open closes that
+ * connection before the refusal is thrown. Left open, it keeps the process
+ * alive: the `dpp-index` command would print the refusal and never exit,
+ * where the same code started as `node dist/index.js` exits at once.
+ */
 async function engineFromEnvironment(
   network: 'main' | 'test',
   tracker: ChainTracker | 'scripts only'
+): Promise<{
+  engine: Engine
+  components: NodeComponents
+  close: () => Promise<void>
+}> {
+  const opened: Array<() => Promise<void>> = []
+  try {
+    return await buildEngineFromEnvironment(network, tracker, opened)
+  } catch (cause) {
+    for (const close of opened) await close().catch(() => {})
+    throw cause
+  }
+}
+
+async function buildEngineFromEnvironment(
+  network: 'main' | 'test',
+  tracker: ChainTracker | 'scripts only',
+  opened: Array<() => Promise<void>>
 ): Promise<{
   engine: Engine
   components: NodeComponents
@@ -1555,6 +1580,7 @@ async function engineFromEnvironment(
 
   if (mongoUrl != null && mongoUrl !== '') {
     const client = new MongoClient(mongoUrl)
+    opened.push(async () => { await client.close() })
     await client.connect()
     db = client.db(process.env.MONGO_DB)
     const mongoRecords = new MongoDppStorage(db)

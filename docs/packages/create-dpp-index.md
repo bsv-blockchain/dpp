@@ -6,9 +6,9 @@ Most of what the starter set up has a place in the preset. The rows marked as di
 
 | The starter gave you | The preset gives you |
 | --- | --- |
-| `npm create @bsv/dpp-index` | A [source checkout](README.md#source-access) with `deploy/compose.yml`, which builds `packages/dpp-overlay/Dockerfile` |
+| `npm create @bsv/dpp-index` | A [source checkout](README.md#source-access) with `deploy/compose.yml`, which runs the image of `packages/dpp-overlay/Dockerfile` pinned by digest, or builds it with `deploy/compose.build.yml` while the images are unpublished |
 | A generated `.env` | `deploy/operator.env`, copied from `deploy/operator.env.example` and filled in |
-| Persistent MongoDB | The bundled MongoDB on a named volume, private to the Compose network, or a managed database through `MONGO_URL` |
+| Persistent MongoDB | The bundled MongoDB Community Server on a named volume, pinned by digest and private to the Compose network, or another database through `MONGO_URL`. It is under the Server Side Public License ([the operator preset](../contribute/licence.md#the-operator-preset)) |
 | Operator-wide `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN`, copied into `.app.env` | The same settings, now optional, or per-publisher tokens that `dpp-index connection` issues, stored hashed in the preset's MongoDB |
 | `npm run connection` and `.app.env` | `dpp-index connection`, run in the index container, which prints the same four settings; a generated application takes the file with `npm run connect-index -- --from <file>` |
 | `npm run doctor -- --online` | `GET /health` and `GET /capabilities`, compared with the configuration as the operator guide shows |
