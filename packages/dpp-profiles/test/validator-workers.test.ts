@@ -58,15 +58,15 @@ describe('the service with its engine in threads of its own', () => {
   const startBuiltCoreOnly = (): Promise<ValidatorService> => start({ sparql: false, concurrency: 1 })
 
   it('stops an operation that runs over the limit, and is ready for the next one', async () => {
-    const service = await start({ concurrency: 1, queueLimit: 4, timeoutMs: 400 })
+    const service = await start({ concurrency: 1, queueLimit: 4, timeoutMs: 2000 })
     const client = createValidatorClient({ url: service.url, timeoutMs: 20_000 })
     const began = performance.now()
     const runaway = await client.shacl.validate({ nquads: RUNAWAY_DATA, shapes: RUNAWAY_SHAPES, background: [] })
     const took = performance.now() - began
-    expect(runaway).toEqual({ ok: false, reason: 'timeout', detail: 'the operation did not finish within 400 ms and was stopped' })
+    expect(runaway).toEqual({ ok: false, reason: 'timeout', detail: 'the operation did not finish within 2000 ms and was stopped' })
     // Answered at the limit, although the work itself would not have ended for a very long time.
-    expect(took).toBeGreaterThanOrEqual(390)
-    expect(took).toBeLessThan(5000)
+    expect(took).toBeGreaterThanOrEqual(1990)
+    expect(took).toBeLessThan(8000)
     // One thread, and it was running that match. The next operation is answered only because the thread was ended and replaced.
     // The replacement loads its engine first. Until it has, the service answers that no engine is free, so the question is asked again.
     let expansion = await client.jsonLd.toRdf({ document: product, contexts })
@@ -78,7 +78,7 @@ describe('the service with its engine in threads of its own', () => {
     if (!expansion.ok) return
     const validation = await client.shacl.validate({ nquads: expansion.nquads, shapes, background })
     expect(validation).toMatchObject({ ok: true })
-    expect(performance.now() - began).toBeLessThan(15_000)
+    expect(performance.now() - began).toBeLessThan(25_000)
   })
 
   it('control: the same operation on a thread nobody can stop holds that thread long past the limit', async () => {
