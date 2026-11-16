@@ -13,14 +13,14 @@ import { once } from 'node:events'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { LockingScript, MerklePath, PrivateKey, ProtoWallet, Transaction, UnlockingScript } from '@bsv/sdk'
+import { buildAttestationAnchor } from '@bsv/dpp-protocol'
 import {
   EPCIS_LIFECYCLE_MEDIA_TYPE,
   EPCIS_LIFECYCLE_REPRESENTATION,
-  buildAttestationAnchor,
   epcisLifecycleAnchorMetadata,
   parseEpcisLifecycleClaim,
   verifyEpcisLifecycleClaim,
-} from '@bsv/dpp-protocol'
+} from '@bsv/dpp-credentials/epcis-lifecycle'
 
 export type Json = Record<string, unknown>
 

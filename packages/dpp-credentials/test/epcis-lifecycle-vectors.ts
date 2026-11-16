@@ -12,7 +12,6 @@ import {
   assertEpcisLifecycleClaim,
   buildEpcisLifecycleAnchors,
   buildEpcisLifecycleClaim,
-  didKeyFromIdentityKey,
   epcisLifecycleClaimBytes,
   epcisLifecycleSigningBytes,
   signEpcisLifecycleClaim,
@@ -24,9 +23,9 @@ import {
   type EpcisLifecycleVerification,
   type EpcisLifecycleVerificationOptions,
   type SignedEpcisLifecycleClaim,
-} from '../src/index.js'
-import { canonicalEpcisIdentifier, epcUriToDigitalLink } from '../src/epcisShared.js'
-import type { PartialCheck } from '../src/evidence.js'
+} from '../src/epcis-lifecycle.js'
+import { canonicalEpcisIdentifier, epcUriToDigitalLink } from '../src/epcis-lifecycle/shared.js'
+import { didKeyFromIdentityKey, type PartialCheck } from '@bsv/dpp-protocol'
 
 /**
  * The published vectors of the EPCIS lifecycle claim, `dpp-epcis-lifecycle@1`

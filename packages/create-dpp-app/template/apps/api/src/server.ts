@@ -5,7 +5,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Hash, Utils } from '@bsv/sdk'
-import { EPCIS_LIFECYCLE_MEDIA_TYPE, EPCIS_LIFECYCLE_ROLES, parseEpcisLifecycleClaim, type EpcisLifecycleRole, type EpcisLifecycleSource } from '@bsv/dpp-protocol'
+import { EPCIS_LIFECYCLE_MEDIA_TYPE, EPCIS_LIFECYCLE_ROLES, parseEpcisLifecycleClaim, type EpcisLifecycleRole, type EpcisLifecycleSource } from '@bsv/dpp-credentials/epcis-lifecycle'
 import { PROFILE_RETIRED, ProfileRetiredError, RETIRED_PROFILE_REPLACEMENTS, describeRetiredProfile, isRetiredProfile, readPublicPayloadSchema, readRestrictedPayloadSchema } from '@bsv/dpp-profiles'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node'

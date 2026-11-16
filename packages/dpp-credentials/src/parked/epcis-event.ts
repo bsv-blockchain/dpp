@@ -1,8 +1,5 @@
 import { BigNumber, CachedKeyDeriver, Hash, PublicKey, Signature, Utils, type WalletProtocol } from '@bsv/sdk'
-import { compareCodePoints } from './canonicalJson.js'
-import { identityKeyFromDidKey } from './did.js'
-import type { ExternalCredentialVerification, ExternalCredentialVerifier, PartialCheck } from './evidence.js'
-import type { DataSigner } from './signatures.js'
+import { compareCodePoints, identityKeyFromDidKey, type DataSigner, type ExternalCredentialVerification, type ExternalCredentialVerifier, type PartialCheck } from '@bsv/dpp-protocol'
 import {
   EPCIS_CONTEXT_IRI,
   EPCIS_CONTEXT_PREFIXES,
@@ -10,9 +7,9 @@ import {
   EpcisEventHashError,
   canonicalEpcisIdentifier,
   parseStrictJson,
-} from './epcisShared.js'
+} from '../epcis-lifecycle/shared.js'
 
-// The shared helpers moved to epcisShared.ts unchanged; every name stays exported from here as before.
+// The shared helpers live in ../epcis-lifecycle/shared.ts; every name stays exported from here as before.
 export {
   EPCIS_CONTEXT_IRI,
   EPCIS_CONTEXT_PREFIXES,
@@ -23,8 +20,8 @@ export {
   epcUriToDigitalLink,
   gs1CheckDigit,
   parseStrictJson,
-} from './epcisShared.js'
-export type { EpcisEventHashCode, EpcisEventType, StrictJsonLimits } from './epcisShared.js'
+} from '../epcis-lifecycle/shared.js'
+export type { EpcisEventHashCode, EpcisEventType, StrictJsonLimits } from '../epcis-lifecycle/shared.js'
 
 /**
  * The directly signed EPCIS event, `epcis-event-vc@1`

@@ -184,7 +184,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/exchange.md",
-      "digest": "b8575cbd3cfd28a3b000e46857c1b5f4034be4b6cd9ca47d2f02c0e20cd041fa"
+      "digest": "fdf87f4177031e4b6867e817b6b36add2a00308bb409789fd2ed25b5e62fffb3"
     },
     {
       "id": "contract-native-evidence-extension",
@@ -344,7 +344,7 @@
       "version": "RFC 8785",
       "kind": "public",
       "attribution": "IETF",
-      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 5.0.0) and the EPCIS event body digest (packages/dpp-credentials/src/jcs.ts), and the EPCIS lifecycle claim (packages/dpp-protocol/src/jcs.ts)."
+      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 5.0.0) and the EPCIS event body digest (packages/dpp-credentials/src/jcs.ts), and the EPCIS lifecycle claim (packages/dpp-credentials/src/epcis-lifecycle/jcs.ts)."
     },
     {
       "id": "spec-epcis-lifecycle-claim",
@@ -352,7 +352,7 @@
       "version": "dpp-epcis-lifecycle@1",
       "kind": "local",
       "path": "spec/epcis-lifecycle-claim.md",
-      "digest": "c4eadbc709d1c3726b2246e723d9b83d3598c502d2b2dd1b9d950e42db00e725"
+      "digest": "136eb9d5f7be57c6641aa6e7939f6ead6c747a27b6dde73c983d1c6b0844f6a1"
     }
   ],
   "requirements": [
@@ -2867,13 +2867,13 @@
       "implementationRefs": [
         "packages/dpp-protocol/test/publisher-policy-vectors.ts",
         "packages/dpp-protocol/test/evidence-package-vectors.ts",
-        "packages/dpp-protocol/test/epcis-event-vectors.ts",
+        "packages/dpp-credentials/test/parked-epcis-event-vectors.ts",
         "packages/dpp-overlay/test/attestation-v1-fixture.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/fixture-json.test.ts (expectStackShape)",
         "packages/dpp-overlay/test/fixture-json.test.ts (expectStackShape)",
-        "packages/dpp-protocol/test/epcis-event-vectors.test.ts",
+        "packages/dpp-credentials/test/parked-epcis-event-vectors.test.ts",
         "packages/dpp-credentials/test/epcis-artefacts.test.ts"
       ],
       "evidenceRefs": [
@@ -3241,9 +3241,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-14 after §1 marked epcis-event-vc@1 parked with its profile: the representation stays registered and no row of the registry changed."
+      "notes": "Re-read 2026-11-14 after §1 marked epcis-event-vc@1 parked with its profile: the representation stays registered and no row of the registry changed. Re-read 2026-11-16 after §1 said that no package exports the parked reference module of epcis-event-vc@1, which now sits in the credentials package: the registry of representations and every rule are unchanged."
     },
     {
       "id": "EXCH-3-four-artefacts",
@@ -3266,8 +3266,8 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "notes": "Original bytes and decoded value are separate today; byteLength, schemaRefs and a projection record are not yet stored.",
-      "reviewedAt": "2026-11-14",
+      "notes": "Original bytes and decoded value are separate today; byteLength, schemaRefs and a projection record are not yet stored. Re-read 2026-11-16 after §1 said that no package exports the parked reference module of epcis-event-vc@1, which now sits in the credentials package: the registry of representations and every rule are unchanged.",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3291,8 +3291,8 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "notes": "The application issues and verifies compact JWS ES256K credentials under the brand identity key (alg ES256K, typ vc+jwt, kid the brand did:key with fragment) and refuses ES256 and other suites by name; a consumer confirms ES256K support through the capability document. The optional separately keyed ES256 signer is not implemented.",
-      "reviewedAt": "2026-11-14",
+      "notes": "The application issues and verifies compact JWS ES256K credentials under the brand identity key (alg ES256K, typ vc+jwt, kid the brand did:key with fragment) and refuses ES256 and other suites by name; a consumer confirms ES256K support through the capability document. The optional separately keyed ES256 signer is not implemented. Re-read 2026-11-16 after §1 said that no package exports the parked reference module of epcis-event-vc@1, which now sits in the credentials package: the registry of representations and every rule are unchanged.",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3349,8 +3349,9 @@
         "fixtures/evidence-v1.json#cases.anchor-tampered-bytes"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §1 said that no package exports the parked reference module of epcis-event-vc@1, which now sits in the credentials package: the registry of representations and every rule are unchanged."
     },
     {
       "id": "OPR-profiles-named",
@@ -4529,18 +4530,19 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-protocol/src/lifecycleEvent.ts#buildEpcisLifecycleClaim",
-        "packages/dpp-protocol/src/lifecycleEvent.ts#parseEpcisLifecycleClaim"
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#buildEpcisLifecycleClaim",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#parseEpcisLifecycleClaim"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
-      "reviewOwner": "dpp maintainers"
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
     },
     {
       "id": "ELC-3-bytes",
@@ -4557,13 +4559,13 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-protocol/src/jcs.ts",
-        "packages/dpp-protocol/src/lifecycleEvent.ts#signEpcisLifecycleClaim",
-        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisLifecycleClaimBytes"
+        "packages/dpp-credentials/src/epcis-lifecycle/jcs.ts",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#signEpcisLifecycleClaim",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#epcisLifecycleClaimBytes"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/jcs.test.ts",
-        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle-jcs.test.ts",
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#non-canonical-bytes",
@@ -4571,7 +4573,8 @@
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
-      "reviewOwner": "dpp maintainers"
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
     },
     {
       "id": "ELC-4-event",
@@ -4588,18 +4591,19 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-protocol/src/lifecycleEvent.ts#assertEpcisLifecycleClaim",
-        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim"
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#assertEpcisLifecycleClaim",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#verifyEpcisLifecycleClaim"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
-      "reviewOwner": "dpp maintainers"
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
     },
     {
       "id": "ELC-5-binding",
@@ -4616,11 +4620,11 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim",
-        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisIdentifierGranularity"
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#verifyEpcisLifecycleClaim",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#epcisIdentifierGranularity"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#transformation-event-manufacturing",
@@ -4629,7 +4633,8 @@
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
-      "reviewOwner": "dpp maintainers"
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
     },
     {
       "id": "ELC-6-authority",
@@ -4646,10 +4651,10 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim"
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#verifyEpcisLifecycleClaim"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#valid-signature-unsupported-authority",
@@ -4659,7 +4664,8 @@
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
-      "reviewOwner": "dpp maintainers"
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
     },
     {
       "id": "ELC-7-corrections",
@@ -4676,11 +4682,11 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisLifecycleClaimRelation",
-        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim"
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#epcisLifecycleClaimRelation",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#verifyEpcisLifecycleClaim"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#duplicate-and-conflicting-observations",
@@ -4688,7 +4694,8 @@
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
-      "reviewOwner": "dpp maintainers"
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
     },
     {
       "id": "ELC-8-anchoring",
@@ -4706,18 +4713,19 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisLifecycleAnchorMetadata",
-        "packages/dpp-protocol/src/lifecycleEvent.ts#buildEpcisLifecycleAnchors"
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#epcisLifecycleAnchorMetadata",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#buildEpcisLifecycleAnchors"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#transformation-event-manufacturing"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
-      "reviewOwner": "dpp maintainers"
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
     },
     {
       "id": "ELC-9-findings",
@@ -4734,18 +4742,19 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim",
-        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisLifecycleCredentialVerifierFor"
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#verifyEpcisLifecycleClaim",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#epcisLifecycleCredentialVerifierFor"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
-      "reviewOwner": "dpp maintainers"
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
     },
     {
       "id": "ELC-REG-intake",

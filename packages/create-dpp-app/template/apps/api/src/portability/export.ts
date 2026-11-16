@@ -24,8 +24,6 @@
 // authority at the place the package is restored.
 import { Utils } from '@bsv/sdk'
 import {
-  EPCIS_LIFECYCLE_MEDIA_TYPE,
-  EPCIS_LIFECYCLE_REPRESENTATION,
   EVIDENCE_PACKAGE_FORMAT,
   EVIDENCE_PACKAGE_PROTOCOL,
   EVIDENCE_PACKAGE_VERSION,
@@ -38,6 +36,10 @@ import {
   type InventoryEntry,
   type SourceObservation,
 } from '@bsv/dpp-protocol'
+import {
+  EPCIS_LIFECYCLE_MEDIA_TYPE,
+  EPCIS_LIFECYCLE_REPRESENTATION,
+} from '@bsv/dpp-credentials/epcis-lifecycle'
 import { describeProfileBundleOmission, exportProfileBundle, isRetiredProfile } from '@bsv/dpp-profiles'
 import { EPCIS_GS1_ARTEFACTS } from '@bsv/dpp-credentials'
 import { exportEpcisPublicEvidence, exportEpcisRecovery, type EpcisExchangeStorage, type EpcisSourceCredential, type ExportedEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'

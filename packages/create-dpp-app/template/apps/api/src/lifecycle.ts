@@ -12,13 +12,17 @@ import { Utils, type ChainTracker } from '@bsv/sdk'
 import { EPCIS_CONTEXT_IRI, classifyEpcisIdentifier, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
 import { gs1KeyOf, granularityOf, parseGs1DigitalLinkUri, sameGs1Key, type AiValue, type Gs1Key } from '@bsv/dpp-profiles'
 import {
+  decodeAttestationAnchor,
+  verifyLifecycleClaim,
+  type PartialCheck,
+  type SignedLifecycleClaim,
+} from '@bsv/dpp-protocol'
+import {
   EPCIS_LIFECYCLE_CLASS_FIELDS,
   EPCIS_LIFECYCLE_INSTANCE_FIELDS,
   EPCIS_LIFECYCLE_REPRESENTATION,
-  decodeAttestationAnchor,
   parseEpcisLifecycleClaim,
   verifyEpcisLifecycleClaim,
-  verifyLifecycleClaim,
   type EpcisLifecycleAnchorEvidence,
   type EpcisLifecycleBinding,
   type EpcisLifecycleBindingField,
@@ -26,9 +30,7 @@ import {
   type EpcisLifecycleComparisonInput,
   type EpcisLifecycleFindings,
   type EpcisLifecycleRelation,
-  type PartialCheck,
-  type SignedLifecycleClaim,
-} from '@bsv/dpp-protocol'
+} from '@bsv/dpp-credentials/epcis-lifecycle'
 import type { IndexClient } from './index-client.js'
 import { isEpcisLifecycleRecord, type ClaimRecord, type ClaimRegistryAnswer, type EpcisLifecycleClaimRecord, type Store } from './store.js'
 

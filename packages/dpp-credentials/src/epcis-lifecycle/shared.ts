@@ -2,11 +2,11 @@ import { Utils } from '@bsv/sdk'
 
 /**
  * The EPCIS helpers two modules share: the parked directly signed event
- * (`epcisEvent.ts`, `spec/epcis-event-profile.md`) and the EPCIS lifecycle
- * claim (`lifecycleEvent.ts`, `spec/epcis-lifecycle-claim.md`). They moved
- * here from the parked module unchanged, which re-exports every one of them
- * under its old name, so its behaviour, tests and vectors are untouched. This
- * module is not exported from the package root.
+ * (`../parked/epcis-event.ts`, `spec/epcis-event-profile.md`) and the EPCIS
+ * lifecycle claim (`claim.ts`, `spec/epcis-lifecycle-claim.md`). They came
+ * from the parked module unchanged, which re-exports every one of them under
+ * its old name, so its behaviour, tests and vectors are untouched. No entry
+ * point of the package exports this module.
  */
 
 /** The pinned EPCIS 2.0.1 context, named by its versioned IRI. */

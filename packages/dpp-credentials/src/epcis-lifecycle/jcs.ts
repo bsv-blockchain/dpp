@@ -1,5 +1,5 @@
 import { Utils } from '@bsv/sdk'
-import { parseStrictJson, type StrictJsonLimits } from './epcisShared.js'
+import { parseStrictJson, type StrictJsonLimits } from './shared.js'
 
 /**
  * RFC 8785, the JSON Canonicalization Scheme (JCS), for the formats that
@@ -24,6 +24,11 @@ import { parseStrictJson, type StrictJsonLimits } from './epcisShared.js'
  * read it as two different values. `parseCanonicalJcs` adds the rule a signed
  * representation needs: the bytes must be exactly the canonical form of their
  * own parse, so one value has one byte string and no other.
+ *
+ * `../jcs.ts` is a different function for a different job: it writes the
+ * digest input of a retained EPCIS source and reads nothing. The source
+ * exchange imports no `@bsv` package, and this file's bytes are `@bsv/sdk`
+ * byte arrays, so the two stay apart.
  */
 export class JcsError extends Error {
   constructor(readonly path: string, detail: string) {

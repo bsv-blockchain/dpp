@@ -4,7 +4,7 @@
   "generatedBy": "scripts/deployment-inventory.mjs",
   "releaseSet": "dpp-release-2026-11",
   "releaseSetPath": "release/dpp-release-2026-11.json",
-  "lockfileSha256": "3ba125870bdb1bba26999f52701da82a16bd413baac8de18eb35673f512c1989",
+  "lockfileSha256": "3cfd7ddacc86a750c808ab45f32772e5f6c294d7b2ff0d5196d2d935b7429e47",
   "npmPackages": [
     {
       "name": "@bsv/dpp-protocol",
@@ -484,16 +484,35 @@
         "artifacts"
       ],
       "installs": {
-        "packageCount": 29,
+        "packageCount": 31,
         "licences": {
           "BSD-3-Clause": 13,
           "MIT": 10,
+          "Apache-2.0": 2,
           "BSD-3-Clause for the package, and the W3C Software and Document License for the context files it carries": 2,
           "ISC": 2,
           "(MIT OR CC0-1.0)": 1,
-          "Apache-2.0": 1
+          "Open BSV License Version 6": 1
         },
         "packages": [
+          {
+            "name": "@bsv/dpp-protocol",
+            "version": "0.3.0-beta.10",
+            "relation": "direct",
+            "licence": "Apache-2.0",
+            "own": true,
+            "disposition": "own-code"
+          },
+          {
+            "name": "@bsv/sdk",
+            "version": "2.8.10",
+            "relation": "direct",
+            "licence": "Open BSV License Version 6",
+            "licenceFile": "LICENSE.txt",
+            "licenceFileOpens": "Open BSV License Version 6",
+            "disposition": "bsv-packages",
+            "integrity": "sha512-0KJxu772gbF2wKmD2dASciHYfAmo87ddXYknrMgYzGmI683l0trNcZHo0SYLWO5xZqJG5EB4ROyLuWXvhLCYFg=="
+          },
           {
             "name": "@digitalbazaar/credentials-context",
             "version": "3.2.0",

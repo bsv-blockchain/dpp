@@ -317,7 +317,7 @@ Field 6's controller key names the passport controller and locks each state. Lat
 
 **Signed EPCIS events** (`epcis-event-vc@1`, parked)
 
-The directly signed EPCIS event profile is parked while its representation is reconsidered. The module stays in the repository, at `packages/dpp-protocol/src/epcisEvent.ts` with its tests, and is no longer exported: the package entry point carries none of `epcisEventHashId`, `epcisEventCredentialKey`, `buildEpcisEventCredential`, `signEpcisEventCredential`, `verifyEpcisEventCredential`, `epcisEventAnchorMetadata`, `epcisEventCredentialVerifierFor` or the module's other names. No published version exported them ([parked: sign an event](../interoperability/epcis.md#parked-sign-an-event)).
+The directly signed EPCIS event profile is parked while its representation is reconsidered. The module stays in the repository, at `packages/dpp-credentials/src/parked/epcis-event.ts` with its tests, and no package exports it: this package's entry point carries none of `epcisEventHashId`, `epcisEventCredentialKey`, `buildEpcisEventCredential`, `signEpcisEventCredential`, `verifyEpcisEventCredential`, `epcisEventAnchorMetadata`, `epcisEventCredentialVerifierFor` or the module's other names. No published version exported them ([parked: sign an event](../interoperability/epcis.md#parked-sign-an-event)).
 
 **Publisher policy and evidence packages**
 

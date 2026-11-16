@@ -2,8 +2,9 @@
 // starter now issues EPCIS lifecycle claims, and every claim already signed
 // in the old format keeps its bytes, its digest and its meaning. This test
 // holds the historical fixtures and vectors to the bytes they were published
-// with, verifies every claim in them under the native claim's own rules, and
-// checks that the EPCIS lifecycle verifier never reads one as its own.
+// with and verifies every claim in them under the native claim's own rules.
+// That the EPCIS lifecycle verifier never reads one as its own is held beside
+// that verifier, in the credentials package.
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
@@ -15,7 +16,6 @@ import {
   decodeAttestationAnchor,
   lifecycleClaimBytes,
   lifecycleClaimDigest,
-  verifyEpcisLifecycleClaim,
   verifyLifecycleClaim,
   type SignedLifecycleClaim,
 } from '../src/index.js'
@@ -77,14 +77,6 @@ describe('the historical native claim, frozen', () => {
     expect(verifyLifecycleClaim(signed.claim!).signature).toBe('verified')
     expect(lifecycleClaimDigest(signed.claim!)).toBe(signed.digest_hex)
     expect(Utils.toHex(lifecycleClaimBytes(signed.claim!))).toBe(signed.secured_bytes_hex)
-  })
-
-  it('is never read as an EPCIS lifecycle claim: verification dispatches by claimFormat', async () => {
-    const fixture = json<{ claim: SignedLifecycleClaim; representationHex: string }>('fixtures/attestation-anchor-v1.json')
-    const asEpcis = await verifyEpcisLifecycleClaim(Utils.toArray(fixture.representationHex, 'hex'))
-    expect(asEpcis.findings.eventStructure.status).toBe('fail')
-    expect(asEpcis.findings.signature.status).toBe('unknown')
-    expect(asEpcis.claim).toBeUndefined()
   })
 
   it('still runs the record version 2 example, whose native claim verifies under the native rules', () => {

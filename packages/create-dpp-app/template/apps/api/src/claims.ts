@@ -23,7 +23,7 @@ import {
   verifyEpcisLifecycleClaim,
   type EpcisLifecycleRole,
   type EpcisLifecycleSource,
-} from '@bsv/dpp-protocol'
+} from '@bsv/dpp-credentials/epcis-lifecycle'
 import { bindingsFor, claimText, type EventSchemaCheck } from './lifecycle.js'
 import type { Party } from './parties.js'
 import type { ClaimRecord, EpcisLifecycleClaimRecord, Store } from './store.js'

@@ -8,7 +8,6 @@
  * - owner-tier blob hash binding (§7)
  * - did:key for identity keys, and the derivation a verifier needs (`spec/identity.md`)
  * - the canonical bytes an attestation is signed and hashed over (`spec/rules.md` §4)
- * - the EPCIS lifecycle claim and its RFC 8785 bytes (`spec/epcis-lifecycle-claim.md`)
  *
  * Imported by the overlay topic manager and every consuming application.
  */
@@ -31,11 +30,7 @@ export * from './publisherPolicy.js'
 export * from './evidencePackage.js'
 export * from './acceptance.js'
 export * from './registration.js'
-export * from './jcs.js'
-export * from './lifecycleEvent.js'
-// `./epcisEvent.js`, the directly signed EPCIS event profile `epcis-event-vc@1`,
-// is deliberately absent: the profile is parked while its representation is
-// reconsidered (`spec/epcis-event-profile.md`). The module, its tests and its
-// vectors stay in the repository as the parked record, and nothing here
-// exports it. `./epcisShared.js`, the EPCIS helpers it shares with the
-// lifecycle claim, is internal and not exported either.
+// Nothing here reads an event format or a product identifier scheme. A claim
+// format defined over one lives in the package that owns that format and
+// reaches a verifier through the `credentialVerifier` option of
+// `verifyPassportEvidence` in `./evidence.js`.

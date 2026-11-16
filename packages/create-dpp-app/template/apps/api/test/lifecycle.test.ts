@@ -5,7 +5,7 @@
 // the code the live platform runs: the writer's six steps, the index's real
 // admission rules, managed custody, claims, and the reader's report.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { verifyEpcisLifecycleClaim } from '@bsv/dpp-protocol'
+import { verifyEpcisLifecycleClaim } from '@bsv/dpp-credentials/epcis-lifecycle'
 import { loadConfig } from '../src/config.js'
 import { mintPassportId } from '../src/identifiers.js'
 import { eventSchemaCheck } from '../src/lifecycle.js'

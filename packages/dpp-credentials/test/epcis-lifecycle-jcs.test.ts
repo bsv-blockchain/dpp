@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Utils } from '@bsv/sdk'
-import { JcsError, jcsBytes, jcsString, parseCanonicalJcs, parseStrictJcsJson } from '../src/index.js'
+import { JcsError, jcsBytes, jcsString, parseCanonicalJcs, parseStrictJcsJson } from '../src/epcis-lifecycle.js'
 
 /** An IEEE 754 double from its sixteen hex digits, as RFC 8785 Appendix B lists them. */
 function double(hex: string): number {

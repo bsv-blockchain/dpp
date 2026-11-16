@@ -1,18 +1,17 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { PrivateKey, ProtoWallet, Transaction, Utils } from '@bsv/sdk'
-import * as lifecycle from '../src/lifecycleEvent.js'
-import * as parked from '../src/epcisEvent.js'
-import * as shared from '../src/epcisShared.js'
+import * as lifecycle from '../src/epcis-lifecycle/claim.js'
+import * as parked from '../src/parked/epcis-event.js'
+import * as shared from '../src/epcis-lifecycle/shared.js'
 import {
   EPCIS_LIFECYCLE_REPRESENTATION,
   assertEpcisLifecycleClaim,
   buildEpcisLifecycleAnchors,
   buildEpcisLifecycleClaim,
-  decodeAttestationAnchor,
   epcisIdentifierGranularity,
   epcisLifecycleAnchorMetadata,
   epcisLifecycleClaimBytes,
@@ -22,14 +21,13 @@ import {
   parseEpcisLifecycleClaim,
   signEpcisLifecycleClaim,
   verifyEpcisLifecycleClaim,
-  verifyLifecycleClaim,
-  verifyPassportEvidence,
-} from '../src/index.js'
-import { attachProof, mockTracker } from './helpers.js'
+} from '../src/epcis-lifecycle.js'
+import { decodeAttestationAnchor, verifyLifecycleClaim, verifyPassportEvidence } from '@bsv/dpp-protocol'
+import { attachProof, mockTracker } from '../../dpp-protocol/test/helpers.js'
 import {
   ANCHOR_SERVICE, EVENTS, ID, P, PARTY, S, SHREDDING_RULE, SHREDDING_STEP,
   bind, gs1Comparison, input, issue, lifecycleClaims, lifecycleEventVectors, optionsOf, pinnedSchemaValidator, runVector, expectedOf, text, type VectorOptions,
-} from './lifecycle-event-vectors.js'
+} from './epcis-lifecycle-vectors.js'
 
 const ROOT = join(import.meta.dirname, '..', '..', '..')
 const FILE = 'fixtures/vectors/dpp/epcis-lifecycle/v1.json'
@@ -244,6 +242,14 @@ describe('signing, bytes and identity', () => {
     expect(verifyLifecycleClaim(c.receiving).signature).toBe('invalid')
   })
 
+  it('never reads a historical native claim as its own, from the exact bytes that claim was anchored with', async () => {
+    const fixture = JSON.parse(readFileSync(join(ROOT, 'fixtures/attestation-anchor-v1.json'), 'utf8')) as { representationHex: string }
+    const asEpcis = await verifyEpcisLifecycleClaim(Utils.toArray(fixture.representationHex, 'hex'))
+    expect(asEpcis.findings.eventStructure.status).toBe('fail')
+    expect(asEpcis.findings.signature.status).toBe('unknown')
+    expect(asEpcis.claim).toBeUndefined()
+  })
+
   it('classifies identifier granularity from the GS1 grammar', () => {
     expect(epcisIdentifierGranularity(ID.battery)).toBe('instance')
     expect(epcisIdentifierGranularity(ID.cellLot)).toBe('class')
@@ -339,11 +345,42 @@ describe('the parked module', () => {
     expect(parked.EPCIS_CONTEXT_IRI).toBe(shared.EPCIS_CONTEXT_IRI)
   })
 
-  it('is not exported from the package root, and neither is the shared module', async () => {
-    const root = await import('../src/index.js')
-    expect('verifyEpcisEventCredential' in root).toBe(false)
-    expect('parseStrictJson' in root).toBe(false)
-    expect('canonicalEpcisIdentifier' in root).toBe(false)
+  it('is not exported from the package root, the claim entry point or the protocol package, and neither is the shared module', async () => {
+    for (const root of [await import('../src/index.js'), await import('../src/epcis-lifecycle.js'), await import('@bsv/dpp-protocol')]) {
+      expect('verifyEpcisEventCredential' in root).toBe(false)
+      expect('parseStrictJson' in root).toBe(false)
+      expect('canonicalEpcisIdentifier' in root).toBe(false)
+    }
+  })
+})
+
+describe('where the claim sits in the package', () => {
+  const src = join(import.meta.dirname, '..', 'src')
+  const specifiers = (file: string): string[] => [...readFileSync(join(src, file), 'utf8').matchAll(/from\s+['"]([^'"]+)['"]/g)].map((m) => m[1]!)
+
+  it('is the only code that imports the protocol package or the SDK, so every other entry point loads neither', () => {
+    const files = (readdirSync(src, { recursive: true }) as string[]).map((f) => f.split('\\').join('/')).filter((f) => f.endsWith('.ts')).sort()
+    const importing = files.filter((file) => specifiers(file).some((s) => s.startsWith('@bsv/')))
+    expect(importing).toEqual(['epcis-lifecycle/claim.ts', 'epcis-lifecycle/jcs.ts', 'epcis-lifecycle/shared.ts', 'parked/epcis-event.ts'])
+    // Nothing outside the claim's own folder and the parked module imports from either.
+    const reaching = files.filter((file) => !/^(epcis-lifecycle|parked)\//.test(file) && specifiers(file).some((s) => /epcis-lifecycle|parked\//.test(s)))
+    expect(reaching).toEqual(['epcis-lifecycle.ts'])
+  })
+
+  it('takes the anchor, the key helpers and the report types from the protocol package and restates none of them', () => {
+    const claim = readFileSync(join(src, 'epcis-lifecycle', 'claim.ts'), 'utf8')
+    for (const name of ['buildAttestationAnchor', 'decodeAttestationAnchor', 'compareCodePoints', 'identityKeyFromDidKey']) {
+      expect(claim, name).toMatch(new RegExp(`import \\{[^}]*\\b${name}\\b[^}]*\\} from '@bsv/dpp-protocol'`))
+      expect(claim, name).not.toMatch(new RegExp(`(function|const) ${name}\\b`))
+    }
+  })
+
+  it('exports every name the claim and its canonical JSON define, and no helper of the shared module', async () => {
+    const entry = Object.keys(await import('../src/epcis-lifecycle.js')).sort()
+    const defined = [...Object.keys(lifecycle), ...Object.keys(await import('../src/epcis-lifecycle/jcs.js'))].sort()
+    expect(entry).toEqual(defined)
+    expect(entry).toEqual(expect.arrayContaining(['buildEpcisLifecycleClaim', 'verifyEpcisLifecycleClaim', 'epcisLifecycleCredentialVerifierFor', 'jcsBytes', 'parseCanonicalJcs']))
+    for (const name of Object.keys(shared)) expect(entry, name).not.toContain(name)
   })
 })
 

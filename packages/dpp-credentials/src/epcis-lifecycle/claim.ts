@@ -1,7 +1,16 @@
 import { CachedKeyDeriver, Hash, LockingScript, Signature, Utils, type ChainTracker, type Transaction, type WalletProtocol } from '@bsv/sdk'
-import { buildAttestationAnchor, decodeAttestationAnchor, type AnchorMetadata, type AnchorSigner } from './anchor.js'
-import { compareCodePoints } from './canonicalJson.js'
-import { identityKeyFromDidKey } from './did.js'
+import {
+  buildAttestationAnchor,
+  compareCodePoints,
+  decodeAttestationAnchor,
+  identityKeyFromDidKey,
+  type AnchorMetadata,
+  type AnchorSigner,
+  type DataSigner,
+  type ExternalCredentialVerification,
+  type ExternalCredentialVerifier,
+  type PartialCheck,
+} from '@bsv/dpp-protocol'
 import {
   EPCIS_CONTEXT_IRI,
   EPCIS_CONTEXT_PREFIXES,
@@ -9,10 +18,8 @@ import {
   canonicalEpcisIdentifier,
   constrainedCanonicalDigitalLink,
   type EpcisEventType,
-} from './epcisShared.js'
-import type { ExternalCredentialVerification, ExternalCredentialVerifier, PartialCheck } from './evidence.js'
+} from './shared.js'
 import { jcsBytes, parseCanonicalJcs } from './jcs.js'
-import type { DataSigner } from './signatures.js'
 
 /**
  * The EPCIS lifecycle claim, `dpp-epcis-lifecycle@1`
@@ -25,7 +32,7 @@ import type { DataSigner } from './signatures.js'
  * RFC 8785 form of the whole signed envelope, representation
  * `dpp-epcis-lifecycle-json@1`.
  *
- * The native claim of `attestation.ts` (`dpp-lifecycle-v1`) is untouched and
+ * The native claim of `@bsv/dpp-protocol` (`dpp-lifecycle-v1`) is untouched and
  * stays readable and verifiable; a reader dispatches by `claimFormat`. Nothing
  * here maps a token operation to an event: the only input is an EPCIS event
  * the caller observed or received, and an event that names no object is

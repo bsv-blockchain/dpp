@@ -30,17 +30,19 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Transaction, Utils } from '@bsv/sdk'
 import {
-  EPCIS_LIFECYCLE_REPRESENTATION,
   acceptanceCommitment,
   evidencePackageSigner,
   findDppOutputs,
   inspectEvidencePackage,
   verifyChain,
-  verifyEpcisLifecycleClaim,
   type EvidencePackageManifest,
   type InventoryEntry,
   type ManagedAcceptanceRecord,
 } from '@bsv/dpp-protocol'
+import {
+  EPCIS_LIFECYCLE_REPRESENTATION,
+  verifyEpcisLifecycleClaim,
+} from '@bsv/dpp-credentials/epcis-lifecycle'
 import { BUNDLED_BINDINGS, BUNDLED_BINDING_DIGESTS, createProfileRegistry, isRetiredProfile, openProfileBundle, profileBundleFiles, registerProfileBundle } from '@bsv/dpp-profiles'
 import { verifyGs1Artefacts } from '@bsv/dpp-credentials'
 import { epcisRecoveryFiles, restoreEpcisRecovery, verifyEpcisRecovery, type EpcisExchangeStorage, type EpcisRestoreCounts, type VerifiedEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'

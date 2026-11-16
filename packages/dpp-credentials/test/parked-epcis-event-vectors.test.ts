@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { epcisEventCredentialVectors, epcisEventHashVectors } from './epcis-event-vectors.js'
+import { epcisEventCredentialVectors, epcisEventHashVectors } from './parked-epcis-event-vectors.js'
 
 const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
 
