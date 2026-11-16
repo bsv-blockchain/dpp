@@ -26,13 +26,17 @@ if (!existsSync(join(root, 'dist', 'index.js'))) throw new Error('build the pack
 const release = read(join(repository, 'release', `${pkg.dpp.releaseSet}.json`))
 const runtime = release.packages.filter(p => Object.hasOwn(pkg.dpp.packages, p.name))
 for (const entry of runtime) assert.equal(entry.version, pkg.dpp.packages[entry.name], 'starter pins must match the declared release set')
-assert.equal(runtime.length, 3, 'the app uses the protocol, profiles and overlay runtime')
+assert.equal(runtime.length, 4, 'the app uses the protocol, profiles, overlay and credentials runtime')
 assert.equal(pkg.dpp.packages['@bsv/sdk'], release.runtime.dependencies.find(d => d.name === '@bsv/sdk').version)
 
 const scratch = mkdtempSync(join(tmpdir(), 'create-dpp-app-'))
 const target = values.directory ? resolve(values.directory) : join(scratch, 'my-dpp')
 const registry = 'https://registry.npmjs.org/'
 const env = { ...process.env, NPM_CONFIG_CACHE: join(scratch, 'npm-cache'), NPM_CONFIG_REGISTRY: registry }
+// The generated app's EPCIS tests read the pinned GS1 files. The repository's own tests keep them in this cache; when
+// they are there the app reads them and fetches nothing. When they are not, the app's test set-up obtains them from GS1.
+const gs1Cache = join(repository, 'node_modules', '.cache', 'dpp-gs1')
+if (env.DPP_GS1_ARTEFACTS_DIR == null && existsSync(join(gs1Cache, 'epcis-json-schema-2.0.1.json'))) env.DPP_GS1_ARTEFACTS_DIR = gs1Cache
 const run = (command, args, cwd) => {
   console.log(`$ ${command} ${args.join(' ')}`)
   execFileSync(command, args, { cwd, env, stdio: 'inherit' })
@@ -128,7 +132,7 @@ try {
     run('npm', ['test'], target)
     await goLivePath(target)
     await connectionFilePath(target, freshEnv)
-    console.log(`The packed app starter and its ${values['registry-dependencies'] ? 'public registry dependencies' : 'local runtime candidates'} install, build, typecheck and pass the generated application's tests without dpp-core, the sector and custom profile tests among them, with the validation libraries at their pinned versions; go-live registers with an index, and connect-index takes the connection file the index's own command writes.`)
+    console.log(`The packed app starter and its ${values['registry-dependencies'] ? 'public registry dependencies' : 'local runtime candidates'} install, build, typecheck and pass the generated application's tests without dpp-core, the sector and custom profile tests and the EPCIS exchange tests among them, with the validation libraries at their pinned versions; go-live registers with an index, and connect-index takes the connection file the index's own command writes.`)
   }
 } finally {
   for (const stop of stops) stop()

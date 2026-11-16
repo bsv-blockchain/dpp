@@ -11,7 +11,9 @@ npm test
 npm run dev
 ```
 
-You get a working application: a React web app with a brand dashboard, passport pages, hand-on acceptance and public verification; an Express API that owns a platform wallet, writes and reads passports with the `@bsv/dpp` packages, keeps a journal and runs the unattended duties; and a Compose service for the application database. The first run is an offline test of a whole passport lifecycle, with no wallet, funds, Docker or network. The template's README explains the rest, including the route to writing real passports.
+You get a working application: a React web app with a brand dashboard, passport pages, hand-on acceptance and public verification; an Express API that owns a platform wallet, writes and reads passports with the `@bsv/dpp` packages, keeps a journal and runs the unattended duties; and a Compose service for the application database. The first run is a test of a whole passport lifecycle, with no wallet, funds or Docker. The template's README explains the rest, including the route to writing real passports.
+
+In this source candidate the application also imports EPCIS 2.0 documents, pulls events from a configured source and exports what it received, byte for byte, by calling `@bsv/dpp-credentials/epcis-exchange`. Its tests of that fetch two things once and keep them: the three EPCIS files GS1 publishes, from `https://ref.gs1.org`, and a MongoDB server binary for the storage tests. The generated README's **EPCIS exchange** section covers the pages, the settings and the store.
 
 It writes and reads passports under the manifest profile `general@2` and under profiles held by a binding: the two the profiles package ships, `eu-battery@1` and `eu-textile@1`, each with a form for its nested product data, and a profile of your own registered from a folder whose binding digest you trust. Under a binding the product document is split into a public part, on chain for good, and a restricted part, sealed off chain. The earlier sector manifest profiles are retired: the application offers none of them and refuses a write under one with `profile-retired`. The generated README's **Product documents under a binding** section covers the forms, the two views a reader is shown and the validation engine.
 
@@ -34,12 +36,13 @@ The app's Compose file starts only its database, so connecting a separately oper
 - Custody: managed, the platform signs for signed-in users; the party interface keeps self-custody open.
 - Identifiers: GS1 Digital Links under the demonstration prefix 952 until you set a licensed one.
 - Validation: Ajv for manifest profiles; `jsonld`, `n3` and `shacl-engine`, at the versions `@bsv/dpp-profiles` is tested with, for profiles held by a binding. Nothing is fetched while validating.
+- EPCIS: `@bsv/dpp-credentials/epcis-exchange` for import, pull and export, over a MongoDB storage adapter the template carries. An event is supplied data, kept apart from every passport: an import signs nothing and never reaches the wallet.
 
 Every opinion is a file you can change. The standard itself prefers none of them.
 
 ## Versions
 
-Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-11`: protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` and SDK `2.8.10`, the runtime the repository's index image builds. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
+Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-11`: protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13`, credentials `0.2.0-beta.6` and SDK `2.8.10`, the runtime the repository's index image builds. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
 
 ## Development
 
@@ -77,7 +80,9 @@ Two things in the template are copies or inventions, and the package's tests hol
 - `template/apps/api/test/fixtures/custom-profile/` is a byte-for-byte copy of the repository's `examples/custom-profile/`, so a generated app can test a profile registered from a folder with no checkout beside it.
 - The battery and textile examples in `template/apps/api/src/sector-examples.ts` were written for the starter: invented organisations and values, under the GS1 demonstration prefix 952. The template carries no third-party product document.
 
-The web app has no test runner. The modules that decide what a form writes and where a finding is shown, under `template/apps/web/src/lib/bound/`, touch neither the page nor the network, and the API's tests exercise them (`apps/api/test/sector-forms.test.ts`). The pages themselves are type-checked by the build.
+The web app has no test runner. The modules that decide what a form writes and where a finding is shown, under `template/apps/web/src/lib/bound/`, touch neither the page nor the network, and the API's tests exercise them (`apps/api/test/sector-forms.test.ts`). The same holds for the words the events page puts on an import, a pull and an event, in `template/apps/web/src/lib/epcis.ts` (`apps/api/test/epcis-web.test.ts`). The pages themselves are type-checked by the build.
+
+The generated app's EPCIS tests need the pinned GS1 files and one MongoDB node in memory. `npm run starter:check` hands the generated app the repository's own GS1 cache, `node_modules/.cache/dpp-gs1`, when a test run has filled it; otherwise the app's test set-up fetches the files from `https://ref.gs1.org`. The MongoDB binary is the one the `@bsv/dpp-overlay` tests use, from the same cache.
 
 ## Licence
 

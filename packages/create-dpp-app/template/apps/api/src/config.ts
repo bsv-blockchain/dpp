@@ -1,6 +1,7 @@
 // Configuration is environment only. Secrets are read here once and never
 // printed. `npm test` and `npm run dev` work with the defaults; the values
 // marked live in .env.example are needed only to write real passports.
+import { loadEpcisSources, type EpcisSourceConfig } from './epcis/sources.js'
 
 export type Network = 'main' | 'test'
 
@@ -21,6 +22,12 @@ export interface Config {
   registry: { url?: string; token?: string }
   /** Profiles held by a binding in a folder of your own, and the binding digests this deployment trusts for them. */
   customProfiles: { dirs: string[]; trustedBindingDigests: string[] }
+  /**
+   * EPCIS exchange: the folder the pinned GS1 files are provisioned into and read from, whether start-up may fetch
+   * them, and the query sources a pull may be made from. A source's credential is read through a function and is
+   * never a plain member of this object.
+   */
+  epcis: { gs1Dir: string; gs1Offline: boolean; sources: EpcisSourceConfig[] }
   livePublishing: boolean
   spendCapSatoshis: number
   /** DPP_TEST_WALLET=1: the scaffold check's switch for the test wallet on the configured root key. */
@@ -102,6 +109,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     gs1Prefix: text(env, 'GS1_PREFIX') ?? '952',
     registry: { url: text(env, 'REGISTRY_URL')?.replace(/\/+$/, ''), token: text(env, 'REGISTRY_TOKEN') },
     customProfiles: { dirs: list(env, 'CUSTOM_PROFILE_DIRS'), trustedBindingDigests },
+    epcis: { gs1Dir: text(env, 'DPP_GS1_ARTEFACTS_DIR') ?? 'local/gs1', gs1Offline: text(env, 'DPP_GS1_ARTEFACTS_OFFLINE') === 'true', sources: loadEpcisSources(env) },
     livePublishing,
     spendCapSatoshis: Number(text(env, 'SPEND_CAP_SATOSHIS') ?? 20_000),
     testWallet: text(env, 'DPP_TEST_WALLET') === '1',

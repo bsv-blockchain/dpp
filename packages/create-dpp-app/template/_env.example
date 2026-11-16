@@ -55,6 +55,31 @@ GS1_PREFIX=952
 CUSTOM_PROFILE_DIRS=
 TRUSTED_BINDING_DIGESTS=
 
+# EPCIS exchange: importing EPCIS 2.0 documents, pulling events from a source and exporting what was received.
+# Documents are checked against three files GS1 publishes under its own terms, which this project does not
+# contain. The API obtains them from https://ref.gs1.org once, at start, into this folder, and checks every
+# byte against a pinned digest. A relative folder is read from this file's directory. With OFFLINE=true the API
+# never fetches: place the files in the folder yourself (`npx dpp-gs1-artefacts verify --dir <folder>` lists them).
+# Without the files the API still starts, and refuses every import and pull by name.
+DPP_GS1_ARTEFACTS_DIR=local/gs1
+DPP_GS1_ARTEFACTS_OFFLINE=false
+
+# The EPCIS query sources this app may pull from: names, comma-separated, each of lower-case letters, digits
+# and hyphens. Nothing about a source comes from a request. For a source named supplier-a set, with the name in
+# upper case and each hyphen as an underscore:
+#   EPCIS_SOURCE_SUPPLIER_A_URL             the base address of its query interface; events are asked for at <URL>/events
+#   EPCIS_SOURCE_SUPPLIER_A_ORIGINS         every origin a request may go to, comma-separated; empty permits the URL's own origin only
+#   EPCIS_SOURCE_SUPPLIER_A_BEARER_TOKEN    a bearer token, or
+#   EPCIS_SOURCE_SUPPLIER_A_BASIC_USER      a user name with
+#   EPCIS_SOURCE_SUPPLIER_A_BASIC_PASSWORD  its password, or
+#   EPCIS_SOURCE_SUPPLIER_A_HEADER_NAME     the name of a credential header with
+#   EPCIS_SOURCE_SUPPLIER_A_HEADER_VALUE    its value
+#   EPCIS_SOURCE_SUPPLIER_A_LOCAL_TEST      true permits plain http and private addresses: for a source on your own machine only
+#   EPCIS_SOURCE_SUPPLIER_A_REPEAT_LISTS    true sends each value of a list as its own parameter, for a source that needs it
+# The credential stays in this file and the API's memory. It is sent to the URL's own origin only, and is never
+# written to the database, an answer, a log line or the web app.
+EPCIS_SOURCES=
+
 # A registry that validates and stores lifecycle claims (POST /validate is open on the hosted reference)
 REGISTRY_URL=https://dpp-resolver.bsvb.net
 REGISTRY_TOKEN=

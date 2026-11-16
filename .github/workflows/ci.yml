@@ -59,6 +59,8 @@ jobs:
       # The interoperability profiles, each from the built packages alone.
       - run: node examples/resolve-digital-link.mjs
       - run: node examples/import-epcis.mjs
+      # The query pull, against a stand-in source the example starts on the runner and stops again.
+      - run: node examples/pull-epcis.mjs
       - run: node examples/verify-external-credential.mjs
       - run: node examples/project-passport.mjs
       # A profile held by a binding, registered from its folder and checked against its own vectors.
@@ -133,8 +135,9 @@ jobs:
   # The starter: @bsv/create-dpp-app scaffolds an application from its bundled
   # template, pinned to the current release set. The CLI builds and tests,
   # then a scaffold in a temporary directory installs packed runtime candidates,
-  # typechecks, builds and runs the template's offline lifecycle test, on the
-  # oldest supported Node and the current LTS.
+  # typechecks, builds and runs the template's tests, on the oldest supported
+  # Node and the current LTS. The template's EPCIS tests fetch the pinned GS1
+  # files and a MongoDB test binary once.
   starter:
     runs-on: ubuntu-latest
     strategy:

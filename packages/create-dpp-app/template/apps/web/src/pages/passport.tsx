@@ -12,9 +12,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { CopyButton, DefinitionList, ErrorNotice, Field, Loading, Mono, PageTitle, Section, ToneBadge, YesNo, entriesOf, indexTone, networkTone, statusTone } from '@/components/bits'
 import { BoundPassportForm, type BoundSubmission } from '@/components/bound/bound-passport-form'
+import { EventsNaming, SuppliedDataNotice } from '@/components/epcis-events'
 import { HolderReading, boundPayload } from '@/components/bound/readings'
 import { RequireAccount } from '@/components/layout'
 import { PassportForm, type PassportFormValues } from '@/components/passport-form'
+import { passportSpellings } from '@/lib/epcis'
 import { EVENT_TYPES, api, type AuthorisedReading, type BoundProfile, type ClaimView, type EventType, type OfferView, type PassportView } from '@/lib/api'
 import { formatTime, holderLabel, humanise, isRecord, parseIdentifier, passportIdFromRef, publicPathOf, shortKey, shortTxid } from '@/lib/format'
 import { useHealth } from '@/lib/session'
@@ -272,6 +274,28 @@ function PassportPage() {
             </TableBody>
           </Table>
         )}
+      </Section>
+
+      {/* Kept apart from everything above. The sections above are this passport's own record: states its holder signed and claims their issuers signed. What follows is data other parties supplied, and none of it is signed. */}
+      <Section title="Events that name this product">
+        <div className="space-y-3 rounded-lg border border-dashed p-4">
+          <SuppliedDataNotice />
+          <p className="text-sm text-muted-foreground">
+            This list is separate from the passport's own record above. It changes nothing in it: an event here moved no custody and wrote no state. Events are found under the exact identifier they write. Searched:{' '}
+            {passportSpellings(view.passportId).map((spelling, i) => (
+              <span key={spelling}>
+                {i === 0 ? null : ' and '}
+                <Mono>{spelling}</Mono>
+              </span>
+            ))}
+            . An event that writes this product another way, as an EPC URN for one, is found on the{' '}
+            <Link to="/events" className="underline underline-offset-4">
+              Events page
+            </Link>
+            .
+          </p>
+          <EventsNaming identifiers={passportSpellings(view.passportId)} />
+        </div>
       </Section>
 
       {dialog === 'update' && bound == null ? <UpdateDialog passport={view} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}

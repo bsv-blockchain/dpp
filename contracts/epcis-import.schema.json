@@ -1,16 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/contracts/epcis-import.schema.json",
-  "title": "DPP EPCIS import record, version 1",
-  "description": "The durable record of one retained EPCIS source under the epcis-json@1 profile (spec/epcis-interoperability.md section 2): what was received, where its exact bytes are kept, how it was interpreted, what each event's validation and mapping found, which events conflict with earlier ones, what was published from it under separate authority, and how far a pull got. Operational state never substitutes for a verification report, and no field of this record is a token operation.",
+  "title": "DPP EPCIS import record, version 2",
+  "description": "The durable record of one retained EPCIS source under the epcis-json@1 profile (spec/epcis-interoperability.md section 2): what was received, where its exact bytes are kept, which request it answers and how a repeat of that request is recognised, how it was interpreted, what each event's validation and mapping found, how each event arrived against what its source already held, what was published from it under separate authority, and how far a pull got. Operational state never substitutes for a verification report, no field of this record is a token operation, and nothing in it says who made the document or that its events happened. Version 1 is epcis-import-v1.schema.json beside it, for records stored under that version.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["importVersion", "importId", "requestId", "sourceId", "receivedAt", "mediaType", "byteLength", "sha256", "bytesRef", "sourceLocation", "contextRefs", "profileRefs", "policyId", "state", "events", "progress"],
+  "required": ["importVersion", "importId", "requestId", "requestDigest", "idempotency", "sourceId", "receivedAt", "mediaType", "byteLength", "sha256", "bytesRef", "sourceLocation", "contextRefs", "profileRefs", "policyId", "limits", "state", "documentValidity", "events", "progress"],
   "properties": {
-    "importVersion": { "const": "1" },
+    "importVersion": { "const": "2" },
     "importId": { "type": "string", "minLength": 1, "maxLength": 256, "description": "The stable internal identity of this import." },
     "requestId": { "type": "string", "minLength": 1, "maxLength": 256, "description": "The caller's idempotency key, bound to requestDigest: an identical retry resumes or returns this import, a reuse with different bytes is a conflict." },
-    "requestDigest": { "$ref": "#/$defs/sha256", "description": "SHA-256 of the canonical request the idempotency key is bound to." },
+    "requestDigest": { "$ref": "#/$defs/sha256", "description": "SHA-256 of the canonical request the idempotency key is bound to. For a file import it is taken over the RFC 8785 form of an object with exactly the members byteLength, mediaType, sha256 and sourceId, as this record carries them. Receipt time, provenance and policy are not part of it." },
+    "idempotency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "rule"],
+      "description": "How a repeat of requestId is recognised, stated so that a reader of the record alone can tell.",
+      "properties": {
+        "scope": { "enum": ["source", "store"], "description": "Where requestId is unique. source: within this record's sourceId in one store, so the same requestId under another sourceId is another request. store: across every source of one store." },
+        "rule": { "const": "request-digest-equal", "description": "A request under a held requestId is the same request exactly when its requestDigest equals the held one. Any other is a conflict, and the held import stands." }
+      }
+    },
     "sourceId": { "type": "string", "minLength": 1, "maxLength": 256, "description": "The configured source identity events are scoped under. It names a configured origin, never an account type." },
     "receivedAt": { "$ref": "#/$defs/dateTime" },
     "mediaType": { "enum": ["application/json", "application/ld+json"] },
@@ -27,7 +37,7 @@
         "origin": { "type": "string", "format": "uri", "description": "The configured repository origin a query was made to, without credentials." },
         "query": { "type": "object", "additionalProperties": { "type": "string" }, "description": "The standard query parameters used, by name." },
         "page": { "type": "integer", "minimum": 1 },
-        "filename": { "type": "string" }
+        "filename": { "type": "string", "minLength": 1, "maxLength": 1024, "description": "The name a file arrived under. A name, never an address, a query or a credential." }
       }
     },
     "contextRefs": {
@@ -54,7 +64,8 @@
     },
     "policyId": { "type": "string", "minLength": 1, "description": "The named operator policy the limits, source scope and any automation were read from." },
     "limits": { "type": "object", "additionalProperties": { "type": ["integer", "string"] }, "description": "The limits in force for this import, as the profile discloses them." },
-    "state": { "enum": ["received", "evaluated", "publication-pending", "published", "blocked"], "description": "received: bytes retained, not yet evaluated. evaluated: validation and mapping findings recorded, nothing published. publication-pending: a separately authorised publication was requested and is unresolved. published: at least one event was published as a credential. blocked: a conflict or a refused publication needs explicit resolution. Never a verification verdict." },
+    "state": { "enum": ["received", "evaluated", "publication-pending", "published", "blocked"], "description": "received: the exact bytes and this record are durable and the arrival of each event is not yet recorded. evaluated: every event's validation, mapping and arrival are recorded, nothing is published and no arrival of this import is part of an open conflict. publication-pending: a separately authorised publication was requested and is unresolved. published: at least one event was published as a credential. blocked: a conflict or a refused publication needs explicit resolution. Never a verification verdict." },
+    "documentValidity": { "enum": ["valid", "invalid"], "description": "valid: the envelope is recognised, the pinned schema accepted the document, and no envelope, context or identifier check failed. invalid: the source parsed safely and is retained as evidence that was received; it is excluded from every result described as valid or conformant. Neither value says who made the document, that it is authentic, or that an event in it happened." },
     "envelope": {
       "type": "object",
       "additionalProperties": false,
@@ -68,7 +79,8 @@
         "hasMasterData": { "type": "boolean" }
       }
     },
-    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" }, "description": "Document-level findings: envelope, schema and context findings that are not about one event." },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" }, "description": "Document-level findings: envelope, schema and context findings that are not about one event. An implementation MAY bound how many findings it records; when it does, it records a finding that says how many were made." },
+    "preservedExtensions": { "type": "array", "items": { "type": "string" }, "description": "Members of the envelope the schema does not name, retained in the bytes and listed here." },
     "events": { "type": "array", "items": { "$ref": "#/$defs/event" } },
     "progress": {
       "type": "object",
@@ -126,12 +138,13 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["pointer", "identity", "identityKind", "eventType", "bodyDigest", "validation", "mapping"],
+      "description": "One event of the source. Three identifiers are kept apart and never relabelled: eventId is the event's own identifier as its source declared it, scoped to sourceId; a local identity is assigned at ingestion to an event that declares none; and neither is a GS1 CBV Event Hash ID, which this record does not carry.",
       "properties": {
         "pointer": { "$ref": "#/$defs/pointer" },
-        "eventId": { "type": "string", "format": "uri", "description": "The event's own eventID, when it carries one." },
+        "eventId": { "type": "string", "minLength": 1, "description": "The event's own eventID, exactly as declared, when it carries one. Recorded as written, whatever form it takes." },
         "identity": { "type": "string", "minLength": 1, "description": "The scoped identity duplicates and conflicts are decided under: the eventID, or the local identity." },
-        "identityKind": { "enum": ["event-id", "local"] },
-        "eventType": { "type": "string", "minLength": 1 },
+        "identityKind": { "enum": ["event-id", "local"], "description": "event-id: identity is the declared eventID. local: identity is the local ingestion identity. Arrivals are compared within one sourceId, one kind and one identity." },
+        "eventType": { "type": "string", "description": "The event's type as declared; empty when the event names none." },
         "eventTime": { "type": "string" },
         "recordTime": { "type": "string" },
         "bodyDigest": { "$ref": "#/$defs/sha256", "description": "The canonical event-body digest: RFC 8785 over the event without recordTime and errorDeclaration plus the sorted context digests." },
@@ -170,18 +183,31 @@
             "unmapped": { "type": "array", "items": { "type": "string" } }
           }
         },
-        "arrival": { "enum": ["new", "duplicate", "new-observation", "conflict"], "description": "How this event relates to what the source already held under the same identity." },
+        "arrival": { "enum": ["new", "duplicate", "new-observation", "conflict"], "description": "How this event relates to what the source already held under the same identity. new: nothing was held. duplicate: a held observation has this body, record time and error declaration. new-observation: a held observation has this body with another record time or error declaration. conflict: no held observation has this body. Absent while the import is received." },
+        "observation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sequence", "importId", "pointer"],
+          "description": "The observation this arrival is: the one it added, or for a duplicate the held one it repeats.",
+          "properties": {
+            "sequence": { "type": "integer", "minimum": 1, "description": "The observation's position among those held under the identity." },
+            "importId": { "type": "string", "minLength": 1 },
+            "pointer": { "$ref": "#/$defs/pointer" }
+          }
+        },
         "conflict": {
           "type": "object",
           "additionalProperties": false,
           "required": ["withImportId", "withBodyDigest", "state"],
-          "description": "A different body under the same scoped identity; both bodies stay retained and visible until a person resolves it by name.",
+          "description": "Present when this arrival added an observation to an identity that holds more than one body; every body stays retained and visible. state is what held when this record was last written: the conflict is settled only while its latest decision covers every body held, so a body that arrives later reopens it.",
           "properties": {
+            "conflictId": { "type": "string", "minLength": 1, "description": "The identity of the conflict among the bodies held under this event's scoped identity." },
             "withImportId": { "type": "string" },
             "withPointer": { "$ref": "#/$defs/pointer" },
             "withBodyDigest": { "$ref": "#/$defs/sha256" },
             "state": { "enum": ["open", "resolved"] },
-            "resolution": { "type": "string" },
+            "resolutionId": { "type": "string", "minLength": 1, "description": "The decision record that settled it." },
+            "resolution": { "type": "string", "description": "What was decided, in the decider's words." },
             "resolvedAt": { "$ref": "#/$defs/dateTime" }
           }
         },

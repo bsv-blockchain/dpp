@@ -12,6 +12,7 @@
     "start": "node dist/main.js"
   },
   "dependencies": {
+    "@bsv/dpp-credentials": "0.2.0-beta.6",
     "@bsv/dpp-overlay": "0.4.0-beta.13",
     "@bsv/dpp-profiles": "0.3.0-beta.10",
     "@bsv/dpp-protocol": "0.3.0-beta.10",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^22.20.3",
+    "mongodb-memory-server": "11.2.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"

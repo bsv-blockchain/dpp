@@ -29,7 +29,7 @@
   ],
   "outputs": [
     { "id": "original-bytes", "mediaType": "application/octet-stream", "format": "the exact received bytes, served under the received media type", "notes": "Export returns the retained bytes and never a re-serialisation." },
-    { "id": "import-record", "mediaType": "application/json", "format": "epcis-import@1 (contracts/epcis-import.schema.json)", "notes": "Per-event pointers, identities, validation and mapping findings, conflicts and publication references." }
+    { "id": "import-record", "mediaType": "application/json", "format": "epcis-import@2 (contracts/epcis-import.schema.json)", "notes": "The request digest and idempotency rule, document validity, and per-event pointers, identities, validation and mapping findings, arrivals, conflicts and publication references. A record stored under version 1 validates under contracts/epcis-import-v1.schema.json." }
   ],
   "dependencies": [
     { "name": "ajv", "version": "8.20.0", "licence": "MIT", "use": "Validation of a source against the pinned schema, formats asserted, nothing coerced." },

@@ -187,6 +187,8 @@ describe('validateEpcisDocument', () => {
     expect(classifyEpcisIdentifier('/x', 'https://example.org/8006/095212341234580102/8026/1')).toEqual({ path: '/x', value: 'https://example.org/8006/095212341234580102/8026/1', scheme: 'other' });
     expect(classifyEpcisIdentifier('/x', 'did:web:products.example:item:1')).toEqual({ path: '/x', value: 'did:web:products.example:item:1', scheme: 'other' });
     expect(classifyEpcisIdentifier('/x', 'not a uri')).toMatchObject({ scheme: 'other', problem: 'not a URI' });
+    // A qualifier that cannot be percent-decoded is reported, not thrown: one bad identifier must not stop a validation.
+    expect(classifyEpcisIdentifier('/x', 'https://id.example.org/01/09521234123453/21/%E0%A4%A')).toMatchObject({ scheme: 'gs1-digital-link', gtin: '09521234123453', problem: 'a qualifier is not valid percent-encoding' });
     expect(classifyEpcisIdentifier('/x', 42)).toMatchObject({ scheme: 'other', problem: 'not a URI' });
   });
 

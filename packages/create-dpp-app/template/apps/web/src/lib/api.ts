@@ -2,6 +2,7 @@
 // answer into an Error, and a typed helper for every route in apps/api/API.md.
 // Reads are open; writes carry the session cookie, which a same-origin fetch
 // sends by itself.
+import type { EpcisEventsAnswer, EpcisImportAnswer, EpcisImportRecord, EpcisImportSummary, EpcisPullPage, EpcisPullQuery, EpcisPullResult, EpcisPullState, EpcisSource, EpcisStatus } from './epcis'
 
 export class ApiError extends Error {
   readonly code: string
@@ -26,7 +27,11 @@ async function request<T>(path: string, method: 'GET' | 'POST' = 'GET', body?: u
     init.headers = { ...init.headers, 'content-type': 'application/json' }
     init.body = JSON.stringify(body)
   }
-  const response = await fetch(path, init)
+  return await answerOf<T>(await fetch(path, init))
+}
+
+/** The API's answer as a value, or as the error it describes. */
+async function answerOf<T>(response: Response): Promise<T> {
   const text = await response.text()
   let parsed: unknown
   try {
@@ -374,4 +379,21 @@ export const api = {
   wallet: () => get<WalletView>('/api/wallet'),
   fundingAddress: () => post<FundingAddress>('/api/wallet/funding-address'),
   internalize: (txid: string, funding: FundingAddress) => post<{ satoshis: number }>('/api/wallet/internalize', { txid, funding }),
+
+  // EPCIS exchange. An import or a pull retains data and changes no passport.
+  epcisStatus: () => get<EpcisStatus>('/api/epcis/status'),
+  epcisSources: () => get<EpcisSource[]>('/api/epcis/sources'),
+  /**
+   * Upload a document. The file is sent as the bytes it is, never read and written out again, so what is retained
+   * and later exported is exactly what was chosen. `requestId` is chosen once for a file: sending it again is the same request.
+   */
+  epcisImport: async (file: Blob, options: { requestId: string; mediaType: string; sourceId?: string; filename?: string }) => {
+    const query = new URLSearchParams({ requestId: options.requestId, ...(options.sourceId == null || options.sourceId === '' ? {} : { sourceId: options.sourceId }), ...(options.filename == null ? {} : { filename: options.filename }) })
+    return await answerOf<EpcisImportAnswer>(await fetch(`/api/epcis/imports?${query.toString()}`, { method: 'POST', headers: { accept: 'application/json', 'content-type': options.mediaType }, body: file }))
+  },
+  epcisImports: (after?: string) => get<{ imports: EpcisImportSummary[]; next?: string }>(`/api/epcis/imports?limit=200${after == null ? '' : `&after=${encodeURIComponent(after)}`}`),
+  epcisImportRecord: (importId: string) => get<EpcisImportRecord>(`/api/epcis/imports/${encodeURIComponent(importId)}`),
+  epcisPull: (sourceId: string, body: { queryId: string; query: EpcisPullQuery }) => post<EpcisPullResult>(`/api/epcis/sources/${encodeURIComponent(sourceId)}/pulls`, body),
+  epcisPullState: (sourceId: string, queryId: string) => get<{ pull: EpcisPullState; pages: EpcisPullPage[] }>(`/api/epcis/sources/${encodeURIComponent(sourceId)}/pulls/${encodeURIComponent(queryId)}`),
+  epcisEvents: (identifier: string, granularity: 'instance' | 'class' = 'instance') => get<EpcisEventsAnswer>(`/api/epcis/events?identifier=${encodeURIComponent(identifier)}&granularity=${granularity}`),
 }

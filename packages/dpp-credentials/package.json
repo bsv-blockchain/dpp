@@ -1,7 +1,7 @@
 {
   "name": "@bsv/dpp-credentials",
   "version": "0.2.0-beta.6",
-  "description": "Experimental prerelease: W3C Verifiable Credential verification (external ecdsa-rdfc-2019 credentials, Bitstring Status List status, did:web resolution, strict parsing) and the EPCIS 2.0.1 source helpers",
+  "description": "Experimental prerelease: W3C Verifiable Credential verification (external ecdsa-rdfc-2019 credentials, Bitstring Status List status, did:web resolution, strict parsing), the EPCIS 2.0.1 source helpers and durable EPCIS source exchange over storage the application supplies",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,6 +21,10 @@
     "./epcis-source": {
       "types": "./dist/epcis-source.d.ts",
       "default": "./dist/epcis-source.js"
+    },
+    "./epcis-exchange": {
+      "types": "./dist/epcis-exchange.d.ts",
+      "default": "./dist/epcis-exchange.js"
     },
     "./artifacts/*": "./artifacts/*"
   },
