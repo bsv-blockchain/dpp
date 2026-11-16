@@ -1,27 +1,28 @@
 {
   "check": "packages/create-dpp-app/template/apps/api/test/exit-exercise.test.ts",
-  "recordedAt": "2026-11-15",
+  "recordedAt": "2026-11-16",
   "node": "v26.13.1",
   "releaseSet": "dpp-release-2026-11",
-  "sourceRevision": "b611362c0bd98290b11ed29bd8d793c7df32c49b",
-  "sourceState": "working-tree",
+  "sourceRevision": "dce2791ae07223626a43521db93a9eaf2f249c3f",
+  "sourceState": "committed",
   "failures": 0,
   "exercised": [
     "Deployment A built two passports under eu-battery@1 and eu-textile@1, each with a public and a restricted part, and an EPCIS exchange with three source scopes, two of which share an event identifier, one conflict decided with both observations kept, and a pull interrupted after two of four pages.",
-    "A was exported with the export command, in the authorised form and in the public form, then switched off: its API, its database and its index were stopped.",
+    "A was exported in the authorised form with npm run export, run as its own process, and in the public form with the same command called in the test process, then switched off: its API, its database and its index were stopped.",
     "Eleven packages that must be refused were refused by name with nothing written: a substituted and more permissive profile under a correct exporter signature, with and without its digest trusted, another exporter key, a pull checkpoint without its import, a conflict decision without its observation, an altered original under the genuine and under a re-signed manifest, a missing journal under the genuine and under a re-signed manifest, the public package, and a file the manifest does not list.",
-    "The authorised package was restored with the restore command into deployment B, which keeps the exchange in the file-system adapter and resolves profiles from the installed bundle. A second restore wrote nothing.",
+    "The authorised package was restored with the restore command into deployment B, which keeps the exchange in the file-system adapter and resolves profiles from the installed bundle. A second restore, with npm run restore run as its own process, wrote nothing.",
     "In B both passports gave the reports they gave in A, check for check and finding for finding, the holder's view opened, and a document about another item was refused for the passport.",
     "In B every original was returned byte for byte, every import record, observation, decision and pull page equalled A's, and the associations rebuilt at B equalled the ones A held.",
     "A request A had acknowledged answered the same import in B with no new receipt, and the same request identifier with other content conflicted.",
     "The pull was refused by the source until its credential was configured in B, then replayed from its retained bounds without a cursor and finished with no event held twice.",
-    "An UPDATE of the battery passport was written in B and the two-state lineage verified."
+    "An UPDATE of the battery passport was written in B and the two-state lineage verified.",
+    "The same package was restored into deployment C, which holds none of A's keys. C verified both passports with every finding as in A except the issuer's authority, which it does not confirm, read them, did not open their restricted parts, and refused an UPDATE and a RETIRE by name with nothing written."
   ],
   "numbers": {
     "export": {
       "authorised": {
         "files": 63,
-        "bytes": 1481726,
+        "bytes": 1481722,
         "inventoryEntries": 62,
         "withheldLines": 12,
         "absentLines": 2,
@@ -29,7 +30,7 @@
       },
       "public": {
         "files": 37,
-        "bytes": 1371747,
+        "bytes": 1371749,
         "inventoryEntries": 36,
         "valuesSearchedFor": 63
       }
@@ -138,8 +139,8 @@
   "limits": {
     "reached": "two passports of one state each, six retained EPCIS documents of at most two events, one pull of four pages. These are the sizes this run used, not a capacity.",
     "notExercised": [
-      "A TRANSFER and its acceptance record, a lifecycle claim and a hand-on offer: the export carries them and this run held none.",
-      "A lineage longer than the bound of the index's package, which is carried as the parts of the index's complete export.",
+      "A TRANSFER and its acceptance record, a lifecycle claim and a hand-on offer: this run held none. apps/api/test/portability.test.ts exports and restores them, with records in memory.",
+      "A lineage longer than the bound of the index's package. The same test carries a short lineage as the parts of the index's complete export; no long one was exported.",
       "A source that moved to another address: the remap command was run against the unchanged address only.",
       "A cursor carried at the operator's request (--cursors include).",
       "The validator service as B's engine: B validated with the engine in its process.",

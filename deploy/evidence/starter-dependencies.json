@@ -1,9 +1,9 @@
 {
   "check": "packages/create-dpp-app/scripts/scaffold-check.mjs",
-  "recordedAt": "2026-11-15",
+  "recordedAt": "2026-11-16",
   "releaseSet": "dpp-release-2026-11",
-  "sourceRevision": "d04017457d7351b39e134ac1b5dfcc0a83df469a",
-  "sourceState": "working-tree",
+  "sourceRevision": "dce2791ae07223626a43521db93a9eaf2f249c3f",
+  "sourceState": "committed",
   "note": "Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. The application resolves its own ranges, so another install on another day may differ.",
   "packageCount": 756,
   "licences": {
