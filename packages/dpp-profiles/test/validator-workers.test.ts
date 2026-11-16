@@ -68,7 +68,12 @@ describe('the service with its engine in threads of its own', () => {
     expect(took).toBeGreaterThanOrEqual(390)
     expect(took).toBeLessThan(5000)
     // One thread, and it was running that match. The next operation is answered only because the thread was ended and replaced.
-    const expansion = await client.jsonLd.toRdf({ document: product, contexts })
+    // The replacement loads its engine first. Until it has, the service answers that no engine is free, so the question is asked again.
+    let expansion = await client.jsonLd.toRdf({ document: product, contexts })
+    for (let i = 0; i < 40 && !expansion.ok; i++) {
+      await new Promise((r) => setTimeout(r, 250))
+      expansion = await client.jsonLd.toRdf({ document: product, contexts })
+    }
     expect(expansion).toMatchObject({ ok: true })
     if (!expansion.ok) return
     const validation = await client.shacl.validate({ nquads: expansion.nquads, shapes, background })
