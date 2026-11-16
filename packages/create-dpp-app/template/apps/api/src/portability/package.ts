@@ -9,7 +9,8 @@
 //   application/application-export.json       the descriptor: what the export covers and what it leaves out
 //   application/brands/<n>.json               each brand record                              (authorised only)
 //   application/offers/<n>.json               each hand-on offer                             (authorised only)
-//   application/claims/<n>.json               each lifecycle claim this application signed   (authorised only)
+//   application/claims/<n>.json               each lifecycle claim this application holds    (authorised only)
+//   application/lifecycle-claims/<n>.json     each EPCIS lifecycle claim's exact signed bytes (authorised only)
 //   passports/<n>/index/...                   the index's own signed evidence for the passport, as it exported it
 //   passports/<n>/journal.json                this application's journal of the passport     (authorised only)
 //   passports/<n>/authority/<c>.json          each acceptance record a hand-on commits to    (authorised only)

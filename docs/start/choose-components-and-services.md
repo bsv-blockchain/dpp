@@ -37,7 +37,7 @@ These libraries are code components. Dependencies included by a starter or anoth
 | `@bsv/dpp-protocol` | Passport records, verification and native lifecycle claim helpers; select when using these reference helpers |
 | `@bsv/dpp-profiles` | Profile manifests, payload schemas and supported helpers; select for its product data or interoperability tooling |
 | `@bsv/dpp-overlay` | Index runtime, topics and lookups; the Compose preset's index image is this package, installed directly only for a custom or embedded index |
-| `@bsv/dpp-credentials` | Verification of W3C credentials other parties issue in the supported external profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers), and EPCIS source import; select for those formats. Native lifecycle claims do not require it. |
+| `@bsv/dpp-credentials` | Verification of W3C credentials other parties issue in the supported external profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers), EPCIS source import and the EPCIS lifecycle claim; select for those formats. Native lifecycle claims do not require it. |
 
 ### Runtime and version choice
 

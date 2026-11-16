@@ -7,7 +7,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { CopyButton, DefinitionList, ErrorNotice, Field, Loading, Mono, PageTitle, Section, ToneBadge, YesNo, entriesOf, indexTone, networkTone, statusTone } from '@/components/bits'
@@ -17,7 +16,10 @@ import { HolderReading, boundPayload } from '@/components/bound/readings'
 import { RequireAccount } from '@/components/layout'
 import { PassportForm, type PassportFormValues } from '@/components/passport-form'
 import { passportSpellings } from '@/lib/epcis'
-import { EVENT_TYPES, api, type AuthorisedReading, type BoundProfile, type ClaimView, type EventType, type OfferView, type PassportView } from '@/lib/api'
+import { ClaimDialog, DeclareErrorDialog } from '@/components/claim-dialog'
+import { LifecycleClaims } from '@/components/lifecycle-claims'
+import { api, type AuthorisedReading, type BoundProfile, type OfferView, type PassportView } from '@/lib/api'
+import type { LifecycleClaimView } from '@/lib/lifecycle'
 import { formatTime, holderLabel, humanise, isRecord, parseIdentifier, passportIdFromRef, publicPathOf, shortKey, shortTxid } from '@/lib/format'
 import { useHealth } from '@/lib/session'
 import { useLoad } from '@/lib/use-load'
@@ -39,6 +41,7 @@ function PassportPage() {
   const offers = useLoad(() => api.passportOffers(passportId), [passportId])
   const claims = useLoad(() => api.passportClaims(passportId), [passportId])
   const [dialog, setDialog] = useState<DialogKind>()
+  const [declaring, setDeclaring] = useState<LifecycleClaimView>()
 
   if (passport.loading) return <Loading what="Loading the passport" />
   if (passport.error != null || passport.data == null) return <ErrorNotice error={passport.error ?? new Error('no answer')} title="Could not load the passport" />
@@ -122,7 +125,7 @@ function PassportPage() {
           Retire
         </Button>
         <Button variant="outline" onClick={() => setDialog('claim')} disabled={profileRetired != null}>
-          Add a claim
+          Sign a lifecycle claim
         </Button>
         {retired ? <span className="self-center text-sm text-muted-foreground">Retired: no further state can be written.</span> : null}
       </div>
@@ -236,43 +239,13 @@ function PassportPage() {
         )}
       </Section>
 
-      <Section title="Claims">
+      <Section title="Lifecycle claims">
         {claims.loading ? (
           <Loading what="Loading the claims" />
         ) : claims.error != null || claims.data == null ? (
           <ErrorNotice error={claims.error ?? new Error('no answer')} title="Could not load the claims" />
-        ) : claims.data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No claims. A claim is a signed statement about the passport on its own rail; it never spends the passport.</p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event</TableHead>
-                <TableHead>When</TableHead>
-                <TableHead>Issued by</TableHead>
-                <TableHead>Signature</TableHead>
-                <TableHead>Registry</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {claims.data.map((claim) => (
-                <TableRow key={claim.id}>
-                  <TableCell>
-                    {claim.claim.eventType}
-                    <div className="text-xs text-muted-foreground">{claim.id}</div>
-                  </TableCell>
-                  <TableCell>{formatTime(claim.claim.timestamp)}</TableCell>
-                  <TableCell>{claim.issuedBy}</TableCell>
-                  <TableCell>
-                    <ToneBadge tone={claim.verified === 'verified' ? 'pass' : 'fail'}>{claim.verified}</ToneBadge>
-                  </TableCell>
-                  <TableCell className="whitespace-normal">
-                    <RegistryAnswer claim={claim} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <LifecycleClaims reading={claims.data} onDeclareError={closed ? undefined : setDeclaring} emptyText="No lifecycle claim concerns this passport. A claim is one EPCIS event a named party signed, on its own rail; it never spends the passport." />
         )}
       </Section>
 
@@ -303,6 +276,7 @@ function PassportPage() {
       {dialog === 'offer' ? <HandOnDialog passportId={view.passportId} needsClaimCode={needsClaimCode} onClose={close} onDone={offers.reload} /> : null}
       {dialog === 'retire' ? <RetireDialog passportId={view.passportId} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}
       {dialog === 'claim' ? <ClaimDialog passportId={view.passportId} onClose={close} onDone={claims.reload} /> : null}
+      {declaring == null ? null : <DeclareErrorDialog passportId={view.passportId} claim={declaring} onClose={() => setDeclaring(undefined)} onDone={claims.reload} />}
     </div>
   )
 }
@@ -313,17 +287,6 @@ function Stat({ label, value }: { label: string; value: ReactNode }) {
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="text-xl font-semibold">{value}</div>
     </div>
-  )
-}
-
-function RegistryAnswer({ claim }: { claim: ClaimView }) {
-  if (claim.registry == null) return <span className="text-muted-foreground">not sent</span>
-  return (
-    <span className="text-xs">
-      <ToneBadge tone={claim.registry.accepted ? 'pass' : 'fail'}>{claim.registry.accepted ? 'accepted' : `HTTP ${claim.registry.status}`}</ToneBadge>
-      {claim.registry.attestationId == null ? null : <span className="ml-2 font-mono">{claim.registry.attestationId}</span>}
-      {claim.registry.detail == null ? null : <div className="mt-1 text-muted-foreground">{claim.registry.detail}</div>}
-    </span>
   )
 }
 
@@ -632,78 +595,3 @@ function RetireDialog({ passportId, needsClaimCode, onClose, onDone }: { passpor
   )
 }
 
-function ClaimDialog({ passportId, onClose, onDone }: { passportId: string; onClose: () => void; onDone: () => void }) {
-  const [eventType, setEventType] = useState<EventType>('Origin')
-  const [submitToRegistry, setSubmitToRegistry] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<unknown>()
-  const [result, setResult] = useState<ClaimView>()
-
-  async function submit(event: FormEvent) {
-    event.preventDefault()
-    setBusy(true)
-    setError(undefined)
-    try {
-      const claim = await api.addClaim(passportId, { eventType, ...(submitToRegistry ? { submit: true } : {}) })
-      setResult(claim)
-      onDone()
-    } catch (cause) {
-      setError(cause)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add a claim</DialogTitle>
-          <DialogDescription>A signed statement about the passport's current state, on its own rail. It never spends the passport.</DialogDescription>
-        </DialogHeader>
-        {result == null ? (
-          <form onSubmit={submit} className="space-y-4">
-            <Field label="Event type" htmlFor="claim-event" required>
-              <Select value={eventType} onValueChange={(v) => setEventType(v as EventType)}>
-                <SelectTrigger id="claim-event" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={submitToRegistry} onChange={(e) => setSubmitToRegistry(e.target.checked)} />
-              Send to the registry
-            </label>
-            {error == null ? null : <ErrorNotice error={error} title="The claim was refused" />}
-            <DialogFooter>
-              <Button type="submit" disabled={busy}>
-                {busy ? 'Working' : 'Sign the claim'}
-              </Button>
-            </DialogFooter>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <DefinitionList
-              entries={[
-                ['Claim', <Mono key="id">{result.id}</Mono>],
-                ['Event', result.claim.eventType],
-                ['Signature', <ToneBadge key="v" tone={result.verified == null || result.verified === 'verified' ? 'pass' : 'fail'}>{result.verified ?? 'signed'}</ToneBadge>],
-                ['Registry', <RegistryAnswer key="r" claim={result} />],
-              ]}
-            />
-            <DialogFooter>
-              <Button onClick={onClose}>Done</Button>
-            </DialogFooter>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}

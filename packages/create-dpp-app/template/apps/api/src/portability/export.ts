@@ -36,6 +36,10 @@ import {
   type InventoryEntry,
   type SourceObservation,
 } from '@bsv/dpp-protocol'
+import {
+  EPCIS_LIFECYCLE_MEDIA_TYPE,
+  EPCIS_LIFECYCLE_REPRESENTATION,
+} from '@bsv/dpp-credentials/epcis-lifecycle'
 import { describeProfileBundleOmission, exportProfileBundle, isRetiredProfile } from '@bsv/dpp-profiles'
 import { EPCIS_GS1_ARTEFACTS } from '@bsv/dpp-credentials'
 import { exportEpcisPublicEvidence, exportEpcisRecovery, type EpcisExchangeStorage, type EpcisSourceCredential, type ExportedEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'
@@ -44,7 +48,7 @@ import { describeEpcisSource, type EpcisSourceConfig } from '../epcis/sources.js
 import type { Platform } from '../platform.js'
 import { isProfileId } from '../profiles.js'
 import type { PassportReading } from '../reader.js'
-import type { PassportRecord } from '../store.js'
+import { isEpcisLifecycleRecord, type PassportRecord } from '../store.js'
 import {
   APPLICATION_EXPORT_DESCRIPTOR,
   APPLICATION_EXPORT_FORMAT,
@@ -311,6 +315,8 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
   const brandIds = new Set<string>()
   let offers = 0
   let claims = 0
+  // A claim that binds several passports is carried once, however many of them the export holds.
+  const claimsCarried = new Set<string>()
   for (const record of journals) {
     const folder = passportFolder(record.passportId)
     const evidence = await indexEvidenceFor(input, record.passportId, folder, exporterKey, exportedAt)
@@ -337,12 +343,18 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
         const path = `${folder}/authority/${commitment}.json`
         if (!files.has(path)) add(path, 'authority', JSON_MEDIA_TYPE, recordBytes(acceptance), { represents: `sha256:${commitment}`, representation: acceptance.acceptanceFormat })
       }
-      for (const claim of held) add(`application/claims/${sha256Hex(claim.id)}.json`, 'native-claims', JSON_MEDIA_TYPE, recordBytes(claim), { represents: claim.id, representation: APPLICATION_REPRESENTATIONS.claim })
+      for (const claim of held) {
+        if (claimsCarried.has(claim.id)) continue
+        claimsCarried.add(claim.id)
+        add(`application/claims/${sha256Hex(claim.id)}.json`, 'native-claims', JSON_MEDIA_TYPE, recordBytes(claim), { represents: claim.id, representation: APPLICATION_REPRESENTATIONS.claim })
+        // An EPCIS lifecycle claim is also carried as its exact signed bytes, which verify without this application.
+        if (isEpcisLifecycleRecord(claim)) add(`application/lifecycle-claims/${sha256Hex(claim.id)}.json`, 'native-claims', EPCIS_LIFECYCLE_MEDIA_TYPE, new TextEncoder().encode(claim.bytes), { represents: claim.attestationId, representation: EPCIS_LIFECYCLE_REPRESENTATION })
+        claims += 1
+      }
       for (const offer of await store.listOffers({ passportId: record.passportId })) {
         add(`application/offers/${sha256Hex(offer.requestId)}.json`, 'reports', JSON_MEDIA_TYPE, recordBytes(offer), { represents: offer.requestId, representation: APPLICATION_REPRESENTATIONS.offer })
         offers += 1
       }
-      claims += held.length
       brandIds.add(record.brandId)
     }
     const tip = record.states[record.states.length - 1]!

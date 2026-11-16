@@ -160,7 +160,7 @@ describe('nothing is written under a retired profile', () => {
       platform.writer.transfer({ record, holder: brand, recipient: platform.parties.recipient('offer-none'), acceptance: {} as never }),
       platform.writer.retire({ record, actor: brand, reason: 'end of the demonstration' }),
       platform.custody.offer({ record, holder: brand, terms: { word: 'Handed on' } }),
-      platform.claims.sign({ passport: record, issuer: platform.parties.member('developer'), eventType: 'Disposition' }),
+      platform.claims.issue({ event: { type: 'ObjectEvent', eventID: 'urn:uuid:6c000000-0000-4000-8000-00000000d001', eventTime: '2026-03-02T08:00:00.000Z', eventTimeZoneOffset: '+00:00', epcList: [record.passportId], action: 'OBSERVE', bizStep: 'inspecting' }, issuer: platform.parties.member('developer'), assertedRole: 'observer', expectedPassport: record.passportId }),
     ]
     for (const write of writes) expect((await refusal(write)).code).toBe('profile-retired')
     expect(JSON.stringify(await platform.store.getPassport(record.passportId))).toBe(before)
@@ -170,7 +170,7 @@ describe('nothing is written under a retired profile', () => {
     // Over HTTP the journal view is still served, and each write route refuses.
     const ref = encodeURIComponent(record.passportId)
     expect((await get(`/api/passports/${ref}`)).body).toMatchObject({ passportId: record.passportId, profile, status: 'active', profileRetired: { replacedBy: RETIRED_PROFILE_REPLACEMENTS[profile as keyof typeof RETIRED_PROFILE_REPLACEMENTS] } })
-    for (const [path, body] of [['update', { payload: {} }], ['retire', { reason: 'x' }], ['offer', {}], ['claims', { eventType: 'Disposition' }]] as const) {
+    for (const [path, body] of [['update', { payload: {} }], ['retire', { reason: 'x' }], ['offer', {}], ['claims', { assertedRole: 'observer', event: { type: 'ObjectEvent', eventID: 'urn:uuid:6c000000-0000-4000-8000-00000000d002', eventTime: '2026-03-02T08:00:00.000Z', eventTimeZoneOffset: '+00:00', epcList: [record.passportId], action: 'OBSERVE', bizStep: 'inspecting' } }]] as const) {
       const answer = await post(`/api/passports/${ref}/${path}`, body)
       expect([answer.status, answer.body.error], path).toEqual([409, 'profile-retired'])
     }

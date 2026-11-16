@@ -412,7 +412,7 @@ export async function verifyExternalCredential({ bytes, representation, policy }
 
 /* ------------------------- the report adapter ------------------------- */
 
-/** A check's answer in the verification report's vocabulary (`spec/verification.md`); the shape mirrors `PartialCheck` in @bsv/dpp-core, restated here because this package does not depend on it. */
+/** A check's answer in the verification report's vocabulary (`spec/verification.md`); the shape mirrors `PartialCheck` in @bsv/dpp-core, restated here because this entry point does not import it. */
 export interface ReportPartialCheck { status: 'pass' | 'fail' | 'unknown' | 'not-applicable'; reasonCode?: string; evidenceRefs?: string[]; detail?: unknown }
 /** What the report's credential verifier slot returns; mirrors `ExternalCredentialVerification` in @bsv/dpp-core. */
 export interface ReportCredentialVerification {

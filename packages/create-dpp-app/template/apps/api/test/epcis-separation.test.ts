@@ -41,28 +41,67 @@ function packageDir(name: string, from: string): string | undefined {
   }
 }
 
+/**
+ * The one package that is followed file by file. `@bsv/dpp-credentials` has
+ * several entry points, and one of them, `./epcis-lifecycle`, signs: it
+ * imports the protocol package and the SDK, which the package therefore
+ * declares. A package's declared dependencies say what it installs, not what
+ * one entry point loads, so for this package the walk follows the built files
+ * an imported entry point reaches and counts only the packages those files
+ * import. Every other package is counted with everything it declares.
+ */
+const FOLLOWED_BY_FILE = '@bsv/dpp-credentials'
+
+/** The built file an entry point of a package names, read from its `exports`. */
+function entryFile(dir: string, specifier: string, name: string): string {
+  const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as { exports: Record<string, { default: string } | undefined> }
+  const subpath = specifier === name ? '.' : `.${specifier.slice(name.length)}`
+  const target = manifest.exports[subpath]?.default
+  if (target == null) throw new Error(`${name} declares no entry point ${subpath}`)
+  return join(dir, target)
+}
+
 /** Everything the code under `entry` can load: the files of this application it imports, and every package those files import with everything each depends on. */
-function reachableFrom(entry: string): { files: string[]; direct: string[]; packages: string[] } {
+function reachableFrom(entry: string, from = SRC): { files: string[]; direct: string[]; packages: string[] } {
   const files = new Set<string>()
   const direct = new Set<string>()
+  const specifiers = new Set<string>()
   const visit = (file: string): void => {
     if (files.has(file)) return
     files.add(file)
     for (const specifier of importsOf(file)) {
       if (specifier.startsWith('.')) visit(resolve(dirname(file), specifier.replace(/\.js$/, '.ts')))
-      else if (!specifier.startsWith('node:')) direct.add(packageName(specifier))
+      else if (!specifier.startsWith('node:')) { direct.add(packageName(specifier)); specifiers.add(specifier) }
     }
   }
-  visit(join(SRC, entry))
+  if (!entry.startsWith('@')) visit(join(from, entry))
+  else { direct.add(packageName(entry)); specifiers.add(entry) }
   const packages = new Map<string, string>()
-  const install = (name: string, from: string): void => {
-    const dir = packageDir(name, from)
+  const built = new Set<string>()
+  const install = (name: string, at: string): void => {
+    const dir = packageDir(name, at)
     if (dir == null || packages.has(dir)) return
     packages.set(dir, name)
     const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as Record<string, Record<string, string> | undefined>
     for (const dependency of Object.keys({ ...manifest.dependencies, ...manifest.optionalDependencies, ...manifest.peerDependencies })) install(dependency, dir)
   }
-  for (const name of direct) install(name, SRC)
+  /** A built file of the followed package: its relative imports are followed, and each package it imports is counted whole. */
+  const follow = (file: string, dir: string): void => {
+    if (built.has(file)) return
+    built.add(file)
+    for (const specifier of importsOf(file)) {
+      if (specifier.startsWith('.')) follow(resolve(dirname(file), specifier), dir)
+      else if (!specifier.startsWith('node:')) install(packageName(specifier), dir)
+    }
+  }
+  for (const specifier of specifiers) {
+    const name = packageName(specifier)
+    if (name !== FOLLOWED_BY_FILE) { install(name, from); continue }
+    const dir = packageDir(name, from)
+    if (dir == null) throw new Error(`${name} is not installed`)
+    packages.set(dir, name)
+    follow(entryFile(dir, specifier, name), dir)
+  }
   return { files: [...files].map((file) => relative(SRC, file)).sort(), direct: [...direct].sort(), packages: [...new Set(packages.values())].sort() }
 }
 
@@ -77,10 +116,25 @@ describe('what the EPCIS routes are built from', () => {
     expect(graph.files).toEqual(['epcis/exchange.ts', 'epcis/mongo-storage.ts', 'epcis/routes.ts', 'epcis/sources.ts', 'http-error.ts'])
     expect(graph.direct).toEqual(['@bsv/dpp-credentials', 'express', 'mongodb'])
     for (const file of SIGNING_FILES) expect(graph.files, file).not.toContain(file)
-    // Every package those three depend on, however deep.
+    // Every package those three load, however deep.
     expect(graph.packages.length).toBeGreaterThan(40)
     for (const name of SIGNING_PACKAGES) expect(graph.packages, name).not.toContain(name)
     expect(graph.packages.filter((name) => name.startsWith('@bsv/'))).toEqual(['@bsv/dpp-credentials'])
+  })
+
+  it('sees the signing entry point of the credentials package for what it is, and the routes import none of it', () => {
+    // The same walk, started at the entry point that holds the EPCIS lifecycle claim, reaches the SDK and the protocol package.
+    const claim = reachableFrom('@bsv/dpp-credentials/epcis-lifecycle')
+    expect(claim.packages).toEqual(expect.arrayContaining(['@bsv/sdk', '@bsv/dpp-protocol']))
+    // The routes take the exchange and the source helpers, and never that entry point.
+    for (const file of reachableFrom('epcis/routes.ts').files) {
+      for (const specifier of importsOf(join(SRC, file))) expect(specifier, file).not.toMatch(/epcis-lifecycle/)
+    }
+    // The other entry points of the package reach neither.
+    for (const entry of ['@bsv/dpp-credentials', '@bsv/dpp-credentials/epcis-source', '@bsv/dpp-credentials/epcis-exchange']) {
+      const reached = reachableFrom(entry).packages
+      for (const name of SIGNING_PACKAGES) expect(reached, `${entry} ${name}`).not.toContain(name)
+    }
   })
 
   it('is found to reach the wallet when it does: the same walk from the start of the API finds it', () => {

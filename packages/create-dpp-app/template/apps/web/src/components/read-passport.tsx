@@ -4,14 +4,15 @@
 // be another platform's, and the report still stands on its own.
 import { ErrorNotice, Loading } from '@/components/bits'
 import { PassportReading } from '@/components/reading'
-import { api, isNotFound, type ClaimView, type PassportView, type Verification } from '@/lib/api'
+import { api, isNotFound, type PassportView, type Verification } from '@/lib/api'
+import type { PassportClaimsReading } from '@/lib/lifecycle'
 import { useLoad } from '@/lib/use-load'
 
 interface Read {
   verification?: Verification
   verifyError?: unknown
   journal?: PassportView
-  claims: ClaimView[]
+  claims?: PassportClaimsReading
 }
 
 const unlessNotFound =
@@ -28,7 +29,7 @@ async function read(passportId: string): Promise<Read> {
       (error: unknown): { ok: false; error: unknown } => ({ ok: false, error })
     ),
     api.passport(passportId).catch(unlessNotFound<PassportView | undefined>(undefined)),
-    api.passportClaims(passportId).catch(unlessNotFound<ClaimView[]>([])),
+    api.passportClaims(passportId).catch(unlessNotFound<PassportClaimsReading | undefined>(undefined)),
   ])
   return {
     verification: verification.ok ? verification.value : undefined,

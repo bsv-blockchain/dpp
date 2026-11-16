@@ -3,7 +3,7 @@
 // be reached refuses nothing, and the writer sends anyway and announces the
 // same bytes again later. A 401 or 403 is this platform's own configuration
 // and stops a write while the state is still a draft.
-import { Beef, type MerklePath, type Transaction } from '@bsv/sdk'
+import { Beef, Transaction, type MerklePath } from '@bsv/sdk'
 import { chainFromBeef } from '@bsv/dpp-protocol'
 
 export type Announcement = 'admitted' | 'duplicate' | 'refused' | 'unauthorised' | 'unreachable'
@@ -72,6 +72,22 @@ export class IndexClient {
     const merged = Beef.fromBinary(outputs[0].beef)
     for (const output of outputs.slice(1)) merged.mergeBeef(output.beef)
     return chainFromBeef(merged, passportId)
+  }
+
+  /**
+   * The attestation anchors the index holds under one selector (`ls_attestation`), each as its transaction and output.
+   * An anchor's metadata is unsigned by the claim's issuer: it says where to look, and the claim's own verification
+   * decides what the claim is about. Throws when the index cannot be reached or refuses the question.
+   */
+  async anchorsFor(query: { subject: string } | { attestationId: string }, representation?: string): Promise<Array<{ transaction: Transaction; outputIndex: number }>> {
+    const response = await this.request('/lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ service: 'ls_attestation', query: { ...query, ...(representation == null ? {} : { representation }) } }),
+    })
+    if (!response.ok) throw new Error(`the index answered HTTP ${response.status} to the anchor lookup`)
+    const { outputs } = (await response.json()) as { outputs?: Array<{ beef: number[]; outputIndex: number }> }
+    return (outputs ?? []).map((output) => ({ transaction: Transaction.fromBEEF(output.beef), outputIndex: output.outputIndex }))
   }
 
   /** The identity key the index signs its evidence packages under, as its capability document names it, or nothing when it signs none. */

@@ -16,7 +16,7 @@ A representation is one exact byte contract for one credential format, identifie
 
 `vsc-seal-json-v1` is parked with its profile: it stays registered, but no release requires it, an implementer need not implement it, and from `@bsv/dpp-credentials` 0.2.0-beta.6 the reference packages no longer implement it.
 
-`epcis-event-vc@1` is parked with its profile while its representation is reconsidered: it stays registered, but no release requires it and an implementer need not implement it. Its reference module stays in the repository and `@bsv/dpp-protocol` no longer exports it.
+`epcis-event-vc@1` is parked with its profile while its representation is reconsidered: it stays registered, but no release requires it and an implementer need not implement it. Its reference module stays in the repository and no package exports it.
 
 A reader that meets a representation it does not implement indexes the commitment and reports content verification `unsupported` (`representation-unsupported` in [`verification.md`](verification.md)); it never guesses, never downgrades to a weaker check and never reads one representation's bytes under another's rules. Adding a representation is a new profile manifest and a new row here, never a change to an existing row.
 

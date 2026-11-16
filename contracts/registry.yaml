@@ -2,9 +2,11 @@ openapi: 3.1.0
 info:
   title: Attestation registry API
   version: 0.6.0
-  summary: Verified native lifecycle claims, external and directly signed EPCIS event credentials with independent BSV anchors.
+  summary: Verified native lifecycle claims, EPCIS lifecycle claims, external and directly signed EPCIS event credentials with independent BSV anchors.
   description: |
-    Current intake uses explicit signed native claims, the external vc-di-ecdsa-rdfc-2019@1 credential representation or the parked epcis-event-vc@1 directly signed EPCIS event representation. Missing proof, status, authority or issuer-binding evidence fails closed. Anchor broadcast, credential verification, discovery and confirmed chain inclusion are separate claims.
+    Current intake uses explicit signed native claims, EPCIS lifecycle claims (dpp-epcis-lifecycle-json@1), the external vc-di-ecdsa-rdfc-2019@1 credential representation or the parked epcis-event-vc@1 directly signed EPCIS event representation. Missing proof, status, authority or issuer-binding evidence fails closed. Anchor broadcast, credential verification, discovery and confirmed chain inclusion are separate claims.
+
+    The EPCIS lifecycle claim representation (dpp-epcis-lifecycle-json@1, the standard's spec/epcis-lifecycle-claim.md) carries one EPCIS 2.0.1 event in a signed envelope over its RFC 8785 bytes. A registry admits it only after its own verification, stores the exact bytes and anchors them once per bound passport in one transaction; the reference registry does not yet implement it, and a registry that does not refuses it as unsupported.
 
     The directly signed EPCIS event representation (epcis-event-vc@1) is parked with its profile while its representation is reconsidered: its envelope stays defined here with no change of shape, path or status code, no release requires it, and a registry that does not implement it refuses it as unsupported, as it refuses any representation it does not implement.
 
@@ -151,7 +153,7 @@ paths:
         - name: representation
           in: query
           description: The stored representation. `vsc-seal-json-v1` selects records stored before that representation was parked.
-          schema: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1', legacy-uora-json] }
+          schema: { enum: [dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1', legacy-uora-json] }
         - name: type
           in: query
           description: The attestation type (a native event type, VSC-SEAL, an external credential's own type, or a historical type).
@@ -191,6 +193,7 @@ paths:
             schema:
               oneOf:
                 - $ref: '#/components/schemas/NativeLifecycleSubmission'
+                - $ref: '#/components/schemas/EpcisLifecycleSubmission'
                 - $ref: '#/components/schemas/ExternalCredentialSubmission'
                 - $ref: '#/components/schemas/EpcisEventSubmission'
       responses:
@@ -205,7 +208,7 @@ paths:
                   accepted: { const: true }
                   attestationId: { type: string }
                   digest: { type: string, pattern: '^[0-9a-f]{64}$' }
-                  representation: { enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
+                  representation: { enum: [dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
                   mediaType: { enum: [application/json, application/vc+ld+json, application/vc+jwt] }
                   verdict: { const: valid }
                   verification: { type: object, description: Named checks and their evidence scope. }
@@ -226,7 +229,9 @@ paths:
             identifier is the Event Hash ID and the collision is judged per
             issuer: another issuer's credential for the same hash ID is a
             second attestation and is accepted; the same issuer's different
-            bytes are `credential_id_collision`.
+            bytes are `credential_id_collision`. For
+            `dpp-epcis-lifecycle-json@1` the identifier is `urn:sha256:` and
+            the digest of the exact bytes, so only the same bytes repeat it.
         '422': { description: "Invalid, unsupported or indeterminate verification; nothing stored or anchored. An external credential using a curve, suite or structure the profile does not implement, and any submission of the parked vsc-seal-json-v1 representation, answer here with outcome unsupported. A body naming no current representation, a historical UORA body included, answers here with outcome invalid and the unsupported representation named." }
       security:
         - {}
@@ -292,6 +297,7 @@ paths:
             schema:
               oneOf:
                 - $ref: '#/components/schemas/ValidateNativeRequest'
+                - $ref: '#/components/schemas/ValidateEpcisLifecycleRequest'
                 - $ref: '#/components/schemas/ValidateExternalRequest'
                 - $ref: '#/components/schemas/ValidateEpcisEventRequest'
       responses:
@@ -374,6 +380,104 @@ components:
       properties:
         tokenHistory: { $ref: '#/components/schemas/TokenHistory' }
       unevaluatedProperties: false
+    EpcisLifecycleClaim:
+      type: object
+      description: |
+        The parsed EPCIS lifecycle claim of the standard's `spec/epcis-lifecycle-claim.md` §2: one EPCIS 2.0.1 event beside the DPP envelope members, signed by the issuer's BRC-42 child for `[1, 'dpp epcis lifecycle v1']`, key identifier `event`, counterparty `anyone`, over the RFC 8785 bytes of the envelope without `signature`. The event's own rules are that document's §4 and the pinned EPCIS 2.0.1 schema; this schema states the envelope only.
+      required: [claimFormat, event, eventContext, eventSchema, bindings, issuer, assertedRole, authorityScope, issuedAt, signature]
+      additionalProperties: false
+      properties:
+        claimFormat: { const: 'dpp-epcis-lifecycle@1' }
+        event:
+          type: object
+          required: [type, eventTime, eventTimeZoneOffset, eventID]
+          properties:
+            type: { enum: [ObjectEvent, AggregationEvent, TransactionEvent, TransformationEvent, AssociationEvent] }
+            eventID: { type: string, minLength: 1 }
+        eventContext:
+          type: array
+          minItems: 1
+          items:
+            oneOf:
+              - type: object
+                required: [iri, sha256]
+                additionalProperties: false
+                properties:
+                  iri: { const: 'https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld' }
+                  sha256: { const: '5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737' }
+              - type: object
+                required: [inline, sha256]
+                additionalProperties: false
+                properties:
+                  inline: { type: object, minProperties: 1, additionalProperties: { type: string } }
+                  sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        eventSchema:
+          type: object
+          required: [uri, sha256]
+          additionalProperties: false
+          properties:
+            uri: { const: 'https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json' }
+            sha256: { const: '0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af' }
+        bindings:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [passportId, field, identifier, level]
+            additionalProperties: false
+            properties:
+              passportId: { type: string, minLength: 1 }
+              field: { enum: [epcList, parentID, childEPCs, inputEPCList, outputEPCList, quantityList, childQuantityList, inputQuantityList, outputQuantityList] }
+              identifier: { type: string, minLength: 1 }
+              level: { enum: [instance, class] }
+        issuer: { type: string, minLength: 1 }
+        issuerKeyDid: { type: string, description: 'Required when the issuer is not a did:key and forbidden when it is.' }
+        issuerParty: { type: string, minLength: 1 }
+        assertedRole: { enum: [observer, owner, custodian, authorised-reporter] }
+        authorityScope: { type: array, minItems: 1, uniqueItems: true, items: { type: string, minLength: 1 } }
+        issuedAt: { type: string, format: date-time }
+        requiredExtensions: { type: array, minItems: 1, uniqueItems: true, items: { type: string, format: uri } }
+        source:
+          type: object
+          required: [relation, sourceDigest, mediaType, eventPointer]
+          additionalProperties: false
+          properties:
+            relation: { enum: [imported, captured] }
+            sourceDigest: { type: string, pattern: '^[0-9a-f]{64}$' }
+            mediaType: { enum: [application/json, application/ld+json] }
+            eventPointer: { type: string }
+            localEventIdentity: { type: string, minLength: 1 }
+            sourceParty: { type: string, minLength: 1 }
+        signature: { type: string, pattern: '^[0-9a-f]+$' }
+    EpcisLifecycleEnvelope:
+      type: object
+      required: [representation, claim]
+      description: |
+        An EPCIS lifecycle claim for intake or validation. `claim` is the exact RFC 8785 text of the complete signed claim, which is what is verified, retained and anchored; text that is not exactly the canonical form of its own parse is refused as invalid, as are duplicate keys, lone surrogates and integers outside the safe range. The registry anchors the stored bytes once per bound passport, each anchor naming that passport as its subject, all in one transaction, under `tm_attestation` unchanged.
+      properties:
+        representation: { const: 'dpp-epcis-lifecycle-json@1' }
+        claim:
+          type: string
+          description: 'The exact RFC 8785 text of the signed claim, at most 2 MiB.'
+          contentMediaType: application/json
+          contentSchema: { $ref: '#/components/schemas/EpcisLifecycleClaim' }
+        subject:
+          type: string
+          description: >-
+            The passport identifier the caller expects. It must be one of the
+            claim's bound passports, else the submission is refused as a
+            subject mismatch; it never selects which passports are anchored.
+    EpcisLifecycleSubmission:
+      allOf:
+        - $ref: '#/components/schemas/EpcisLifecycleEnvelope'
+      unevaluatedProperties: false
+    ValidateEpcisLifecycleRequest:
+      description: An EPCIS lifecycle claim envelope for `POST /validate`, with the operation's own `tokenHistory` beside it.
+      allOf:
+        - $ref: '#/components/schemas/EpcisLifecycleEnvelope'
+      properties:
+        tokenHistory: { $ref: '#/components/schemas/TokenHistory' }
+      unevaluatedProperties: false
     ExternalCredentialEnvelope:
       type: object
       required: [representation, credential]
@@ -443,7 +547,7 @@ components:
         representations:
           type: array
           description: The representations intake accepts. The parked `vsc-seal-json-v1` is not among them and is named under `unsupported`.
-          items: { enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
+          items: { enum: [dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
         proofSuites: { type: array, items: { enum: [ecdsa-rdfc-2019, ES256K] } }
         interoperability:
           type: object
@@ -733,7 +837,7 @@ components:
         envelope:
           type: string
           description: The exact secured bytes of a current record (the bytes its digest commits to), or the canonical bytes of a historical record.
-        representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
+        representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
         tokenRecordId:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -752,7 +856,7 @@ components:
         attestationId: { type: string }
         passportId: { type: string }
         issuer: { type: string }
-        representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
+        representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
         attestationType: { type: string }
         timestamp: { type: string }
         receivedAt: { type: string, format: date-time }
@@ -859,7 +963,7 @@ components:
           type: string
           description: Exact secured representation bytes expressed as a UTF-8 JSON string, present on current records.
         representation:
-          enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1']
+          enum: [legacy-uora-json, dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1']
         mediaType:
           enum: [application/json, application/vc+ld+json, application/vc+jwt]
         assurance:

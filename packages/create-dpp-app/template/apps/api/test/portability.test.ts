@@ -1,6 +1,7 @@
 // The export and the restore, on the parts the exit exercise does not reach:
-// a passport that was handed on, with its acceptance record, its offer and a
-// lifecycle claim; the index's complete export in place of its bounded
+// a passport that was handed on, with its acceptance record, its offer, an
+// EPCIS lifecycle claim that binds it and a second passport, and a
+// historical native claim; the index's complete export in place of its bounded
 // package; a deployment that already holds something else under an identity
 // the package carries; and an export that would have carried a secret.
 //
@@ -15,15 +16,18 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { PrivateKey } from '@bsv/sdk'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { acceptanceCommitment, acceptanceRecordsInPackage, evidencePackageSigner, evidencePackageSigningKey, inspectEvidencePackage, signEvidenceManifest, type EvidencePackageManifest } from '@bsv/dpp-protocol'
+import { acceptanceCommitment, acceptanceRecordsInPackage, evidencePackageSigner, evidencePackageSigningKey, inspectEvidencePackage, signEvidenceManifest, signLifecycleClaim, type EvidencePackageManifest } from '@bsv/dpp-protocol'
 import { createMemoryEpcisStorage } from '@bsv/dpp-credentials/epcis-exchange'
 import { loadConfig } from '../src/config.js'
 import { mintPassportId } from '../src/identifiers.js'
+import { eventSchemaCheck, readPassportClaims } from '../src/lifecycle.js'
 import { openPlatform, type Platform } from '../src/platform.js'
 import { exportApplication, type ExportedApplication } from '../src/portability/export.js'
 import { EXPORT_SCOPE_PREFIX, PortabilityRefused, asNumberArrays, exportScopeId, passportFolder, readPackageFolder, stableJson, writePackageFolder } from '../src/portability/package.js'
 import { restoreApplication, verifyApplicationPackage, type RestoreReport } from '../src/portability/restore.js'
 import { samplePayload } from '../src/profiles.js'
+import type { EpcisLifecycleClaimRecord } from '../src/store.js'
+import { gs1Dir } from './epcis-fixtures.js'
 
 const settings = { NETWORK: 'main', PASSPORT_HOST: 'passports.example.com', GS1_PREFIX: '952', LIVE_PUBLISHING: 'false' }
 const config = loadConfig(settings)
@@ -37,6 +41,7 @@ let passportId: string
 let otherId: string
 let claimCode: string
 let exported: ExportedApplication
+let lifecycleClaim: EpcisLifecycleClaimRecord
 const exchange = () => ({ storage: createMemoryEpcisStorage(), sources: [] })
 
 const refusal = async (attempt: Promise<unknown>): Promise<PortabilityRefused> => {
@@ -64,8 +69,15 @@ beforeAll(async () => {
   const offered = await first.custody.offer({ record: (await first.store.getPassport(passportId))!, holder: brand, terms: { word: 'Passed on' } })
   claimCode = offered.claimCode!
   await first.custody.accept({ requestId: offered.offer.requestId, claimCode })
-  await first.claims.sign({ passport: (await first.store.getPassport(passportId))!, issuer: first.parties.member('inspector-7'), eventType: 'Disposition' })
   await first.writer.issue({ brandId, brand, passportId: otherId, profile: 'general@2', payload, ownerFields: {} })
+  // A historical native claim, as this application kept one before it moved to EPCIS lifecycle claims.
+  const inspector = first.parties.member('inspector-7')
+  const tip = (await first.store.getPassport(passportId))!.states.at(-1)!
+  const historical = await signLifecycleClaim({ claimFormat: 'dpp-lifecycle-v1', passportId, recordId: `${tip.txid}:${tip.outputIndex}`, eventType: 'Disposition', timestamp: '2026-03-01T00:00:00Z', issuer: inspector.did, issuerKeyId: 'inspector-7', profile: 'general', profile_version: 2 }, inspector.wallet)
+  await first.store.saveClaim({ id: 'claim-historical-portable', passportId, issuer: historical.issuer, issuedBy: inspector.name, claim: historical, createdAt: historical.timestamp })
+  // An EPCIS lifecycle claim that binds both passports: carried once, as its exact bytes.
+  const event = { type: 'ObjectEvent', eventID: 'urn:uuid:6c000000-0000-4000-8000-00000000e001', eventTime: '2026-03-02T08:00:00.000Z', eventTimeZoneOffset: '+00:00', epcList: [passportId, otherId], action: 'OBSERVE', bizStep: 'inspecting', disposition: 'conformant' }
+  lifecycleClaim = await first.claims.issue({ event, issuer: inspector, assertedRole: 'observer', expectedPassport: passportId, schemaCheck: eventSchemaCheck(gs1Dir()) })
 })
 
 afterAll(async () => {
@@ -83,11 +95,16 @@ describe('the export of an application', () => {
     expect(manifest.signature.signer).toBe(evidencePackageSigner(first.wallet.identityKey, manifest.passportId))
     // It inspects as any evidence package does: its structure, its inventory against the files and the exporter's signature.
     expect(inspectEvidencePackage(manifest, asNumberArrays(files), { expectedSigner: exported.exporter.signer })).toMatchObject({ structureValid: true, inventoryVerified: true, signatureValid: true, failures: [], recoveryBackup: true })
-    expect(descriptor).toMatchObject({ access: 'authorised-recovery', selection: 'all-passports', profiles: { carried: [], named: ['general@2'] }, epcis: { scopes: [], reason: 'the exchange holds no source scope' }, records: { brands: 1, offers: 1, claims: 1 } })
+    expect(descriptor).toMatchObject({ access: 'authorised-recovery', selection: 'all-passports', profiles: { carried: [], named: ['general@2'] }, epcis: { scopes: [], reason: 'the exchange holds no source scope' }, records: { brands: 1, offers: 1, claims: 2 } })
     expect(manifest.completeness.withheld).toContain('profile general@2 defined-by-the-profiles-package')
     const handedOn = descriptor.passports.find((passport) => passport.passportId === passportId)!
-    expect(handedOn).toMatchObject({ profile: 'general@2', states: 3, acceptanceRecords: 1, claims: 1, index: { form: 'export-parts', parts: 1, states: 3 } })
-    expect(descriptor.passports.find((passport) => passport.passportId === otherId)!.index).toMatchObject({ form: 'export-parts', states: 1 })
+    expect(handedOn).toMatchObject({ profile: 'general@2', states: 3, acceptanceRecords: 1, claims: 2, index: { form: 'export-parts', parts: 1, states: 3 } })
+    expect(descriptor.passports.find((passport) => passport.passportId === otherId)!).toMatchObject({ claims: 1, index: { form: 'export-parts', states: 1 } })
+    // The EPCIS lifecycle claim binds both passports and is carried once: its record, and its exact signed bytes beside it.
+    const claimFiles = manifest.inventory.filter((entry) => entry.path.startsWith('application/lifecycle-claims/'))
+    expect(claimFiles).toEqual([expect.objectContaining({ category: 'native-claims', mediaType: 'application/json', representation: 'dpp-epcis-lifecycle-json@1', represents: lifecycleClaim.attestationId })])
+    expect(new TextDecoder().decode(files.get(claimFiles[0]!.path)!)).toBe(lifecycleClaim.bytes)
+    expect(manifest.inventory.filter((entry) => entry.path.startsWith('application/claims/'))).toHaveLength(2)
 
     // The acceptance record is an authority entry, in the form a reader of any evidence package finds it.
     const record = (await first.store.getPassport(passportId))!
@@ -110,7 +127,8 @@ describe('the export of an application', () => {
 
   it('carries the bounded package by default, and a selection of passports under a name of its own', async () => {
     const one = await exportApplication({ platform: first, epcis: exchange(), access: 'authorised-recovery', passportIds: [otherId] })
-    expect(one.descriptor).toMatchObject({ selection: 'listed-passports', records: { brands: 1, offers: 0, claims: 0 } })
+    // The second passport has no offer of its own, and the EPCIS lifecycle claim that binds it travels with it.
+    expect(one.descriptor).toMatchObject({ selection: 'listed-passports', records: { brands: 1, offers: 0, claims: 1 } })
     expect(one.descriptor.passports).toHaveLength(1)
     expect(one.descriptor.passports[0]!.index).toMatchObject({ form: 'package', states: 1, exporter: first.devIndex!.exporterIdentityKey })
     expect(one.manifest.passportId).toBe(exportScopeId([otherId]))
@@ -168,14 +186,14 @@ describe('the restore of an application', () => {
     const verified = await verifyApplicationPackage(readPackageFolder(folder), trust(first))
     expect(verified.journals.map((record) => record.passportId).sort()).toEqual([passportId, otherId].sort())
     expect(verified.offers).toHaveLength(1)
-    expect(verified.claims).toHaveLength(1)
+    expect(verified.claims).toHaveLength(2)
     expect(await second.store.listPassports()).toEqual([])
 
     report = await restoreApplication({ verified, platform: second, epcis: exchange(), rebuildIndex: true })
     expect(report).toMatchObject({
       outcome: 'restored',
       passports: { unchanged: [] },
-      records: { brands: { written: 1, unchanged: 0 }, offers: { written: 1, unchanged: 0 }, claims: { written: 1, unchanged: 0 } },
+      records: { brands: { written: 1, unchanged: 0 }, offers: { written: 1, unchanged: 0 }, claims: { written: 2, unchanged: 0 } },
       profiles: { resolver: 'package', filesWritten: 0, registered: [], notRegistered: [] },
       index: { rebuilt: true, announced: 4, admitted: 4, duplicate: 0, notAnnounced: [] },
       readings: { compared: 2, same: 2, different: [], notCompared: [] },
@@ -184,11 +202,20 @@ describe('the restore of an application', () => {
     expect(stableJson(await second.store.getPassport(passportId))).toBe(stableJson(await first.store.getPassport(passportId)))
     expect((await second.index.lineage(passportId)).map((tx) => tx.id('hex'))).toEqual((await first.index.lineage(passportId)).map((tx) => tx.id('hex')))
     expect((await second.read(passportId)).lineage.map((state) => state.op)).toEqual(['ISSUE', 'UPDATE', 'TRANSFER'])
+
+    // The restored deployment holds the claims as they were and verifies them itself: the EPCIS claim from its exact bytes, binding both passports, and the historical one under its own rules.
+    for (const id of [passportId, otherId]) {
+      const reading = await readPassportClaims(id, { store: second.store, index: second.index, schemaCheck: eventSchemaCheck(gs1Dir()) })
+      const [claim] = reading.lifecycle
+      expect(claim, id).toMatchObject({ attestationId: lifecycleClaim.attestationId, held: true, participation: 'item', foundBy: ['this-application'] })
+      expect([claim!.findings!.signature.status, claim!.findings!.eventStructure.status, claim!.findings!.productBinding.status]).toEqual(['pass', 'pass', 'pass'])
+    }
+    expect((await readPassportClaims(passportId, { store: second.store, index: second.index })).historical).toEqual([expect.objectContaining({ id: 'claim-historical-portable', historical: true, signature: 'verified' })])
   })
 
   it('changes nothing the second time, and lets the recipient carry on with the claim code they accepted with', async () => {
     const again = await restoreApplication({ verified: await verifyApplicationPackage(readPackageFolder(folder), trust(first)), platform: second, epcis: exchange(), rebuildIndex: true })
-    expect(again).toMatchObject({ outcome: 'unchanged', passports: { written: [] }, records: { brands: { written: 0, unchanged: 1 }, offers: { written: 0, unchanged: 1 }, claims: { written: 0, unchanged: 1 } }, index: { announced: 4, admitted: 0, duplicate: 4 }, readings: { compared: 2, same: 2 } })
+    expect(again).toMatchObject({ outcome: 'unchanged', passports: { written: [] }, records: { brands: { written: 0, unchanged: 1 }, offers: { written: 0, unchanged: 1 }, claims: { written: 0, unchanged: 2 } }, index: { announced: 4, admitted: 0, duplicate: 4 }, readings: { compared: 2, same: 2 } })
 
     // The offer's claim code was never stored and is not in the package. Its digest is, so the recipient's code is recognised here.
     const offer = (await second.store.listOffers({ passportId }))[0]!
@@ -236,6 +263,14 @@ describe('the restore of an application', () => {
     const evidence = await refusal(verifyApplicationPackage(readPackageFolder(tampered), trust(first)))
     expect(evidence.code).toBe('index-evidence-refused')
     expect(evidence.data.passportId).toBe(passportId)
+
+    // An EPCIS lifecycle claim whose carried bytes were changed, with the manifest signed again for them: the bytes no longer verify as the claim the record names.
+    const claimPath = [...exported.files.keys()].find((path) => path.startsWith('application/lifecycle-claims/'))!
+    const alteredClaim = await resign('altered-claim', (dir) => {
+      writeFileSync(join(dir, claimPath), readFileSync(join(dir, claimPath), 'utf8').replace('"conformant"', '"non_conformant"'))
+    })
+    const claimRefusal = await refusal(verifyApplicationPackage(readPackageFolder(alteredClaim), trust(first)))
+    expect(claimRefusal.code).toBe('claim-invalid')
 
     // A manifest signed, correctly, under the name of another selection than the passports the package carries.
     const scope = await resign('scope', (_dir, manifest) => {

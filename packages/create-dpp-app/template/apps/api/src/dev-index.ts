@@ -1,9 +1,12 @@
 // An index in this process for development and tests: the real topic
-// manager, lookup service and HTTP host the reference deployment runs, over
+// managers, lookup services and HTTP host the reference deployment runs, over
 // in-memory storage, on a loopback port, with a publisher policy naming the
 // platform wallet and the managed-custody profile selected. Its header
 // checks are off, so it takes the made-up proofs a dry run pushes and claims
-// no inclusion. Production runs the reference index as its own service
+// no inclusion. Beside the passport topic it admits generic attestation
+// anchors on tm_attestation, from any anchoring service, as the reference
+// index does when its operator names none; a lifecycle claim's anchors are
+// found there by passport. Production runs the reference index as its own service
 // (a separate operator project or an existing provider) and never this.
 //
 // The HTTP host is the package's ./server export. Imported, it is a library
@@ -60,10 +63,11 @@ export async function startDevIndex(options: DevIndexOptions): Promise<DevIndex>
   const managedAcceptance = (options.custody ?? 'managed-custody@2') === 'managed-custody@2'
   const records = new topics.InMemoryDppStorage()
   const storage = new topics.InMemoryOverlayStorage()
-  const lookupServices = { ls_dpp: new topics.DppLookupService(records) }
+  const attestations = new topics.InMemoryAttestationStorage()
+  const lookupServices = { ls_dpp: new topics.DppLookupService(records), ls_attestation: new topics.AttestationLookupService(attestations) }
   const silent = { ...console, log() {}, info() {}, warn() {}, error() {} }
   const engine = new overlay.Engine(
-    { tm_dpp: new topics.DppTopicManager('', { publisherPolicy: policy.chain, managedAcceptance, admittedOutputs: storage }) },
+    { tm_dpp: new topics.DppTopicManager('', { publisherPolicy: policy.chain, managedAcceptance, admittedOutputs: storage }), tm_attestation: new topics.AttestationTopicManager() },
     lookupServices,
     storage,
     'scripts only',
@@ -72,7 +76,7 @@ export async function startDevIndex(options: DevIndexOptions): Promise<DevIndex>
     undefined,
     undefined,
     undefined,
-    { tm_dpp: false },
+    { tm_dpp: false, tm_attestation: false },
     false,
     '[index] ',
     false,

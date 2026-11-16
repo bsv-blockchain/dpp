@@ -5,23 +5,24 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Hash, Utils } from '@bsv/sdk'
-import { verifyLifecycleClaim } from '@bsv/dpp-protocol'
+import { EPCIS_LIFECYCLE_MEDIA_TYPE, EPCIS_LIFECYCLE_ROLES, parseEpcisLifecycleClaim, type EpcisLifecycleRole, type EpcisLifecycleSource } from '@bsv/dpp-credentials/epcis-lifecycle'
 import { PROFILE_RETIRED, ProfileRetiredError, RETIRED_PROFILE_REPLACEMENTS, describeRetiredProfile, isRetiredProfile, readPublicPayloadSchema, readRestrictedPayloadSchema } from '@bsv/dpp-profiles'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node'
 import { sessionFrom, type Auth, type Session } from './auth.js'
-import { EVENT_TYPES } from './claims.js'
+import type { IssueClaimInput } from './claims.js'
 import type { EpcisExchange } from './epcis/exchange.js'
 import { epcisRoutes } from './epcis/routes.js'
 import { HttpError } from './http-error.js'
 import { isDemonstrationPolicy, mintPassportId } from './identifiers.js'
+import { eventSchemaCheck, readLifecycleClaim, readPassportClaims, type ClaimsReaderOptions } from './lifecycle.js'
 import { sectorExamples } from './sector-examples.js'
 import type { Party } from './parties.js'
 import type { Platform } from './platform.js'
 import { currentProfiles, isProfileId, manifestFor, sampleWithProblems } from './profiles.js'
-import type { PassportRecord, StateEntry } from './store.js'
+import { isEpcisLifecycleRecord, type PassportRecord, type StateEntry } from './store.js'
 import { pendingDuties, runDuties, summariseJournal } from './worker.js'
-import { WriteRefused } from './writer.js'
+import { WriteRefused, refuseRetiredProfile } from './writer.js'
 
 export interface ServerOptions {
   platform: Platform
@@ -106,6 +107,15 @@ export function createServer(options: ServerOptions): express.Express {
   const { store, parties, writer, custody, claims, config } = platform
   const policy = { host: config.passportHost, prefix: config.gs1Prefix }
   const demo = isDemonstrationPolicy(policy)
+  // How lifecycle claims are read: by the index's anchors and this application's records, each verified with the pinned schema the EPCIS exchange provisioned.
+  const schemaCheck = options.exchange == null ? undefined : eventSchemaCheck(options.exchange.artefactsDir)
+  const claimsReader: ClaimsReaderOptions = {
+    store,
+    index: platform.index,
+    ...(config.registry.url == null ? {} : { registry: { url: config.registry.url } }),
+    ...(platform.chainTracker === 'scripts only' ? {} : { chainTracker: platform.chainTracker }),
+    ...(schemaCheck == null ? {} : { schemaCheck }),
+  }
   const app = express()
   app.disable('x-powered-by')
 
@@ -247,7 +257,18 @@ export function createServer(options: ServerOptions): express.Express {
   )
 
   app.get('/api/passports/:ref', wrap(async (req) => publicView(await passportFrom(param(req, 'ref')), demo)))
-  app.get('/api/passports/:ref/claims', wrap(async (req) => (await store.listClaims({ passportId: (await passportFrom(param(req, 'ref'))).passportId })).map((c) => ({ ...c, verified: verifyLifecycleClaim(c.claim).signature }))))
+  // Every lifecycle claim that concerns the passport: EPCIS lifecycle claims found by its anchors and this application's records, each verified, and historical native claims read under their own rules.
+  app.get('/api/passports/:ref/claims', wrap(async (req) => await readPassportClaims((await passportFrom(param(req, 'ref'))).passportId, claimsReader)))
+  // The exact bytes of an EPCIS lifecycle claim this application holds: what was signed, sent and anchored, verifiable without this application.
+  app.get(
+    '/api/lifecycle-claims/:id',
+    wrap(async (req, res) => {
+      const id = decodeURIComponent(param(req, 'id'))
+      const record = (await store.listClaims()).filter(isEpcisLifecycleRecord).find((c) => c.attestationId === id || c.id === id)
+      if (record == null) throw new HttpError(404, 'claim-unknown', `this application holds no EPCIS lifecycle claim ${id}`)
+      res.type(EPCIS_LIFECYCLE_MEDIA_TYPE).send(Buffer.from(record.bytes, 'utf8'))
+    })
+  )
 
   app.get('/api/offers/:requestId', wrap(async (req) => await custody.preview(param(req, 'requestId'))))
   app.post('/api/offers/:requestId/accept', wrap(async (req) => await custody.accept({ requestId: param(req, 'requestId'), claimCode: req.body?.claimCode })))
@@ -402,17 +423,78 @@ export function createServer(options: ServerOptions): express.Express {
     })
   )
 
+  /**
+   * Sign an EPCIS lifecycle claim about the passport, as the signed-in member. The body names the event in one of three
+   * ways: `event`, an EPCIS 2.0.1 event the member entered; `imported`, an event the EPCIS exchange retained, by its
+   * import and pointer, which is signed with a source link back to the import; or `correctionOf`, a claim this
+   * application holds, which a new claim declares in error with the event's own error declaration. The original is
+   * never changed. `submit: true` then sends it to the registry, a separate step.
+   */
   app.post(
     '/api/passports/:ref/claims',
     wrap(async (req) => {
       const s = await requireSession(req)
       const record = await passportFrom(param(req, 'ref'))
-      const eventType = req.body?.eventType
-      if (!EVENT_TYPES.includes(eventType)) throw new HttpError(400, 'event-type-unknown', `eventType must be one of ${EVENT_TYPES.join(', ')}`)
-      const issuer = parties.member(s.userId)
-      let claim = await claims.sign({ passport: record, issuer, eventType, keyId: s.email })
-      if (req.body?.submit === true) claim = await claims.submit(claim)
-      return { ...claim, verified: verifyLifecycleClaim(claim.claim).signature }
+      refuseRetiredProfile(record.profile)
+      const body = objectOf(req.body) ?? {}
+      if (body.eventType !== undefined) {
+        throw new HttpError(400, 'four-category-claims-retired', 'This application no longer issues dpp-lifecycle-v1 claims with an Origin, Transfer, Transformation or Disposition event type. Send the EPCIS event that happened as event, or name an event the EPCIS exchange retained as imported. Nothing was signed.')
+      }
+      // A declaration of error keeps the role of the claim it corrects; every other claim states its own.
+      const role = typeof body.correctionOf === 'string' && body.assertedRole === undefined ? 'authorised-reporter' : body.assertedRole
+      if (typeof role !== 'string' || !(EPCIS_LIFECYCLE_ROLES as readonly string[]).includes(role)) throw new HttpError(400, 'asserted-role-required', `assertedRole must be one of ${EPCIS_LIFECYCLE_ROLES.join(', ')}`)
+      const strings = (value: unknown): string[] | undefined => (Array.isArray(value) && value.every((v) => typeof v === 'string') ? (value as string[]) : undefined)
+      const issue: Omit<IssueClaimInput, 'event'> = {
+        issuer: parties.member(s.userId),
+        assertedRole: role as EpcisLifecycleRole,
+        expectedPassport: record.passportId,
+        ...(strings(body.authorityScope) == null ? {} : { authorityScope: strings(body.authorityScope) }),
+        ...(typeof body.issuerParty === 'string' && body.issuerParty !== '' ? { issuerParty: body.issuerParty } : {}),
+        ...(strings(body.requiredExtensions) == null ? {} : { requiredExtensions: strings(body.requiredExtensions) }),
+        ...(Array.isArray(body.extensionContexts) ? { extensionContexts: body.extensionContexts as Array<Record<string, string>> } : {}),
+        ...(schemaCheck == null ? {} : { schemaCheck }),
+      }
+      let event: Record<string, unknown> | undefined
+      const imported = objectOf(body.imported)
+      if (imported != null) {
+        // An event someone else supplied. The member did not observe it, so it is never signed as the observer.
+        if (role === 'observer') throw new HttpError(409, 'importer-not-observer', 'An imported event was observed by whoever supplied it, not by this application, so it is not signed as the observer. Sign it as authorised-reporter, or as owner or custodian with your party identifier. Nothing was signed.')
+        if (options.exchange == null) throw new HttpError(409, 'epcis-unavailable', 'the EPCIS exchange is not running in this process')
+        const importId = typeof imported.importId === 'string' ? imported.importId : ''
+        const pointer = typeof imported.pointer === 'string' ? imported.pointer : ''
+        const retained = await options.exchange.retainedEvent(importId, pointer)
+        if (retained == null) throw new HttpError(404, 'event-unknown', `the EPCIS exchange retains no event at ${pointer} in ${importId}`)
+        if (retained.event.conflict?.state === 'open') throw new HttpError(409, 'event-in-conflict', 'Another body is held under this event identifier and the conflict is not decided. Decide it on the Events page first. Nothing was signed.')
+        if (retained.event.eventId == null) throw new HttpError(409, 'event-id-missing', 'The retained event declares no eventID. A lifecycle claim carries the event\'s own identifier and never mints one. Nothing was signed.')
+        event = retained.body
+        const source: EpcisLifecycleSource = { relation: 'imported', sourceDigest: retained.record.sha256, mediaType: retained.record.mediaType, eventPointer: pointer }
+        Object.assign(issue, { source, importedFrom: { importId, pointer }, ...(retained.inlineContexts.length === 0 || issue.extensionContexts != null ? {} : { extensionContexts: retained.inlineContexts }) })
+      } else if (typeof body.correctionOf === 'string') {
+        const original = (await store.listClaims({ passportId: record.passportId })).filter(isEpcisLifecycleRecord).find((c) => c.attestationId === body.correctionOf || c.id === body.correctionOf)
+        if (original == null) throw new HttpError(404, 'claim-unknown', `this application holds no EPCIS lifecycle claim ${String(body.correctionOf)} about ${record.passportId}`)
+        const claim = parseEpcisLifecycleClaim(original.bytes)
+        if (claim.event.errorDeclaration !== undefined) throw new HttpError(409, 'claim-is-declaration', 'That claim already declares its event in error.')
+        // EPCIS 2.0.1 section 7.4.1: the same event, with an error declaration added. Nothing else of it changes.
+        const reason = body.reason === 'did_not_occur' || body.reason === 'incorrect_data' ? body.reason : undefined
+        const corrective = strings(body.correctiveEventIDs)
+        event = { ...claim.event, errorDeclaration: { declarationTime: new Date().toISOString(), ...(reason == null ? {} : { reason }), ...(corrective == null || corrective.length === 0 ? {} : { correctiveEventIDs: corrective }) } }
+        Object.assign(issue, {
+          assertedRole: claim.assertedRole,
+          authorityScope: claim.authorityScope,
+          ...(claim.issuerParty == null ? {} : { issuerParty: claim.issuerParty }),
+          ...(claim.source == null ? {} : { source: claim.source }),
+          ...(original.importedFrom == null ? {} : { importedFrom: original.importedFrom }),
+          extensionContexts: claim.eventContext.flatMap((entry) => ('inline' in entry ? [entry.inline] : [])),
+          ...(claim.requiredExtensions == null ? {} : { requiredExtensions: claim.requiredExtensions }),
+        })
+      } else {
+        event = objectOf(body.event)
+        if (event == null) throw new HttpError(400, 'event-required', 'give the EPCIS event as event, a retained one as imported { importId, pointer }, or a claim to declare in error as correctionOf')
+      }
+      const issued = await claims.issue({ ...issue, event })
+      const claim = body.submit === true ? await claims.submit(issued) : issued
+      if (!isEpcisLifecycleRecord(claim)) throw new HttpError(500, 'internal', 'the claim issued is not an EPCIS lifecycle claim')
+      return await readLifecycleClaim(claim.bytes, record.passportId, { ...claimsReader, foundBy: ['this-application'], record: claim })
     })
   )
 

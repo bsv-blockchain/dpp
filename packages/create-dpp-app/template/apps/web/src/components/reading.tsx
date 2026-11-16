@@ -4,10 +4,11 @@
 // answers, and a reader decides what they mean for their own purpose.
 import { Link } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { CheckBadge, CopyButton, DefinitionList, ErrorNotice, Mono, Section, ToneBadge, entriesOf } from '@/components/bits'
 import { PublicReading, boundPayload } from '@/components/bound/readings'
-import type { Check, ClaimView, PassportView, Verification } from '@/lib/api'
+import { LifecycleClaims } from '@/components/lifecycle-claims'
+import type { Check, PassportView, Verification } from '@/lib/api'
+import type { PassportClaimsReading } from '@/lib/lifecycle'
 import { STAMP_KEYS, formatTime, humanise, isRecord, publicPathOf, shortTxid } from '@/lib/format'
 
 export function ReportChecks({ checks }: { checks: Check[] }) {
@@ -34,7 +35,7 @@ interface ReadingProps {
   verification?: Verification
   verifyError?: unknown
   journal?: PassportView
-  claims?: ClaimView[]
+  claims?: PassportClaimsReading
   /** Link to the brand's view when this platform's journal holds the passport. */
   manageLink?: boolean
   /** Link to the identifier's own page; off when this is that page. */
@@ -120,30 +121,9 @@ export function PassportReading({ passportId, verification, verifyError, journal
         )}
       </Section>
 
-      {claims != null && claims.length > 0 ? (
-        <Section title="Claims">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event</TableHead>
-                <TableHead>When</TableHead>
-                <TableHead>Issued by</TableHead>
-                <TableHead>Signature</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {claims.map((claim) => (
-                <TableRow key={claim.id}>
-                  <TableCell>{claim.claim.eventType}</TableCell>
-                  <TableCell>{formatTime(claim.claim.timestamp)}</TableCell>
-                  <TableCell>{claim.issuedBy}</TableCell>
-                  <TableCell>
-                    <ToneBadge tone={claim.verified === 'verified' ? 'pass' : 'fail'}>{claim.verified}</ToneBadge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      {claims != null && (claims.lifecycle.length > 0 || claims.historical.length > 0) ? (
+        <Section title="Lifecycle claims">
+          <LifecycleClaims reading={claims} />
         </Section>
       ) : null}
 

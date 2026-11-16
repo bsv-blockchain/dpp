@@ -30,8 +30,7 @@ export * from './publisherPolicy.js'
 export * from './evidencePackage.js'
 export * from './acceptance.js'
 export * from './registration.js'
-// `./epcisEvent.js`, the directly signed EPCIS event profile `epcis-event-vc@1`,
-// is deliberately absent: the profile is parked while its representation is
-// reconsidered (`spec/epcis-event-profile.md`). The module, its tests and its
-// vectors stay in the repository as the parked record, and nothing here
-// exports it.
+// Nothing here reads an event format or a product identifier scheme. A claim
+// format defined over one lives in the package that owns that format and
+// reaches a verifier through the `credentialVerifier` option of
+// `verifyPassportEvidence` in `./evidence.js`.

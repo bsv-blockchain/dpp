@@ -24,7 +24,7 @@ No wallet, funds or Docker:
 npm test
 ```
 
-This runs a whole passport lifecycle against an index in this process and a test wallet with made-up funding: issue, update, hand on with a claim code, retire, and a lifecycle claim, with the reader's report at the end. It also writes and reads a battery passport and a textile passport under the two sector profiles, and registers a profile from a folder.
+This runs a whole passport lifecycle against an index in this process and a test wallet with made-up funding: issue, update, hand on with a claim code, retire, and an EPCIS lifecycle claim, with the reader's report at the end. It also writes and reads a battery passport and a textile passport under the two sector profiles, and registers a profile from a folder.
 
 The EPCIS tests need two things the project does not carry, and the first run fetches each once and keeps it:
 
@@ -123,6 +123,25 @@ TRUSTED_BINDING_DIGESTS=<the SHA-256 of that folder's binding.json>
 
 Restricted values never reach the application's logs, its listings, the index or any public export: `apps/api/test/bound-http.test.ts` issues passports carrying a value that appears nowhere else and searches all of them for it.
 
+## Lifecycle claims
+
+A lifecycle claim is a signed statement of something that happened to a product, on its own rail: it never spends a passport. This application issues EPCIS lifecycle claims, `dpp-epcis-lifecycle@1`. Each one is one EPCIS 2.0.1 event, of the five types (`ObjectEvent`, `AggregationEvent`, `TransactionEvent`, `TransformationEvent`, `AssociationEvent`), in a signed envelope that binds it to the passports whose products it names and says in which role the signer signs: `observer`, `owner`, `custodian` or `authorised-reporter`. On a passport's page, **Sign a lifecycle claim** takes the event in one of two ways:
+
+- **Enter the event.** The form asks for what EPCIS records: the event type, the action where the type has one (a transformation has none), the business step, the disposition, the identifiers in each role (objects, a parent and its contents, inputs and outputs, quantities of a class), the read point and business location, the source and destination parties and places, business transactions, and sensor elements as EPCIS JSON.
+- **A retained event.** An event the EPCIS exchange retained is signed exactly as it was received, with a `source` link to its import and the import's digest. Whoever supplied it observed it, not you, so it is never signed as `observer`.
+
+The bindings come from the event's own identifiers, matched to this platform's passports under the identity rules of `@bsv/dpp-profiles`: an item identifier binds that item's passport, written as a GS1 Digital Link or an EPC URN, and a quantity element's class binds every passport of that class at class level only, which never says an item took part. Nothing is made from a passport operation, a metadata edit or a sale: an event that names none of this platform's passports binds nothing and is refused. The pinned EPCIS 2.0.1 schema is applied before anything is signed, from the GS1 files the EPCIS exchange obtained.
+
+Signing is the wallet step: the member's managed identity signs the claim's RFC 8785 bytes. Sending it to `REGISTRY_URL` is a separate step the member ticks: the registry verifies it, keeps the exact bytes and anchors them once for each bound passport, all in one transaction on the index's `tm_attestation`. The reference registry does not accept this format yet, so until it does the answer is recorded as a refusal and nothing is anchored.
+
+**Reading.** A passport's page, public or not, lists the claims that concern it: those whose anchors name it as their subject, and those this application holds that bind it. Each is verified, and only a verified binding says whether this passport took part, its item or only its class. An anchor that names a passport the claim does not bind is listed as found and not established. Every finding is shown on its own line: event structure, event semantics, product binding, signature, authority, possession, ownership, anchor, inclusion and correction. What was not checked reads unknown. Authority reads unavailable, because nothing here holds evidence of who holds which role; a valid signature and an account on this application are not that evidence. An anchor proves an anchoring service's commitment to the bytes, not that the event happened, who owns the product or that anything complies with a rule.
+
+**Corrections.** **Declare in error** signs a new claim that carries the same event with an EPCIS error declaration. The original claim is never changed, and it reads as declared in error when its own issuer made the declaration.
+
+**Historical native claims.** Native claims with one of four event types, `dpp-lifecycle-v1`, are no longer issued here. Those this application issued before are kept exactly as they were signed, still verify under their own rules, and are shown apart, labelled as historical native claims. Their category is not read as an EPCIS event. Other producers of native claims, including any deployed application built from an earlier version of this starter, still issue that format until they change, so a reader keeps verifying it.
+
+`GET /api/lifecycle-claims/:id` returns a claim's exact bytes, and an export carries every claim this application holds as those bytes, which the restoring deployment verifies before it writes anything.
+
 ## EPCIS exchange
 
 The application imports EPCIS 2.0 documents, pulls events from a source you configure, and gives back exactly what it received. All of it is `@bsv/dpp-credentials/epcis-exchange`: the application supplies the storage, the routes and the pages, and does none of the module's work a second time.
@@ -194,6 +213,7 @@ An export is one `dpp-evidence-package@1`: a folder of files under a manifest, `
 | `passports/<n>/journal.json` | This application's journal: each state's bytes, its sealed owner tier, who holds the passport | Carried | Left out |
 | `passports/<n>/authority/` | Each acceptance record a hand-on commits to | Carried | Left out |
 | `application/brands/`, `offers/`, `claims/` | The brands, hand-on offers and lifecycle claims that belong to those passports | Carried | Left out |
+| `application/lifecycle-claims/` | Each EPCIS lifecycle claim's exact signed bytes, once however many carried passports it binds | Carried | Left out |
 | `profiles/` | The profile bundle of `@bsv/dpp-profiles`: each binding the passports declare, every file it lists, its notices and licence text | Carried | Carried |
 | `epcis/` | The EPCIS exchange, from `@bsv/dpp-credentials/epcis-exchange` | The recovery snapshot of every source scope: originals, import records, observations, conflict decisions and pull state | The public form, and only of the source scopes you name with `--public-source` |
 | `application/application-export.json` | The descriptor: what the export covers, what it names without carrying, and what it leaves out | Carried | Carried |
@@ -293,7 +313,8 @@ One container serves the API and the web app. Run one instance with `WORKER=with
 
 Things this starter leaves to you, each a known path:
 
-- **A registry of your own.** Claims are sent to `REGISTRY_URL`; the hosted reference validates without credentials and stores with permission. Running your own is the registry role of the standard.
+- **A registry of your own.** Claims are sent to `REGISTRY_URL`, which anchors each one once per bound passport. The hosted reference does not accept EPCIS lifecycle claims yet. Running your own is the registry role of the standard.
+- **Authority evidence.** Every claim's authority reads unavailable here. To support a role, give the reader an authority resolver backed by evidence you hold, such as a record of who held a passport when.
 - **A GS1 resolver at `PASSPORT_HOST`.** This starter answers each identifier's own path, `/01/<gtin>/21/<serial>`, with the passport page, so its host does not yet meet the standard's GS1 discovery profile (`spec/gs1-discovery.md` §1): the host a GS1 Digital Link identifier is minted under should be a GS1-Conformant Resolver for GTINs, and one that is not must redirect every `/01/` path with 307 to a resolver that is. To meet it, move the page to a path of its own and answer `/01/` paths with the resolver helpers in `@bsv/dpp-profiles`, naming the page under `gs1:dpp` as the item's default, or redirect them to a resolver that holds those records. Printed codes keep working either way, because the identifier does not change.
 - **Server-rendered passport pages.** The public page renders in the browser. If crawlers or no-JavaScript readers matter, serve a plain HTML view of it from the API at the page's own path, not at the identifier's.
 - **Self-custody.** Let a brand or a holder sign from their own BRC-100 wallet: implement a `Party` backed by a wallet connection in the browser, and let a transfer go to a key the holder's wallet derived.

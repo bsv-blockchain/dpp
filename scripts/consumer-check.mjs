@@ -146,6 +146,7 @@ const credentials = await import('@bsv/dpp-credentials')
 const exchange = await import('@bsv/dpp-credentials/exchange')
 const epcisSource = await import('@bsv/dpp-credentials/epcis-source')
 const epcisExchange = await import('@bsv/dpp-credentials/epcis-exchange')
+const epcisLifecycle = await import('@bsv/dpp-credentials/epcis-lifecycle')
 const chain = JSON.parse(readFileSync('fixtures/chain-v2.json', 'utf8'))
 const txs = chain.states.map((s) => Transaction.fromHex(s.rawTx))
 const result = await verifyChain(txs, { chainTracker: 'scripts only', managedAcceptance: true, serverIdentityKey: chain.custodianKey })
@@ -161,6 +162,12 @@ out.push(['protocol constants: version 2 is 17 fields', STANDARD_VERSION_V2 === 
 // The directly signed EPCIS event module is parked and stays in the repository; a name of it at the entry point would be public API again.
 const protocol = await import('@bsv/dpp-protocol')
 out.push(['protocol: the entry point exports none of the parked directly signed EPCIS event module', !('epcisEventHashId' in protocol) && !('verifyEpcisEventCredential' in protocol) && !('EPCIS_EVENT_REPRESENTATION' in protocol)])
+// The EPCIS lifecycle claim ships from the credentials package. The protocol package holds no EPCIS code, so no name of the claim is at its entry point.
+out.push(['protocol: the entry point exports no name of the EPCIS lifecycle claim or its canonical JSON', Object.keys(protocol).filter((name) => /epcis|jcs/i.test(name)).length === 0])
+out.push(['dpp-credentials/epcis-lifecycle: exports the claim and its RFC 8785 functions, and the root exports none of them', ['buildEpcisLifecycleClaim', 'signEpcisLifecycleClaim', 'parseEpcisLifecycleClaim', 'verifyEpcisLifecycleClaim', 'buildEpcisLifecycleAnchors', 'epcisLifecycleCredentialVerifierFor', 'jcsBytes', 'parseCanonicalJcs'].every((name) => typeof epcisLifecycle[name] === 'function' && !(name in credentials))])
+const notAClaim = await epcisLifecycle.verifyEpcisLifecycleClaim('{}')
+out.push(['dpp-credentials/epcis-lifecycle: bytes that are not a claim fail the structure and leave the signature unknown', epcisLifecycle.EPCIS_LIFECYCLE_CLAIM_FORMAT === 'dpp-epcis-lifecycle@1' && notAClaim.findings.eventStructure.status === 'fail' && notAClaim.findings.signature.status === 'unknown'])
+out.push(['dpp-credentials/epcis-lifecycle: its verifier is the function a verification report takes as credentialVerifier', typeof epcisLifecycle.epcisLifecycleCredentialVerifierFor() === 'function'])
 const tm = new DppTopicManager(chain.custodianKey, { managedAcceptance: true })
 out.push(['overlay: topic manager documentation names version 2', (await tm.getDocumentation()).includes('record-model-v2')])
 const caps = buildCapabilities({ serviceIdentityKey: chain.custodianKey, anchorServiceKeys: [], managedAcceptance: true, exportAvailable: false, networkOracleConfigured: false, at: new Date() })
@@ -274,6 +281,8 @@ import { parseStrictJsonBytes, type Credential } from '@bsv/dpp-credentials'
 import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/dpp-credentials/exchange'
 import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/dpp-credentials/epcis-source'
 import { exportEpcisRecovery, importEpcisSource, pullEpcisEvents, restoreEpcisRecovery, type EpcisExchangeStorage, type EpcisFetch, type EpcisImportRecord, type EpcisImportOutcome, type EpcisPullOutcome, type EpcisPullSource, type EpcisRecoveryExportRefusal, type EpcisRecoveryRefusal, type EpcisRecoverySource, type ExportedEpcisRecovery, type RestoredEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'
+import { verifyEpcisLifecycleClaim, epcisLifecycleCredentialVerifierFor, type EpcisLifecycleVerification, type SignedEpcisLifecycleClaim } from '@bsv/dpp-credentials/epcis-lifecycle'
+import type { ExternalCredentialVerifier } from '@bsv/dpp-protocol'
 import type { Transaction } from '@bsv/sdk'
 export const hostOptions: OverlayHttpOptions = { host: '127.0.0.1', network: 'test' }
 export const startHost: typeof startOverlayService = startOverlayService
@@ -301,6 +310,12 @@ export async function retain(storage: EpcisExchangeStorage, bytes: Uint8Array): 
   const outcome: EpcisImportOutcome = await importEpcisSource({ storage, sourceId: 'source', requestId: 'request', bytes, mediaType: 'application/json', receivedAt: '2026-09-06T00:00:00Z', provenance: { kind: 'file' }, policy: { policyId: 'policy@1' } })
   return outcome.outcome === 'retained' ? outcome.record : undefined
 }
+// The claim's verifier fills the protocol's slot for external credential verifiers without a cast.
+export const lifecycleVerifier: ExternalCredentialVerifier = epcisLifecycleCredentialVerifierFor()
+export async function claim(bytes: number[]): Promise<[EpcisLifecycleVerification, SignedEpcisLifecycleClaim | undefined]> {
+  const verification = await verifyEpcisLifecycleClaim(bytes)
+  return [verification, verification.claim]
+}
 // The standard fetch is the transport a pull is handed, with no adapter between them.
 export const transport: EpcisFetch = fetch
 export async function pull(storage: EpcisExchangeStorage, source: EpcisPullSource): Promise<EpcisPullOutcome> {
@@ -317,7 +332,7 @@ export async function restore(storage: EpcisExchangeStorage, source: EpcisRecove
   writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { module: 'NodeNext', moduleResolution: 'NodeNext', target: 'ES2022', strict: true, noEmit: true, skipLibCheck: false, types: ['node'] }, files: ['types.ts'] }))
   try {
     run(['npx', 'tsc', '-p', 'tsconfig.json'], dir)
-    say(true, 'the declarations of @bsv/dpp-protocol, @bsv/dpp-overlay, @bsv/dpp-profiles, @bsv/dpp-credentials, @bsv/dpp-credentials/exchange, @bsv/dpp-credentials/epcis-source and @bsv/dpp-credentials/epcis-exchange resolve and type-check in a strict TypeScript consumer with skipLibCheck off.')
+    say(true, 'the declarations of @bsv/dpp-protocol, @bsv/dpp-overlay, @bsv/dpp-profiles, @bsv/dpp-credentials, @bsv/dpp-credentials/exchange, @bsv/dpp-credentials/epcis-source, @bsv/dpp-credentials/epcis-exchange and @bsv/dpp-credentials/epcis-lifecycle resolve and type-check in a strict TypeScript consumer with skipLibCheck off.')
   } catch (error) {
     say(false, `type-check failed: ${String(error.stdout ?? error.message).split('\n').slice(0, 8).join(' | ')}`)
   }

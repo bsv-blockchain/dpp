@@ -18,8 +18,8 @@ import {
   verifyEpcisEventCredential,
   type EpcisEventCredential,
   type EpcisEventVerification,
-} from '../src/epcisEvent.js'
-import { didKeyFromIdentityKey } from '../src/index.js'
+} from '../src/parked/epcis-event.js'
+import { didKeyFromIdentityKey } from '@bsv/dpp-protocol'
 
 /**
  * The published vectors of the `epcis-event-vc@1` profile

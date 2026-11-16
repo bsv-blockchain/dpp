@@ -21,10 +21,10 @@ import {
   parseStrictJson,
   signEpcisEventCredential,
   verifyEpcisEventCredential,
-} from '../src/epcisEvent.js'
-import { didKeyFromIdentityKey } from '../src/index.js'
-import { COMMISSIONING_EVENT } from './epcis-event-vectors.js'
-import { EPCIS_GS1_ARTEFACTS, readGs1Artefact } from '../../dpp-credentials/src/gs1-artefacts.js'
+} from '../src/parked/epcis-event.js'
+import { didKeyFromIdentityKey } from '@bsv/dpp-protocol'
+import { COMMISSIONING_EVENT } from './parked-epcis-event-vectors.js'
+import { EPCIS_GS1_ARTEFACTS, readGs1Artefact } from '../src/gs1-artefacts.js'
 
 const vectors = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', '..', 'fixtures', 'vectors', 'dpp', 'interoperability', 'epcis', 'hash-v1.json'), 'utf8'))
 const expected = (id: string): any => vectors.vectors.find((v: any) => v.id === id).expected
@@ -195,14 +195,29 @@ describe('the credential', () => {
   })
 })
 
-describe('the package entry point', () => {
-  it('exports nothing of this parked module', async () => {
+describe('the package entry points', () => {
+  it('export nothing of this parked module', async () => {
     // The profile is parked while its representation is reconsidered, so the
-    // module is held to its own path: a name that reached the entry point
+    // module is held to its own path: a name that reached an entry point
     // again would be public API on the next publication.
-    const entry = await import('../src/index.js')
-    const parked = Object.keys(await import('../src/epcisEvent.js'))
+    const parked = Object.keys(await import('../src/parked/epcis-event.js'))
     expect(parked).toEqual(expect.arrayContaining(['epcisEventHashId', 'verifyEpcisEventCredential', 'EPCIS_EVENT_REPRESENTATION']))
-    for (const name of parked) expect(name in entry, name).toBe(false)
+    // The source helpers define the pinned context address and the five event types themselves, as the same public values.
+    const source = await import('../src/epcis-source.js')
+    const module = await import('../src/parked/epcis-event.js')
+    expect(source.EPCIS_CONTEXT_IRI).toBe(module.EPCIS_CONTEXT_IRI)
+    expect([...source.EPCIS_EVENT_TYPES]).toEqual([...module.EPCIS_EVENT_TYPES])
+    // The external credential verifier names the credentials context itself, again as the same public value.
+    expect((await import('../src/exchange.js')).VC_V2_CONTEXT).toBe(module.VC_V2_CONTEXT)
+    const own: Record<string, string[]> = { '../src/index.js': ['EPCIS_CONTEXT_IRI', 'EPCIS_EVENT_TYPES'], '../src/epcis-source.js': ['EPCIS_CONTEXT_IRI', 'EPCIS_EVENT_TYPES'], '../src/exchange.js': ['VC_V2_CONTEXT'] }
+    for (const path of ['../src/index.js', '../src/exchange.js', '../src/epcis-source.js', '../src/epcis-exchange.js', '../src/epcis-lifecycle.js', '@bsv/dpp-protocol']) {
+      const entry = await import(path)
+      expect(parked.filter((name) => name in entry), path).toEqual(own[path] ?? [])
+    }
+  })
+
+  it('declares no subpath for it', () => {
+    const manifest = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8')) as { exports: Record<string, unknown> }
+    expect(Object.keys(manifest.exports)).toEqual(['.', './exchange', './epcis-source', './epcis-exchange', './epcis-lifecycle', './artifacts/*'])
   })
 })

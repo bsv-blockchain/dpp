@@ -125,6 +125,24 @@ The folder is registered at start with no source change. A folder whose digest i
 - The web app has no test runner. Its form logic is tested by the API's tests, and its pages are type-checked by the build.
 - An export carries no key, credential, sign-in account, session or brand membership, and the API serves neither command over HTTP ([export and restore](#export-and-restore)).
 
+## Lifecycle claims
+
+This section describes the source candidate `0.1.0-beta.2`. The published `0.1.0-beta.1` issues native `dpp-lifecycle-v1` claims with one of four event types.
+
+The generated application issues lifecycle claims only as EPCIS lifecycle claims, `dpp-epcis-lifecycle@1` ([the EPCIS lifecycle claim](add-a-claim.md#the-epcis-lifecycle-claim)). A signed-in member signs one EPCIS 2.0.1 event of the five types, either one they enter on the passport's page or one the EPCIS exchange retained. A retained event is signed exactly as received, with a link back to its import, and never as the observer. Nothing is made from a passport operation, a metadata edit or a sale.
+
+| Part | What the application does |
+|---|---|
+| Bindings | Matches the event's own identifiers to the application's passports under the identity rules of `@bsv/dpp-profiles`. An item identifier binds that item's passport, written as a GS1 Digital Link or an EPC URN; a quantity element's class binds at class level only, which never says an item took part. An event that names none of the passports is refused |
+| Signing | Applies the pinned EPCIS 2.0.1 schema, then signs the claim's RFC 8785 bytes with the member's managed identity and keeps the exact bytes |
+| Anchoring | Only when the member asks: the exact bytes go to the configured registry, which anchors them once per bound passport in one transaction on the index's `tm_attestation`. The hosted registry does not accept the format yet |
+| Reading | A passport lists the claims whose anchors name it and those the application holds that bind it. Each is verified, and only a verified binding makes the passport part of the event, as an item or by its class. Each finding is shown on its own: event structure, semantics, product binding, signature, authority, possession, ownership, anchor, inclusion and correction. Authority reads unavailable, because the application holds no evidence of who holds which role. An anchor is never shown as proof of the event, of ownership or of compliance |
+| Corrections | A member declares an event in error with a new claim that carries the same event and an EPCIS error declaration. The original is never changed, and reads as declared in error when its own issuer made the declaration |
+| Historical claims | The native claims the application issued before are kept as they were signed, verify under their own rules and are shown apart, labelled historical. No new one is issued, and a request for one is refused |
+| Export | Carries each EPCIS lifecycle claim once, as its exact bytes, and the restoring deployment verifies them before it writes anything |
+
+This replaces lifecycle issuance in the starter only. Other producers of native claims, including any application already deployed from an earlier version of the starter, still issue `dpp-lifecycle-v1` until they change, and a reader keeps verifying that format.
+
 ## EPCIS exchange
 
 This section describes the source candidate `0.1.0-beta.2`. The published `0.1.0-beta.1` has no EPCIS exchange.
@@ -203,7 +221,7 @@ In the source candidate the whole application can be exported as one `dpp-eviden
 
 | Command | What it does |
 |---|---|
-| `npm run export -- --out <folder>` | Writes the authorised export: the index's signed evidence and the application's journal for each passport, the brands, offers and claims that belong to them, the profile bundle and the EPCIS recovery snapshot, under one manifest signed with a key derived from the publisher key |
+| `npm run export -- --out <folder>` | Writes the authorised export: the index's signed evidence and the application's journal for each passport, the brands, offers and claims that belong to them, each EPCIS lifecycle claim as its exact bytes, the profile bundle and the EPCIS recovery snapshot, under one manifest signed with a key derived from the publisher key |
 | `npm run export -- --out <folder> --public` | Writes the public form: the index's evidence, the readings, the profile files and the public form of the EPCIS source scopes named with `--public-source`. No journal, no owner tier, no operational record |
 | `npm run restore -- --from <folder> --exporter-key <key>` | Verifies the whole package before it writes anything, restores it, rebuilds what is derived and reports what it did. A second run changes nothing |
 | `npm run epcis-remap -- --source <name>` | Declares that a configured source is now reached at its configured address, keeping its identity and each pull's checkpoint |

@@ -63,15 +63,58 @@ export interface OfferRecord {
   transferTxid?: string
 }
 
-export interface ClaimRecord {
+/**
+ * A lifecycle claim this application holds. Two formats, told apart by
+ * `claimFormat`: an EPCIS lifecycle claim (`dpp-epcis-lifecycle@1`), which is
+ * what this application issues, kept as its exact signed bytes; and a
+ * historical native claim (`dpp-lifecycle-v1`), which this application issued
+ * before it moved to EPCIS lifecycle claims and still reads. A record written
+ * before the move carries no `claimFormat` and is a historical native claim.
+ */
+export type ClaimRecord = EpcisLifecycleClaimRecord | HistoricalClaimRecord
+
+export interface ClaimRegistryAnswer {
+  url: string
+  status: number
+  accepted: boolean
+  attestationId?: string
+  detail?: string
+}
+
+export interface EpcisLifecycleClaimRecord {
   id: string
+  claimFormat: 'dpp-epcis-lifecycle@1'
+  /** The passport the claim was issued from; it is one of `boundPassports`. */
+  passportId: string
+  /** Every passport a binding of the claim names. Which of them the event concerns, and how, is decided by verifying the claim. */
+  boundPassports: string[]
+  attestationId: string
+  digest: string
+  eventId: string
+  eventType: string
+  issuer: string
+  issuedBy: string
+  /** The exact RFC 8785 bytes of the signed claim, as UTF-8 text: what is verified, sent, anchored and exported. */
+  bytes: string
+  /** The retained EPCIS event the claim was issued from, when it was imported. */
+  importedFrom?: { importId: string; pointer: string }
+  registry?: ClaimRegistryAnswer
+  createdAt: string
+}
+
+export interface HistoricalClaimRecord {
+  id: string
+  claimFormat?: 'dpp-lifecycle-v1'
   passportId: string
   issuer: string
   issuedBy: string
   claim: SignedLifecycleClaim
-  registry?: { url: string; status: number; accepted: boolean; attestationId?: string; detail?: string }
+  registry?: ClaimRegistryAnswer
   createdAt: string
 }
+
+/** Whether a record holds an EPCIS lifecycle claim; every other record is a historical native claim. */
+export const isEpcisLifecycleRecord = (record: ClaimRecord): record is EpcisLifecycleClaimRecord => record.claimFormat === 'dpp-epcis-lifecycle@1'
 
 export interface BrandRecord {
   id: string
@@ -96,7 +139,8 @@ export interface Store {
   getOffer(requestId: string): Promise<OfferRecord | undefined>
   listOffers(filter?: { passportId?: string; brandId?: string; status?: OfferRecord['status'] }): Promise<OfferRecord[]>
   saveOffer(record: OfferRecord): Promise<void>
-  listClaims(filter?: { passportId?: string }): Promise<ClaimRecord[]>
+  /** `passportId` selects the claims about that passport: a historical claim by its passport, an EPCIS lifecycle claim by any passport it binds. */
+  listClaims(filter?: { passportId?: string; eventId?: string }): Promise<ClaimRecord[]>
   saveClaim(record: ClaimRecord): Promise<void>
   getBrand(id: string): Promise<BrandRecord | undefined>
   listBrands(ids?: string[]): Promise<BrandRecord[]>
@@ -106,6 +150,12 @@ export interface Store {
 }
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T
+
+function claimMatches(record: ClaimRecord, filter: { passportId?: string; eventId?: string }): boolean {
+  if (filter.eventId != null && (!isEpcisLifecycleRecord(record) || record.eventId !== filter.eventId)) return false
+  if (filter.passportId == null) return true
+  return isEpcisLifecycleRecord(record) ? record.boundPassports.includes(filter.passportId) : record.passportId === filter.passportId
+}
 
 export class MemoryStore implements Store {
   private passports = new Map<string, PassportRecord>()
@@ -139,8 +189,8 @@ export class MemoryStore implements Store {
   async saveOffer(record: OfferRecord) {
     this.offers.set(record.requestId, clone(record))
   }
-  async listClaims(filter: { passportId?: string } = {}) {
-    return [...this.claims.values()].filter((c) => filter.passportId == null || c.passportId === filter.passportId).map(clone)
+  async listClaims(filter: { passportId?: string; eventId?: string } = {}) {
+    return [...this.claims.values()].filter((c) => claimMatches(c, filter)).map(clone)
   }
   async saveClaim(record: ClaimRecord) {
     this.claims.set(record.id, clone(record))
@@ -185,6 +235,8 @@ export class MongoStore implements Store {
     await this.offers.createIndex({ passportId: 1 })
     await this.claims.createIndex({ id: 1 }, { unique: true })
     await this.claims.createIndex({ passportId: 1 })
+    await this.claims.createIndex({ boundPassports: 1 })
+    await this.claims.createIndex({ eventId: 1 })
     await this.brands.createIndex({ id: 1 }, { unique: true })
     await this.spends.createIndex({ at: 1 })
   }
@@ -222,9 +274,12 @@ export class MongoStore implements Store {
   async saveOffer(record: OfferRecord) {
     await this.offers.replaceOne({ requestId: record.requestId }, record, { upsert: true })
   }
-  async listClaims(filter: { passportId?: string } = {}) {
-    const docs = await this.claims.find(filter.passportId == null ? {} : { passportId: filter.passportId }).sort({ createdAt: -1 }).toArray()
-    return docs.map((d) => this.strip(d)!)
+  async listClaims(filter: { passportId?: string; eventId?: string } = {}) {
+    const query: Record<string, unknown> = {}
+    if (filter.passportId != null) query.$or = [{ passportId: filter.passportId }, { boundPassports: filter.passportId }]
+    if (filter.eventId != null) query.eventId = filter.eventId
+    const docs = await this.claims.find(query).sort({ createdAt: -1 }).toArray()
+    return docs.map((d) => this.strip<ClaimRecord>(d as ClaimRecord & { _id?: unknown })!).filter((c) => claimMatches(c, filter))
   }
   async saveClaim(record: ClaimRecord) {
     await this.claims.replaceOne({ id: record.id }, record, { upsert: true })
