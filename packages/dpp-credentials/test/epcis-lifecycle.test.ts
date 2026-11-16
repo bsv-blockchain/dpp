@@ -384,6 +384,17 @@ describe('where the claim sits in the package', () => {
   })
 })
 
+describe('an extension rule the verifier holds', () => {
+  it('is one the caller supplied itself: a rule that is only inherited is not held', async () => {
+    const signed = await issue(S.recycler, input(S.recycler, EVENTS.shredding, [bind(P.moduleA, 'inputEPCList', ID.moduleA), bind(P.moduleC, 'inputEPCList', ID.moduleC)], { requiredExtensions: [SHREDDING_RULE] }))
+    const rule = (): { status: 'pass' } => ({ status: 'pass' })
+    const own = await verifyEpcisLifecycleClaim(text(signed), { extensionRules: { [SHREDDING_RULE]: rule } })
+    expect(own.findings.eventSemantics).toMatchObject({ status: 'pass' })
+    const inherited = await verifyEpcisLifecycleClaim(text(signed), { extensionRules: Object.create({ [SHREDDING_RULE]: rule }) as Record<string, typeof rule> })
+    expect(inherited.findings.eventSemantics).toMatchObject({ status: 'unavailable', reasonCode: 'x-extension-rule-unavailable' })
+  })
+})
+
 describe('a second signer in another wallet', () => {
   it('produces the same bytes from the same scalar, because signatures are deterministic', async () => {
     const again = new ProtoWallet(PrivateKey.fromHex(S.recycler.scalar))

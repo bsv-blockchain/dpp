@@ -996,7 +996,9 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
   const semanticParts: Array<EpcisLifecycleFinding<EpcisLifecycleSemanticsStatus>> = []
   if (!namesAnObject(event)) semanticParts.push({ status: 'fail', reasonCode: 'x-no-observation', detail: 'the event names no object' })
   for (const rule of claim.requiredExtensions ?? []) {
-    const check = options.extensionRules?.[rule]
+    // Only a rule the caller put there itself is one it holds. A name is the claim's, so nothing inherited is ever called for it.
+    const held = options.extensionRules
+    const check = held != null && Object.hasOwn(held, rule) && typeof held[rule] === 'function' ? held[rule] : undefined
     if (check == null) semanticParts.push({ status: 'unavailable', reasonCode: 'x-extension-rule-unavailable', detail: `the claim requires the extension rule ${rule}, which this verifier does not hold` })
     else {
       const answer = await ask(() => check(event, claim))
