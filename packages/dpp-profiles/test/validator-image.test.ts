@@ -116,7 +116,7 @@ describe('the validator image\'s Dockerfile', () => {
     expect(stages.length).toBe(2)
     for (const stage of stages) expect(stage).toMatch(/^\$\{BASE_IMAGE\}/)
     const version = base.exec(dockerfile)![1]!.replace(/^node:|-slim@sha256:[0-9a-f]{64}$/g, '')
-    expect(dockerfile.match(new RegExp(`^RUN test "\\$\\(node --version\\)" = "v${version.replace(/\./g, '\\.')}"$`, 'gm'))?.length).toBe(2)
+    expect(dockerfile.match(new RegExp(`^RUN test "\\$\\(node --version\\)" = "v${version.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')}"$`, 'gm'))?.length).toBe(2)
   })
 
   it('installs its dependencies from its own lockfile, with no workspace and no development dependency', () => {

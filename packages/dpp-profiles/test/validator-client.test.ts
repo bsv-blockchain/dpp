@@ -300,6 +300,19 @@ describe('createValidatorClient: the configuration', () => {
     expect(await client.jsonLd.toRdf({ document: product, contexts })).toMatchObject({ ok: false, reason: 'engine-error' })
     expect(calls).toEqual([{ url: 'https://validator.example/expand', redirect: 'manual' }])
   })
+
+  it('sends a request once more when the service closed the connection before answering, and only once more', async () => {
+    const dropped = (): never => { throw Object.assign(new TypeError('fetch failed'), { cause: Object.assign(new Error('other side closed'), { code: 'UND_ERR_SOCKET' }) }) }
+    const service = await fake(honest())
+    let calls = 0
+    const once = createValidatorClient({ url: service.url, token: TOKEN, fetch: (async (url: string, init: RequestInit) => (++calls === 1 ? dropped() : fetch(url, init))) as typeof fetch })
+    expect(await once.jsonLd.toRdf({ document: product, contexts })).toMatchObject({ ok: true })
+    expect(calls).toBe(2)
+    calls = 0
+    const always = createValidatorClient({ url: service.url, token: TOKEN, fetch: (async () => { calls++; return dropped() }) as typeof fetch })
+    expect(await always.jsonLd.toRdf({ document: product, contexts })).toMatchObject({ ok: false, reason: 'engine-error', detail: expect.stringContaining('could not be reached: UND_ERR_SOCKET') })
+    expect(calls).toBe(2)
+  })
 })
 
 afterAll(() => { expect(servers).toEqual([]) })

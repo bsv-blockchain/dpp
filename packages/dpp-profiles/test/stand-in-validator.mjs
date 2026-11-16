@@ -64,7 +64,7 @@ async function expand(request) {
   } catch (cause) {
     if (unlisted.length > 0) return { ok: false, reason: 'context-not-listed', detail: `no context was sent for ${unlisted[0]}` }
     if (typeof cause?.name === 'string' && cause.name.startsWith('jsonld.')) return { ok: false, reason: 'document-invalid', detail: `the contexts do not define this document: ${cause.message}` }
-    return { ok: false, reason: 'engine-error', detail: String(cause?.message ?? cause) }
+    return { ok: false, reason: 'engine-error', detail: 'the engine failed' }
   }
 }
 
@@ -112,7 +112,7 @@ async function validate(request) {
     return { ok: true, findings }
   } catch (cause) {
     if (cause instanceof Refusal) throw cause
-    return { ok: false, reason: 'engine-error', detail: String(cause?.message ?? cause) }
+    return { ok: false, reason: 'engine-error', detail: 'the engine failed' }
   }
 }
 

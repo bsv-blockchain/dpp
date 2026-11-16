@@ -62,7 +62,10 @@ export interface ValidatorClient {
   probe(): Promise<ValidatorProbe>
 }
 
-type Exchange = { status: number; text: string } | { failed: 'timeout' | 'engine-error'; detail: string }
+type Exchange = { status: number; text: string } | { failed: 'timeout' | 'engine-error'; detail: string; dropped?: true }
+
+/** What a connection that the other side closed is called. A kept connection can be closed by the service at the moment a request is written to it. */
+const DROPPED = new Set(['UND_ERR_SOCKET', 'ECONNRESET', 'EPIPE'])
 
 const reasonOf = (cause: unknown): string => {
   const inner = (cause as { cause?: { code?: unknown; message?: unknown } } | undefined)?.cause
@@ -110,8 +113,18 @@ export function createValidatorClient(options: ValidatorClientOptions): Validato
   /** What the service last said its engine can check. Nothing is assumed before it has said so. */
   let known: EngineCapability[] = []
 
-  /** One request and its whole answer, inside the time limit and the size limits. It never throws. */
+  /**
+   * One request and its whole answer. A connection the service closed before it answered is not an answer about the
+   * service, so the request is sent once more, on a new connection. Every operation only reads, so asking twice changes
+   * nothing. A second failure is reported as it is.
+   */
   const exchange = async (method: 'GET' | 'POST', path: string, body?: string): Promise<Exchange> => {
+    const first = await attempt(method, path, body)
+    return 'failed' in first && first.dropped === true ? attempt(method, path, body) : first
+  }
+
+  /** One attempt, inside the time limit and the size limits. It never throws. */
+  const attempt = async (method: 'GET' | 'POST', path: string, body?: string): Promise<Exchange> => {
     if (body != null) {
       const size = Buffer.byteLength(body, 'utf8')
       if (size > maxRequestBytes) return { failed: 'engine-error', detail: `the request is ${size} bytes and at most ${maxRequestBytes} are sent to ${service}, so it was not sent` }
@@ -163,7 +176,8 @@ export function createValidatorClient(options: ValidatorClientOptions): Validato
       return { status: response.status, text }
     } catch (cause) {
       if (timedOut) return { failed: 'timeout', detail: `${service} did not answer within ${timeoutMs} ms` }
-      return { failed: 'engine-error', detail: `${service} could not be reached: ${reasonOf(cause)}` }
+      const reason = reasonOf(cause)
+      return { failed: 'engine-error', detail: `${service} could not be reached: ${reason}`, ...(DROPPED.has(reason) ? { dropped: true as const } : {}) }
     } finally {
       clearTimeout(timer)
     }

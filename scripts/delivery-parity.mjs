@@ -593,7 +593,7 @@ try {
     const expanded = await configured.engines.jsonLd.toRdf({ document: {}, contexts: [] })
     starterPreset = configured
     say(configured.kind === 'service' && configured.problem == null && !(expanded.ok === false && (expanded.reason === 'engine-error' || expanded.reason === 'timeout')) && isDeepStrictEqual([...configured.engines.shacl.capabilities].sort(), [...withToken.service.capabilities].sort()),
-      `the starter's own engine choice, given VALIDATOR_URL and VALIDATOR_TOKEN and run in the application consumer, reaches the preset's validator service: it is the ${configured.kind} engine, it reports ${configured.problem == null ? 'no problem' : 'a problem'}, and it names the capabilities the service names, ${[...configured.engines.shacl.capabilities].join(', ')}.`)
+      `the starter's own engine choice, given VALIDATOR_URL and VALIDATOR_TOKEN and run in the application consumer, reaches the preset's validator service: it is the ${configured.kind} engine, it reports ${configured.problem == null ? 'no problem' : `a problem (${configured.problem})`}, and it names the capabilities the service names, ${[...configured.engines.shacl.capabilities].join(', ')}.`)
     const mistaken = await starter.openValidationEngine(starter.validationEngineSettings({ VALIDATOR_URL: published.base, VALIDATOR_TOKEN: 'not-the-token' }), { timeoutMs: 5000 })
     say(mistaken.kind === 'service' && typeof mistaken.problem === 'string' && !mistaken.problem.includes('not-the-token'), `given another token, the same choice says the engine cannot be used and does not repeat the token: ${mistaken.problem == null ? 'no problem was reported' : 'a problem is reported'}.`)
     const unset = await starter.openValidationEngine(starter.validationEngineSettings({}), {})
