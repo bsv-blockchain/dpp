@@ -14,6 +14,7 @@ import { BUNDLED_BINDINGS, PUBLIC_PAYLOAD_MAX_BYTES, type BindingProfile } from 
 import type { BoundProfiles, ViewCheck } from '../src/bound-profiles.js'
 import { loadConfig } from '../src/config.js'
 import { mintGtin, mintPassportId } from '../src/identifiers.js'
+import type { IndexClient } from '../src/index-client.js'
 import type { Party } from '../src/parties.js'
 import { openPlatform, type Platform } from '../src/platform.js'
 import { readPassport } from '../src/reader.js'
@@ -196,6 +197,27 @@ describe.each([
     expect(authorised.product).toBeUndefined()
   })
 
+  it('never reports a valid, identity-matching part as matching payload_owner_hash when the journal holds no restricted part for the newest state', async () => {
+    const record = (await platform.store.getPassport(passportId))!
+    const newest = record.states.at(-1)!
+    // What any reader holds is a valid document about this item: the public view passes, the identity rule included.
+    const view = (await platform.read(passportId)).payloadChecks.at(-1)!.publicView
+    expect(view.status).toBe('pass')
+    expect(view.steps.find((s) => s.step === 'passport-identity')?.status).toBe('pass')
+    // The same journal entry without its sealed restricted part: nothing to compare with the state's payload_owner_hash.
+    const withoutEvidence = structuredClone(record)
+    delete withoutEvidence.states.at(-1)!.ownerTier
+    const authorised = await platform.readAuthorised(withoutEvidence, platform.parties.brand(brandId))
+    expect(authorised.ownerTier).toEqual({ status: 'not-checked', txid: newest.txid, detail: "This platform's journal holds no restricted part for the newest state the index returned." })
+    expect(authorised.authorisedView).toMatchObject({ view: 'authorised', status: 'not-checked', steps: [], findings: [] })
+    expect(authorised.authorisedView.summary).toMatch(/A check that could not run is not a pass\.$/)
+    expect(authorised.restrictedProduct).toBeUndefined()
+    expect(authorised.product).toBeUndefined()
+    // No sentence of the answer says a stored part hashes to the commitment, and the passing public view is not carried into it.
+    expect(JSON.stringify(authorised)).not.toMatch(/hashes to the payload_owner_hash/)
+    expect(JSON.stringify(authorised)).not.toMatch(/"status":"pass"/)
+  })
+
   it('updates with a new complete document, and both states are checked', async () => {
     const revised = { ...product, 'oec:lastUpdated': '2026-11-03T10:00:00Z' }
     const outcome = await platform.writer.update({ record: (await platform.store.getPassport(passportId))!, actor: platform.parties.brand(brandId), product: revised })
@@ -333,6 +355,26 @@ describe('the identifier that is validated is the identifier that is signed', ()
     expect(reading.checks.find((c) => c.name === 'schema')).toMatchObject({ status: 'fail', reasonCode: 'schema-invalid' })
     expect(reading.payloadChecks[0].publicView).toMatchObject({ status: 'fail', cause: 'product-identity-mismatch' })
     expect(reading.payloadChecks[0].publicView.steps.at(-1)).toMatchObject({ step: 'passport-identity', status: 'fail' })
+  })
+
+  it('checks a state against the identifier that state carries, not the one the reader was asked about', async () => {
+    const asked = exampleFor('eu-battery@1', 'BAT-ASKED-0001')
+    const carried = exampleFor('eu-battery@1', 'BAT-CARRIED-0001')
+    await platform.writer.issue({ brandId, brand: platform.parties.brand(brandId), passportId: carried.passportId, profile: 'eu-battery@1', product: carried.product })
+    // An index that answers a question about one passport with the lineage of another, as a faulty or hostile one might.
+    const index = { publisherKeys: () => platform.index.publisherKeys(), lineage: (id: string) => platform.index.lineage(id === asked.passportId ? carried.passportId : id) } as unknown as IndexClient
+    const reading = await readPassport(asked.passportId, { index, chainTracker: 'scripts only', profiles: platform.profiles })
+    // The document is the carried passport's, and so is the identifier its state carries: checked against that, it matches.
+    const view = reading.payloadChecks[0].publicView
+    expect(view.steps.find((s) => s.step === 'passport-identity')).toMatchObject({ status: 'pass' })
+    expect(view.status).toBe('pass')
+    // Checked against the identifier asked about, the same payload fails the identity rule. So the pass above came from the state's identifier.
+    const bound = bindingOf('eu-battery@1')
+    const state = findDppOutputs((await platform.index.lineage(carried.passportId))[0])[0].state
+    expect(state.passportId).toBe(carried.passportId)
+    expect(await platform.profiles.validatePublic({ profile: bound.id, profileVersion: bound.version, payloadPublic: state.payloadPublic, passportId: asked.passportId })).toMatchObject({ status: 'fail', detail: { cause: 'product-identity-mismatch' } })
+    // That the lineage is about another passport is the report's own finding, on a check of its own, and not the profile's.
+    expect(reading.checks.find((c) => c.name === 'subjectBinding')?.status).toBe('fail')
   })
 
   it('fails at read when the payload declares another binding digest', async () => {

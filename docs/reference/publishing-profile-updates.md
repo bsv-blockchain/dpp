@@ -69,6 +69,27 @@ node scripts/publish-candidates.mjs
 | Final command | Reads npm without publishing, writes `release/publication-plan.json` and lists `publish` per new version. |
 | Working-tree plan | Supports review only. Publication requires a clean, committed source revision. |
 
+### Check a bundled binding against new source files
+
+`eu-battery@1` and `eu-textile@1` are bindings, and a binding is never edited. When the source of a bundled binding publishes its files again, or during scheduled release maintenance, run the update check before deciding anything. It reads the files you obtained, fetches nothing and registers nothing.
+
+1. Put every file the next version would list in a folder, the unchanged ones too, under the names the binding lists them by. Leave out only a file the source no longer publishes: a listed file that is not in the folder is reported as removed.
+2. From the built checkout, with the release and the full commit the files come from:
+
+```sh
+node examples/check-binding-update.mjs packages/dpp-profiles/bindings/eu-battery@1 <candidate folder> --release <release> --revision <commit> --out <review folder>
+```
+
+| Report | Action |
+|---|---|
+| `outcome` is `unchanged` | Nothing to publish. The active binding stands |
+| `outcome` is `proposed` | Review `artefacts`, `breaking` and `review`. The review folder holds the proposed `binding.json` at the next version, with a digest of its own |
+| `breaking` is not empty | A removed or redefined context term, or a context no longer named by another, changes what stored documents say under the new version. Records already issued stay on the version they declare; say so in the consumer-impact notes |
+| A shapes file or schema is `changed` | It was compared by length and digest only. Read the source's own change notes for what its rules now require |
+| `outcome` is `refused` | No valid binding can be written from the candidate. `problems` names the cause |
+
+The check runs no acceptance vector. Before a proposed binding is shipped, run the sector vectors under it, add the notice that accounts for every file, pin its digest in `BUNDLED_BINDINGS` beside the earlier version and keep the earlier folder unchanged. A proposal nobody adds to a trusted list is never used. See [check a binding against new files](../packages/dpp-profiles.md#check-a-binding-against-new-files) for the report's members.
+
 ## 2. Review and commit the source
 
 Review source diff, changelog, impact notes, tests and package contents. Stop before committing or pushing until the exact commit content and message are approved. Retain the source revision; a push alone publishes nothing.

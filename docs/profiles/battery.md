@@ -1,6 +1,6 @@
 # Battery (retired)
 
-The manifest profiles `battery@2`, `battery@3` and `battery@4` are retired from 14 November 2026. Teams that wrote or read them can use this page to see what changed and what to use instead. Nothing here teaches how to write them, because nothing is written under them any more.
+The manifest profiles `battery@2`, `battery@3` and `battery@4` are retired from 14 November 2026. Teams that wrote or read them can use this page to see what changed and what to use instead. Nothing here teaches how to write them: the application starter writes nothing under them, and `@bsv/dpp-profiles` prepares and validates nothing under them. An index does not judge profiles, so a state another writer issues under one is still indexed, and reads as unsupported.
 
 For battery passport data, use `eu-battery@1` on the [EU battery and textile bindings](eu-sector-bindings.md) page.
 

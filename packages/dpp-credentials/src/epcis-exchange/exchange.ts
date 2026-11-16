@@ -848,7 +848,8 @@ async function applyResolution(storage: EpcisExchangeStorage, conflictId: string
       if (!changed) break;
       const next: EpcisImportRecord = { ...record, events, state: events.some((event) => event.conflict?.state === 'open') ? 'blocked' : 'evaluated', updatedAt: clock() };
       if ((await storage.commit([{ op: 'put', kind: K.import, key: importKey, value: toValue(next), expect: held.revision }])).committed) { updated += 1; break; }
-      if (attempt >= ATTEMPTS) throw new EpcisExchangeError('storage-contention', `${importId} could not be released after ${ATTEMPTS} attempts`);
+      // The attempt that just lost is counted, so the bound is the one every other write here has and the one the message states.
+      if (attempt + 1 >= ATTEMPTS) throw new EpcisExchangeError('storage-contention', `${importId} could not be released after ${ATTEMPTS} attempts`);
     }
   }
   return updated;

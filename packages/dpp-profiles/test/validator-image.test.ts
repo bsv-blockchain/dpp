@@ -109,13 +109,13 @@ describe('the validator image\'s Dockerfile', () => {
   const stages = dockerfile.split(/^FROM /m).slice(1)
   const final = stages.at(-1)!
 
-  it('uses the index image\'s pinned base, as a build argument, and checks the runtime in both stages', () => {
+  it('uses the index image\'s base, pinned by digest, as a build argument, and checks the runtime in both stages', () => {
     const base = /^ARG BASE_IMAGE=(\S+)$/m
     expect(base.exec(dockerfile)?.[1]).toBe(base.exec(overlayDockerfile)?.[1])
-    expect(base.exec(dockerfile)?.[1]).toMatch(/^node:\d+\.\d+\.\d+-slim$/)
+    expect(base.exec(dockerfile)?.[1]).toMatch(/^node:\d+\.\d+\.\d+-slim@sha256:[0-9a-f]{64}$/)
     expect(stages.length).toBe(2)
     for (const stage of stages) expect(stage).toMatch(/^\$\{BASE_IMAGE\}/)
-    const version = base.exec(dockerfile)![1]!.replace(/^node:|-slim$/g, '')
+    const version = base.exec(dockerfile)![1]!.replace(/^node:|-slim@sha256:[0-9a-f]{64}$/g, '')
     expect(dockerfile.match(new RegExp(`^RUN test "\\$\\(node --version\\)" = "v${version.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')}"$`, 'gm'))?.length).toBe(2)
   })
 

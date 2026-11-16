@@ -138,6 +138,11 @@ const SPECIAL: Record<string, (sector: Sector, c: PayloadCase) => Promise<Payloa
     const other = sectors.find((s) => s !== sector)!.bindingDigest
     return validate(sector, envelope(sector, product, other), { passportId: passportIdOf(product) })
   },
+  'member-beside-product': (sector, c) => {
+    const product = positive(sector, c.from)
+    // The product's own GTIN, written again at the top of the envelope: the one change is where it sits.
+    return validate(sector, { ...envelope(sector, product), 'gs1:gtin': product['gs1:gtin'] }, { passportId: passportIdOf(product) })
+  },
 }
 const run = (sector: Sector, c: PayloadCase): Promise<PayloadValidation> => {
   const special = SPECIAL[c.name]
@@ -184,7 +189,7 @@ describe('the sector bindings accept their positive vectors', () => {
 })
 
 describe('the sector bindings refuse, or cannot decide, their negative cases', () => {
-  const NAMES = ['altered-artefact', 'conflicting-gtin', 'conflicting-serial', 'engine-outage', 'granularity-mismatch', 'granularity-product-link', 'missing-required-property', 'model-level-document', 'no-passport-identifier', 'notes-kept', 'other-product', 'unlisted-context', 'wrong-binding-digest']
+  const NAMES = ['altered-artefact', 'batch-level-document', 'conflicting-gtin', 'conflicting-serial', 'engine-outage', 'granularity-mismatch', 'granularity-product-link', 'member-beside-product', 'missing-required-property', 'model-level-document', 'no-passport-identifier', 'notes-kept', 'other-product', 'unlisted-context', 'wrong-binding-digest']
   const payloadCases = sectors.flatMap((s) => s.cases.filter((c): c is PayloadCase => !isRegistration(c)).map((c) => [`${s.profile} ${c.name}`, s, c] as const))
   const byName = (sector: Sector, name: string): PayloadCase => sector.cases.find((c): c is PayloadCase => c.name === name && !isRegistration(c))!
 
@@ -215,7 +220,7 @@ describe('the sector bindings refuse, or cannot decide, their negative cases', (
   })
 
   it.each(each)('%s: every identity case satisfies the shapes, so only the identity check stands between it and a pass', async (_profile, sector) => {
-    for (const name of ['other-product', 'conflicting-serial', 'conflicting-gtin']) {
+    for (const name of ['other-product', 'conflicting-serial', 'conflicting-gtin', 'batch-level-document']) {
       const steps = stepsOf(await run(sector, byName(sector, name)))
       expect(steps.filter((s) => s.step !== 'passport-identity').every((s) => s.status === 'pass'), name).toBe(true)
     }
@@ -257,11 +262,24 @@ describe('the sector bindings refuse, or cannot decide, their negative cases', (
     expect((await validate(...input)).status).toBe('fail')
   })
 
-  it.each(each)('%s: a model-level document is refused by the identity check whatever the shapes say', async (_profile, sector) => {
-    const result = await run(sector, byName(sector, 'model-level-document'))
+  const substitutes = sectors.flatMap((s) => [['model', 'model-level-document'], ['batch', 'batch-level-document']].map(([level, name]) => [`${s.profile} ${name}`, s, level!, name!] as const))
+  it.each(substitutes)('%s: a model or batch identity in the subject\'s place is refused by the identity check whatever the shapes say', async (_name, sector, level, name) => {
+    const c = byName(sector, name)
+    // The passport is the item's own, so the subject is the only thing that changed identity.
+    expect(c.passportOf).toBeUndefined()
+    expect(parseGs1DigitalLink(c.set!.id as string).serial).toBeUndefined()
+    const result = await run(sector, c)
     const identity = stepsOf(result).find((s) => s.step === 'passport-identity')
     expect(identity).toMatchObject({ status: 'fail', cause: 'product-identity-mismatch' })
-    expect(identity?.messages?.[0]).toBe('The product document describes a model, not a serialised item.')
+    expect(identity?.messages?.[0]).toBe(`The product document describes a ${level}, not a serialised item.`)
+  })
+
+  it.each(each)('%s: a product member beside the product document is refused at the envelope, before anything else is asked', async (_profile, sector) => {
+    const result = await run(sector, byName(sector, 'member-beside-product'))
+    expect(result).toMatchObject({ status: 'fail', reasonCode: 'schema-invalid', detail: { cause: 'envelope-invalid' } })
+    // The binding, the engines and the identity rules are never reached: the envelope is the root rule every payload meets first.
+    expect(stepsOf(result).map((s) => [s.step, s.status])).toEqual([['envelope', 'fail']])
+    expect(stepsOf(result)[0]?.messages).toEqual(['The payload has a member the envelope does not define: `gs1:gtin`. Product data belongs inside `product`.'])
   })
 
   it.each(each)('%s: with no engine at all the answer is unknown', async (_profile, sector) => {

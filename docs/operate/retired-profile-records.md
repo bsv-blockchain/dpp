@@ -11,9 +11,11 @@ Nothing here is required. The software never removes these records by itself, an
 | Name each store the application and the index keep such records in, and what else shares it | Run anything for you. Every command is one you type |
 | List the affected records before anything is removed | Remove by profile. Removal takes the list of passport identifiers you reviewed |
 | Remove journal entries and index rows from your own databases | Erase anything from the blockchain. A transaction that was mined stays there for good |
-| Leave keys, wallets, sign-in, tokens, policies and other passports alone | Reach another operator's index or a registry |
+| Leave keys, wallets, sign-in, tokens, policies, imported EPCIS documents and other passports alone | Reach another operator's index or a registry |
 
 The retired profiles are `battery@2`, `battery@3`, `battery@4`, `textile@1`, `textile@2`, `textile@3` and `textile@4` ([retired profiles](../profiles/README.md#retired-profiles)).
+
+The listing and removal commands for both databases are run by the repository's tests, taken from this page as written, against databases seeded with retired records and with everything that shares their stores (`packages/dpp-overlay/test/retired-profile-reset.test.ts`). The Compose commands around them are not part of that run, and neither is `mongosh` itself: the tests run the shell blocks in a stand-in that makes the same calls through the MongoDB driver.
 
 ## Before you start
 
@@ -40,10 +42,13 @@ An application from the starter keeps its records in one MongoDB database. Witho
 | Collection `claims` | Signed lifecycle claims, by `passportId` | Claims about every other passport | Removes those of the listed passports |
 | Collection `brands` | Nothing per passport: the brands themselves | Every passport of the brand | Leaves it |
 | Collection `spends` | One row per transaction sent, for the daily spend cap | The spend accounting of the whole platform | Leaves it |
+| Collections `epcis_log`, `epcis_records`, `epcis_bytes` and `epcis_chunks`, or the folder `EPCIS_STORAGE_DIR` names when `EPCIS_STORAGE` is `file` | Nothing under a profile: the EPCIS documents the application imported or pulled, byte for byte, with the import records and associations derived from them. An association can name a passport | Every source the application exchanges events with, and every passport an event was associated with | Leaves them: out of scope, as explained below |
 | The sign-in collections in the same database | Nothing per passport: users, sessions and organisations, kept by the sign-in library under its own names | Every user and brand | Leaves them |
 | `WALLET_FILE`, by default `local/wallet.sqlite` | The platform wallet: its funds, and the token output of each passport's newest state | Every passport and all funds | Leaves it. Never delete this file |
 | `.env`: `WALLET_ROOT_KEY`, `BRAND_ROOT_SECRET`, `MANAGED_IDENTITY_SECRET`, `AUTH_SECRET` | The secrets every brand, holder and passport key is derived from | Every key of the platform | Leaves it. Never remove or change a secret to clear a record |
 | The index in the application's own process | A stand-in index used until the application has joined one, held in memory | Nothing | Nothing to clear: it forgets everything at restart |
+
+EPCIS exchange records are outside this procedure. An imported EPCIS document is a source document from another party's system: it declares no profile, so retiring a profile retires nothing in it, and one document can describe many products. No command on this page reads or removes those collections. An association that names a passport you remove stays as a record of what was imported, and then names a passport the application no longer holds. To move an exchange and its documents, see [move an EPCIS exchange to another store](export-import-recovery.md#move-an-epcis-exchange-to-another-store).
 
 ### The index
 
@@ -77,14 +82,14 @@ docker compose -f deploy/compose.yml --env-file .env exec mongo mongosh dpp_app 
 2. List the passports whose journal names a retired profile:
 
 ```js
-const RETIRED = ['battery@2', 'battery@3', 'battery@4', 'textile@1', 'textile@2', 'textile@3', 'textile@4']
+var RETIRED = ['battery@2', 'battery@3', 'battery@4', 'textile@1', 'textile@2', 'textile@3', 'textile@4']
 db.passports.find({ profile: { $in: RETIRED } }, { _id: 0, passportId: 1, profile: 1, brandId: 1, status: 1, createdAt: 1 }).sort({ createdAt: 1 }).forEach(printjson)
 ```
 
 3. Count what belongs to them, and list their transactions for the index step:
 
 ```js
-const ids = db.passports.distinct('passportId', { profile: { $in: RETIRED } })
+var ids = db.passports.distinct('passportId', { profile: { $in: RETIRED } })
 printjson({ passports: ids.length, offers: db.offers.countDocuments({ passportId: { $in: ids } }), claims: db.claims.countDocuments({ passportId: { $in: ids } }) })
 db.passports.aggregate([{ $match: { profile: { $in: RETIRED } } }, { $unwind: '$states' }, { $project: { _id: 0, passportId: 1, op: '$states.op', txid: '$states.txid', network: '$states.network' } }]).forEach(printjson)
 ```
@@ -144,11 +149,11 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env exec mongo m
 ```
 
 ```js
-const IDS = [
+var IDS = [
   // one passport identifier per line, in quotes, from the listing
 ]
 db.dppRecords.find({ passportId: { $in: IDS } }, { _id: 0, passportId: 1, op: 1, txid: 1, outputIndex: 1, spent: 1, timestamp: 1 }).sort({ sequence: 1 }).forEach(printjson)
-const txids = db.dppRecords.distinct('txid', { passportId: { $in: IDS } })
+var txids = db.dppRecords.distinct('txid', { passportId: { $in: IDS } })
 printjson({
   records: db.dppRecords.countDocuments({ passportId: { $in: IDS } }),
   outputs: db.overlayOutputs.countDocuments({ topic: 'tm_dpp', txid: { $in: txids } }),
@@ -185,7 +190,7 @@ This is a separate step, and it cannot be undone except from the backups. Run it
 docker compose -f deploy/compose.yml --env-file deploy/operator.env stop overlay
 ```
 
-2. In the database shell from the listing step, with `IDS` holding only the passports you decided to remove:
+2. In the database shell from the listing step, `IDS` must hold only the passports you decided to remove. If you took one off the list, paste the `IDS` block of the listing step again with the shorter list: the shell blocks on this page declare their names with `var`, so a block pasted again in the same shell replaces what it declared before. Then run:
 
 ```js
 (() => {
@@ -214,8 +219,8 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env start overla
 In the application's database shell, paste the same reviewed identifiers. The block refuses a passport that does not declare a retired profile:
 
 ```js
-const RETIRED = ['battery@2', 'battery@3', 'battery@4', 'textile@1', 'textile@2', 'textile@3', 'textile@4']
-const REVIEWED = [
+var RETIRED = ['battery@2', 'battery@3', 'battery@4', 'textile@1', 'textile@2', 'textile@3', 'textile@4']
+var REVIEWED = [
   // one passport identifier per line, in quotes
 ]
 ;(() => {

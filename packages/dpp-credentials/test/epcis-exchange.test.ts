@@ -10,8 +10,11 @@ import {
 } from '../src/epcis-source.js';
 import {
   EPCIS_MAX_RECORDED_FINDINGS,
+  EPCIS_PULL_LIMIT_CEILINGS,
   EPCIS_RECORD_KINDS,
+  EpcisExchangeError,
   checkEpcisExchangeInvariants,
+  createMemoryEpcisState,
   createMemoryEpcisStorage,
   deriveEpcisEventProjection,
   epcisConflictId,
@@ -28,8 +31,10 @@ import {
   rebuildEpcisAssociations,
   recoverEpcisExchange,
   resolveEpcisConflict,
+  type EpcisExchangeStorage,
   type EpcisImportOutcome,
   type EpcisImportRecord,
+  type EpcisStorageWrite,
   type ImportEpcisSourceInput,
   type MemoryEpcisStorage,
 } from '../src/epcis-exchange.js';
@@ -42,7 +47,7 @@ const pretty = (value: unknown): Uint8Array => utf8(JSON.stringify(value, null, 
 const RECEIVED = '2026-03-10T00:00:00.000Z';
 
 type Overrides = Partial<Omit<ImportEpcisSourceInput, 'storage' | 'bytes'>>;
-const request = (storage: MemoryEpcisStorage, bytes: Uint8Array, over: Overrides = {}): ImportEpcisSourceInput => ({
+const request = (storage: EpcisExchangeStorage, bytes: Uint8Array, over: Overrides = {}): ImportEpcisSourceInput => ({
   storage,
   sourceId: 'source-a',
   requestId: 'request-1',
@@ -104,6 +109,51 @@ describe('fidelity: what arrives is what is kept', () => {
     expect(record.preservedExtensions).toEqual(['example:batch']);
     expect(record.documentValidity).toBe('valid');
     expect(new TextDecoder().decode((await exportEpcisSource(storage, record.importId))!.bytes)).toContain('"example:batch":{"note":"B-1","count":2}');
+  });
+
+  it('retains an event of an extension type with its pointer and identity, reads nothing into it, and exports its bytes unchanged', async () => {
+    const storage = createMemoryEpcisStorage();
+    // The pinned schema admits an event whose type is none of the five when the type is written as a URI: here a compact one under a declared prefix.
+    const custom = { type: 'example:InspectionEvent', eventID: 'urn:uuid:00000000-0000-4000-8000-0000000000e1', eventTime: '2026-03-02T11:00:00.000Z', eventTimeZoneOffset: '+00:00', recordTime: '2026-03-02T11:05:00.000Z', epcList: [PACK], action: 'OBSERVE', 'example:inspector': 'line 4', 'example:result': { passed: true, score: 0.97 } };
+    const unidentified = { type: 'https://example.org/vocab/AuditEvent', eventTime: '2026-03-02T12:00:00.000Z', eventTimeZoneOffset: '+00:00', parentID: PALLET, childEPCs: [PACK] };
+    const bytes = utf8(`{\n  "@context" : ${JSON.stringify(epcisDocument([])['@context'])},\r\n\t"type":"EPCISDocument", "schemaVersion":"2.0","creationDate":"2026-03-03T07:00:00.000Z",\n  "epcisBody": { "eventList": [ ${JSON.stringify(commissioning())},\n ${JSON.stringify(custom, null, 1)} ,${JSON.stringify(unidentified)} ] }\n}\n\n`);
+    const { record } = retained(await importEpcisSource(request(storage, bytes)));
+    expect(record.documentValidity).toBe('valid');
+    expect(record.state).toBe('evaluated');
+    expect(record.events.map((e) => [e.pointer, e.eventType, e.identityKind, e.arrival])).toEqual([
+      ['/epcisBody/eventList/0', 'ObjectEvent', 'event-id', 'new'],
+      ['/epcisBody/eventList/1', 'example:InspectionEvent', 'event-id', 'new'],
+      ['/epcisBody/eventList/2', 'https://example.org/vocab/AuditEvent', 'local', 'new'],
+    ]);
+    expect(record.events[1]!.identity).toBe(custom.eventID);
+    expect(record.events[2]!.identity).toBe(localEventIdentity(record.sha256, '/epcisBody/eventList/2'));
+    // Each is named as retained and not interpreted, as a warning: the document is no less valid for carrying it.
+    expect(record.findings.filter((f) => f.code === 'event-type-unsupported').map((f) => [f.path, f.severity])).toEqual([['/epcisBody/eventList/1/type', 'warning'], ['/epcisBody/eventList/2/type', 'warning']]);
+    expect(record.events.every((e) => e.validation.findings.every((f) => f.severity !== 'error'))).toBe(true);
+    // Nothing is read into it: the identifiers it happens to carry under familiar names are not indexed, and nothing was mapped.
+    expect((await findEpcisAssociations(storage, { identifier: PACK, granularity: 'instance' })).associations.map((a) => a.pointer)).toEqual(['/epcisBody/eventList/0']);
+    expect((await findEpcisAssociations(storage, { identifier: PALLET, granularity: 'instance' })).associations).toEqual([]);
+    expect(record.events.map((e) => e.mapping.outcome)).toEqual(['not-attempted', 'not-attempted', 'not-attempted']);
+    // It is observed like any event, so a repeat and a changed body are told apart under its identity.
+    expect(count(storage, EPCIS_RECORD_KINDS.observation)).toBe(3);
+    const again = retained(await importEpcisSource(request(storage, compact(epcisDocument([custom])), { requestId: 'request-2' }))).record;
+    expect(again.events[0]).toMatchObject({ eventType: 'example:InspectionEvent', arrival: 'duplicate' });
+    const changed = retained(await importEpcisSource(request(storage, compact(epcisDocument([{ ...custom, 'example:inspector': 'line 5' }])), { requestId: 'request-3' }))).record;
+    expect(changed).toMatchObject({ state: 'blocked', events: [{ arrival: 'conflict' }] });
+
+    // The bytes that arrived are the bytes that leave, the members of the extension event among them.
+    const exported = (await exportEpcisSource(storage, record.importId))!;
+    expect(Buffer.from(exported.bytes).equals(Buffer.from(bytes))).toBe(true);
+    expect(exported.sha256).toBe(record.sha256);
+    expect(new TextDecoder().decode(exported.bytes)).toContain('"example:inspector": "line 4"');
+    const projected = JSON.parse(new TextDecoder().decode((await deriveEpcisEventProjection(storage, record.importId))!.bytes)) as { events: Array<{ event: JsonObject }> };
+    expect(projected.events[1]!.event).toEqual(custom);
+    expect(await checkEpcisExchangeInvariants(storage, { associations: true })).toEqual([]);
+
+    // A type that is none of the five and is not a URI is not an extension type the schema admits: the document is retained as invalid.
+    const bare = retained(await importEpcisSource(request(createMemoryEpcisStorage(), compact(epcisDocument([{ ...custom, type: 'InspectionEvent' }]))))).record;
+    expect(bare.documentValidity).toBe('invalid');
+    expect(bare.events[0]!.validation.schema).toBe('fail');
   });
 
   it('keeps unusual formatting, key order and a query envelope byte for byte', async () => {
@@ -249,6 +299,12 @@ describe('fidelity: what arrives is what is kept', () => {
     expect(record.events).toEqual([]);
     expect(record.documentValidity).toBe('invalid');
     expect(record.findings.map((f) => f.code)).toContain('envelope-unrecognised');
+    // An import takes whole documents. A bare event is kept as the bytes it is, observed as no event and indexed under nothing, and the import takes no option that would read it as one.
+    expect(count(storage, EPCIS_RECORD_KINDS.observation)).toBe(0);
+    expect(count(storage, EPCIS_RECORD_KINDS.association)).toBe(0);
+    const asked = await importEpcisSource({ ...request(storage, compact(commissioning()), { requestId: 'request-2' }), singleEvent: { envelopeType: 'EPCISDocument', contextDeclarations: [EPCIS_CONTEXT_IRI] } } as ImportEpcisSourceInput);
+    expect(retained(asked).record).toMatchObject({ documentValidity: 'invalid', events: [] });
+    expect(retained(asked).record.envelope).toBeUndefined();
   });
 
   it('reports a context this profile has not pinned without failing the document for it', async () => {
@@ -567,6 +623,23 @@ describe('bounds: every limit is enforced and disclosed', () => {
     const { record } = retained(await importEpcisSource(request(createMemoryEpcisStorage(), compact(document()), limited({ maxPullPages: 1, maxPullBytes: 1, maxPullSeconds: 1, fetchTimeoutMs: 1 }))));
     expect(record.limits).toMatchObject({ maxPullPages: 1, maxPullBytes: 1, maxPullSeconds: 1, fetchTimeoutMs: 1 });
     expect(Object.keys(record.limits).sort()).toEqual(Object.keys(EPCIS_DEFAULT_LIMITS).sort());
+  });
+
+  it('applies no ceiling to a limit a caller raises for a file import: the ceilings bound a pull, and a file is bounded by the policy it is handed', async () => {
+    // This is the module as it stands, stated so that a change to it is a decision and not an accident. An application that takes files from others sets the policy itself and caps the body it reads.
+    const bytes = compact(document());
+    for (const [name, ceiling] of Object.entries(EPCIS_PULL_LIMIT_CEILINGS)) {
+      const { record } = retained(await importEpcisSource(request(createMemoryEpcisStorage(), bytes, limited({ [name]: ceiling * 4 }))));
+      expect(record.limits, name).toEqual({ ...EPCIS_DEFAULT_LIMITS, [name]: ceiling * 4 });
+    }
+    // A document larger than the largest page a pull may be configured to read is imported from a file when the caller's policy says so.
+    const padded = utf8(`${JSON.stringify(document())}${' '.repeat(EPCIS_PULL_LIMIT_CEILINGS.maxDocumentBytes)}`);
+    expect(padded.byteLength).toBeGreaterThan(EPCIS_PULL_LIMIT_CEILINGS.maxDocumentBytes);
+    const storage = createMemoryEpcisStorage();
+    expect(await importEpcisSource(request(storage, padded))).toMatchObject({ outcome: 'refused', reason: 'oversized' });
+    const large = retained(await importEpcisSource(request(storage, padded, limited({ maxDocumentBytes: padded.byteLength })))).record;
+    expect(large).toMatchObject({ documentValidity: 'valid', byteLength: padded.byteLength, limits: { maxDocumentBytes: padded.byteLength } });
+    expect(Buffer.from((await exportEpcisSource(storage, large.importId))!.bytes).equals(Buffer.from(padded))).toBe(true);
   });
 
   it('refuses a limit that is not a positive integer, and a request it cannot record', async () => {
@@ -980,6 +1053,213 @@ describe('two writers on one store', () => {
     expect(report.remaining).toBe(0);
     expect(await checkEpcisExchangeInvariants(first, { associations: true })).toEqual([]);
     expect(first.state.bytes.size).toBe(1);
+  });
+});
+
+describe('a store that will not settle, or that fails', () => {
+  const K = EPCIS_RECORD_KINDS;
+  /** How often a write is attempted before the module gives up, which the documentation states. */
+  const ATTEMPTS = 8;
+
+  /** A second handle on a store's state whose batches of a chosen kind are always lost to another writer, until it is told to stop. */
+  function losing(state: MemoryEpcisStorage['state'], when: (writes: readonly EpcisStorageWrite[]) => boolean): { storage: MemoryEpcisStorage; lost: () => number; settle: () => void } {
+    const storage = createMemoryEpcisStorage(state);
+    const commit = storage.commit.bind(storage);
+    let lost = 0;
+    let contended = true;
+    storage.commit = async (writes) => {
+      if (!contended || !when(writes)) return commit(writes);
+      lost += 1;
+      const guarded = writes.find((write) => write.expect !== undefined) ?? writes[0]!;
+      // What a store answers when another writer got there first: nothing of the batch is applied.
+      return { committed: false, failed: { kind: guarded.kind, key: guarded.key, expected: guarded.expect ?? 'absent', found: 1_000_000 + lost } };
+    };
+    return { storage, lost: () => lost, settle: () => { contended = false; } };
+  }
+
+  /** A store that already holds one acknowledged import, with that import's record, bytes and observations as they were when it was answered. */
+  async function seeded(): Promise<{ state: MemoryEpcisStorage['state']; clean: MemoryEpcisStorage; held: EpcisImportRecord; heldBytes: Uint8Array; before: ReturnType<typeof snapshot> }> {
+    const state = createMemoryEpcisState();
+    const clean = createMemoryEpcisStorage(state);
+    const heldBytes = pretty(epcisDocument(fiveEventList()));
+    const held = retained(await importEpcisSource(request(clean, heldBytes, { requestId: 'request-held' }))).record;
+    return { state, clean, held, heldBytes, before: snapshot(clean) };
+  }
+  /** Nothing that was acknowledged is lost or changed: the record, its bytes and its observations are as they were. */
+  async function stillHeld(seed: Awaited<ReturnType<typeof seeded>>): Promise<void> {
+    expect(await getEpcisImport(seed.clean, seed.held.importId)).toEqual(seed.held);
+    expect(Buffer.from((await exportEpcisSource(seed.clean, seed.held.importId))!.bytes).equals(Buffer.from(seed.heldBytes))).toBe(true);
+    const now = snapshot(seed.clean);
+    expect(now.records[K.observation]!.filter((row) => row.value.importId === seed.held.importId)).toEqual(seed.before.records[K.observation]);
+    expect(now.records[K.association]!.filter((row) => row.value.importId === seed.held.importId)).toEqual(seed.before.records[K.association]);
+  }
+  const incoming = (): Uint8Array => compact(epcisDocument([commissioning(), correctionEvents().corrective]));
+
+  it('gives up on an import whose event results always lose to another writer, after eight attempts, by name, and the same request finishes it once the store settles', async () => {
+    const seed = await seeded();
+    const contended = losing(seed.state, (writes) => writes.some((write) => write.kind === K.observation));
+    const failure = await importEpcisSource(request(contended.storage, incoming())).then(() => undefined, (error: unknown) => error);
+    expect(failure).toBeInstanceOf(EpcisExchangeError);
+    expect(failure).toMatchObject({ name: 'EpcisExchangeError', code: 'storage-contention' });
+    expect((failure as Error).message).toMatch(/could not be written after 8 attempts/);
+    // Bounded: the batch was tried eight times and no more.
+    expect(contended.lost()).toBe(ATTEMPTS);
+    await stillHeld(seed);
+    // The source itself is held, as a receipt that is not yet evaluated, and nothing says it was acknowledged.
+    const receipt = (await findEpcisImportByRequest(seed.clean, 'source-a', 'request-1'))!;
+    expect(receipt.state).toBe('received');
+    expect(receipt.events.every((event) => event.arrival === undefined)).toBe(true);
+    expect(count(seed.clean, K.journal)).toBe(1);
+
+    // Recoverable without a restart: the same request, once the other writer is gone, is answered as the one import.
+    contended.settle();
+    const finished = retained(await importEpcisSource(request(contended.storage, incoming())));
+    expect(finished).toMatchObject({ replayed: true, resumed: true, record: { importId: receipt.importId, state: 'evaluated' } });
+    // The commissioning event repeats one the held import already observed. The corrective event is new.
+    expect(finished.record.events.map((event) => event.arrival)).toEqual(['duplicate', 'new']);
+    expect(count(seed.clean, K.import)).toBe(2);
+    expect(count(seed.clean, K.journal)).toBe(0);
+    await stillHeld(seed);
+    expect(await checkEpcisExchangeInvariants(seed.clean, { associations: true })).toEqual([]);
+  });
+
+  it('finishes the same import by recovery when no retry comes', async () => {
+    const seed = await seeded();
+    const contended = losing(seed.state, (writes) => writes.some((write) => write.kind === K.observation));
+    await expect(importEpcisSource(request(contended.storage, incoming()))).rejects.toMatchObject({ code: 'storage-contention' });
+    expect((await recoverEpcisExchange(seed.clean, { now: () => RECEIVED })).actions).toEqual([{ action: 'import-finished', importId: epcisImportId('source-a', 'request-1'), from: 'received', state: 'evaluated' }]);
+    await stillHeld(seed);
+    expect(await checkEpcisExchangeInvariants(seed.clean, { associations: true })).toEqual([]);
+  });
+
+  it.each([
+    ['its intake', (writes: readonly EpcisStorageWrite[]) => writes.some((write) => write.op === 'put' && write.kind === K.journal && write.value.entry === 'intake'), 0],
+    ['its receipt', (writes: readonly EpcisStorageWrite[]) => writes.some((write) => write.kind === K.import && write.expect === 'absent'), 1],
+  ] as const)('gives up on an import that always loses %s, after eight attempts, having acknowledged nothing, and recovery leaves the store as it was', async (_what, when, bytesLeft) => {
+    const seed = await seeded();
+    const contended = losing(seed.state, when);
+    await expect(importEpcisSource(request(contended.storage, incoming()))).rejects.toMatchObject({ name: 'EpcisExchangeError', code: 'storage-contention', message: expect.stringMatching(/could not settle after 8 attempts/) });
+    expect(contended.lost()).toBe(ATTEMPTS);
+    // No receipt was written, so the request is bound to nothing.
+    expect(await findEpcisImportByRequest(seed.clean, 'source-a', 'request-1')).toBeUndefined();
+    expect(seed.clean.state.bytes.size).toBe(1 + bytesLeft);
+    await stillHeld(seed);
+    // What the attempts put down is bounded, one journal entry and at most the bytes, and recovery removes it.
+    expect(count(seed.clean, K.journal)).toBe(bytesLeft);
+    const report = await recoverEpcisExchange(seed.clean, { now: () => RECEIVED });
+    expect(report.remaining).toBe(0);
+    expect(report.actions.map((action) => action.action)).toEqual(bytesLeft === 0 ? [] : ['intake-discarded']);
+    expect(snapshot(seed.clean)).toEqual(seed.before);
+    // And the request is still free to be made.
+    contended.settle();
+    expect(retained(await importEpcisSource(request(contended.storage, incoming())))).toMatchObject({ replayed: false, resumed: false, record: { state: 'evaluated' } });
+    expect(await checkEpcisExchangeInvariants(seed.clean, { associations: true })).toEqual([]);
+  });
+
+  it('gives up on a decision that always loses, and on releasing an import that always loses, after eight attempts each, with the conflict as it stood', async () => {
+    const seed = await seeded();
+    const changed = retained(await importEpcisSource(request(seed.clean, compact(epcisDocument([{ ...commissioning(), disposition: 'in_transit' }])), { requestId: 'request-changed' }))).record;
+    expect(changed.state).toBe('blocked');
+    const conflictId = epcisConflictId('source-a', 'event-id', String(commissioning().eventID));
+    const decision = { conflictId, decision: 'Both are kept.', disposition: 'all-retained' as const, decidedAt: RECEIVED, now: () => RECEIVED };
+
+    const undecided = losing(seed.state, (writes) => writes.some((write) => write.kind === K.resolution));
+    await expect(resolveEpcisConflict(undecided.storage, decision)).rejects.toMatchObject({ name: 'EpcisExchangeError', code: 'storage-contention', message: expect.stringMatching(/after 8 attempts/) });
+    expect(undecided.lost()).toBe(ATTEMPTS);
+    expect(await getEpcisConflict(seed.clean, conflictId)).toMatchObject({ state: 'open', resolutions: [] });
+    expect(count(seed.clean, K.resolution)).toBe(0);
+    expect((await getEpcisImport(seed.clean, changed.importId))!.state).toBe('blocked');
+
+    // The decision is written, and the import it would release cannot be: the decision stands and the release is left journalled.
+    const unreleased = losing(seed.state, (writes) => writes.length === 1 && writes[0]!.kind === K.import);
+    await expect(resolveEpcisConflict(unreleased.storage, decision)).rejects.toMatchObject({ name: 'EpcisExchangeError', code: 'storage-contention', message: expect.stringMatching(/could not be released after 8 attempts/) });
+    expect(unreleased.lost()).toBe(ATTEMPTS);
+    expect(count(seed.clean, K.resolution)).toBe(1);
+    expect(count(seed.clean, K.journal)).toBe(1);
+    // The same decision again, once the store settles, is the one recorded and finishes the release.
+    unreleased.settle();
+    expect(await resolveEpcisConflict(unreleased.storage, decision)).toMatchObject({ outcome: 'recorded', replayed: true });
+    expect(count(seed.clean, K.resolution)).toBe(1);
+    expect((await getEpcisImport(seed.clean, changed.importId))!.state).toBe('evaluated');
+    expect(await getEpcisConflict(seed.clean, conflictId)).toMatchObject({ state: 'resolved' });
+    expect(await checkEpcisExchangeInvariants(seed.clean, { associations: true })).toEqual([]);
+  });
+
+  /** The error a failing store raises here. A real adapter raises its own, and the module hands that on as it is. */
+  class StoreWriteFailed extends Error {
+    constructor(readonly call: number) { super(`the store did not complete durable call ${call}`); this.name = 'StoreWriteFailed'; }
+  }
+  /** A handle whose durable call number `at` fails once, in a process that carries on with the same store. `after`: the call was applied and its answer was lost. */
+  function failingOnce(state: MemoryEpcisStorage['state'], plan: { at: number; when: 'before' | 'after' }): { storage: MemoryEpcisStorage; calls: () => number } {
+    const storage = createMemoryEpcisStorage(state);
+    let made = 0;
+    const durable = <A extends unknown[], T>(run: (...args: A) => Promise<T>) => async (...args: A): Promise<T> => {
+      made += 1;
+      if (made !== plan.at) return run(...args);
+      if (plan.when === 'after') await run(...args);
+      throw new StoreWriteFailed(made);
+    };
+    storage.putBytes = durable(storage.putBytes.bind(storage));
+    storage.deleteBytes = durable(storage.deleteBytes.bind(storage));
+    storage.commit = durable(storage.commit.bind(storage));
+    return { storage, calls: () => made };
+  }
+
+  it('hands on the error of a store that fails at any durable call, makes no further call, loses nothing acknowledged, and answers the same request as one import when it is made again', async () => {
+    const control = await seeded();
+    const counted = failingOnce(control.state, { at: 0, when: 'before' });
+    const expectedRecord = retained(await importEpcisSource(request(counted.storage, incoming()))).record;
+    const expected = snapshot(control.clean);
+    const steps = counted.calls();
+    // Intake, bytes, receipt, event results, the index and the journal.
+    expect(steps).toBeGreaterThanOrEqual(6);
+
+    for (let at = 1; at <= steps; at += 1) {
+      for (const when of ['before', 'after'] as const) {
+        const where = `${when} durable call ${at} of ${steps}`;
+        const seed = await seeded();
+        const failing = failingOnce(seed.state, { at, when });
+        // The store's own error, unchanged, so a caller can tell what failed. It is not answered as a refusal of the document.
+        const failure = await importEpcisSource(request(failing.storage, incoming())).then((outcome) => outcome, (error: unknown) => error);
+        expect(failure, where).toBeInstanceOf(StoreWriteFailed);
+        expect(failure, where).toMatchObject({ call: at });
+        // Bounded: one failure ends the call. Nothing is retried against a store that is failing.
+        expect(failing.calls(), where).toBe(at);
+        await stillHeld(seed);
+        // What is left is at most this request's own unfinished work: one journal entry, its bytes and its receipt.
+        expect(count(seed.clean, K.journal), where).toBeLessThanOrEqual(1);
+        expect(count(seed.clean, K.import), where).toBeLessThanOrEqual(2);
+        expect(seed.clean.state.bytes.size, where).toBeLessThanOrEqual(2);
+
+        // No restart and no recovery: the same process sends the same request again on the same store.
+        const again = retained(await importEpcisSource(request(failing.storage, incoming())));
+        expect(again.record, where).toEqual({ ...expectedRecord, updatedAt: again.record.updatedAt });
+        expect(count(seed.clean, K.import), where).toBe(2);
+        expect(snapshot(seed.clean), where).toEqual(expected);
+        expect(await checkEpcisExchangeInvariants(seed.clean, { associations: true }), where).toEqual([]);
+        await stillHeld(seed);
+        // And once more, it is a repeat that writes nothing.
+        const repeat = retained(await importEpcisSource(request(failing.storage, incoming())));
+        expect(repeat, where).toMatchObject({ replayed: true, resumed: false });
+        expect(snapshot(seed.clean), where).toEqual(expected);
+      }
+    }
+  });
+
+  it('carries on with other requests after a store failure, and recovery finishes or discards what the failed one left', async () => {
+    const seed = await seeded();
+    // The receipt of this request was written and its answer lost.
+    const failing = failingOnce(seed.state, { at: 3, when: 'after' });
+    await expect(importEpcisSource(request(failing.storage, incoming()))).rejects.toBeInstanceOf(StoreWriteFailed);
+    // Another request on the same process is taken as usual.
+    const other = retained(await importEpcisSource(request(failing.storage, compact(epcisDocument([correctionEvents().orphanDeclared])), { requestId: 'request-other' })));
+    expect(other).toMatchObject({ replayed: false, record: { state: 'evaluated', documentValidity: 'valid' } });
+    await stillHeld(seed);
+    // The unfinished one is named by the invariants until it is finished, and recovery finishes it.
+    expect((await checkEpcisExchangeInvariants(seed.clean)).length).toBeGreaterThan(0);
+    expect((await recoverEpcisExchange(seed.clean, { now: () => RECEIVED })).actions).toEqual([{ action: 'import-finished', importId: epcisImportId('source-a', 'request-1'), from: 'received', state: 'evaluated' }]);
+    expect(await checkEpcisExchangeInvariants(seed.clean, { associations: true })).toEqual([]);
+    expect(count(seed.clean, K.import)).toBe(3);
   });
 });
 

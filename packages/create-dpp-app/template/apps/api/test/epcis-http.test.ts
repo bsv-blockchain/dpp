@@ -4,17 +4,19 @@
 // module promises: an upload is retained as the exact bytes that arrived, a
 // retry is the same request, a refused transport keeps nothing, a pull
 // continues where it stopped, and an export is the original, byte for byte.
-import { copyFileSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { copyFileSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { gzipSync } from 'node:zlib'
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { MongoMemoryServer } from 'mongodb-memory-server'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { EPCIS_GS1_ARTEFACTS } from '@bsv/dpp-credentials'
-import { EPCIS_RECORD_KINDS, EpcisStorageFault, checkEpcisExchangeInvariants, faultInjectingEpcisStorage } from '@bsv/dpp-credentials/epcis-exchange'
+import { EPCIS_RECORD_KINDS, EpcisStorageFault, checkEpcisExchangeInvariants, createMemoryEpcisStorage, faultInjectingEpcisStorage, openFileEpcisStorage, type EpcisExchangeStorage } from '@bsv/dpp-credentials/epcis-exchange'
 import { EPCIS_DEFAULT_LIMITS } from '@bsv/dpp-credentials/epcis-source'
 import { openMongoEpcisStorage } from '../src/epcis/mongo-storage.js'
 import { mintPassportId } from '../src/identifiers.js'
-import { epcisDocument, eventId, gs1Dir, item, objectEvent, sha256, startApp, startEpcisSource, startMongo, testConfig, utf8, type FixtureSource, type Json, type TestApp, type TestMongo } from './epcis-fixtures.js'
+import { MONGO_SERVER_SELECTION_TIMEOUT_MS } from '../src/platform.js'
+import { CELL_A, CELL_B, ELECTROLYTE_LOT, MODULE, PACK, PALLET, SCRAP_CLASS, epcisDocument, eventId, fiveEventTypes, gs1Dir, item, minute, objectEvent, sha256, startApp, startEpcisSource, startMongo, testConfig, utf8, type Answer, type FixtureSource, type Json, type TestApp, type TestMongo } from './epcis-fixtures.js'
 
 const SECRET = 'source-credential-51c9e0aa7b'
 const apps: TestApp[] = []
@@ -399,8 +401,11 @@ describe('pulling from a configured source', () => {
       const faulty = faultInjectingEpcisStorage(await openMongoEpcisStorage(db, { journal: false }), { at, when: 'after' })
       const dying = await app({ config: config(fixture), storage: faulty.storage })
       const died = await dying.post('/api/epcis/sources/supplier-a/pulls', body)
-      // The run did not end: its process stopped. The answer is an error and carries nothing of the store.
-      expect(died.status, `stopped after durable call ${at}`).toBe(500)
+      // The run did not end: its process stopped. The answer names the store, says the run may be made again, and carries nothing of the store.
+      expect(died.status, `stopped after durable call ${at}`).toBe(503)
+      expect(died.body, `stopped after durable call ${at}`).toMatchObject({ error: 'storage-unavailable', outcome: 'failed', retryable: true })
+      // A run acknowledges page by page, so its answer does not say whether it was acknowledged.
+      expect(died.body, `stopped after durable call ${at}`).not.toHaveProperty('acknowledged')
       expect(died.text).not.toContain(SECRET)
 
       const lines: string[] = []
@@ -465,6 +470,545 @@ describe('pulling from a configured source', () => {
     const api = await app({ config: testConfig({ EPCIS_SOURCES: 'supplier-a', EPCIS_SOURCE_SUPPLIER_A_URL: 'https://10.0.0.5/epcis' }) })
     expect((await api.get('/api/epcis/sources')).body[0]).toMatchObject({ localTest: false, credentialConfigured: false })
     expect((await api.post('/api/epcis/sources/supplier-a/pulls', { queryId: 'all', query: {} })).body).toMatchObject({ outcome: 'source-unavailable', reason: 'target-refused', localTest: false, pages: [] })
+  })
+})
+
+describe('every event type, a class of items and corrections', () => {
+  /** A document written by hand around the events given, so an export that had been parsed and written out again would differ from it. */
+  const written = (events: Json[]): Uint8Array =>
+    utf8(`{\r\n\t"type":"EPCISDocument", "schemaVersion":"2.0",\n  "@context": ${JSON.stringify(epcisDocument([])['@context'])},\n"creationDate":"2026-03-03T07:00:00.000Z" ,\n  "epcisBody" : { "eventList": [\n${events.map((event) => `\t${JSON.stringify(event)}`).join(' ,\r\n')}\n ] }\n}\n\n`)
+  const entries = async (api: TestApp, identifier: string, query = ''): Promise<Json[]> => (await api.get(`/api/epcis/events?identifier=${ref(identifier)}${query}`)).body.events as Json[]
+  const roles = async (api: TestApp, identifier: string, query = ''): Promise<unknown[]> => (await entries(api, identifier, query)).map((entry) => [(entry.association as Json).eventType, (entry.association as Json).role])
+
+  it('imports one document that holds all five event types, exports it unchanged, and finds each item and each class under the role it has', async () => {
+    const api = await app()
+    const events = fiveEventTypes()
+    const bytes = written(events)
+    const imported = await api.upload('/api/epcis/imports?requestId=five-1&sourceId=assembly-line&filename=assembly.jsonld', bytes)
+    expect(imported.status).toBe(201)
+    const record = imported.body.record
+    expect(record).toMatchObject({ sourceId: 'assembly-line', documentValidity: 'valid', state: 'evaluated', sha256: sha256(bytes), byteLength: bytes.byteLength })
+    expect(record.events.map((event: Json) => [event.eventType, event.identity, event.arrival])).toEqual([
+      ['TransformationEvent', eventId(31), 'new'],
+      ['ObjectEvent', eventId(32), 'new'],
+      ['AssociationEvent', eventId(33), 'new'],
+      ['AggregationEvent', eventId(34), 'new'],
+      ['TransactionEvent', eventId(35), 'new'],
+    ])
+    expect([...record.findings, ...record.events.flatMap((event: Json) => (event.validation as { findings: Json[] }).findings)].filter((finding: Json) => finding.severity === 'error')).toEqual([])
+
+    // The bytes that arrived are the bytes that leave, whatever event types they hold.
+    const exported = await api.get(`/api/epcis/imports/${ref(record.importId)}/original`)
+    expect(Buffer.from(exported.bytes).equals(Buffer.from(bytes))).toBe(true)
+    expect(sha256(JSON.stringify(JSON.parse(exported.text)))).not.toBe(sha256(bytes))
+    expect(exported.headers.get('x-content-sha256')).toBe(sha256(bytes))
+
+    // Each individual item is found under every event that names it, with the role it has there.
+    expect(await roles(api, PACK)).toEqual([['ObjectEvent', 'object'], ['AssociationEvent', 'association-parent'], ['AggregationEvent', 'aggregation-child'], ['TransactionEvent', 'transaction-object']])
+    expect(await roles(api, MODULE)).toEqual([['TransformationEvent', 'transformation-output'], ['AssociationEvent', 'association-child']])
+    expect(await roles(api, CELL_A)).toEqual([['TransformationEvent', 'transformation-input']])
+    expect(await roles(api, PALLET)).toEqual([['AggregationEvent', 'aggregation-parent']])
+    // And each event is shown as the retained document holds it.
+    for (const entry of await entries(api, PACK)) expect(entry.body).toEqual(events.find((event) => event.eventID === (entry.event as Json).identity))
+
+    // A class-level lookup: a lot and a pattern, each named with a quantity, are found as classes.
+    const lot = await api.get(`/api/epcis/events?identifier=${ref(ELECTROLYTE_LOT)}&granularity=class`)
+    expect(lot.status).toBe(200)
+    expect(lot.body).toMatchObject({ identifier: ELECTROLYTE_LOT, granularity: 'class', nature: 'supplied-data' })
+    expect(lot.body.events).toHaveLength(1)
+    expect(lot.body.events[0]).toMatchObject({
+      association: { identifier: ELECTROLYTE_LOT, granularity: 'class', role: 'transformation-input-quantity', eventType: 'TransformationEvent', quantity: 4, uom: 'EA', sourceId: 'assembly-line', errorDeclared: false },
+      source: { importId: record.importId, documentValidity: 'valid' },
+      event: { identity: eventId(31), arrival: 'new' },
+    })
+    expect(lot.body.events[0].body).toEqual(events[0])
+    expect((await entries(api, SCRAP_CLASS, '&granularity=class')).map((entry) => entry.association)).toMatchObject([{ granularity: 'class', role: 'transformation-output-quantity', quantity: 0.5, uom: 'KGM' }])
+    // A class is never answered as an individual item taking part, and an item is never answered as a class.
+    expect(await entries(api, ELECTROLYTE_LOT)).toEqual([])
+    expect(await entries(api, ELECTROLYTE_LOT, '&granularity=instance')).toEqual([])
+    expect(await entries(api, SCRAP_CLASS, '&granularity=instance')).toEqual([])
+    for (const one of [PACK, MODULE, CELL_A, CELL_B, PALLET]) expect(await entries(api, one, '&granularity=class'), one).toEqual([])
+    expect(await checkEpcisExchangeInvariants(api.exchange.storage, { associations: true })).toEqual([])
+  })
+
+  it('keeps an error declaration and a changed observation beside the event they are about, replaces nothing, and resolves a correction only within its source', async () => {
+    const api = await app()
+    const [transformation, commissioning, , , transaction] = fiveEventTypes() as [Json, Json, Json, Json, Json]
+    const firstBytes = written(fiveEventTypes())
+    const first = await api.upload('/api/epcis/imports?requestId=corrections-1&sourceId=assembly-line', firstBytes)
+    expect(first.status).toBe(201)
+
+    // The source later declares the commissioning in error, and names the event that corrects it, which arrives in the same document.
+    const declaration = { declarationTime: minute(50), reason: 'incorrect_data', correctiveEventIDs: [eventId(40)] }
+    const declared = { ...commissioning, recordTime: minute(50), errorDeclaration: declaration }
+    const corrective = objectEvent(40, [PACK], { action: 'ADD', bizStep: 'commissioning', disposition: 'active' })
+    const second = await api.upload('/api/epcis/imports?requestId=corrections-2&sourceId=assembly-line', utf8(JSON.stringify(epcisDocument([declared, corrective]))))
+    expect(second.status).toBe(201)
+    expect(second.body.record).toMatchObject({ documentValidity: 'valid', state: 'evaluated' })
+    // A further observation of the same event: the second under its identity, beside the first.
+    expect(second.body.record.events[0]).toMatchObject({ identity: eventId(32), arrival: 'new-observation', observation: { sequence: 2 }, errorDeclaration: { correctiveEventIDs: [eventId(40)], resolution: 'resolved' } })
+    expect(second.body.record.events[0].conflict).toBeUndefined()
+    expect(second.body.record.events[1]).toMatchObject({ identity: eventId(40), arrival: 'new' })
+
+    // The repository records the transformation again at another time, with the same body. And it declares the shipment in error, naming an event it never sent.
+    const reobserved = { ...transformation, recordTime: minute(55) }
+    const orphan = { ...transaction, recordTime: minute(56), errorDeclaration: { declarationTime: minute(56), reason: 'did_not_occur', correctiveEventIDs: [eventId(99)] } }
+    const third = await api.upload('/api/epcis/imports?requestId=corrections-3&sourceId=assembly-line', utf8(JSON.stringify(epcisDocument([reobserved, orphan]))))
+    expect(third.status).toBe(201)
+    expect(third.body.record.events[0]).toMatchObject({ identity: eventId(31), arrival: 'new-observation', observation: { sequence: 2 } })
+    expect(third.body.record.events[0].errorDeclaration).toBeUndefined()
+    expect(third.body.record.events[1]).toMatchObject({ identity: eventId(35), arrival: 'new-observation', errorDeclaration: { correctiveEventIDs: [eventId(99)], resolution: 'unresolved', missing: [eventId(99)] } })
+    // Another source scope that names the same corrective event does not hold it: a correction is never resolved across sources.
+    const elsewhere = await api.upload('/api/epcis/imports?requestId=corrections-4&sourceId=another-line', utf8(JSON.stringify(epcisDocument([declared]))))
+    expect(elsewhere.body.record.events[0]).toMatchObject({ arrival: 'new', errorDeclaration: { resolution: 'unresolved', missing: [eventId(40)] } })
+
+    // Nothing was replaced. The first import is the record and the bytes it was, and no arrival here is a conflict.
+    expect((await api.get(`/api/epcis/imports/${ref(first.body.record.importId)}`)).body).toEqual(first.body.record)
+    expect(Buffer.from((await api.get(`/api/epcis/imports/${ref(first.body.record.importId)}/original`)).bytes).equals(Buffer.from(firstBytes))).toBe(true)
+    expect((await api.get('/api/epcis/conflicts')).body).toMatchObject({ conflicts: [], importsRead: 4, truncated: false })
+    expect((await importsOf(api)).map((entry) => [entry.state, entry.conflicts])).toEqual(Array.from({ length: 4 }, () => ['evaluated', 0]))
+
+    // The events of the product show both observations of its commissioning: the one first received, and the one that declares it in error.
+    // The index answers in the order of its keys, which is not the order of arrival, so the entries are read in the order they were observed.
+    const observedOrder = (list: Json[]): Json[] => [...list].sort((a, b) => Number(((a.event as Json).observation as Json).sequence) - Number(((b.event as Json).observation as Json).sequence))
+    const commissionings = observedOrder((await entries(api, PACK, '&sourceId=assembly-line')).filter((entry) => (entry.event as Json).identity === eventId(32)))
+    expect(commissionings.map((entry) => [(entry.source as Json).importId, (entry.association as Json).errorDeclared, (entry.event as Json).arrival])).toEqual([
+      [first.body.record.importId, false, 'new'],
+      [second.body.record.importId, true, 'new-observation'],
+    ])
+    expect((commissionings[0]!.body as Json).errorDeclaration).toBeUndefined()
+    expect((commissionings[1]!.body as Json).errorDeclaration).toEqual(declaration)
+    // The transformation observed twice is listed twice for an item it took in, with neither observation marked in error.
+    expect(observedOrder(await entries(api, CELL_A, '&sourceId=assembly-line')).map((entry) => [(entry.source as Json).importId, (entry.association as Json).errorDeclared, ((entry.body as Json).recordTime)])).toEqual([
+      [first.body.record.importId, false, transformation.recordTime],
+      [third.body.record.importId, false, minute(55)],
+    ])
+    expect(await checkEpcisExchangeInvariants(api.exchange.storage, { associations: true })).toEqual([])
+  })
+})
+
+describe('a store that fails', () => {
+  /** What the failing store says. It names a host, as a database driver's error does, so a test can show that a caller is never told it. */
+  const CAUSE = 'connection to db-internal-7.example.internal:27017 was reset'
+  /**
+   * A store whose durable call fails once, the given number of calls after
+   * it is armed, in a process that carries on with the same store. `before`:
+   * the call never reached the store. `after`: it was applied and its answer
+   * was lost.
+   */
+  function failingOnce(inner: EpcisExchangeStorage): { storage: EpcisExchangeStorage; calls(): number; arm(at: number, when: 'before' | 'after'): void } {
+    let made = 0
+    let plan: { at: number; when: 'before' | 'after' } | undefined
+    const durable = async <T>(run: () => Promise<T>): Promise<T> => {
+      made += 1
+      if (plan == null || made !== plan.at) return run()
+      if (plan.when === 'after') await run()
+      throw new Error(CAUSE)
+    }
+    return {
+      calls: () => made,
+      arm: (at, when) => {
+        plan = { at: made + at, when }
+      },
+      storage: {
+        putBytes: (digest, bytes) => durable(() => inner.putBytes(digest, bytes)),
+        deleteBytes: (digest) => durable(() => inner.deleteBytes(digest)),
+        commit: (writes) => durable(() => inner.commit(writes)),
+        getBytes: (digest) => inner.getBytes(digest),
+        get: (kind, key) => inner.get(kind, key),
+        list: (kind, options) => inner.list(kind, options),
+      },
+    }
+  }
+  const STORE_FAILURE = { error: 'storage-unavailable', outcome: 'failed', retryable: true, acknowledged: false }
+  /** A run acknowledges page by page, so the answer to one that failed does not say it was not acknowledged: it says the pages acknowledged before the failure are kept. */
+  const RUN_FAILURE = { error: 'storage-unavailable', outcome: 'failed', retryable: true }
+
+  it('answers a write that failed during an upload by name, as a request to send again, loses nothing acknowledged, and takes the same request in the same process', async () => {
+    const bytes = utf8(JSON.stringify(valid()))
+    const counting = failingOnce(createMemoryEpcisStorage())
+    const control = await app({ storage: counting.storage })
+    expect((await control.upload('/api/epcis/imports?requestId=flaky', bytes)).status).toBe(201)
+    const steps = counting.calls()
+    expect(steps).toBeGreaterThanOrEqual(6)
+
+    for (let at = 1; at <= steps; at += 1) {
+      for (const when of ['before', 'after'] as const) {
+        const where = `${when} durable call ${at} of ${steps}`
+        const failing = failingOnce(createMemoryEpcisStorage())
+        const lines: string[] = []
+        const api = await app({ storage: failing.storage, lines })
+        const earlier = await api.upload('/api/epcis/imports?requestId=earlier', UNUSUAL)
+        expect(earlier.status, where).toBe(201)
+
+        failing.arm(at, when)
+        const failed = await api.upload('/api/epcis/imports?requestId=flaky', bytes)
+        // Named, and said to be safe to send again. Not the unnamed failure of the API, and not a refusal of the document.
+        expect(failed.status, where).toBe(503)
+        expect(failed.body, where).toEqual({ ...STORE_FAILURE, description: expect.stringMatching(/did not complete a call\. This upload was not acknowledged\. Send it again with the same requestId/) })
+        // The store's own words are for the operator's log and are not in the answer.
+        expect(failed.text, where).not.toContain('db-internal-7')
+        expect(lines.filter((line) => line.startsWith('EPCIS store:') && line.includes(CAUSE)), where).toHaveLength(1)
+
+        // What was acknowledged before is held as it was, and the API answers its other requests.
+        expect(Buffer.from((await api.get(`/api/epcis/imports/${ref(earlier.body.record.importId)}/original`)).bytes).equals(Buffer.from(UNUSUAL)), where).toBe(true)
+        expect((await api.get(`/api/epcis/imports/${ref(earlier.body.record.importId)}`)).body, where).toEqual(earlier.body.record)
+        expect((await api.get('/api/epcis/status')).status, where).toBe(200)
+
+        // The same request again, in the same process, with no restart and no recovery between.
+        const again = await api.upload('/api/epcis/imports?requestId=flaky', bytes)
+        expect([200, 201], where).toContain(again.status)
+        expect(again.body, where).toMatchObject({ outcome: 'retained', record: { requestId: 'flaky', state: 'evaluated', documentValidity: 'valid', sha256: sha256(bytes) } })
+        expect((await importsOf(api)).map((entry) => entry.requestId).sort(), where).toEqual(['earlier', 'flaky'])
+        expect(await checkEpcisExchangeInvariants(api.exchange.storage, { associations: true }), where).toEqual([])
+        // And once more it is a repeat, answered with the same import.
+        const repeat = await api.upload('/api/epcis/imports?requestId=flaky', bytes)
+        expect(repeat.status, where).toBe(200)
+        expect(repeat.body.record, where).toEqual(again.body.record)
+        await api.close()
+        apps.splice(apps.indexOf(api), 1)
+      }
+    }
+  })
+
+  it('answers writes another writer keeps winning by name, as a request to send again, and the same request is one import once they stop', async () => {
+    // The event results of an import always lose to another writer, as if one kept taking the same event identities, until the test stops it.
+    const inner = createMemoryEpcisStorage()
+    let contended = true
+    let lost = 0
+    const storage: EpcisExchangeStorage = {
+      putBytes: (digest, bytes) => inner.putBytes(digest, bytes),
+      getBytes: (digest) => inner.getBytes(digest),
+      deleteBytes: (digest) => inner.deleteBytes(digest),
+      get: (kind, key) => inner.get(kind, key),
+      list: (kind, options) => inner.list(kind, options),
+      commit: async (writes) => {
+        const observation = writes.find((write) => write.kind === EPCIS_RECORD_KINDS.observation)
+        if (!contended || observation == null) return inner.commit(writes)
+        lost += 1
+        return { committed: false, failed: { kind: observation.kind, key: observation.key, expected: 'absent', found: 1 } }
+      },
+    }
+    const api = await app({ storage })
+    const bytes = utf8(JSON.stringify(valid()))
+    const failed = await api.upload('/api/epcis/imports?requestId=contended', bytes)
+    expect(failed.status).toBe(503)
+    expect(failed.body).toEqual({ error: 'storage-contention', description: expect.stringMatching(/gave up after a bounded number of attempts\. This upload was not acknowledged\. Send it again with the same requestId/), outcome: 'failed', retryable: true, acknowledged: false })
+    // The bound the module states, and no more: the request did not hang on a writer that never stops.
+    expect(lost).toBe(8)
+
+    contended = false
+    const again = await api.upload('/api/epcis/imports?requestId=contended', bytes)
+    expect([200, 201]).toContain(again.status)
+    expect(again.body).toMatchObject({ outcome: 'retained', record: { requestId: 'contended', state: 'evaluated', documentValidity: 'valid', sha256: sha256(bytes) } })
+    expect((await importsOf(api)).map((entry) => entry.requestId)).toEqual(['contended'])
+    expect(await checkEpcisExchangeInvariants(api.exchange.storage, { associations: true })).toEqual([])
+  })
+
+  it('answers a write that failed during a pull by name, and the same query run again finishes with no page lost and no event held twice', async () => {
+    const seven = (): Json[] => Array.from({ length: 7 }, (_, index) => objectEvent(index + 1, [item(`PULL-${index + 1}`)]))
+    const body = { queryId: 'all', query: { perPage: 2 } }
+    const counting = failingOnce(createMemoryEpcisStorage())
+    const control = await app({ config: testConfig(sourceSettings(await source(seven()))), storage: counting.storage })
+    expect((await control.post('/api/epcis/sources/supplier-a/pulls', body)).body).toMatchObject({ outcome: 'ok', events: { total: 7, new: 7 } })
+    const steps = counting.calls()
+    expect(steps).toBeGreaterThan(20)
+
+    for (let at = 1; at <= steps; at += 1) {
+      for (const when of ['before', 'after'] as const) {
+        const where = `${when} durable call ${at} of ${steps}`
+        const fixture = await source(seven(), { requireAuthorization: `Bearer ${SECRET}` })
+        const failing = failingOnce(createMemoryEpcisStorage())
+        const api = await app({ config: testConfig(sourceSettings(fixture)), storage: failing.storage })
+        failing.arm(at, when)
+        const failed = await api.post('/api/epcis/sources/supplier-a/pulls', body)
+        expect(failed.status, where).toBe(503)
+        expect(failed.body, where).toEqual({ ...RUN_FAILURE, description: expect.stringMatching(/This run did not finish\. The pages it acknowledged before the failure are kept\. Run the same queryId again: it continues after the last page it acknowledged/) })
+        expect(failed.text, where).not.toContain('db-internal-7')
+        expect(failed.text, where).not.toContain(SECRET)
+        // Whatever the run had acknowledged is held, and its checkpoint is not past it.
+        const held = await api.get('/api/epcis/sources/supplier-a/pulls/all')
+        if (held.status === 200) {
+          expect(held.body.pages, where).toHaveLength(held.body.pull.pagesAcknowledged)
+          for (const page of held.body.pages as Json[]) expect(sha256((await api.get(`/api/epcis/imports/${ref(String(page.importId))}/original`)).bytes), where).toBe(page.sha256)
+        }
+
+        const again = await api.post('/api/epcis/sources/supplier-a/pulls', body)
+        expect(again.status, where).toBe(200)
+        expect(again.body, where).toMatchObject({ outcome: 'ok', reason: 'exhausted', exhausted: true })
+        const state = (await api.get('/api/epcis/sources/supplier-a/pulls/all')).body
+        expect(state.pull, where).toMatchObject({ status: 'exhausted' })
+        // The four pages of the history, each acknowledged once, and every event observed once.
+        expect((state.pages as Json[]).filter((page) => page.pass === 1).map((page) => page.page), where).toEqual([1, 2, 3, 4])
+        const observed = (await api.exchange.storage.list(EPCIS_RECORD_KINDS.observation, { limit: 100 })).map((record) => `${String(record.value.identity)} ${String(record.value.sequence)}`)
+        expect(observed.sort(), where).toEqual(Array.from({ length: 7 }, (_, index) => `${eventId(index + 1)} 1`).sort())
+        expect(await checkEpcisExchangeInvariants(api.exchange.storage, { associations: true }), where).toEqual([])
+        await api.close()
+        apps.splice(apps.indexOf(api), 1)
+        await fixture.close()
+        sources.splice(sources.indexOf(fixture), 1)
+      }
+    }
+  }, 120_000)
+
+  it('answers by name, within a bounded wait, while the database is away, at the store and at a sign-in kept in the same database, and holds what it had acknowledged when it is back', async () => {
+    // A database of this test's own, which it stops and starts. Each API opens it as main.ts does: the platform connects with its own client, and the exchange is opened on the platform's database.
+    const mongod = await MongoMemoryServer.create()
+    const address = new URL(mongod.getUri()).host
+    const fixture = await source(Array.from({ length: 3 }, (_, index) => objectEvent(index + 1, [item(`OUTAGE-${index + 1}`)])))
+    const database = (name: string, over: Record<string, string> = {}) => testConfig({ MONGO_URL: mongod.getUri(), MONGO_DB: name, ...over })
+    // The sign-in lookup's failure is written to the process's error output, as Better Auth's own report of it is.
+    const errorOutput = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    try {
+      // The store's own failure: the development session stands in for sign-in, so that a request reaches the EPCIS store.
+      const lines: string[] = []
+      const api = await app({ mode: 'live', config: database('epcis_outage', sourceSettings(fixture)), lines })
+      expect(api.exchange.storageKind).toBe('mongodb')
+      // As main.ts runs with a database: sign-in on that same database, looked up before a route reaches the store.
+      const signed = await app({ mode: 'live', signIn: true, config: database('epcis_outage_sign_in') })
+      const signUp = await fetch(`${signed.base}/api/auth/sign-up/email`, { method: 'POST', headers: { 'content-type': 'application/json', origin: signed.platform.config.publicUrl }, body: JSON.stringify({ email: 'operator@example.com', password: 'outage-test-password-1', name: 'Operator' }) })
+      expect(signUp.status).toBe(200)
+      signed.headers.cookie = signUp.headers.getSetCookie().map((cookie) => cookie.split(';')[0]).join('; ')
+      const earlier = await api.upload('/api/epcis/imports?requestId=before-outage', UNUSUAL)
+      expect(earlier.status).toBe(201)
+      expect((await signed.upload('/api/epcis/imports?requestId=before-outage', UNUSUAL)).status).toBe(201)
+
+      await mongod.stop({ doCleanup: false })
+      const bytes = utf8(JSON.stringify(valid()))
+      const timed = async (ask: () => Promise<Answer>): Promise<Answer & { waited: number }> => {
+        const started = Date.now()
+        const answer = await ask()
+        return { ...answer, waited: Date.now() - started }
+      }
+      // Bounded by the time the application's own client waits for a server, with room for the driver's one retry. Never an open-ended wait.
+      const bound = MONGO_SERVER_SELECTION_TIMEOUT_MS * 4
+
+      const during = await timed(() => api.upload('/api/epcis/imports?requestId=during-outage', bytes))
+      expect(during.status).toBe(503)
+      expect(during.body).toMatchObject({ error: 'storage-unavailable', outcome: 'failed', retryable: true, acknowledged: false })
+      expect(during.waited).toBeLessThan(bound)
+      // A pull is answered the same way, and asks nothing of its source: the record it continues from could not be read.
+      const asked = fixture.requests.length
+      const pulled = await timed(() => api.post('/api/epcis/sources/supplier-a/pulls', { queryId: 'all', query: {} }))
+      expect(pulled.status).toBe(503)
+      expect(pulled.body).toEqual({ ...RUN_FAILURE, description: expect.stringMatching(/did not complete a call\. This run did not finish/) })
+      expect(pulled.waited).toBeLessThan(bound)
+      expect(fixture.requests).toHaveLength(asked)
+      // Reads are answered the same way: no route hangs and none answers an unnamed failure.
+      expect((await api.get('/api/epcis/imports')).body).toMatchObject({ error: 'storage-unavailable', retryable: true })
+      expect((await api.get(`/api/epcis/imports/${ref(earlier.body.record.importId)}/original`)).status).toBe(503)
+      // The two routes that read no store still answer, and so does the rest of the API.
+      expect((await api.get('/api/epcis/status')).status).toBe(200)
+      expect((await api.get('/api/epcis/sources')).status).toBe(200)
+      expect((await api.get('/api/health')).status).toBe(200)
+      // The operator's log names the failure. No answer carried the database's address.
+      for (const answer of [during, pulled]) expect(answer.text).not.toContain(address)
+      expect(lines.some((line) => line.startsWith('EPCIS store:') && line.includes('did not complete'))).toBe(true)
+
+      // With sign-in on the same database the lookup of the signed-in user fails first. It is named as well, within the same bound.
+      const signedDuring = await timed(() => signed.upload('/api/epcis/imports?requestId=during-outage', bytes))
+      expect(signedDuring.status).toBe(503)
+      expect(signedDuring.body).toEqual({ error: 'sign-in-unavailable', description: expect.stringMatching(/could not be looked up.*This upload was not acknowledged\. Send it again with the same requestId/), outcome: 'failed', retryable: true, acknowledged: false })
+      expect(signedDuring.waited).toBeLessThan(bound)
+      expect(signedDuring.text).not.toContain(address)
+      expect((await signed.get('/api/epcis/status')).body).toMatchObject({ error: 'sign-in-unavailable', retryable: true })
+      expect(errorOutput.mock.calls.some(([line]) => String(line).startsWith('EPCIS route: the signed-in user could not be looked up'))).toBe(true)
+      // A request with no session reads nothing from the database, and is still told to sign in.
+      expect((await fetch(`${signed.base}/api/epcis/imports`)).status).toBe(401)
+
+      // The database is back at the same address, with what it held.
+      await mongod.start(true)
+      const back = await api.get(`/api/epcis/imports/${ref(earlier.body.record.importId)}/original`)
+      expect(back.status).toBe(200)
+      expect(Buffer.from(back.bytes).equals(Buffer.from(UNUSUAL))).toBe(true)
+      expect((await api.get(`/api/epcis/imports/${ref(earlier.body.record.importId)}`)).body).toEqual(earlier.body.record)
+      // The requests that were not acknowledged are sent again: each upload is one import, and the pull runs to the end of its history.
+      for (const each of [api, signed]) {
+        const again = await each.upload('/api/epcis/imports?requestId=during-outage', bytes)
+        expect([200, 201]).toContain(again.status)
+        expect(again.body).toMatchObject({ outcome: 'retained', record: { state: 'evaluated', sha256: sha256(bytes) } })
+        expect((await importsOf(each)).map((entry) => entry.requestId).sort()).toEqual(['before-outage', 'during-outage'])
+      }
+      expect((await api.post('/api/epcis/sources/supplier-a/pulls', { queryId: 'all', query: {} })).body).toMatchObject({ outcome: 'ok', reason: 'exhausted', events: { total: 3, new: 3 } })
+      for (const each of [api, signed]) expect(await checkEpcisExchangeInvariants(each.exchange.storage, { associations: true })).toEqual([])
+    } finally {
+      errorOutput.mockRestore()
+      // Each API's client is closed while its database still answers.
+      await Promise.all(apps.splice(0).map((each) => each.close().catch(() => undefined)))
+      await mongod.stop().catch(() => undefined)
+    }
+  }, 120_000)
+
+  it('answers retained bytes that are altered or gone by name, as something sending the request again will not mend', async () => {
+    const store = createMemoryEpcisStorage()
+    const api = await app({ storage: store })
+    const imported = await api.upload('/api/epcis/imports?requestId=damaged-1', UNUSUAL)
+    const other = await api.upload('/api/epcis/imports?requestId=sound-1', utf8(JSON.stringify(valid())))
+    const original = `/api/epcis/imports/${ref(imported.body.record.importId)}/original`
+    store.state.bytes.get(sha256(UNUSUAL))![0] = 0x20
+    const altered = await api.get(original)
+    expect(altered.status).toBe(500)
+    expect(altered.body).toMatchObject({ error: 'retained-bytes-mismatch', outcome: 'failed', retryable: false })
+    // Nothing of the altered bytes is answered.
+    expect(altered.headers.get('x-content-sha256')).toBeNull()
+    store.state.bytes.delete(sha256(UNUSUAL))
+    expect((await api.get(original)).body).toMatchObject({ error: 'retained-bytes-missing', outcome: 'failed', retryable: false })
+    // The record is still read, and another import is exported as it was.
+    expect((await api.get(`/api/epcis/imports/${ref(imported.body.record.importId)}`)).status).toBe(200)
+    expect((await api.get(`/api/epcis/imports/${ref(other.body.record.importId)}/original`)).status).toBe(200)
+  })
+
+  it('answers a record it cannot read, a damaged store and a store no longer open to it by name', async () => {
+    // A pull record written by another version of the module: its checkpoint may mean something this version does not know, so it is not guessed at.
+    const memory = createMemoryEpcisStorage()
+    const fixture = await source([objectEvent(1, [item('UNREAD-1')])])
+    const pulling = await app({ config: testConfig(sourceSettings(fixture)), storage: memory })
+    const body = { queryId: 'all', query: {} }
+    expect((await pulling.post('/api/epcis/sources/supplier-a/pulls', body)).body).toMatchObject({ outcome: 'ok', reason: 'exhausted' })
+    for (const held of memory.state.records.get(EPCIS_RECORD_KINDS.pull)!.values()) held.value.recordVersion = '99'
+    const asked = fixture.requests.length
+    const unread = await pulling.post('/api/epcis/sources/supplier-a/pulls', body)
+    expect(unread.status).toBe(500)
+    expect(unread.body).toMatchObject({ error: 'record-unreadable', outcome: 'failed', retryable: false })
+    // Such a record may be sound, written by another version, so the operator is told to run that version and not only to restore.
+    expect(unread.body.description).toMatch(/does not read: it was written by another version, or it is damaged.*run the version that wrote it/)
+    expect(fixture.requests).toHaveLength(asked)
+
+    // The file-system adapter, with the record of an import overwritten on disk by something that is not a record.
+    const dir = mkdtempSync(join(tmpdir(), 'dpp-starter-epcis-store-'))
+    try {
+      const store = await openFileEpcisStorage(dir, { fsync: false })
+      const api = await app({ storage: store })
+      const imported = await api.upload('/api/epcis/imports?requestId=on-disk', UNUSUAL)
+      expect(imported.status).toBe(201)
+      const recordFile = readdirSync(join(dir, 'records', EPCIS_RECORD_KINDS.import), { recursive: true, withFileTypes: true })
+        .filter((entry) => entry.isFile())
+        .map((entry) => join(entry.parentPath, entry.name))
+        .filter((path) => (JSON.parse(readFileSync(path, 'utf8')) as { value?: Json }).value?.importId === imported.body.record.importId)
+      expect(recordFile).toHaveLength(1)
+      writeFileSync(recordFile[0]!, 'not a record')
+      const damaged = await api.get(`/api/epcis/imports/${ref(imported.body.record.importId)}`)
+      expect(damaged.status).toBe(500)
+      expect(damaged.body).toMatchObject({ error: 'storage-corrupt', outcome: 'failed', retryable: false })
+      // The adapter's own words name the folder. They are for the log, not the answer.
+      expect(damaged.text).not.toContain(dir)
+
+      // Once the store is closed under the running API, every route answers that it may be asked again, and none hangs.
+      await store.close()
+      for (const answer of [await api.get('/api/epcis/imports'), await api.upload('/api/epcis/imports?requestId=after-close', utf8(JSON.stringify(valid())))]) {
+        expect(answer.status).toBe(503)
+        expect(answer.body).toMatchObject({ error: 'storage-unavailable', outcome: 'failed', retryable: true, acknowledged: false })
+        expect(answer.body.description).toMatch(/is not open to this process/)
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('the edges of a paged history', () => {
+  const offsets = (fixture: FixtureSource): number[] => fixture.requests.map((request) => (request.query.nextPageToken == null ? 0 : Number(Buffer.from(request.query.nextPageToken, 'base64url').toString())))
+  /** A partial history is never said to be complete, in the answer or in the record. */
+  const partial = (body: Json): void => {
+    expect(body.exhausted).toBe(false)
+    expect(body.completion).not.toBe('exhausted')
+    expect(body.outcome).not.toBe('ok')
+    expect((body.pull as Json).status).not.toBe('exhausted')
+    expect(((body.pull as Json).pass as Json).exhausted).toBe(false)
+    expect((body.completenessLimits as string[])[0]).toMatch(/not the complete history/)
+  }
+
+  it('stops at the page limit, says the history is partial, and finishes it on the next run', async () => {
+    // Eleven events at one a page: one page more than a run reads under the default limits, which are the ones this application runs under.
+    expect(EPCIS_DEFAULT_LIMITS.maxPullPages).toBe(10)
+    const eleven = Array.from({ length: 11 }, (_, index) => objectEvent(index + 1, [item(`EDGE-${index + 1}`)]))
+    const fixture = await source(eleven)
+    const api = await app({ config: testConfig(sourceSettings(fixture)) })
+    const body = { queryId: 'all', query: { perPage: 1 } }
+
+    const first = await api.post('/api/epcis/sources/supplier-a/pulls', body)
+    expect(first.status).toBe(200)
+    expect(first.body).toMatchObject({ outcome: 'partial-history', reason: 'page-limit', completion: 'stopped-at-limit', exhausted: false, events: { total: 10, new: 10 }, limits: { maxPullPages: 10 }, limitOverrides: [], run: { pagesAcknowledged: 10 } })
+    partial(first.body)
+    expect(first.body.pages).toHaveLength(10)
+    expect(first.body.completenessLimits.join(' ')).toMatch(/stopped at its page limit/)
+    const stopped = (await api.get('/api/epcis/sources/supplier-a/pulls/all')).body
+    expect(stopped.pull).toMatchObject({ status: 'stopped-at-limit', pagesAcknowledged: 10, pass: { exhausted: false }, cursor: { afterPage: 10 } })
+    expect(stopped.pull.watermark).toBeUndefined()
+    // The eleventh event is not held, and nothing says it is.
+    expect((await api.get(`/api/epcis/events?identifier=${ref(item('EDGE-11'))}`)).body.events).toEqual([])
+    expect(await importsOf(api)).toHaveLength(10)
+
+    const second = await api.post('/api/epcis/sources/supplier-a/pulls', body)
+    expect(second.body).toMatchObject({ outcome: 'ok', reason: 'exhausted', completion: 'exhausted', exhausted: true, run: { run: 2, resumed: true, pagesFetched: 1 }, events: { total: 1, new: 1, duplicate: 0 } })
+    // Every page was asked for once, in order: none again, none skipped.
+    expect(offsets(fixture)).toEqual(Array.from({ length: 11 }, (_, index) => index))
+    const finished = (await api.get('/api/epcis/sources/supplier-a/pulls/all')).body
+    expect(finished.pull).toMatchObject({ status: 'exhausted', pagesAcknowledged: 11, runs: 2, totals: { events: { total: 11, new: 11, duplicate: 0, conflict: 0 } } })
+    expect(finished.pages.map((page: Json) => [page.sequence, page.page])).toEqual(Array.from({ length: 11 }, (_, index) => [index + 1, index + 1]))
+    expect((await api.get(`/api/epcis/events?identifier=${ref(item('EDGE-11'))}`)).body.events).toHaveLength(1)
+    expect(await importsOf(api)).toHaveLength(11)
+    expect(await checkEpcisExchangeInvariants(api.exchange.storage, { associations: true })).toEqual([])
+  })
+
+  it('takes an empty result as the answer to the query, retains the empty page, and holds no event', async () => {
+    const empty = await source([])
+    const api = await app({ config: testConfig(sourceSettings(empty)) })
+    const run = await api.post('/api/epcis/sources/supplier-a/pulls', { queryId: 'nothing-yet', query: {} })
+    expect(run.status).toBe(200)
+    expect(run.body).toMatchObject({ outcome: 'ok', reason: 'exhausted', completion: 'exhausted', exhausted: true, events: { total: 0, new: 0 } })
+    expect(run.body.pages).toHaveLength(1)
+    expect(run.body.pages[0]).toMatchObject({ page: 1, last: true, events: { total: 0 } })
+    // The pages were exhausted. That is still not a statement about what the source holds or will hold.
+    expect(run.body.completenessLimits[0]).toMatch(/not the complete history/)
+    // The empty answer is retained like any page: it is the evidence that the query was answered.
+    const listed = await importsOf(api)
+    expect(listed).toEqual([expect.objectContaining({ importId: run.body.pages[0].importId, sourceId: 'supplier-a', events: 0, documentValidity: 'valid', state: 'evaluated', provenance: expect.objectContaining({ kind: 'query', page: 1 }) })])
+    const original = await api.get(`/api/epcis/imports/${ref(run.body.pages[0].importId)}/original`)
+    expect(sha256(original.bytes)).toBe(run.body.pages[0].sha256)
+    expect(JSON.parse(original.text).epcisBody.queryResults.resultsBody.eventList).toEqual([])
+    const state = (await api.get('/api/epcis/sources/supplier-a/pulls/nothing-yet')).body
+    expect(state.pull).toMatchObject({ status: 'exhausted', pagesAcknowledged: 1, pass: { exhausted: true } })
+    expect(state.pull.watermark).toBeUndefined()
+
+    // A source that holds events, asked for a product none of them names, answers the same way.
+    const stocked = await source(Array.from({ length: 3 }, (_, index) => objectEvent(index + 1, [item(`HELD-${index + 1}`)])))
+    const other = await app({ config: testConfig(sourceSettings(stocked)) })
+    const none = await other.post('/api/epcis/sources/supplier-a/pulls', { queryId: 'not-held', query: { matchAnyEPC: [item('NOT-HELD')] } })
+    expect(none.body).toMatchObject({ outcome: 'ok', reason: 'exhausted', exhausted: true, events: { total: 0 } })
+    expect(stocked.requests.map((request) => request.query.MATCH_anyEPC)).toEqual([item('NOT-HELD')])
+    expect((await other.get(`/api/epcis/events?identifier=${ref(item('HELD-1'))}`)).body.events).toEqual([])
+  })
+
+  it('asks again from the bounds of the query when its cursor has expired, never sends the expired cursor, and holds no event twice', async () => {
+    let now = Date.parse('2026-03-10T00:00:00.000Z')
+    const clock = (): string => new Date(now).toISOString()
+    const seven = Array.from({ length: 7 }, (_, index) => objectEvent(index + 1, [item(`EXPIRY-${index + 1}`)]))
+    // Every cursor the source names is good for one minute. Its third page request is answered 503, once.
+    const fixture = await source(seven, { failRequest: (n) => (n === 3 ? 503 : undefined), tokenExpires: () => new Date(now + 60_000).toISOString() })
+    const api = await app({ config: testConfig(sourceSettings(fixture)), now: clock })
+    const body = { queryId: 'all', query: { perPage: 2 } }
+
+    const stopped = await api.post('/api/epcis/sources/supplier-a/pulls', body)
+    expect(stopped.body).toMatchObject({ outcome: 'source-unavailable', reason: 'http-error', status: 503, completion: 'failed', events: { total: 4, new: 4 } })
+    partial(stopped.body)
+    expect(stopped.body.pull.cursor).toMatchObject({ afterPage: 2, expiresAt: new Date(now + 60_000).toISOString() })
+
+    // Two minutes later the cursor is past the time the source gave it.
+    now += 120_000
+    const resumed = await api.post('/api/epcis/sources/supplier-a/pulls', body)
+    expect(resumed.status).toBe(200)
+    expect(resumed.body).toMatchObject({ outcome: 'ok', reason: 'exhausted', exhausted: true, replay: { reason: 'cursor-expired', pagesAcknowledgedBefore: 2 }, run: { run: 2, replays: 1 }, events: { total: 7, new: 3, duplicate: 4, conflict: 0 } })
+    expect(resumed.body.completenessLimits.join(' ')).toMatch(/replayed from its bounds/)
+    // The first run asked for offsets 0, 2 and 4. The second began again at 0: the expired cursor, which names offset 4, was not what it sent first.
+    expect(offsets(fixture)).toEqual([0, 2, 4, 0, 2, 4, 6])
+    // The same query and the same pass, traversed a second time. Every event is held once, and nothing is in conflict.
+    const state = (await api.get('/api/epcis/sources/supplier-a/pulls/all')).body
+    expect(state.pull).toMatchObject({ status: 'exhausted', pass: { number: 1, attempt: 2, exhausted: true } })
+    const observed = (await api.exchange.storage.list(EPCIS_RECORD_KINDS.observation, { limit: 100 })).map((record) => `${String(record.value.identity)} ${String(record.value.sequence)}`)
+    expect(observed.sort()).toEqual(seven.map((event) => `${String(event.eventID)} 1`).sort())
+    expect((await api.get('/api/epcis/conflicts')).body.conflicts).toEqual([])
+    expect(await checkEpcisExchangeInvariants(api.exchange.storage, { associations: true })).toEqual([])
   })
 })
 
@@ -554,7 +1098,9 @@ describe('recovery at start-up', () => {
     const bytes = utf8(JSON.stringify(valid()))
     // A process that stopped after it had written the receipt of an upload, which is its third durable call.
     const dying = await app({ storage: faultInjectingEpcisStorage(await openMongoEpcisStorage(db, { journal: false }), { at: 3, when: 'after' }).storage })
-    expect((await dying.upload('/api/epcis/imports?requestId=interrupted', bytes)).status).toBe(500)
+    const died = await dying.upload('/api/epcis/imports?requestId=interrupted', bytes)
+    expect(died.status).toBe(503)
+    expect(died.body).toMatchObject({ error: 'storage-unavailable', outcome: 'failed', retryable: true, acknowledged: false })
 
     const lines: string[] = []
     const restarted = await app({ db, lines })
@@ -573,7 +1119,7 @@ describe('recovery at start-up', () => {
     const db = mongo.database()
     const bytes = utf8(JSON.stringify(valid()))
     const dying = await app({ storage: faultInjectingEpcisStorage(await openMongoEpcisStorage(db, { journal: false }), { at: 2, when: 'after' }).storage })
-    expect((await dying.upload('/api/epcis/imports?requestId=never-held', bytes)).status).toBe(500)
+    expect((await dying.upload('/api/epcis/imports?requestId=never-held', bytes)).body).toMatchObject({ error: 'storage-unavailable', retryable: true })
     const lines: string[] = []
     const restarted = await app({ db, lines })
     expect(lines).toContain('EPCIS recovery: intake-discarded x1; 0 left unfinished.')

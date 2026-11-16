@@ -43,7 +43,7 @@ The rest of this page is about manifest profiles, which today means `general@2`.
 
 ### Retired profiles
 
-The sector profiles first published as manifests are retired from 14 November 2026. Nothing is issued or validated under them, and a record that declares one is reported as unsupported.
+The sector profiles first published as manifests are retired from 14 November 2026. The application starter writes nothing under them, `@bsv/dpp-profiles` prepares and validates nothing under them, and a record that declares one is reported as unsupported. An index does not judge profiles: it admits a state on its structure, signatures and lineage, so a state from a writer that ignores the rule is still indexed, and still reads as unsupported.
 
 | Retired | Use instead | Page |
 |---|---|---|

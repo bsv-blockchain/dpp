@@ -11,11 +11,12 @@
 import { once } from 'node:events'
 import type { Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { startValidatorService, type ValidatorService } from '@bsv/dpp-profiles/validator-service'
+import { format } from 'node:util'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { startValidatorService, type ValidatorLogEntry, type ValidatorService } from '@bsv/dpp-profiles/validator-service'
 import { loadConfig } from '../src/config.js'
 import { openPlatform, type Platform } from '../src/platform.js'
-import type { PassportReading } from '../src/reader.js'
+import type { AuthorisedReading, PassportReading } from '../src/reader.js'
 import { sectorExamples } from '../src/sector-examples.js'
 import { createServer } from '../src/server.js'
 import { openValidationEngine, validationEngineSettings } from '../src/validation-engine.js'
@@ -190,5 +191,138 @@ describe('the validation engine, by configuration', () => {
     }
     // Nothing that was logged or answered carries the token.
     expect(lines.join('\n')).not.toContain(TOKEN)
+  })
+})
+
+describe('a restricted value, with the validator service configured', () => {
+  // With VALIDATOR_URL set, the whole document goes to the service when the holder's view or a write is checked, the
+  // restricted part included. This repeats the sweep of bound-http.test.ts for that arrangement: the value reaches the
+  // holder and the service, and nothing this application or the service prints, lists or answers to anyone else.
+  // A value that is in no fixture, no log line and no key: wherever it turns up, it was copied there.
+  const canary = 'RESTRICTED-CANARY-SERVICE-2B7D40E9'
+  const printed: string[] = []
+  const serviceLog: ValidatorLogEntry[] = []
+  const sentToService: string[] = []
+  const spies: Array<{ mockRestore: () => void }> = []
+  let sweepService: ValidatorService
+  let platform: Platform
+  let sweepServer: Server
+  let at: string
+
+  beforeAll(async () => {
+    // Everything the process prints is kept: the platform's own log, the console and the two streams under it.
+    for (const method of ['log', 'info', 'warn', 'error', 'debug'] as const) spies.push(vi.spyOn(console, method).mockImplementation((...args: unknown[]) => void printed.push(format(...args))))
+    for (const stream of [process.stdout, process.stderr]) {
+      const write = stream.write.bind(stream)
+      spies.push(
+        vi.spyOn(stream, 'write').mockImplementation(((chunk: unknown, ...rest: unknown[]) => {
+          printed.push(typeof chunk === 'string' ? chunk : Buffer.from(chunk as Uint8Array).toString('utf8'))
+          return (write as (...args: unknown[]) => boolean)(chunk, ...rest)
+        }) as typeof stream.write)
+      )
+    }
+    sweepService = await startValidatorService({ token: TOKEN, log: (entry) => void serviceLog.push(entry) })
+    // What the client sends the service, kept only to show the restricted part does reach it, so the search below is not empty by accident.
+    const realFetch = globalThis.fetch
+    spies.push(
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+        if (String(input instanceof Request ? input.url : input).startsWith(sweepService.url) && typeof init?.body === 'string') sentToService.push(init.body)
+        return await realFetch(input, init)
+      })
+    )
+    platform = await openPlatform({ config: loadConfig({ ...base, VALIDATOR_URL: sweepService.url, VALIDATOR_TOKEN: TOKEN }), mode: 'test', log: (line) => void printed.push(line) })
+    const party = platform.parties.brand(brandId)
+    await platform.store.saveBrand({ id: brandId, name: 'Engine brand', identityKey: party.identityKey, did: party.did, createdAt: new Date().toISOString() })
+    sweepServer = createServer({ platform, devSession: { userId: 'developer', email: 'developer@localhost', name: 'Developer', brandIds: [brandId] } }).listen(0, '127.0.0.1')
+    await once(sweepServer, 'listening')
+    at = `http://127.0.0.1:${(sweepServer.address() as AddressInfo).port}`
+  })
+
+  afterAll(async () => {
+    sweepServer.closeAllConnections()
+    sweepServer.close()
+    await sweepService.close().catch(() => undefined)
+    await platform.close()
+    for (const spy of spies) spy.mockRestore()
+  })
+
+  const call = async (path: string, body?: unknown): Promise<{ status: number; text: string; body: any }> => {
+    const response = await fetch(`${at}${path}`, body === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+    const text = await response.text()
+    return { status: response.status, text, body: text === '' ? undefined : JSON.parse(text) }
+  }
+  const ref = (passportId: string): string => encodeURIComponent(passportId)
+  /** The same restricted properties bound-http.test.ts plants the value in. */
+  const withCanary = (profile: string, product: Json): Json => {
+    const copy = structuredClone(product)
+    if (profile === 'eu-battery@1') {
+      copy['eubat:manufacturerIdentifier'] = canary
+      ;(copy['eubat:hasSupplyChainDueDiligence'] as Json)['eubat:auditBody'] = `${canary} audit body`
+    } else {
+      ;(copy['eutex:hasSubstancesOfConcern'] as Json[])[0]!['oec:substanceLocation'] = `${canary} location`
+      ;(copy['oec:hasOperatorInformation'] as Json)['gs1:organizationName'] = `${canary} operator`
+    }
+    return copy
+  }
+
+  it('reaches the holder and the service, and nothing this application or the service prints or answers to anyone else', async () => {
+    expect(platform.profiles.engineKind).toBe('service')
+    const seen: Array<[string, string]> = []
+    const keep = (where: string, text: string): void => void seen.push([where, text])
+
+    for (const [profile, serial] of [
+      ['eu-battery@1', 'SV-LEAK-BAT-0001'],
+      ['eu-textile@1', 'SV-LEAK-TEX-0001'],
+    ] as const) {
+      const bound = platform.profiles.get(profile)!
+      const example = sectorExamples(bound, { host: 'passports.example.com', prefix: '952' })[0]!
+      const swap = (value: string): string => value.replaceAll(example.serial, serial)
+      const passportId = swap(example.passportId)
+      const product = withCanary(profile, JSON.parse(swap(JSON.stringify(example.product))) as Json)
+
+      // Issued, then updated, so the value passes through both write paths and is checked by the service each time.
+      const issued = await call(`/api/brands/${brandId}/passports`, { profile, itemReference: example.itemReference, serial, product })
+      expect(issued.status).toBe(200)
+      keep(`issue response, ${profile}`, issued.text)
+      const updated = await call(`/api/passports/${ref(passportId)}/update`, { product: { ...product, 'oec:lastUpdated': '2026-11-16T08:00:00Z' } })
+      expect(updated.status).toBe(200)
+      keep(`update response, ${profile}`, updated.text)
+      // A write the service's answer refuses, with the value inside the document: the refusal goes to the writer and is not printed.
+      const broken = structuredClone(product)
+      delete broken['oec:passportStatus']
+      const refused = await call(`/api/brands/${brandId}/passports`, { profile, itemReference: example.itemReference, serial: `${serial}-X`, product: broken })
+      expect(refused.status).toBe(409)
+      expect(refused.body.error).toBe('product-invalid')
+
+      // The control: the holder's view carries the value, and was checked by the service.
+      const asked = serviceLog.length
+      const authorised = await call(`/api/passports/${ref(passportId)}/authorised-view`, {})
+      expect(authorised.text).toContain(canary)
+      expect((authorised.body as AuthorisedReading).authorisedView.status).toBe('pass')
+      expect(serviceLog.slice(asked).filter((entry) => entry.route === 'expand' || entry.route === 'validate').length).toBeGreaterThan(0)
+
+      // Everything another reader can ask for.
+      keep(`journal view, ${profile}`, (await call(`/api/passports/${ref(passportId)}`)).text)
+      keep(`verify, ${profile}`, (await call(`/api/verify?passportId=${ref(passportId)}`)).text)
+    }
+    keep('passport list', (await call(`/api/brands/${brandId}/passports`)).text)
+    keep('operations', (await call('/api/operations')).text)
+    keep('health', (await call('/api/health')).text)
+    keep('profiles', (await call('/api/profiles/eu-battery%401')).text)
+    keep('journal', JSON.stringify(await platform.store.listPassports()))
+    keep('everything printed', printed.join('\n'))
+    keep('the service log', JSON.stringify(serviceLog))
+
+    // The value did go to the service: the restricted part is in what the client sent. So an empty search is not an accident.
+    expect(sentToService.some((body) => body.includes(canary))).toBe(true)
+    // The log followed every request, the listings did return the passports and the journal holds the sealed parts.
+    expect(serviceLog.length).toBeGreaterThan(4)
+    expect(serviceLog.every((entry) => Object.keys(entry).sort().join() === 'durationMs,method,outcome,requestBytes,responseBytes,route,status')).toBe(true)
+    expect(seen.find(([where]) => where === 'passport list')![1]).toContain('SV-LEAK-BAT-0001')
+    expect(seen.find(([where]) => where === 'journal')![1]).toContain('ciphertext')
+
+    const leaks = seen.filter(([, text]) => text.includes(canary)).map(([where]) => where)
+    expect(leaks).toEqual([])
+    expect(printed.join('\n')).not.toContain(TOKEN)
   })
 })

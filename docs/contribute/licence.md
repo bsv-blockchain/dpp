@@ -41,8 +41,10 @@ Third-party dependencies and artefacts keep their own terms and notices; the rep
 | Package dependencies | The [licence ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/licences.json) records the licence each direct dependency declares, and `conformance/check.mjs` notices when one changes |
 | Credential artefacts | The [notices beside the retained artefacts](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
 | Bundled profile bindings | The contexts and shapes under `packages/dpp-profiles/bindings/`, and the example documents under `packages/dpp-profiles/test/fixtures/sector-bindings/`, are unmodified files published by the OpenEPCIS DPP-Ready project under `Apache-2.0`. The `NOTICE.md` beside each binding names the source revision, lists every file with its SHA-256 and reproduces the GS1 Web Vocabulary notice that one context carries |
-| Validator image | The `dpp-validator` image installs the three engine libraries and what they depend on, 413 packages, all under permissive licences. `packages/dpp-profiles/validator-image/licence-inventory.json` lists each with its version and licence, and the image carries the text of every licence and notice file those packages publish in `/app/THIRD-PARTY-NOTICES.txt`, beside this repository's `LICENSE`, `NOTICE` and `PATENTS`. Its base image keeps its own notices. No npm package of this repository depends on those libraries ([run the engines as a service](../packages/dpp-profiles.md#run-the-engines-as-a-service)) |
-| Index image | The `dpp-overlay` image carries this repository's `LICENSE`, `NOTICE` and `PATENTS` in `/repo`, beside the built files of `@bsv/dpp-overlay`, `@bsv/dpp-protocol` and `@bsv/dpp-profiles` and their installed dependencies, each with the licence file its package publishes. Its base image keeps its own notices. `scripts/image-contents-check.mjs` reads every file of the built image and of each packed npm archive and holds them to this page |
+| Validator image | The `dpp-validator` image installs the three engine libraries and what they depend on, 413 packages, all under permissive licences. `packages/dpp-profiles/validator-image/licence-inventory.json` lists each with its version and licence, and the image carries the text of every licence and notice file those packages publish in `/app/THIRD-PARTY-NOTICES.txt`, beside this repository's `LICENSE`, `NOTICE` and `PATENTS`. No npm package of this repository depends on those libraries ([run the engines as a service](../packages/dpp-profiles.md#run-the-engines-as-a-service)) |
+| Index image | The `dpp-overlay` image carries this repository's `LICENSE`, `NOTICE` and `PATENTS` in `/repo`, beside the built files of `@bsv/dpp-overlay`, `@bsv/dpp-protocol` and `@bsv/dpp-profiles` and their installed dependencies, each with the licence file its package publishes. Four of those dependencies are the BSV packages of the next row. `scripts/image-contents-check.mjs` reads every file of the built image and of each packed npm archive and holds them to this page |
+| BSV packages | `@bsv/sdk`, `@bsv/overlay`, `@bsv/gasp` and `@bsv/wallet-toolbox-client` are dependencies at pinned versions, and the archives of those versions carry the Open BSV License Version 6, which is not Apache-2.0 and among other conditions limits use to the BSV blockchains it defines. Every install of `@bsv/dpp-protocol` or `@bsv/dpp-overlay` brings `@bsv/sdk`, an install of `@bsv/dpp-overlay` brings all four, and the index image contains all four. Read the `LICENSE.txt` inside each |
+| Base image | Both images are built on the Docker Official Image `node:22.23.4-slim`, which each Dockerfile and the release set name by digest. Its layers are Debian 12 and the Node.js distribution, unmodified, under their own licences, some of them copyleft (the GNU GPL and LGPL among them). Each Debian package keeps its copyright file under `/usr/share/doc` and Node.js keeps its licence at `/usr/local/LICENSE`. The contents check holds an image's lowest layers to that base image and writes each operating-system package, with the licences its copyright file names, to `deploy/evidence/image-contents.json` |
 | GS1 schema material | GS1's EPCIS and resolver schemas and contexts are not in the repository or its packages. GS1 publishes them under its own terms, and they are not redistributed here. The one file derived from GS1 material is the shortcuts context in the bundled bindings above, generated from the GS1 Web Vocabulary, which GS1 licenses under `Apache-2.0`. Each deployment obtains them from GS1 and the package checks every byte against a pinned digest ([GS1 files](../packages/dpp-credentials.md#gs1-files)). |
 
 ## The operator preset
@@ -64,6 +66,37 @@ The Docker Compose preset under `deploy/` runs three programs, and they are not 
 | What about the MongoDB the tests download? | The test suites fetch a MongoDB server to run against, through a development dependency. It is a development dependency in every workspace, so it is never installed with a published package and is in neither image; `conformance/check.mjs` and the contents check hold both. |
 
 The exact image, its digest and the day it was resolved are in the `images` member of the [release set](../reference/release-sets.md#images).
+
+## The whole deployment
+
+`conformance/deployment-inventory.json` lists everything a deployment of the current release set is made of, and `scripts/deployment-inventory.mjs` writes it from the checkout: the lockfile, the starter template, the bundled bindings, the tables of GS1 files and the release set. A test holds the file to those sources.
+
+| Part | What the inventory records |
+|---|---|
+| The four npm packages | Every package each one installs, direct and transitive, with its version, integrity and licence. Development dependencies are left out |
+| The generated application | What the starter template declares. It resolves its own ranges, so `deploy/evidence/starter-dependencies.json` records every package one install brought, with its licence |
+| Copied third-party files | Each file with its SHA-256, origin, licence and notice, and that it is unmodified |
+| Files named and not carried | GS1's files, each by address and SHA-256 |
+| The two images | Dockerfile, base image by digest, platforms and digest. What is inside a built image is read from the image and recorded in `deploy/evidence/image-contents.json` |
+| Services of the presets | MongoDB by tag and digest, with its licence and how it reaches a deployment |
+
+Each part names a disposition, and each disposition says what was decided and why:
+
+| Status | Meaning |
+|---|---|
+| `held` | The terms are met by what the release does |
+| `conditional` | The terms are met while the stated conditions hold, which a deployment or a publication must keep |
+| `open` | Not decided, or waiting on someone. It blocks a release |
+
+A licence the script has not been told was reviewed stops it, and so does a package that names a licence file at a version nobody read. `node scripts/deployment-inventory.mjs --release` exits 1 while any disposition is open, and a release set that is no longer a candidate must pass it.
+
+Three dispositions are open in the current candidate:
+
+| Disposition | What it waits on |
+|---|---|
+| `bsv-packages` | Versions of the four BSV packages published under Apache-2.0 and adopted here after compatibility tests, or a recorded grant covering the pinned versions |
+| `w3c-context` | The full text of the W3C Software and Document License beside the retained credentials context |
+| `image-digests` | Publication of both images and the pin that records their digests |
 
 Read the applicable terms before reuse. For a reuse question these sources do not answer, use the [BSV Association contact page](https://bsvassociation.org/contact/).
 

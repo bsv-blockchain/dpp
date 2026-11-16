@@ -30,8 +30,9 @@
 # Google's Docker Hub mirror (mirror.gcr.io), Amazon ECR Public or Docker Hub
 # that serves it. All three serve the same manifest digests, so one
 # registry's pull limit or outage cannot block a release gate. The default
-# below keeps platform and local builds exactly as before.
-ARG BASE_IMAGE=node:22.23.4-slim
+# below names the image by digest as well as by tag, so a build without the
+# argument starts from exactly the layers the release set records.
+ARG BASE_IMAGE=node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d
 
 FROM ${BASE_IMAGE} AS build
 RUN test "$(node --version)" = "v22.23.4"

@@ -82,6 +82,19 @@
       "expected": { "status": "fail", "cause": "product-identity-mismatch", "step": "passport-identity" }
     },
     {
+      "name": "batch-level-document",
+      "description": "The item's document with the identity of its batch put in place of its own: the identifier carries a lot under 10 where the item's serial under 21 was, and the document declares the batch level. The shapes accept a document about a batch, so only the identity rules stand between it and a pass, and they refuse a batch as the subject of an item's passport.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "set": { "id": "https://id.gs1.org/01/09521234003007/10/AUR-L2026-01", "oec:granularityLevel": "batch" },
+      "expected": { "status": "fail", "cause": "product-identity-mismatch", "step": "passport-identity" }
+    },
+    {
+      "name": "member-beside-product",
+      "description": "A valid document whose GTIN member is written a second time beside `product`, at the top of the payload envelope. The envelope defines no such member, so the payload is refused at the envelope and the product document is not read.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "expected": { "status": "fail", "cause": "envelope-invalid", "step": "envelope" }
+    },
+    {
       "name": "altered-artefact",
       "description": "The background file with one byte changed and its length kept. Registration refuses it and names the file.",
       "expected": { "refusal": "artefact-digest-mismatch", "artefact": "background.ttl" }
