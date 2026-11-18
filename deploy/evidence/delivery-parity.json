@@ -1,40 +1,40 @@
 {
   "check": "scripts/delivery-parity.mjs",
-  "recordedAt": "2026-11-16",
+  "recordedAt": "2026-11-18",
   "docker": "29.1.3",
   "platform": "linux/arm64",
   "releaseSet": "dpp-release-2026-11",
-  "sourceRevision": "dce2791ae07223626a43521db93a9eaf2f249c3f",
+  "sourceRevision": "f9683628a6ff281f4600aee4ec06cc4b04015a45",
   "sourceState": "committed",
   "failures": 0,
   "sentences": 171,
   "dpp-overlay": {
     "reference": "ev-dpp-overlay:test",
-    "id": "sha256:328f5d1ca15ad21c380074e974877a88e306bc779c5e00c26cec5d5eac05f500",
+    "id": "sha256:c6ad8cca7671b0a7113688678d0f38265365897452a334890b8781ea449a2471",
     "platform": "linux/arm64",
-    "sizeBytes": 91504206,
+    "sizeBytes": 91475681,
     "node": "v22.23.4",
     "package": "@bsv/dpp-overlay@0.4.0-beta.13",
     "releaseSet": "dpp-release-2026-11",
-    "sourceRevision": "dce2791ae07223626a43521db93a9eaf2f249c3f",
+    "sourceRevision": "f9683628a6ff281f4600aee4ec06cc4b04015a45",
     "sourceState": "committed"
   },
   "dpp-validator": {
     "reference": "ev-dpp-validator:test",
-    "id": "sha256:461289fc127f56b28efb49b929c807624a0aed113d1f36997495b980f9a18474",
+    "id": "sha256:a2694f3784f50e5246d70a9114d75583fd4fc9cda9a140be0c5407a92859b67b",
     "platform": "linux/arm64",
     "sizeBytes": 93834596,
     "node": "v22.23.4",
     "package": "@bsv/dpp-profiles@0.3.0-beta.10",
     "releaseSet": "dpp-release-2026-11",
-    "sourceRevision": "dce2791ae07223626a43521db93a9eaf2f249c3f",
+    "sourceRevision": "f9683628a6ff281f4600aee4ec06cc4b04015a45",
     "sourceState": "committed"
   },
   "npm": {
     "runtime": "host",
     "node": "v26.13.1"
   },
-  "filesCompared": 357,
+  "filesCompared": 353,
   "runtimeDependencies": [
     {
       "name": "@bsv/sdk",
@@ -63,7 +63,7 @@
   ],
   "thirdPartyPackages": {
     "inBoth": 42,
-    "sameVersion": 36,
+    "sameVersion": 32,
     "differing": [
       {
         "name": "@bsv/gasp",
@@ -91,9 +91,29 @@
         "npm": "2.18.0"
       },
       {
+        "name": "mongodb-connection-string-url",
+        "image": "7.0.2",
+        "npm": "7.0.3"
+      },
+      {
         "name": "resolve",
         "image": "1.22.12",
         "npm": "1.22.14"
+      },
+      {
+        "name": "tr46",
+        "image": "5.1.1",
+        "npm": "6.0.0"
+      },
+      {
+        "name": "webidl-conversions",
+        "image": "7.0.0",
+        "npm": "8.0.1"
+      },
+      {
+        "name": "whatwg-url",
+        "image": "14.2.0",
+        "npm": "15.1.0"
       }
     ],
     "onlyInConsumer": [
@@ -179,26 +199,26 @@
       "operations": 79,
       "expand": {
         "count": 42,
-        "medianMs": 8.1,
-        "maxMs": 19.1
+        "medianMs": 7.2,
+        "maxMs": 42.4
       },
       "validate": {
         "count": 37,
-        "medianMs": 51.7,
-        "maxMs": 280.2
+        "medianMs": 55.3,
+        "maxMs": 623.5
       },
       "largestRequest": {
         "vector": "eu-battery@1 vectors/battery-product.jsonld",
         "operation": "validate",
         "requestBytes": 900940,
         "responseBytes": 122,
-        "ms": 103.4,
-        "vectorMs": 124.3,
+        "ms": 213.5,
+        "vectorMs": 236.9,
         "vectorExchanges": 2
       },
       "slowestVector": {
         "vector": "eu-battery@1 vectors/amperia-staxwall-item.jsonld",
-        "ms": 302.8
+        "ms": 668.9
       },
       "failures": 0
     },
@@ -240,26 +260,26 @@
       "operations": 79,
       "expand": {
         "count": 42,
-        "medianMs": 4.2,
-        "maxMs": 10.5
+        "medianMs": 4.7,
+        "maxMs": 19.8
       },
       "validate": {
         "count": 37,
-        "medianMs": 37.5,
-        "maxMs": 314.8
+        "medianMs": 40,
+        "maxMs": 341.7
       },
       "largestRequest": {
         "vector": "eu-battery@1 vectors/battery-product.jsonld",
         "operation": "validate",
         "requestBytes": 900940,
         "responseBytes": 122,
-        "ms": 54,
-        "vectorMs": 66.2,
+        "ms": 58.3,
+        "vectorMs": 73.6,
         "vectorExchanges": 2
       },
       "slowestVector": {
         "vector": "eu-battery@1 vectors/amperia-staxwall-item.jsonld",
-        "ms": 327.8
+        "ms": 364.5
       },
       "failures": 0
     },
@@ -297,26 +317,26 @@
       "operations": 79,
       "expand": {
         "count": 42,
-        "medianMs": 3.2,
-        "maxMs": 10.6
+        "medianMs": 3.1,
+        "maxMs": 12
       },
       "validate": {
         "count": 37,
-        "medianMs": 36.2,
-        "maxMs": 169.3
+        "medianMs": 29.3,
+        "maxMs": 156.6
       },
       "largestRequest": {
         "vector": "eu-battery@1 vectors/battery-product.jsonld",
         "operation": "validate",
         "requestBytes": 900940,
         "responseBytes": 122,
-        "ms": 56.1,
-        "vectorMs": 66.7,
+        "ms": 51.9,
+        "vectorMs": 62.7,
         "vectorExchanges": 2
       },
       "slowestVector": {
         "vector": "eu-battery@1 vectors/amperia-staxwall-item.jsonld",
-        "ms": 182.8
+        "ms": 171.6
       },
       "failures": 0
     },
@@ -355,13 +375,13 @@
     "databaseOutage": {
       "npm": {
         "status": 400,
-        "answeredInMs": 30003,
+        "answeredInMs": 30008,
         "healthDuring": 200,
         "recovered": true
       },
       "image": {
         "status": 400,
-        "answeredInMs": 30008,
+        "answeredInMs": 30035,
         "healthDuring": 200,
         "recovered": true
       }

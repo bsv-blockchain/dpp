@@ -1,8 +1,8 @@
 {
   "check": "packages/create-dpp-app/scripts/scaffold-check.mjs",
-  "recordedAt": "2026-11-16",
+  "recordedAt": "2026-11-18",
   "releaseSet": "dpp-release-2026-11",
-  "sourceRevision": "dce2791ae07223626a43521db93a9eaf2f249c3f",
+  "sourceRevision": "f9683628a6ff281f4600aee4ec06cc4b04015a45",
   "sourceState": "committed",
   "note": "Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. The application resolves its own ranges, so another install on another day may differ.",
   "packageCount": 756,
@@ -2160,7 +2160,7 @@
     },
     {
       "name": "@tybys/wasm-util",
-      "version": "0.10.4",
+      "version": "0.10.5",
       "licence": "MIT",
       "optional": true
     },
@@ -2566,7 +2566,7 @@
     },
     {
       "name": "csstype",
-      "version": "3.2.3",
+      "version": "3.2.4",
       "licence": "MIT"
     },
     {
@@ -3113,7 +3113,7 @@
     },
     {
       "name": "lucide-react",
-      "version": "1.73.0",
+      "version": "1.74.0",
       "licence": "ISC"
     },
     {
@@ -3178,7 +3178,7 @@
     },
     {
       "name": "mongodb-connection-string-url",
-      "version": "7.0.2",
+      "version": "7.0.3",
       "licence": "Apache-2.0"
     },
     {
@@ -3488,7 +3488,7 @@
     },
     {
       "name": "router",
-      "version": "2.2.0",
+      "version": "2.3.0",
       "licence": "MIT"
     },
     {
@@ -3533,7 +3533,7 @@
     },
     {
       "name": "set-cookie-parser",
-      "version": "3.2.2",
+      "version": "3.2.3",
       "licence": "MIT"
     },
     {
@@ -3593,7 +3593,7 @@
     },
     {
       "name": "sql-escaper",
-      "version": "1.6.0",
+      "version": "1.8.0",
       "licence": "MIT"
     },
     {
@@ -3688,7 +3688,7 @@
     },
     {
       "name": "tr46",
-      "version": "5.1.1",
+      "version": "6.0.0",
       "licence": "MIT"
     },
     {
@@ -3793,12 +3793,12 @@
     },
     {
       "name": "webidl-conversions",
-      "version": "7.0.0",
+      "version": "8.0.1",
       "licence": "BSD-2-Clause"
     },
     {
       "name": "whatwg-url",
-      "version": "14.2.0",
+      "version": "15.1.0",
       "licence": "MIT"
     },
     {
