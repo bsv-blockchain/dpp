@@ -1,9 +1,9 @@
 {
   "check": "packages/create-dpp-app/template/apps/api/test/exit-exercise.test.ts",
-  "recordedAt": "2026-11-16",
+  "recordedAt": "2026-11-18",
   "node": "v26.13.1",
   "releaseSet": "dpp-release-2026-11",
-  "sourceRevision": "dce2791ae07223626a43521db93a9eaf2f249c3f",
+  "sourceRevision": "f9683628a6ff281f4600aee4ec06cc4b04015a45",
   "sourceState": "committed",
   "failures": 0,
   "exercised": [
@@ -22,7 +22,7 @@
     "export": {
       "authorised": {
         "files": 63,
-        "bytes": 1481722,
+        "bytes": 1481700,
         "inventoryEntries": 62,
         "withheldLines": 12,
         "absentLines": 2,
@@ -30,7 +30,7 @@
       },
       "public": {
         "files": 37,
-        "bytes": 1371749,
+        "bytes": 1371735,
         "inventoryEntries": 36,
         "valuesSearchedFor": 63
       }

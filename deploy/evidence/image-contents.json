@@ -1,31 +1,31 @@
 {
   "check": "scripts/image-contents-check.mjs",
-  "recordedAt": "2026-11-16",
+  "recordedAt": "2026-11-18",
   "docker": "29.1.3",
   "releaseSet": "dpp-release-2026-11",
-  "sourceRevision": "dce2791ae07223626a43521db93a9eaf2f249c3f",
+  "sourceRevision": "f9683628a6ff281f4600aee4ec06cc4b04015a45",
   "sourceState": "committed",
   "failures": 0,
   "forbidden": {
     "gs1Digests": 6,
     "profileFileDigests": 49,
-    "testFileDigests": 205
+    "testFileDigests": 212
   },
   "images": {
     "dpp-overlay": {
       "reference": "ev-dpp-overlay:test",
-      "id": "sha256:328f5d1ca15ad21c380074e974877a88e306bc779c5e00c26cec5d5eac05f500",
+      "id": "sha256:c6ad8cca7671b0a7113688678d0f38265365897452a334890b8781ea449a2471",
       "platform": "linux/arm64",
       "root": "/repo",
-      "files": 12023,
+      "files": 12019,
       "gs1": 0,
       "profileFiles": 0,
       "environmentFiles": 0,
       "testFiles": 0,
       "mongoServerFiles": 0,
       "privateFiles": 0,
-      "bytes": 300042721,
-      "ownFiles": 426,
+      "bytes": 299915393,
+      "ownFiles": 422,
       "installedPackages": 49,
       "packagesWithLicenceFile": 49,
       "packagesWithoutLicenceFile": [],
@@ -1418,7 +1418,7 @@
     },
     "dpp-validator": {
       "reference": "ev-dpp-validator:test",
-      "id": "sha256:461289fc127f56b28efb49b929c807624a0aed113d1f36997495b980f9a18474",
+      "id": "sha256:a2694f3784f50e5246d70a9114d75583fd4fc9cda9a140be0c5407a92859b67b",
       "platform": "linux/arm64",
       "root": "/app",
       "files": 16683,
@@ -2931,8 +2931,8 @@
     "@bsv/dpp-protocol": {
       "version": "0.3.0-beta.10",
       "filename": "bsv-dpp-protocol-0.3.0-beta.10.tgz",
-      "sha256": "99ca012e64751a8fbd0a4740db411250bef5d10302e3e28bed86aef555b81bb4",
-      "files": 99,
+      "sha256": "e4f6411eb06331b982a8c1d38c0b9072d71b6433e47b5a4b2b4271f97dea169f",
+      "files": 95,
       "gs1": 0,
       "profileFiles": 0,
       "environmentFiles": 0,
@@ -2966,7 +2966,7 @@
     "@bsv/dpp-profiles": {
       "version": "0.3.0-beta.10",
       "filename": "bsv-dpp-profiles-0.3.0-beta.10.tgz",
-      "sha256": "a05f79084eb3c1e8e5aef3f64523a0e36615b69df49d59b59be867a11ab3667c",
+      "sha256": "7fc65d9bb507ab77fb74cfcd3bb5623b5376001b2a73fdfc14373381688188ed",
       "files": 219,
       "gs1": 0,
       "profileFiles": 16,
@@ -2985,8 +2985,8 @@
     "@bsv/dpp-credentials": {
       "version": "0.2.0-beta.6",
       "filename": "bsv-dpp-credentials-0.2.0-beta.6.tgz",
-      "sha256": "5950609dd050de751bd97417c31f2cc1cd9db1dc8484d6ce93f6fdafbfb97aa4",
-      "files": 98,
+      "sha256": "293c42d556b848ec7652b615442fb7ef3508e243baffbfc3c2d8fc46105c70b4",
+      "files": 118,
       "gs1": 0,
       "profileFiles": 0,
       "environmentFiles": 0,
@@ -2994,6 +2994,8 @@
       "mongoServerFiles": 0,
       "privateFiles": 0,
       "dependencies": [
+        "@bsv/dpp-protocol",
+        "@bsv/sdk",
         "@digitalbazaar/credentials-context",
         "@digitalbazaar/data-integrity",
         "@digitalbazaar/data-integrity-context",
