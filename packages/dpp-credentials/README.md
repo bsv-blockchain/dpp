@@ -73,7 +73,7 @@ No credential is in a snapshot, and by default no cursor or page token either. Y
 
 The claim uses the generic anchor, the key helpers and the report types of `@bsv/dpp-protocol` and the signing primitives of `@bsv/sdk`, so the package declares both. Nothing of them is copied here, and no other entry point imports them: `test/epcis-lifecycle.test.ts` holds that. The code is in `src/epcis-lifecycle/`, with the GS1 identifier conversion and the strict JSON parser in `shared.ts`, which no entry point exports. The vectors are `fixtures/vectors/dpp/epcis-lifecycle/v1.json` in the repository.
 
-`src/parked/epcis-event.ts` is the parked directly signed EPCIS event, `epcis-event-vc@1` (`spec/epcis-event-profile.md`). It is kept with its tests and vectors as the parked record, shares `shared.ts` with the claim, and no entry point exports it.
+`src/parked/epcis-event.ts` is the parked directly signed EPCIS event, `epcis-event-vc@1` (`spec/epcis-event-profile.md`). It is kept with its tests and vectors as the parked record, shares `shared.ts` with the claim, and no entry point exports it. The published archive leaves its build output out.
 
 ## GS1 files
 

@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "reference_impl": "dpp-protocol@0.3.0",
   "parity_class": "required",
-  "notes": "Each claim is the exact RFC 8785 text of the signed envelope; digest_hex is SHA-256 over its UTF-8 bytes and attestation_id is urn:sha256: and that digest. Signers derive their key under [1, \"dpp epcis lifecycle v1\"], key identifier \"event\", counterparty anyone; each issuer is the did:key of the identity key whose scalar is published under keys, and nothing derived from these scalars will ever hold value. Options are data: schema applies the pinned EPCIS 2.0.1 JSON schema to the event inside a minimal EPCISDocument; comparison \"gs1-digital-link\" passes an instance binding whose identifier's canonical GS1 Digital Link is the passport identifier and a class binding whose class carries the passport's GTIN; authority lists the (issuer, role, passport_id) triples a resolver answers, every other question being unavailable; extension_rules_held names the rules the verifier holds, each passing; anchors_hex are anchor locking scripts; related lists other claims with whether the set is complete. An issue vector names the reasons buildEpcisLifecycleClaim refuses with.",
+  "notes": "Each claim is the exact RFC 8785 text of the signed envelope; digest_hex is SHA-256 over its UTF-8 bytes and attestation_id is urn:sha256: and that digest. Signers derive their key under [1, \"dpp epcis lifecycle v1\"], key identifier \"event\", counterparty anyone; each issuer is the did:key of the identity key whose scalar is published under keys, and nothing derived from these scalars will ever hold value. Options are data: schema applies the pinned EPCIS 2.0.1 JSON schema to the event inside a minimal EPCISDocument; comparison \"gs1-digital-link\" passes an instance binding whose identifier's canonical GS1 Digital Link is the passport identifier and a class binding whose class carries the passport's GTIN; authority lists the (issuer, role, passport_id) triples a resolver answers, every other question being unavailable; extension_rules_held names the rules the verifier holds, each passing; anchors_hex are anchor locking scripts; related lists other claims with whether the set is complete; expected_passport_id and expected_event_id are the passport and the event the caller expects. An issue vector names the reasons buildEpcisLifecycleClaim refuses with.",
   "keys": {
     "maker": {
       "identity_private_key_hex": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
@@ -47,6 +47,10 @@
     "anchoring_service": {
       "identity_private_key_hex": "a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7",
       "identity_key_hex": "02d983f45f02fc0391ad85b96826505f1f503f15bbfa8e7673309559d96f02eb81"
+    },
+    "second_anchoring_service": {
+      "identity_private_key_hex": "a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8",
+      "identity_key_hex": "033e0e804a5cc49dd85498e0b3cbf86a09c00233d72c91d4a50b6f1fae132a3a30"
     }
   },
   "vectors": [
@@ -2406,6 +2410,122 @@
       ]
     },
     {
+      "id": "extension-term-without-rule",
+      "description": "The same shredding event in a claim that lists no extension rule, read by a verifier that holds the shredding rule: the extension business step has no rule to be checked by, so event semantics is unavailable. An issuer does not get the semantics passed by leaving the rule out.",
+      "input": {
+        "representation": "dpp-epcis-lifecycle-json@1",
+        "media_type": "application/json",
+        "claim": "{\"assertedRole\":\"observer\",\"authorityScope\":[\"https://id.gs1.org/01/09521234654322/21/MOD-A\",\"https://id.gs1.org/01/09521234654322/21/MOD-C\"],\"bindings\":[{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-A\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-C\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-C\"}],\"claimFormat\":\"dpp-epcis-lifecycle@1\",\"event\":{\"bizStep\":\"https://example.org/dpp-ext/BizStep-shredding\",\"disposition\":\"destroyed\",\"eventID\":\"urn:uuid:6b000000-0000-4000-8000-000000000022\",\"eventTime\":\"2026-11-12T09:00:00.000Z\",\"eventTimeZoneOffset\":\"+10:00\",\"inputEPCList\":[\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"urn:epc:id:sgtin:9521234.065432.MOD-C\"],\"outputQuantityList\":[{\"epcClass\":\"urn:epc:class:lgtin:9521234.087654.BM-2026-11\",\"quantity\":12.5,\"uom\":\"KGM\"}],\"readPoint\":{\"id\":\"urn:epc:id:sgln:9521234.00005.0\"},\"type\":\"TransformationEvent\"},\"eventContext\":[{\"iri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld\",\"sha256\":\"5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737\"}],\"eventSchema\":{\"sha256\":\"0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af\",\"uri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json\"},\"issuedAt\":\"2026-11-12T10:00:00.000Z\",\"issuer\":\"did:key:zQ3shd5NwCAsbHP69pDGoNhnMucLypwA9ZTCxvRsTXwVzquGe\",\"issuerParty\":\"urn:epc:id:pgln:9521234.00005\",\"signature\":\"304402200880dcb52562dad53d46743ddd0478b776cb1ccd950d30594ac9912ea8d911ae0220121641e40c5a66234272b4fa3f5ae298ef9d104bd4ffe2cd6b4900b00aed90d1\"}",
+        "options": {
+          "schema": true,
+          "comparison": "gs1-digital-link",
+          "authority": [
+            {
+              "issuer": "did:key:zQ3shd5NwCAsbHP69pDGoNhnMucLypwA9ZTCxvRsTXwVzquGe",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shd5NwCAsbHP69pDGoNhnMucLypwA9ZTCxvRsTXwVzquGe",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-C",
+              "answer": "supported"
+            }
+          ],
+          "extension_rules_held": [
+            "https://example.org/dpp-ext/rules/shredding@1"
+          ]
+        }
+      },
+      "expected": {
+        "digest_hex": "79e418d581bfe633f0ed1d5a16184bf8e7876cc3e61defa2c61516a1ea01f8d4",
+        "attestation_id": "urn:sha256:79e418d581bfe633f0ed1d5a16184bf8e7876cc3e61defa2c61516a1ea01f8d4",
+        "event_id": "urn:uuid:6b000000-0000-4000-8000-000000000022",
+        "event_type": "TransformationEvent",
+        "findings": {
+          "event_structure": {
+            "status": "pass"
+          },
+          "event_semantics": {
+            "status": "unavailable",
+            "reason_code": "x-extension-rule-unavailable"
+          },
+          "product_binding": {
+            "status": "pass"
+          },
+          "signature": {
+            "status": "pass"
+          },
+          "authority": {
+            "status": "supported"
+          },
+          "possession": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "ownership": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "anchor_commitment": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          },
+          "inclusion": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          },
+          "correction": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          }
+        },
+        "bound_passports": [
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-C"
+        ],
+        "item_participants": [
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-C"
+        ],
+        "bindings": [
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-A",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-C",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-C",
+            "level": "instance",
+            "status": "pass"
+          }
+        ],
+        "extensions": [],
+        "terms": [
+          {
+            "path": "event.bizStep",
+            "value": "https://example.org/dpp-ext/BizStep-shredding",
+            "kind": "extension"
+          },
+          {
+            "path": "event.disposition",
+            "value": "destroyed",
+            "kind": "standard"
+          }
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
       "id": "binding-to-another-passport",
       "description": "Incorrect product binding: the battery identifier bound to another passport. The identifier is where the binding says, and the comparison fails it.",
       "input": {
@@ -2882,9 +3002,7 @@
         "bound_passports": [
           "https://id.gs1.org/01/09521234543213/21/BAT-0001"
         ],
-        "item_participants": [
-          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
-        ],
+        "item_participants": [],
         "bindings": [
           {
             "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
@@ -3069,9 +3187,7 @@
         "bound_passports": [
           "https://id.gs1.org/01/09521234543213/21/BAT-0001"
         ],
-        "item_participants": [
-          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
-        ],
+        "item_participants": [],
         "bindings": [
           {
             "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
@@ -3167,9 +3283,7 @@
         "bound_passports": [
           "https://id.gs1.org/01/09521234543213/21/BAT-0001"
         ],
-        "item_participants": [
-          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
-        ],
+        "item_participants": [],
         "bindings": [
           {
             "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
@@ -3266,9 +3380,7 @@
         "bound_passports": [
           "https://id.gs1.org/01/09521234543213/21/BAT-0001"
         ],
-        "item_participants": [
-          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
-        ],
+        "item_participants": [],
         "bindings": [
           {
             "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
@@ -3364,9 +3476,7 @@
         "bound_passports": [
           "https://id.gs1.org/01/09521234543213/21/BAT-0001"
         ],
-        "item_participants": [
-          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
-        ],
+        "item_participants": [],
         "bindings": [
           {
             "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
@@ -3462,9 +3572,7 @@
         "bound_passports": [
           "https://id.gs1.org/01/09521234543213/21/BAT-0001"
         ],
-        "item_participants": [
-          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
-        ],
+        "item_participants": [],
         "bindings": [
           {
             "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
@@ -3560,9 +3668,7 @@
         "bound_passports": [
           "https://id.gs1.org/01/09521234543213/21/BAT-0001"
         ],
-        "item_participants": [
-          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
-        ],
+        "item_participants": [],
         "bindings": [
           {
             "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
@@ -4586,6 +4692,120 @@
       ]
     },
     {
+      "id": "error-declaration-by-unsound-claim",
+      "description": "The original issuer signs a declaration whose errorDeclaration lacks its declaration time, so the declaring claim fails its own event structure. It declares nothing in error, and because it is not passed over as absent, the correction state is unknown, not none.",
+      "input": {
+        "representation": "dpp-epcis-lifecycle-json@1",
+        "media_type": "application/json",
+        "claim": "{\"assertedRole\":\"observer\",\"authorityScope\":[\"https://id.gs1.org/01/09521234543213/21/BAT-0001\"],\"bindings\":[{\"field\":\"epcList\",\"identifier\":\"urn:epc:id:sgtin:9521234.054321.BAT-0001\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234543213/21/BAT-0001\"}],\"claimFormat\":\"dpp-epcis-lifecycle@1\",\"event\":{\"action\":\"OBSERVE\",\"bizStep\":\"inspecting\",\"bizTransactionList\":[{\"bizTransaction\":\"https://example.org/reports/inspection/0001\",\"type\":\"testres\"}],\"disposition\":\"conformant\",\"epcList\":[\"urn:epc:id:sgtin:9521234.054321.BAT-0001\"],\"eventID\":\"urn:uuid:6b000000-0000-4000-8000-000000000011\",\"eventTime\":\"2026-11-09T09:00:00.000Z\",\"eventTimeZoneOffset\":\"+10:00\",\"readPoint\":{\"id\":\"urn:epc:id:sgln:9521234.00006.0\"},\"type\":\"ObjectEvent\"},\"eventContext\":[{\"iri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld\",\"sha256\":\"5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737\"}],\"eventSchema\":{\"sha256\":\"0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af\",\"uri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json\"},\"issuedAt\":\"2026-11-09T10:00:00.000Z\",\"issuer\":\"did:key:zQ3shwSg99Q1wqbM9QtFZd4iFePqAEpAAS9MjgsDNMdkLm1bf\",\"issuerParty\":\"urn:epc:id:pgln:9521234.00006\",\"signature\":\"30440220440f9b4d725f45821f746f8ec07849ca2101ba2d42090b4f6af339cdd438cb48022030a0c0966e64b8b924a5e51cd2ad94d37cc7232e189133023541b43286db7259\"}",
+        "options": {
+          "schema": true,
+          "comparison": "gs1-digital-link",
+          "authority": [
+            {
+              "issuer": "did:key:zQ3shwSg99Q1wqbM9QtFZd4iFePqAEpAAS9MjgsDNMdkLm1bf",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
+              "answer": "supported"
+            }
+          ],
+          "related": {
+            "claims": [
+              "{\"assertedRole\":\"observer\",\"authorityScope\":[\"https://id.gs1.org/01/09521234543213/21/BAT-0001\"],\"bindings\":[{\"field\":\"epcList\",\"identifier\":\"urn:epc:id:sgtin:9521234.054321.BAT-0001\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234543213/21/BAT-0001\"}],\"claimFormat\":\"dpp-epcis-lifecycle@1\",\"event\":{\"action\":\"OBSERVE\",\"bizStep\":\"inspecting\",\"bizTransactionList\":[{\"bizTransaction\":\"https://example.org/reports/inspection/0001\",\"type\":\"testres\"}],\"disposition\":\"conformant\",\"epcList\":[\"urn:epc:id:sgtin:9521234.054321.BAT-0001\"],\"errorDeclaration\":{\"reason\":\"incorrect_data\"},\"eventID\":\"urn:uuid:6b000000-0000-4000-8000-000000000011\",\"eventTime\":\"2026-11-09T09:00:00.000Z\",\"eventTimeZoneOffset\":\"+10:00\",\"readPoint\":{\"id\":\"urn:epc:id:sgln:9521234.00006.0\"},\"type\":\"ObjectEvent\"},\"eventContext\":[{\"iri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld\",\"sha256\":\"5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737\"}],\"eventSchema\":{\"sha256\":\"0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af\",\"uri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json\"},\"issuedAt\":\"2026-11-12T10:00:00.000Z\",\"issuer\":\"did:key:zQ3shwSg99Q1wqbM9QtFZd4iFePqAEpAAS9MjgsDNMdkLm1bf\",\"issuerParty\":\"urn:epc:id:pgln:9521234.00006\",\"signature\":\"304402202b5c65c677dba50af417cb78333831fc7e9e6d4341cf18357f56f357a3c9692f02204073814250b9f2733c436e764de054d0ed9de280ba1523e30bdc370e62c8b03c\"}"
+            ],
+            "complete": true
+          }
+        }
+      },
+      "expected": {
+        "digest_hex": "6d23df0ac1b5372e33caf5220df6312efb2c67aeaf2e21233b8a2013cd6a53c4",
+        "attestation_id": "urn:sha256:6d23df0ac1b5372e33caf5220df6312efb2c67aeaf2e21233b8a2013cd6a53c4",
+        "event_id": "urn:uuid:6b000000-0000-4000-8000-000000000011",
+        "event_type": "ObjectEvent",
+        "findings": {
+          "event_structure": {
+            "status": "pass"
+          },
+          "event_semantics": {
+            "status": "pass"
+          },
+          "product_binding": {
+            "status": "pass"
+          },
+          "signature": {
+            "status": "pass"
+          },
+          "authority": {
+            "status": "supported"
+          },
+          "possession": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "ownership": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "anchor_commitment": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          },
+          "inclusion": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          },
+          "correction": {
+            "status": "unknown",
+            "reason_code": "x-declaration-unsound"
+          }
+        },
+        "bound_passports": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
+        ],
+        "item_participants": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0001"
+        ],
+        "bindings": [
+          {
+            "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001",
+            "field": "epcList",
+            "identifier": "urn:epc:id:sgtin:9521234.054321.BAT-0001",
+            "level": "instance",
+            "status": "pass"
+          }
+        ],
+        "extensions": [],
+        "terms": [
+          {
+            "path": "event.bizStep",
+            "value": "inspecting",
+            "kind": "standard"
+          },
+          {
+            "path": "event.disposition",
+            "value": "conformant",
+            "kind": "standard"
+          },
+          {
+            "path": "event.bizTransactionList[0].type",
+            "value": "testres",
+            "kind": "standard"
+          }
+        ],
+        "relations": [
+          {
+            "digest_hex": "3daf29abcba3897d554c30d6f43b2c2a4763bd0e9ee5083b5c71bd7dca75d11b",
+            "relation": "error-declaration"
+          }
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
       "id": "no-declaration-in-a-complete-set",
       "description": "The inspection read beside a complete set that holds no declaration for it: the correction state is none.",
       "input": {
@@ -4691,6 +4911,575 @@
           {
             "digest_hex": "ef25594321b8ff33809c2304705cf91b3ef1b80defd7b29abd3d7e4e664b2019",
             "relation": "unrelated"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "anchor-about-unbound-subject",
+      "description": "The manufacturing claim with its four anchors and a fifth, by another anchoring service under the same identifier, about a passport the claim does not bind. The fifth is set aside: the anchor commitment passes for the bound passports.",
+      "input": {
+        "representation": "dpp-epcis-lifecycle-json@1",
+        "media_type": "application/json",
+        "claim": "{\"assertedRole\":\"observer\",\"authorityScope\":[\"https://id.gs1.org/01/09521234543213/21/BAT-0002\",\"https://id.gs1.org/01/09521234654322/21/MOD-A\",\"https://id.gs1.org/01/09521234654322/21/MOD-B\"],\"bindings\":[{\"field\":\"outputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.054321.BAT-0002\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234543213/21/BAT-0002\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-A\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-B\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-B\"},{\"field\":\"inputQuantityList\",\"identifier\":\"urn:epc:class:lgtin:9521234.076543.LOT-7\",\"level\":\"class\",\"passportId\":\"https://id.gs1.org/01/09521234765431/21/CELL-0042\"}],\"claimFormat\":\"dpp-epcis-lifecycle@1\",\"event\":{\"bizStep\":\"commissioning\",\"disposition\":\"active\",\"eventID\":\"urn:uuid:6b000000-0000-4000-8000-000000000002\",\"eventTime\":\"2026-11-01T09:00:00.000Z\",\"eventTimeZoneOffset\":\"+10:00\",\"inputEPCList\":[\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"urn:epc:id:sgtin:9521234.065432.MOD-B\"],\"inputQuantityList\":[{\"epcClass\":\"urn:epc:class:lgtin:9521234.076543.LOT-7\",\"quantity\":192,\"uom\":\"H87\"}],\"outputEPCList\":[\"urn:epc:id:sgtin:9521234.054321.BAT-0002\"],\"readPoint\":{\"id\":\"urn:epc:id:sgln:9521234.00001.0\"},\"transformationID\":\"urn:uuid:6b000000-0000-4000-9000-000000000001\",\"type\":\"TransformationEvent\"},\"eventContext\":[{\"iri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld\",\"sha256\":\"5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737\"}],\"eventSchema\":{\"sha256\":\"0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af\",\"uri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json\"},\"issuedAt\":\"2026-11-01T10:00:00.000Z\",\"issuer\":\"did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc\",\"issuerParty\":\"urn:epc:id:pgln:9521234.00001\",\"signature\":\"304402203002fba525d80644ade174714f47faafc54d1ca59efc33272ae9f07cd9a760ff022046c6045f282da54142029c8a46cb3cc3ed37efd6bb5ba3e864f3449fcce5a81f\"}",
+        "options": {
+          "schema": true,
+          "comparison": "gs1-digital-link",
+          "authority": [
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-B",
+              "answer": "supported"
+            }
+          ],
+          "anchors_hex": [
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633068747470733a2f2f69642e6773312e6f72672f30312f30393532313233343534333231332f32312f4241542d30303032135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e42303264393833663435663032666330333931616438356239363832363530356631663530336631356262666138653736373333303935353964393666303265623831463044022034ffe85136137e0c83bc68c6e53d643ed791bc4d55d7ef1ae366f34029130bdc02203eda2481e2bbbf09cabc94631ff2672da1249e8810779434ca7fed7dd9bd96796d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d41135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e4230326439383366343566303266633033393161643835623936383236353035663166353033663135626266613865373637333330393535396439366630326562383147304502210086bc93185b33ae2636e7a1f56931281e10e50a59040b1811d3bb36b83b11aeb302207d97b983e7f39e25c116272e14799df449f66e6bb29506e899be1fd04a2d20e26d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d42135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e42303264393833663435663032666330333931616438356239363832363530356631663530336631356262666138653736373333303935353964393666303265623831463044022005d75e95e39736f710ade90702b7e744a32c51dad47139fd1d5696dbd39e728502200b76a97cb44cebe45cc2910de89405df49fc7d9a7173e28d1fe54432097ba9686d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633168747470733a2f2f69642e6773312e6f72672f30312f30393532313233343736353433312f32312f43454c4c2d30303432135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e4230326439383366343566303266633033393161643835623936383236353035663166353033663135626266613865373637333330393535396439366630326562383146304402204c293bd5ec3aa4562b40e5bd385de2417cb17db564edc0a48411a936b0ade92902206e57c84eb98181927faa6c88c6f98e38ee45a4051aeb503c5cc70525b8af500b6d6d6d6d6d",
+            "2102d04e177140261e870f8a4fd5645698492bc152a6bbf20e90f8634b2e4029a7f7ac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633068747470733a2f2f69642e6773312e6f72672f30312f30393532313233343534333231332f32312f4241542d30303031135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e423033336530653830346135636334396464383534393865306233636266383661303963303032333364373263393164346135306236663166616531333261336133304730450221008b55c5235a51361079c979436f4ba4a97647d5a8fc6255ac43f9d9f14cd21aa902204e0de4b016540325f645ca9dbaecbde9d123991ccbe27fcf631b73496e932a256d6d6d6d6d"
+          ]
+        }
+      },
+      "expected": {
+        "digest_hex": "5a7c73aa103729971023cc3096c2a3c55ab47802aa968ee64fff9b85932411d3",
+        "attestation_id": "urn:sha256:5a7c73aa103729971023cc3096c2a3c55ab47802aa968ee64fff9b85932411d3",
+        "event_id": "urn:uuid:6b000000-0000-4000-8000-000000000002",
+        "event_type": "TransformationEvent",
+        "findings": {
+          "event_structure": {
+            "status": "pass"
+          },
+          "event_semantics": {
+            "status": "pass"
+          },
+          "product_binding": {
+            "status": "pass"
+          },
+          "signature": {
+            "status": "pass"
+          },
+          "authority": {
+            "status": "supported"
+          },
+          "possession": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "ownership": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "anchor_commitment": {
+            "status": "pass"
+          },
+          "inclusion": {
+            "status": "unknown",
+            "reason_code": "proof-absent"
+          },
+          "correction": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          }
+        },
+        "bound_passports": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-B",
+          "https://id.gs1.org/01/09521234765431/21/CELL-0042"
+        ],
+        "item_participants": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-B"
+        ],
+        "bindings": [
+          {
+            "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+            "field": "outputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.054321.BAT-0002",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-A",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-B",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-B",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234765431/21/CELL-0042",
+            "field": "inputQuantityList",
+            "identifier": "urn:epc:class:lgtin:9521234.076543.LOT-7",
+            "level": "class",
+            "status": "pass"
+          }
+        ],
+        "extensions": [],
+        "terms": [
+          {
+            "path": "event.bizStep",
+            "value": "commissioning",
+            "kind": "standard"
+          },
+          {
+            "path": "event.disposition",
+            "value": "active",
+            "kind": "standard"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "anchor-about-unbound-subject-read-from-it",
+      "description": "The same claim and anchors read by a caller that expects the passport the fifth anchor names. The claim does not bind that passport, so the binding fails and so does the anchor commitment, on the one anchor that names it.",
+      "input": {
+        "representation": "dpp-epcis-lifecycle-json@1",
+        "media_type": "application/json",
+        "claim": "{\"assertedRole\":\"observer\",\"authorityScope\":[\"https://id.gs1.org/01/09521234543213/21/BAT-0002\",\"https://id.gs1.org/01/09521234654322/21/MOD-A\",\"https://id.gs1.org/01/09521234654322/21/MOD-B\"],\"bindings\":[{\"field\":\"outputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.054321.BAT-0002\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234543213/21/BAT-0002\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-A\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-B\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-B\"},{\"field\":\"inputQuantityList\",\"identifier\":\"urn:epc:class:lgtin:9521234.076543.LOT-7\",\"level\":\"class\",\"passportId\":\"https://id.gs1.org/01/09521234765431/21/CELL-0042\"}],\"claimFormat\":\"dpp-epcis-lifecycle@1\",\"event\":{\"bizStep\":\"commissioning\",\"disposition\":\"active\",\"eventID\":\"urn:uuid:6b000000-0000-4000-8000-000000000002\",\"eventTime\":\"2026-11-01T09:00:00.000Z\",\"eventTimeZoneOffset\":\"+10:00\",\"inputEPCList\":[\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"urn:epc:id:sgtin:9521234.065432.MOD-B\"],\"inputQuantityList\":[{\"epcClass\":\"urn:epc:class:lgtin:9521234.076543.LOT-7\",\"quantity\":192,\"uom\":\"H87\"}],\"outputEPCList\":[\"urn:epc:id:sgtin:9521234.054321.BAT-0002\"],\"readPoint\":{\"id\":\"urn:epc:id:sgln:9521234.00001.0\"},\"transformationID\":\"urn:uuid:6b000000-0000-4000-9000-000000000001\",\"type\":\"TransformationEvent\"},\"eventContext\":[{\"iri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld\",\"sha256\":\"5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737\"}],\"eventSchema\":{\"sha256\":\"0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af\",\"uri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json\"},\"issuedAt\":\"2026-11-01T10:00:00.000Z\",\"issuer\":\"did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc\",\"issuerParty\":\"urn:epc:id:pgln:9521234.00001\",\"signature\":\"304402203002fba525d80644ade174714f47faafc54d1ca59efc33272ae9f07cd9a760ff022046c6045f282da54142029c8a46cb3cc3ed37efd6bb5ba3e864f3449fcce5a81f\"}",
+        "options": {
+          "schema": true,
+          "comparison": "gs1-digital-link",
+          "authority": [
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-B",
+              "answer": "supported"
+            }
+          ],
+          "anchors_hex": [
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633068747470733a2f2f69642e6773312e6f72672f30312f30393532313233343534333231332f32312f4241542d30303032135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e42303264393833663435663032666330333931616438356239363832363530356631663530336631356262666138653736373333303935353964393666303265623831463044022034ffe85136137e0c83bc68c6e53d643ed791bc4d55d7ef1ae366f34029130bdc02203eda2481e2bbbf09cabc94631ff2672da1249e8810779434ca7fed7dd9bd96796d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d41135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e4230326439383366343566303266633033393161643835623936383236353035663166353033663135626266613865373637333330393535396439366630326562383147304502210086bc93185b33ae2636e7a1f56931281e10e50a59040b1811d3bb36b83b11aeb302207d97b983e7f39e25c116272e14799df449f66e6bb29506e899be1fd04a2d20e26d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d42135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e42303264393833663435663032666330333931616438356239363832363530356631663530336631356262666138653736373333303935353964393666303265623831463044022005d75e95e39736f710ade90702b7e744a32c51dad47139fd1d5696dbd39e728502200b76a97cb44cebe45cc2910de89405df49fc7d9a7173e28d1fe54432097ba9686d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633168747470733a2f2f69642e6773312e6f72672f30312f30393532313233343736353433312f32312f43454c4c2d30303432135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e4230326439383366343566303266633033393161643835623936383236353035663166353033663135626266613865373637333330393535396439366630326562383146304402204c293bd5ec3aa4562b40e5bd385de2417cb17db564edc0a48411a936b0ade92902206e57c84eb98181927faa6c88c6f98e38ee45a4051aeb503c5cc70525b8af500b6d6d6d6d6d",
+            "2102d04e177140261e870f8a4fd5645698492bc152a6bbf20e90f8634b2e4029a7f7ac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633068747470733a2f2f69642e6773312e6f72672f30312f30393532313233343534333231332f32312f4241542d30303031135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e423033336530653830346135636334396464383534393865306233636266383661303963303032333364373263393164346135306236663166616531333261336133304730450221008b55c5235a51361079c979436f4ba4a97647d5a8fc6255ac43f9d9f14cd21aa902204e0de4b016540325f645ca9dbaecbde9d123991ccbe27fcf631b73496e932a256d6d6d6d6d"
+          ],
+          "expected_passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0001"
+        }
+      },
+      "expected": {
+        "digest_hex": "5a7c73aa103729971023cc3096c2a3c55ab47802aa968ee64fff9b85932411d3",
+        "attestation_id": "urn:sha256:5a7c73aa103729971023cc3096c2a3c55ab47802aa968ee64fff9b85932411d3",
+        "event_id": "urn:uuid:6b000000-0000-4000-8000-000000000002",
+        "event_type": "TransformationEvent",
+        "findings": {
+          "event_structure": {
+            "status": "pass"
+          },
+          "event_semantics": {
+            "status": "pass"
+          },
+          "product_binding": {
+            "status": "fail",
+            "reason_code": "subject-mismatch"
+          },
+          "signature": {
+            "status": "pass"
+          },
+          "authority": {
+            "status": "supported"
+          },
+          "possession": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "ownership": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "anchor_commitment": {
+            "status": "fail",
+            "reason_code": "metadata-mismatch"
+          },
+          "inclusion": {
+            "status": "unknown",
+            "reason_code": "proof-absent"
+          },
+          "correction": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          }
+        },
+        "bound_passports": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-B",
+          "https://id.gs1.org/01/09521234765431/21/CELL-0042"
+        ],
+        "item_participants": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-B"
+        ],
+        "bindings": [
+          {
+            "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+            "field": "outputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.054321.BAT-0002",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-A",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-B",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-B",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234765431/21/CELL-0042",
+            "field": "inputQuantityList",
+            "identifier": "urn:epc:class:lgtin:9521234.076543.LOT-7",
+            "level": "class",
+            "status": "pass"
+          }
+        ],
+        "extensions": [],
+        "terms": [
+          {
+            "path": "event.bizStep",
+            "value": "commissioning",
+            "kind": "standard"
+          },
+          {
+            "path": "event.disposition",
+            "value": "active",
+            "kind": "standard"
+          }
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "anchor-mismatch-on-bound-passport",
+      "description": "The manufacturing claim with its four anchors and a fifth that names a bound passport, module A, under another attestation type: a mismatch on an anchor that names a bound passport fails the anchor commitment.",
+      "input": {
+        "representation": "dpp-epcis-lifecycle-json@1",
+        "media_type": "application/json",
+        "claim": "{\"assertedRole\":\"observer\",\"authorityScope\":[\"https://id.gs1.org/01/09521234543213/21/BAT-0002\",\"https://id.gs1.org/01/09521234654322/21/MOD-A\",\"https://id.gs1.org/01/09521234654322/21/MOD-B\"],\"bindings\":[{\"field\":\"outputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.054321.BAT-0002\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234543213/21/BAT-0002\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-A\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-B\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-B\"},{\"field\":\"inputQuantityList\",\"identifier\":\"urn:epc:class:lgtin:9521234.076543.LOT-7\",\"level\":\"class\",\"passportId\":\"https://id.gs1.org/01/09521234765431/21/CELL-0042\"}],\"claimFormat\":\"dpp-epcis-lifecycle@1\",\"event\":{\"bizStep\":\"commissioning\",\"disposition\":\"active\",\"eventID\":\"urn:uuid:6b000000-0000-4000-8000-000000000002\",\"eventTime\":\"2026-11-01T09:00:00.000Z\",\"eventTimeZoneOffset\":\"+10:00\",\"inputEPCList\":[\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"urn:epc:id:sgtin:9521234.065432.MOD-B\"],\"inputQuantityList\":[{\"epcClass\":\"urn:epc:class:lgtin:9521234.076543.LOT-7\",\"quantity\":192,\"uom\":\"H87\"}],\"outputEPCList\":[\"urn:epc:id:sgtin:9521234.054321.BAT-0002\"],\"readPoint\":{\"id\":\"urn:epc:id:sgln:9521234.00001.0\"},\"transformationID\":\"urn:uuid:6b000000-0000-4000-9000-000000000001\",\"type\":\"TransformationEvent\"},\"eventContext\":[{\"iri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld\",\"sha256\":\"5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737\"}],\"eventSchema\":{\"sha256\":\"0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af\",\"uri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json\"},\"issuedAt\":\"2026-11-01T10:00:00.000Z\",\"issuer\":\"did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc\",\"issuerParty\":\"urn:epc:id:pgln:9521234.00001\",\"signature\":\"304402203002fba525d80644ade174714f47faafc54d1ca59efc33272ae9f07cd9a760ff022046c6045f282da54142029c8a46cb3cc3ed37efd6bb5ba3e864f3449fcce5a81f\"}",
+        "options": {
+          "schema": true,
+          "comparison": "gs1-digital-link",
+          "authority": [
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-B",
+              "answer": "supported"
+            }
+          ],
+          "anchors_hex": [
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633068747470733a2f2f69642e6773312e6f72672f30312f30393532313233343534333231332f32312f4241542d30303032135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e42303264393833663435663032666330333931616438356239363832363530356631663530336631356262666138653736373333303935353964393666303265623831463044022034ffe85136137e0c83bc68c6e53d643ed791bc4d55d7ef1ae366f34029130bdc02203eda2481e2bbbf09cabc94631ff2672da1249e8810779434ca7fed7dd9bd96796d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d41135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e4230326439383366343566303266633033393161643835623936383236353035663166353033663135626266613865373637333330393535396439366630326562383147304502210086bc93185b33ae2636e7a1f56931281e10e50a59040b1811d3bb36b83b11aeb302207d97b983e7f39e25c116272e14799df449f66e6bb29506e899be1fd04a2d20e26d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d42135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e42303264393833663435663032666330333931616438356239363832363530356631663530336631356262666138653736373333303935353964393666303265623831463044022005d75e95e39736f710ade90702b7e744a32c51dad47139fd1d5696dbd39e728502200b76a97cb44cebe45cc2910de89405df49fc7d9a7173e28d1fe54432097ba9686d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633168747470733a2f2f69642e6773312e6f72672f30312f30393532313233343736353433312f32312f43454c4c2d30303432135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e4230326439383366343566303266633033393161643835623936383236353035663166353033663135626266613865373637333330393535396439366630326562383146304402204c293bd5ec3aa4562b40e5bd385de2417cb17db564edc0a48411a936b0ade92902206e57c84eb98181927faa6c88c6f98e38ee45a4051aeb503c5cc70525b8af500b6d6d6d6d6d",
+            "2102d04e177140261e870f8a4fd5645698492bc152a6bbf20e90f8634b2e4029a7f7ac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d410b4f626a6563744576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e423033336530653830346135636334396464383534393865306233636266383661303963303032333364373263393164346135306236663166616531333261336133304630440220740e49169a0eb958ba62f58b4a757c3a61babf092380f990352b3f7a6dcd16d902206166a98ee9f45e894a6e44b4b505fbcdf70f2fcaf8d1cc0d27884227fe4609496d6d6d6d6d"
+          ]
+        }
+      },
+      "expected": {
+        "digest_hex": "5a7c73aa103729971023cc3096c2a3c55ab47802aa968ee64fff9b85932411d3",
+        "attestation_id": "urn:sha256:5a7c73aa103729971023cc3096c2a3c55ab47802aa968ee64fff9b85932411d3",
+        "event_id": "urn:uuid:6b000000-0000-4000-8000-000000000002",
+        "event_type": "TransformationEvent",
+        "findings": {
+          "event_structure": {
+            "status": "pass"
+          },
+          "event_semantics": {
+            "status": "pass"
+          },
+          "product_binding": {
+            "status": "pass"
+          },
+          "signature": {
+            "status": "pass"
+          },
+          "authority": {
+            "status": "supported"
+          },
+          "possession": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "ownership": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "anchor_commitment": {
+            "status": "fail",
+            "reason_code": "metadata-mismatch"
+          },
+          "inclusion": {
+            "status": "unknown",
+            "reason_code": "proof-absent"
+          },
+          "correction": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          }
+        },
+        "bound_passports": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-B",
+          "https://id.gs1.org/01/09521234765431/21/CELL-0042"
+        ],
+        "item_participants": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-B"
+        ],
+        "bindings": [
+          {
+            "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+            "field": "outputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.054321.BAT-0002",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-A",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-B",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-B",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234765431/21/CELL-0042",
+            "field": "inputQuantityList",
+            "identifier": "urn:epc:class:lgtin:9521234.076543.LOT-7",
+            "level": "class",
+            "status": "pass"
+          }
+        ],
+        "extensions": [],
+        "terms": [
+          {
+            "path": "event.bizStep",
+            "value": "commissioning",
+            "kind": "standard"
+          },
+          {
+            "path": "event.disposition",
+            "value": "active",
+            "kind": "standard"
+          }
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "anchor-mismatch-on-another-bound-passport",
+      "description": "The same claim and anchors read by a caller that expects the battery passport: each passport is judged on the anchors that name it, so the mismatched anchor for module A does not fail the battery.",
+      "input": {
+        "representation": "dpp-epcis-lifecycle-json@1",
+        "media_type": "application/json",
+        "claim": "{\"assertedRole\":\"observer\",\"authorityScope\":[\"https://id.gs1.org/01/09521234543213/21/BAT-0002\",\"https://id.gs1.org/01/09521234654322/21/MOD-A\",\"https://id.gs1.org/01/09521234654322/21/MOD-B\"],\"bindings\":[{\"field\":\"outputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.054321.BAT-0002\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234543213/21/BAT-0002\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-A\"},{\"field\":\"inputEPCList\",\"identifier\":\"urn:epc:id:sgtin:9521234.065432.MOD-B\",\"level\":\"instance\",\"passportId\":\"https://id.gs1.org/01/09521234654322/21/MOD-B\"},{\"field\":\"inputQuantityList\",\"identifier\":\"urn:epc:class:lgtin:9521234.076543.LOT-7\",\"level\":\"class\",\"passportId\":\"https://id.gs1.org/01/09521234765431/21/CELL-0042\"}],\"claimFormat\":\"dpp-epcis-lifecycle@1\",\"event\":{\"bizStep\":\"commissioning\",\"disposition\":\"active\",\"eventID\":\"urn:uuid:6b000000-0000-4000-8000-000000000002\",\"eventTime\":\"2026-11-01T09:00:00.000Z\",\"eventTimeZoneOffset\":\"+10:00\",\"inputEPCList\":[\"urn:epc:id:sgtin:9521234.065432.MOD-A\",\"urn:epc:id:sgtin:9521234.065432.MOD-B\"],\"inputQuantityList\":[{\"epcClass\":\"urn:epc:class:lgtin:9521234.076543.LOT-7\",\"quantity\":192,\"uom\":\"H87\"}],\"outputEPCList\":[\"urn:epc:id:sgtin:9521234.054321.BAT-0002\"],\"readPoint\":{\"id\":\"urn:epc:id:sgln:9521234.00001.0\"},\"transformationID\":\"urn:uuid:6b000000-0000-4000-9000-000000000001\",\"type\":\"TransformationEvent\"},\"eventContext\":[{\"iri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld\",\"sha256\":\"5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737\"}],\"eventSchema\":{\"sha256\":\"0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af\",\"uri\":\"https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json\"},\"issuedAt\":\"2026-11-01T10:00:00.000Z\",\"issuer\":\"did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc\",\"issuerParty\":\"urn:epc:id:pgln:9521234.00001\",\"signature\":\"304402203002fba525d80644ade174714f47faafc54d1ca59efc33272ae9f07cd9a760ff022046c6045f282da54142029c8a46cb3cc3ed37efd6bb5ba3e864f3449fcce5a81f\"}",
+        "options": {
+          "schema": true,
+          "comparison": "gs1-digital-link",
+          "authority": [
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+              "answer": "supported"
+            },
+            {
+              "issuer": "did:key:zQ3shrB3FgDxbjmvzhuzLrQoMefzUZBgfc2nMdRRU5eNbSrUc",
+              "role": "observer",
+              "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-B",
+              "answer": "supported"
+            }
+          ],
+          "anchors_hex": [
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633068747470733a2f2f69642e6773312e6f72672f30312f30393532313233343534333231332f32312f4241542d30303032135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e42303264393833663435663032666330333931616438356239363832363530356631663530336631356262666138653736373333303935353964393666303265623831463044022034ffe85136137e0c83bc68c6e53d643ed791bc4d55d7ef1ae366f34029130bdc02203eda2481e2bbbf09cabc94631ff2672da1249e8810779434ca7fed7dd9bd96796d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d41135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e4230326439383366343566303266633033393161643835623936383236353035663166353033663135626266613865373637333330393535396439366630326562383147304502210086bc93185b33ae2636e7a1f56931281e10e50a59040b1811d3bb36b83b11aeb302207d97b983e7f39e25c116272e14799df449f66e6bb29506e899be1fd04a2d20e26d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d42135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e42303264393833663435663032666330333931616438356239363832363530356631663530336631356262666138653736373333303935353964393666303265623831463044022005d75e95e39736f710ade90702b7e744a32c51dad47139fd1d5696dbd39e728502200b76a97cb44cebe45cc2910de89405df49fc7d9a7173e28d1fe54432097ba9686d6d6d6d6d",
+            "2102593f2b8757fb8f33b9b3b96d9fbfa8aebf76de32c67359977d84cd8c47d99d9dac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255633168747470733a2f2f69642e6773312e6f72672f30312f30393532313233343736353433312f32312f43454c4c2d30303432135472616e73666f726d6174696f6e4576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e4230326439383366343566303266633033393161643835623936383236353035663166353033663135626266613865373637333330393535396439366630326562383146304402204c293bd5ec3aa4562b40e5bd385de2417cb17db564edc0a48411a936b0ade92902206e57c84eb98181927faa6c88c6f98e38ee45a4051aeb503c5cc70525b8af500b6d6d6d6d6d",
+            "2102d04e177140261e870f8a4fd5645698492bc152a6bbf20e90f8634b2e4029a7f7ac196273762d6174746573746174696f6e2d616e63686f722d763140356137633733616131303337323939373130323363633330393663326133633535616234373830326161393638656536346666663962383539333234313164334b75726e3a7368613235363a35613763373361613130333732393937313032336363333039366332613363353561623437383032616139363865653634666666396238353933323431316433396469643a6b65793a7a5133736872423346674478626a6d767a68757a4c72516f4d65667a555a42676663326e4d6452525535654e62537255632d68747470733a2f2f69642e6773312e6f72672f30312f30393532313233343635343332322f32312f4d4f442d410b4f626a6563744576656e741a6470702d65706369732d6c6966656379636c652d6a736f6e4031106170706c69636174696f6e2f6a736f6e423033336530653830346135636334396464383534393865306233636266383661303963303032333364373263393164346135306236663166616531333261336133304630440220740e49169a0eb958ba62f58b4a757c3a61babf092380f990352b3f7a6dcd16d902206166a98ee9f45e894a6e44b4b505fbcdf70f2fcaf8d1cc0d27884227fe4609496d6d6d6d6d"
+          ],
+          "expected_passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002"
+        }
+      },
+      "expected": {
+        "digest_hex": "5a7c73aa103729971023cc3096c2a3c55ab47802aa968ee64fff9b85932411d3",
+        "attestation_id": "urn:sha256:5a7c73aa103729971023cc3096c2a3c55ab47802aa968ee64fff9b85932411d3",
+        "event_id": "urn:uuid:6b000000-0000-4000-8000-000000000002",
+        "event_type": "TransformationEvent",
+        "findings": {
+          "event_structure": {
+            "status": "pass"
+          },
+          "event_semantics": {
+            "status": "pass"
+          },
+          "product_binding": {
+            "status": "pass"
+          },
+          "signature": {
+            "status": "pass"
+          },
+          "authority": {
+            "status": "supported"
+          },
+          "possession": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "ownership": {
+            "status": "not-asserted",
+            "from": [],
+            "to": []
+          },
+          "anchor_commitment": {
+            "status": "pass"
+          },
+          "inclusion": {
+            "status": "unknown",
+            "reason_code": "proof-absent"
+          },
+          "correction": {
+            "status": "unknown",
+            "reason_code": "no-evidence"
+          }
+        },
+        "bound_passports": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-B",
+          "https://id.gs1.org/01/09521234765431/21/CELL-0042"
+        ],
+        "item_participants": [
+          "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+          "https://id.gs1.org/01/09521234654322/21/MOD-A",
+          "https://id.gs1.org/01/09521234654322/21/MOD-B"
+        ],
+        "bindings": [
+          {
+            "passport_id": "https://id.gs1.org/01/09521234543213/21/BAT-0002",
+            "field": "outputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.054321.BAT-0002",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-A",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-A",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234654322/21/MOD-B",
+            "field": "inputEPCList",
+            "identifier": "urn:epc:id:sgtin:9521234.065432.MOD-B",
+            "level": "instance",
+            "status": "pass"
+          },
+          {
+            "passport_id": "https://id.gs1.org/01/09521234765431/21/CELL-0042",
+            "field": "inputQuantityList",
+            "identifier": "urn:epc:class:lgtin:9521234.076543.LOT-7",
+            "level": "class",
+            "status": "pass"
+          }
+        ],
+        "extensions": [],
+        "terms": [
+          {
+            "path": "event.bizStep",
+            "value": "commissioning",
+            "kind": "standard"
+          },
+          {
+            "path": "event.disposition",
+            "value": "active",
+            "kind": "standard"
           }
         ]
       },

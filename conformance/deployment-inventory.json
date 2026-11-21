@@ -1225,9 +1225,13 @@
     {
       "id": "bsv-packages",
       "subject": "@bsv/sdk, @bsv/overlay, @bsv/gasp and @bsv/wallet-toolbox-client at the pinned versions",
-      "status": "open",
-      "basis": "The archives of these versions carry the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. It is not Apache-2.0. The index image installs them and every install of @bsv/dpp-overlay brings them.",
-      "waitsOn": "Versions of these packages published under Apache-2.0 and adopted here after compatibility tests, or a recorded grant covering the pinned versions."
+      "status": "conditional",
+      "basis": "The archives of these versions carry the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. It is not Apache-2.0. The index image installs them and every install of @bsv/dpp-overlay brings them. The repository these packages are built from changed its licence to Apache-2.0 on 11 November 2026: @bsv/sdk 4.1.1 and @bsv/wallet-toolbox-client 2.17.0 are published with that text, and no published @bsv/overlay or @bsv/gasp carries it yet.",
+      "conditions": [
+        "The pinned versions are used under the Open BSV License Version 6 their archives carry; this repository states no other terms for them.",
+        "The documentation names the four packages, the pinned versions and the licence each archive carries, and never describes an install or a deployment as a whole as Apache-2.0.",
+        "The pins move to versions published with the Apache-2.0 text once the index runtime is tested against them."
+      ]
     },
     {
       "id": "validator-engines",
@@ -1244,9 +1248,8 @@
     {
       "id": "w3c-context",
       "subject": "The W3C credentials context retained in @bsv/dpp-credentials",
-      "status": "open",
-      "basis": "Unmodified. The notice beside it names the licence and does not yet reproduce its full text, which that licence asks for on every copy.",
-      "waitsOn": "The full licence text beside the file."
+      "status": "held",
+      "basis": "Unmodified, with the full W3C Software and Document License text beside it."
     },
     {
       "id": "gs1-files",
@@ -1310,8 +1313,6 @@
   "releaseDecision": {
     "status": "blocked",
     "openDispositions": [
-      "bsv-packages",
-      "w3c-context",
       "image-digests"
     ],
     "note": "A release of these artefacts waits on each open disposition."

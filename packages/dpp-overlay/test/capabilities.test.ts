@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it } from 'vitest'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { PrivateKey } from '@bsv/sdk'
-import { STANDARD_VERSION, STANDARD_VERSION_V2 } from '@bsv/dpp-protocol'
+import { LockingScript, PrivateKey, ProtoWallet, Transaction, UnlockingScript } from '@bsv/sdk'
+import { buildAttestationAnchor, STANDARD_VERSION, STANDARD_VERSION_V2 } from '@bsv/dpp-protocol'
 import {
   buildCapabilities,
   IMPLICIT_POLICY_VERSION,
@@ -13,6 +13,7 @@ import {
   type CapabilityDocument,
 } from '../src/capabilities.js'
 import { startOverlayService, type RunningService } from '../src/index.js'
+import { AttestationTopicManager } from '../src/tmAttestation.js'
 import { bodyOf, newNode, SERVER_ID } from './helpers.js'
 import { A1, FEDERATION_OPERATORS, federatedChain, K1, K2, OPERATORS, policyChain, pub } from './policy-fixture.js'
 
@@ -98,11 +99,12 @@ describe('the capability document', () => {
     // package this one does not depend on; the baseline is where it is pinned.
     const seal = baseline.representations.find((r: any) => r.id === VSC_SEAL_REPRESENTATION)
     expect(seal?.mediaType).toBe(VSC_SEAL_MEDIA_TYPE)
-    // The directly signed EPCIS event representation is repeated too, since
-    // the parked module that names it is no longer exported; its manifest is
-    // where it is pinned, and the document declares the commitment alone.
-    const epcisEvent = readJson('packages/dpp-profiles/manifests/exchange/epcis-event-vc@1.json')
-    expect(document.representations).toContainEqual({ id: epcisEvent.representation, mediaType: epcisEvent.mediaType, verification: 'commitment-only' })
+    // The EPCIS lifecycle claim representation is repeated too, since the
+    // package that defines it is not a dependency of this one; its vectors
+    // are where it is pinned, and the document declares the commitment alone.
+    const lifecycleVector = readJson('fixtures/vectors/dpp/epcis-lifecycle/v1.json').vectors[0].input
+    expect(document.representations).toContainEqual({ id: lifecycleVector.representation, mediaType: lifecycleVector.media_type, verification: 'commitment-only' })
+    expect(lifecycleVector.representation).toBe('dpp-epcis-lifecycle-json@1')
     expect(baseline.refused).toContain('uora-anchor-v2')
     expect(document.anchorFormats.filter((f) => f.status === 'refused').map((f) => f.prefix)).toEqual(baseline.refused)
   })
@@ -145,6 +147,31 @@ describe('the capability document', () => {
     expect(ids(on.unsupported)).not.toContain('evidence-package-export')
     expect(ids(on.unsupported)).not.toContain('retraction-network-check')
     expect(on.limits).toMatchObject({ maxLookupResults: 500, defaultHistoryPageSize: 100, maxHistoryPageSize: 500, historySnapshotTtlSeconds: 600 })
+  })
+})
+
+describe('the representations in the capability document', () => {
+  const anchorOf = (representation: string, mediaType: string): Promise<LockingScript> => {
+    const digest = 'ab'.repeat(32)
+    return buildAttestationAnchor({ digest, attestationId: `urn:sha256:${digest}`, issuer: 'did:example:issuer', subject: 'urn:example:passport', attestationType: 'ObjectEvent', representation, mediaType, anchoredBy: pub(A1) }, new ProtoWallet(A1))
+  }
+
+  it('declares what is anchored on tm_attestation today, and not the parked signed-event representation', () => {
+    expect(ids(reference().representations)).toEqual(['dpp-lifecycle-json-v1', 'vsc-seal-json-v1', 'dpp-epcis-lifecycle-json@1'])
+    const parked = readJson('packages/dpp-profiles/manifests/exchange/epcis-event-vc@1.json')
+    expect(parked.status).toBe('parked')
+    expect(ids(reference().representations)).not.toContain(parked.representation)
+  })
+
+  it('describes the index and gates nothing: an anchor of a representation it does not declare is still admitted', async () => {
+    const parked = readJson('packages/dpp-profiles/manifests/exchange/epcis-event-vc@1.json')
+    const transaction = new Transaction()
+    const source = new Transaction()
+    source.addOutput({ satoshis: 3, lockingScript: LockingScript.fromASM('OP_TRUE') })
+    transaction.addInput({ sourceTransaction: source, sourceOutputIndex: 0, unlockingScript: UnlockingScript.fromASM('OP_TRUE') })
+    transaction.addOutput({ satoshis: 1, lockingScript: await anchorOf('dpp-epcis-lifecycle-json@1', 'application/json') })
+    transaction.addOutput({ satoshis: 1, lockingScript: await anchorOf(parked.representation, parked.mediaType) })
+    expect(await new AttestationTopicManager().identifyAdmissibleOutputs(transaction.toBEEF(true))).toEqual({ outputsToAdmit: [0, 1], coinsToRetain: [] })
   })
 })
 

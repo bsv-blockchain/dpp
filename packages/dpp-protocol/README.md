@@ -51,7 +51,7 @@ const claim = await signLifecycleClaim({
 console.log(verifyLifecycleClaim(claim))
 ```
 
-This offline example creates a temporary key and signs a claim. Production callers supply their authorised signing capability. Signature verification alone does not establish authority, current status or blockchain inclusion.
+This offline example creates a temporary key and signs a native claim, `dpp-lifecycle-v1`. `signLifecycleClaim` is deprecated and kept for reading historical claims; new lifecycle claims are EPCIS lifecycle claims, `dpp-epcis-lifecycle@1`, signed with `@bsv/dpp-credentials/epcis-lifecycle`. Production callers supply their authorised signing capability. Signature verification alone does not establish authority, current status or blockchain inclusion.
 
 The `@bsv/dpp-protocol/schemas/*` export carries the standard's JSON schemas. For example, load `@bsv/dpp-protocol/schemas/verification-report.schema.json` using a JSON import or Node's `createRequire`. The evidence export schema and its referenced evidence package schema are shipped together. They are data files and may also be used by other runtimes.
 

@@ -16,7 +16,7 @@ Live identity assurance is Ring 0: the platform vouches only for the account and
 
 ## Sign one claim with the packages
 
-`signLifecycleClaim(unsignedClaim, wallet)` from `@bsv/dpp-protocol` needs BRC-100 `createSignature`: use your application's wallet or, for tests, `ProtoWallet` from `@bsv/sdk`. Sign the fixture claim:
+`signLifecycleClaim(unsignedClaim, wallet)` from `@bsv/dpp-protocol` needs BRC-100 `createSignature`: use your application's wallet or, for tests, `ProtoWallet` from `@bsv/sdk`. It signs the native claim, `dpp-lifecycle-v1`, and is deprecated and kept for reading historical claims; new lifecycle claims use [the EPCIS lifecycle claim](../../packages/add-a-claim.md#the-epcis-lifecycle-claim). Sign the fixture claim:
 
 ```sh
 node --input-type=module <<'JS'

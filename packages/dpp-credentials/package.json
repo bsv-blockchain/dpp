@@ -37,6 +37,7 @@
     "PATENTS",
     "NOTICE",
     "dist",
+    "!dist/parked",
     "artifacts",
     "README.md"
   ],
