@@ -29,6 +29,8 @@ The first ends with a recycler's claim about a retired passport and its anchor, 
 
 ## 1. Fill in the claim
 
+These steps sign the native claim, `dpp-lifecycle-v1`. Its signer, `signLifecycleClaim`, is deprecated and kept for reading historical claims; new lifecycle claims use [the EPCIS lifecycle claim](#the-epcis-lifecycle-claim), and that section says where each format is accepted today.
+
 Use exactly these fields. `signLifecycleClaim` refuses any other with `unsupported claim field <name>` ([rules](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md) section 3).
 
 | Field | What to put |

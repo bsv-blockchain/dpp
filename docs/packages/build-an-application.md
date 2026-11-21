@@ -364,7 +364,7 @@ A lifecycle claim is a signed statement about a passport, such as a repair or a 
 
 `examples/lifecycle-v2.mjs` ends with this claim and anchor, `examples/verify-attestation-anchor.mjs` checks one, and the [registry guide](../implement/roles/registry.md) covers running a registry. An anchor does not name its registry, so a reader on another stack learns which registry holds a claim out of band.
 
-These steps sign the native claim, `dpp-lifecycle-v1`. The generated application issues the EPCIS lifecycle claim, `dpp-epcis-lifecycle@1`, instead: one EPCIS event bound to every passport whose product it names, signed with `signEpcisLifecycleClaim` and anchored once per bound passport with `buildEpcisLifecycleAnchors` ([the EPCIS lifecycle claim](add-a-claim.md#the-epcis-lifecycle-claim), [the starter's lifecycle claims](create-dpp-app.md#lifecycle-claims)). It keeps reading the native claims it issued before. A reader verifies each format by its `claimFormat`.
+These steps sign the native claim, `dpp-lifecycle-v1`, whose signer `signLifecycleClaim` is deprecated and kept for reading historical claims. The generated application issues the EPCIS lifecycle claim, `dpp-epcis-lifecycle@1`, instead: one EPCIS event bound to every passport whose product it names, signed with `signEpcisLifecycleClaim` and anchored once per bound passport with `buildEpcisLifecycleAnchors` ([the EPCIS lifecycle claim](add-a-claim.md#the-epcis-lifecycle-claim), [the starter's lifecycle claims](create-dpp-app.md#lifecycle-claims)). It keeps reading the native claims it issued before. A reader verifies each format by its `claimFormat`.
 
 ## 5. Keep what you wrote
 

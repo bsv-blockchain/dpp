@@ -232,7 +232,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "0266d85e9ecdb7a747acd4b461cb0a7209a2875b91509f77d3bc9f99ed5a3e8e"
+      "digest": "a5f2cdc86314624f23ef6b35ba1812352f03b347bd4ca26b21c14c01c8bf04a2"
     },
     {
       "id": "vectors-publisher-policy",
@@ -3659,9 +3659,9 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-09",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands."
+      "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands. Re-read 2026-11-21 after the claim exercise said that signLifecycleClaim is deprecated and kept for reading historical claims: the commands are unchanged."
     },
     {
       "id": "REG-1-insert-first-intake",
