@@ -59,8 +59,8 @@
       "verification": "commitment-only"
     },
     {
-      "id": "epcis-event-vc@1",
-      "mediaType": "application/vc+jwt",
+      "id": "dpp-epcis-lifecycle-json@1",
+      "mediaType": "application/json",
       "verification": "commitment-only"
     }
   ],
