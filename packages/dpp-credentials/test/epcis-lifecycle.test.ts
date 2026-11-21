@@ -22,11 +22,11 @@ import {
   signEpcisLifecycleClaim,
   verifyEpcisLifecycleClaim,
 } from '../src/epcis-lifecycle.js'
-import { decodeAttestationAnchor, verifyLifecycleClaim, verifyPassportEvidence } from '@bsv/dpp-protocol'
+import { buildAttestationAnchor, decodeAttestationAnchor, verifyLifecycleClaim, verifyPassportEvidence } from '@bsv/dpp-protocol'
 import { attachProof, mockTracker } from '../../dpp-protocol/test/helpers.js'
 import {
-  ANCHOR_SERVICE, EVENTS, ID, P, PARTY, S, SHREDDING_RULE, SHREDDING_STEP,
-  bind, gs1Comparison, input, issue, lifecycleClaims, lifecycleEventVectors, optionsOf, pinnedSchemaValidator, runVector, expectedOf, text, type VectorOptions,
+  ANCHOR_SERVICE, EVENTS, ID, P, PARTY, S, SECOND_ANCHOR_SERVICE, SHREDDING_RULE, SHREDDING_STEP,
+  bind, gs1Comparison, input, issue, lifecycleClaims, lifecycleEventVectors, optionsOf, pinnedSchemaValidator, runVector, expectedOf, signUnchecked, text, unchecked, type VectorOptions,
 } from './epcis-lifecycle-vectors.js'
 
 const ROOT = join(import.meta.dirname, '..', '..', '..')
@@ -290,8 +290,12 @@ describe('anchoring and inclusion', () => {
     expect((await verifyEpcisLifecycleClaim(text(c.manufacturing), { anchors, chainTracker: mockTracker({ 900001: 'ff'.repeat(32) }) })).findings.inclusion).toMatchObject({ status: 'fail', reasonCode: 'proof-refuted' })
     const partial = await verifyEpcisLifecycleClaim(text(c.manufacturing), { anchors: anchors.slice(0, 1) })
     expect(partial.findings.anchorCommitment.detail).toEqual({ coveredPassports: [P.battery2], uncoveredPassports: [P.cell, P.moduleA, P.moduleB].sort() })
+    // Another claim's anchors for the same passport do not commit to these bytes; anchors about passports the claim does not bind are no evidence for it.
+    const shippingAnchors = (await buildEpcisLifecycleAnchors(c.shipping, ANCHOR_SERVICE.identityKey, ANCHOR_SERVICE.wallet)).map((lockingScript) => ({ lockingScript }))
+    expect((await verifyEpcisLifecycleClaim(text(c.receiving), { anchors: shippingAnchors })).findings.anchorCommitment).toMatchObject({ status: 'fail', reasonCode: 'digest-mismatch' })
     const other = await verifyEpcisLifecycleClaim(text(c.receiving), { anchors })
-    expect(other.findings.anchorCommitment).toMatchObject({ status: 'fail', reasonCode: 'digest-mismatch' })
+    expect(other.findings.anchorCommitment).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
+    expect(other.findings.inclusion).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
   })
 
   it('derives anchor metadata only from a claim whose signature holds', async () => {
@@ -354,6 +358,15 @@ describe('the parked module', () => {
   })
 })
 
+describe('the parked module in the published archive', () => {
+  it('is left out: the package lists its build output without the parked folder, which no entry point loads', () => {
+    const manifest = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8')) as { files: string[]; exports: Record<string, unknown> }
+    expect(manifest.files).toContain('dist')
+    expect(manifest.files).toContain('!dist/parked')
+    expect(JSON.stringify(manifest.exports)).not.toContain('parked')
+  })
+})
+
 describe('where the claim sits in the package', () => {
   const src = join(import.meta.dirname, '..', 'src')
   const specifiers = (file: string): string[] => [...readFileSync(join(src, file), 'utf8').matchAll(/from\s+['"]([^'"]+)['"]/g)].map((m) => m[1]!)
@@ -392,6 +405,89 @@ describe('an extension rule the verifier holds', () => {
     expect(own.findings.eventSemantics).toMatchObject({ status: 'pass' })
     const inherited = await verifyEpcisLifecycleClaim(text(signed), { extensionRules: Object.create({ [SHREDDING_RULE]: rule }) as Record<string, typeof rule> })
     expect(inherited.findings.eventSemantics).toMatchObject({ status: 'unavailable', reasonCode: 'x-extension-rule-unavailable' })
+  })
+})
+
+describe('a claim that does not verify', () => {
+  it('names no item participant, in its verification or in the report, when its signature or its structure fails', async () => {
+    for (const id of ['altered-secured-bytes', 'altered-context-digest', 'event-id-missing']) {
+      const v = await runVector(vector(id).input.claim, vector(id).input.options)
+      expect(v.bindings.some((b) => b.level === 'instance' && b.status === 'pass'), id).toBe(true)
+      expect(v.itemParticipants, id).toEqual([])
+      expect((lifecycle.epcisLifecycleReportEntries(v).schema.detail as any).itemParticipants, id).toEqual([])
+    }
+    for (const v of published.vectors) if (v.expected.findings != null && (v.expected.findings.signature.status !== 'pass' || v.expected.findings.event_structure.status === 'fail')) expect(v.expected.item_participants, v.id).toEqual([])
+    // A structure that is only unknown, because no schema was supplied, takes no participant away.
+    const { c } = await lifecycleClaims()
+    const unchecked = await verifyEpcisLifecycleClaim(text(c.commissioning), { compareProduct: gs1Comparison })
+    expect(unchecked.findings.eventStructure).toMatchObject({ status: 'unknown', reasonCode: 'schema-unavailable' })
+    expect(unchecked.itemParticipants).toEqual([P.battery])
+  })
+})
+
+describe('an error declaration by a claim that is not sound', () => {
+  it('declares nothing in error, and leaves the state unknown, never none', async () => {
+    const { c, n } = await lifecycleClaims()
+    const options = optionsOf({ schema: true, comparison: 'gs1-digital-link', authority: [S.repairer, S.carrier].map((s) => ({ issuer: s.issuer, role: 'observer', passport_id: P.battery, answer: 'supported' as const })) })
+    const declaring = await verifyEpcisLifecycleClaim(text(n.malformedDeclaration), options)
+    expect(declaring.findings).toMatchObject({ signature: { status: 'pass' }, eventStructure: { status: 'fail', reasonCode: 'schema-invalid' } })
+    const v = await verifyEpcisLifecycleClaim(text(c.inspection), { ...options, related: { claims: [text(n.malformedDeclaration)], complete: true } })
+    expect(v.relations).toEqual([{ digest: declaring.digest, relation: 'error-declaration' }])
+    expect(v.findings.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-declaration-unsound' })
+    expect(lifecycle.epcisLifecycleReportEntries(v).status).toMatchObject({ status: 'unknown', reasonCode: 'x-declaration-unsound' })
+    expect(findings('error-declaration-by-unsound-claim').correction).toEqual({ status: 'unknown', reason_code: 'x-declaration-unsound' })
+    // Another issuer's unsound declaration counts no more, even when the resolver supports that issuer.
+    const other = await signUnchecked(S.carrier, unchecked(input(S.carrier, { ...EVENTS.inspection, errorDeclaration: { declarationTime: '2026-11-12T09:00:00.000Z', reason: 'never_happened' } }, [bind(P.battery, 'epcList', ID.battery)], { issuedAt: '2026-11-12T10:00:00.000Z' })))
+    expect((await verifyEpcisLifecycleClaim(text(c.inspection), { ...options, related: { claims: [text(other)], complete: true } })).findings.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-declaration-unsound' })
+    // A sound declaration beside it still counts.
+    const both = await verifyEpcisLifecycleClaim(text(c.inspection), { ...options, related: { claims: [text(n.malformedDeclaration), text(n.inspectionDeclaredInError)], complete: true } })
+    expect(both.findings.correction).toMatchObject({ status: 'declared-in-error', detail: { declaredBy: epcisLifecycleClaimId(n.inspectionDeclaredInError) } })
+  })
+})
+
+describe('an extension term the claim lists no rule for', () => {
+  it('leaves the semantics unavailable whatever the verifier holds, while extension members alone need no rule', async () => {
+    const { n } = await lifecycleClaims()
+    expect(n.shreddingWithoutRule.requiredExtensions).toBeUndefined()
+    const v = await verifyEpcisLifecycleClaim(text(n.shreddingWithoutRule), { extensionRules: { [SHREDDING_RULE]: () => ({ status: 'pass' }) } })
+    expect(v.terms).toContainEqual({ path: 'event.bizStep', value: SHREDDING_STEP, kind: 'extension' })
+    expect(v.findings.eventSemantics).toMatchObject({ status: 'unavailable', reasonCode: 'x-extension-rule-unavailable' })
+    expect(lifecycle.epcisLifecycleReportEntries(v).schema.status).not.toBe('pass')
+    expect(findings('extension-term-without-rule').event_semantics).toEqual({ status: 'unavailable', reason_code: 'x-extension-rule-unavailable' })
+    expect(vector('object-event-commissioning').expected.extensions).toHaveLength(2)
+    expect(findings('object-event-commissioning').event_semantics).toEqual({ status: 'pass' })
+  })
+})
+
+describe('anchors that name other subjects', () => {
+  it('judges each passport on the anchors that name it, and sets aside an anchor about a subject the claim does not bind', async () => {
+    const { c } = await lifecycleClaims()
+    const bound = [P.battery2, P.cell, P.moduleA, P.moduleB].sort()
+    const own = (await buildEpcisLifecycleAnchors(c.manufacturing, ANCHOR_SERVICE.identityKey, ANCHOR_SERVICE.wallet)).map((lockingScript) => ({ lockingScript }))
+    const metadata = epcisLifecycleAnchorMetadata(c.manufacturing, SECOND_ANCHOR_SERVICE.identityKey)
+    const stray = { lockingScript: await buildAttestationAnchor({ ...metadata[0]!, subject: P.battery }, SECOND_ANCHOR_SERVICE.wallet) }
+    const wrongType = { lockingScript: await buildAttestationAnchor({ ...metadata.find((m) => m.subject === P.moduleA)!, attestationType: 'ObjectEvent' }, SECOND_ANCHOR_SERVICE.wallet) }
+    const read = async (anchors: Array<{ lockingScript: unknown }>, passportId?: string) => (await verifyEpcisLifecycleClaim(text(c.manufacturing), { anchors: anchors as any, ...(passportId == null ? {} : { expected: { passportId } }) })).findings.anchorCommitment
+
+    // A stray anchor about an unbound subject changes nothing for the bound passports.
+    expect(await read([...own, stray])).toEqual({ status: 'pass', detail: { coveredPassports: bound, uncoveredPassports: [], otherSubjects: [P.battery] } })
+    for (const passportId of bound) expect((await read([...own, stray], passportId)).status, passportId).toBe('pass')
+    // On its own it is no evidence for any bound passport.
+    expect(await read([stray])).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
+    // Read from the subject it names, it is an anchor whose subject the claim does not bind.
+    expect(await read([...own, stray], P.battery)).toMatchObject({ status: 'fail', reasonCode: 'metadata-mismatch', detail: { subject: P.battery, mismatches: ['subject'] } })
+
+    // A mismatch on an anchor that names a bound passport fails that passport, and no other.
+    expect(await read([...own, wrongType])).toMatchObject({ status: 'fail', reasonCode: 'metadata-mismatch', detail: { subject: P.moduleA, mismatches: ['attestationType'] } })
+    expect(await read([...own, wrongType], P.moduleA)).toMatchObject({ status: 'fail', reasonCode: 'metadata-mismatch' })
+    expect((await read([...own, wrongType], P.battery2)).status).toBe('pass')
+    // A passport no supplied anchor names has no anchor evidence, whatever the others have.
+    expect(await read(own.slice(0, 1), P.moduleA)).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
+
+    expect(findings('anchor-about-unbound-subject').anchor_commitment).toEqual({ status: 'pass' })
+    expect(findings('anchor-about-unbound-subject-read-from-it')).toMatchObject({ product_binding: { status: 'fail', reason_code: 'subject-mismatch' }, anchor_commitment: { status: 'fail', reason_code: 'metadata-mismatch' } })
+    expect(findings('anchor-mismatch-on-bound-passport').anchor_commitment).toEqual({ status: 'fail', reason_code: 'metadata-mismatch' })
+    expect(findings('anchor-mismatch-on-another-bound-passport').anchor_commitment).toEqual({ status: 'pass' })
   })
 })
 

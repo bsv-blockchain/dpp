@@ -79,13 +79,13 @@ describe('the protocol package reads no event format', () => {
     expect(code(readFileSync(claim, 'utf8')).split('\n').filter((line) => EVENT_FORMAT.test(line)).length).toBeGreaterThan(50)
   })
 
-  it('names EPCIS and GS1 only in the three comment lines it had before the claim was written', () => {
+  it('names EPCIS and GS1 only in the three comment lines it had before the claim was written, and in the one line that deprecates the native signer in favour of the claim', () => {
     const mentions: Record<string, number> = {}
     for (const file of readdirSync(src)) {
       const count = readFileSync(join(src, file), 'utf8').split('\n').filter((line) => /epcis|gs1/i.test(line)).length
       if (count > 0) mentions[file] = count
     }
-    expect(mentions).toEqual({ 'canonicalJson.ts': 2, 'types.ts': 1 })
+    expect(mentions).toEqual({ 'attestation.ts': 1, 'canonicalJson.ts': 2, 'types.ts': 1 })
   })
 
   it('depends on @bsv/sdk alone and is depended on by the credentials package, never the reverse', () => {

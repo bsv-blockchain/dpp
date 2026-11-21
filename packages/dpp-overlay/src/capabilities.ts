@@ -93,15 +93,20 @@ export const VSC_SEAL_REPRESENTATION = 'vsc-seal-json-v1'
 export const VSC_SEAL_MEDIA_TYPE = 'application/vc+ld+json'
 
 /**
- * The directly signed EPCIS event representation this node indexes
- * commitments to. Its rules are those of the parked profile in
- * `spec/epcis-event-profile.md`, whose module `@bsv/dpp-protocol` keeps in the
- * repository and no longer exports, so the two identifiers are repeated here;
- * a test holds them equal to the profile's manifest. They are not exported:
- * the document is where a consumer reads them.
+ * The EPCIS lifecycle claim representation this node indexes commitments to
+ * (`spec/epcis-lifecycle-claim.md`). Its rules live in `@bsv/dpp-credentials`,
+ * which this package does not depend on, so the two identifiers are repeated
+ * here; a test holds them equal to the claim's published vectors. They are
+ * not exported: the document is where a consumer reads them.
+ *
+ * The parked directly signed event representation, `epcis-event-vc@1`, is not
+ * declared. The declaration describes what this node is run to index and
+ * gates nothing: `tm_attestation` admits a well-formed anchor whatever
+ * representation it names, so an anchor written under a representation that
+ * is no longer declared is still admitted and still found.
  */
-const EPCIS_EVENT_REPRESENTATION = 'epcis-event-vc@1'
-const EPCIS_EVENT_MEDIA_TYPE = 'application/vc+jwt'
+const EPCIS_LIFECYCLE_REPRESENTATION = 'dpp-epcis-lifecycle-json@1'
+const EPCIS_LIFECYCLE_MEDIA_TYPE = 'application/json'
 
 export type CapabilityRole = 'passport-reader' | 'attestation-verifier' | 'passport-writer' | 'attestation-issuer' | 'registry' | 'overlay'
 
@@ -307,7 +312,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
     representations: [
       { id: LIFECYCLE_REPRESENTATION, mediaType: LIFECYCLE_MEDIA_TYPE, verification: 'commitment-only' },
       { id: VSC_SEAL_REPRESENTATION, mediaType: VSC_SEAL_MEDIA_TYPE, verification: 'commitment-only' },
-      { id: EPCIS_EVENT_REPRESENTATION, mediaType: EPCIS_EVENT_MEDIA_TYPE, verification: 'commitment-only' },
+      { id: EPCIS_LIFECYCLE_REPRESENTATION, mediaType: EPCIS_LIFECYCLE_MEDIA_TYPE, verification: 'commitment-only' },
     ],
     proofSuites: [],
     anchorFormats: [

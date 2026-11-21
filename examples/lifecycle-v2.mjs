@@ -221,6 +221,11 @@ try {
 say(expiredRefused, 'the custodian cannot sign an acceptance recorded after the offer expired; the signer refuses it before a signature exists.')
 
 // ------------------------------------------------------- the later claim
+// The claim below is a native dpp-lifecycle-v1 claim, the historical format.
+// signLifecycleClaim is deprecated and kept for reading historical claims:
+// this step shows how such a claim was signed, anchored and verified. New
+// lifecycle claims are EPCIS lifecycle claims, dpp-epcis-lifecycle@1
+// (spec/epcis-lifecycle-claim.md), from @bsv/dpp-credentials/epcis-lifecycle.
 step('A lifecycle claim after retirement, on the other rail: a recycler signs it and an anchoring service commits to it, and neither spends the passport.')
 const recyclerPriv = PrivateKey.fromRandom()
 const anchoringPriv = PrivateKey.fromRandom()

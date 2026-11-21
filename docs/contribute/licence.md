@@ -90,13 +90,13 @@ Each part names a disposition, and each disposition says what was decided and wh
 
 A licence the script has not been told was reviewed stops it, and so does a package that names a licence file at a version nobody read. `node scripts/deployment-inventory.mjs --release` exits 1 while any disposition is open, and a release set that is no longer a candidate must pass it.
 
-Three dispositions are open in the current candidate:
+One disposition is open in the current candidate:
 
 | Disposition | What it waits on |
 |---|---|
-| `bsv-packages` | Versions of the four BSV packages published under Apache-2.0 and adopted here after compatibility tests, or a recorded grant covering the pinned versions |
-| `w3c-context` | The full text of the W3C Software and Document License beside the retained credentials context |
 | `image-digests` | Publication of both images and the pin that records their digests |
+
+The `bsv-packages` disposition is conditional. The archives of the four pinned versions carry the Open BSV License Version 6, and this repository states no other terms for them. The repository those packages are built from changed its licence to Apache-2.0 on 11 November 2026. `@bsv/sdk` 4.1.1 and `@bsv/wallet-toolbox-client` 2.17.0 are published with the Apache-2.0 text; no published `@bsv/overlay` or `@bsv/gasp` carries it yet. The pins move to versions published with that text once the index runtime is tested against them.
 
 Read the applicable terms before reuse. For a reuse question these sources do not answer, use the [BSV Association contact page](https://bsvassociation.org/contact/).
 

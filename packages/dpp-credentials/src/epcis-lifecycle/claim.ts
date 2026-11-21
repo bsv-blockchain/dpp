@@ -252,6 +252,7 @@ export interface EpcisLifecycleVerificationOptions {
   compareProduct?: (input: EpcisLifecycleComparisonInput) => PartialCheck | Promise<PartialCheck>
   /** Whether the issuer holds the asserted role for a passport at the event's time. Absent, authority is `unavailable`. */
   authorityResolver?: (question: EpcisLifecycleAuthorityQuestion) => EpcisLifecycleAuthorityAnswer | Promise<EpcisLifecycleAuthorityAnswer>
+  /** Anchors found under the claim's identifier. Each passport is judged on those that name it: the expected passport when one is given, every bound passport otherwise. */
   anchors?: EpcisLifecycleAnchorEvidence[]
   /** The header source a merkle path is checked against. */
   chainTracker?: ChainTracker
@@ -995,6 +996,9 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
   // Event semantics: an observed object, then every declared extension rule.
   const semanticParts: Array<EpcisLifecycleFinding<EpcisLifecycleSemanticsStatus>> = []
   if (!namesAnObject(event)) semanticParts.push({ status: 'fail', reasonCode: 'x-no-observation', detail: 'the event names no object' })
+  // An extension term needs a rule whether or not the issuer lists one: a claim that lists none leaves the term unchecked, whatever the caller holds.
+  const extensionTerms = reading.terms.filter((t) => t.kind === 'extension')
+  if (extensionTerms.length > 0 && claim.requiredExtensions == null) semanticParts.push({ status: 'unavailable', reasonCode: 'x-extension-rule-unavailable', detail: `the event uses ${extensionTerms.map((t) => `${t.value} at ${t.path}`).join(', ')}, outside CBV 2.0, and the claim lists no extension rule to check it by` })
   for (const rule of claim.requiredExtensions ?? []) {
     // Only a rule the caller put there itself is one it holds. A name is the claim's, so nothing inherited is ever called for it.
     const held = options.extensionRules
@@ -1019,7 +1023,10 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
   const bindingParts: Array<EpcisLifecycleFinding<EpcisLifecycleCheckStatus>> = bindings.map((b) => ({ status: b.status, ...(b.reasonCode == null ? {} : { reasonCode: b.reasonCode }), detail: { passportId: b.passportId, field: b.field, identifier: b.identifier, level: b.level, ...(b.detail === undefined ? {} : { detail: b.detail }) } }))
   if (options.expected?.passportId !== undefined && !boundPassports.includes(options.expected.passportId)) bindingParts.push({ status: 'fail', reasonCode: 'subject-mismatch', detail: `the claim binds ${boundPassports.join(', ')}, not the expected ${options.expected.passportId}` })
   const productBinding = worst(bindingParts, { status: 'unknown', reasonCode: 'no-evidence' })
-  const itemParticipants = boundPassports.filter((p) => bindings.some((b) => b.passportId === p && b.level === 'instance' && b.status === 'pass'))
+  // Only a verified claim names an item (spec §5): one whose signature holds and whose structure did not fail.
+  const itemParticipants = signature.status === 'pass' && eventStructure.status !== 'fail'
+    ? boundPassports.filter((p) => bindings.some((b) => b.passportId === p && b.level === 'instance' && b.status === 'pass'))
+    : []
 
   // Party roles: what the signed event states, each on its own.
   const possession = partyFinding(event, 'possessing_party')
@@ -1056,6 +1063,9 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
     const anchorParts: Array<EpcisLifecycleFinding<EpcisLifecycleCheckStatus>> = []
     const inclusionParts: Array<EpcisLifecycleFinding<EpcisLifecycleCheckStatus>> = []
     const covered = new Set<string>()
+    // Each passport is judged on the anchors that name it (spec §8): the expected passport when the caller names one, every bound passport otherwise. Anyone may anchor under the claim's identifier, so an anchor about another subject is named and decides nothing.
+    const judged = options.expected?.passportId
+    const otherSubjects = new Set<string>()
     for (const [index, evidence] of options.anchors.entries()) {
       let script: LockingScript | undefined
       try {
@@ -1072,8 +1082,10 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
       if (decoded.attestationType !== event.type) mismatches.push('attestationType')
       if (decoded.representation !== EPCIS_LIFECYCLE_REPRESENTATION) mismatches.push('representation')
       if (decoded.mediaType !== EPCIS_LIFECYCLE_MEDIA_TYPE) mismatches.push('mediaType')
-      if (mismatches.length > 0) anchorParts.push({ status: 'fail', reasonCode: mismatches[0] === 'digest' ? 'digest-mismatch' : 'metadata-mismatch', detail: { anchor: index, mismatches } })
-      else { covered.add(decoded.subject); anchorParts.push({ status: 'pass' }) }
+      if (mismatches.length === 0) covered.add(decoded.subject)
+      if (judged === undefined ? !boundPassports.includes(decoded.subject) : decoded.subject !== judged) { otherSubjects.add(decoded.subject); continue }
+      if (mismatches.length > 0) anchorParts.push({ status: 'fail', reasonCode: mismatches[0] === 'digest' ? 'digest-mismatch' : 'metadata-mismatch', detail: { anchor: index, subject: decoded.subject, mismatches } })
+      else anchorParts.push({ status: 'pass' })
       const tx = evidence.transaction
       if (tx == null) inclusionParts.push({ status: 'unknown', reasonCode: 'proof-absent', detail: `anchor ${index} came without its transaction` })
       else if (tx.merklePath == null) inclusionParts.push({ status: 'unknown', reasonCode: 'proof-absent', detail: `anchor ${index}'s transaction carries no merkle path` })
@@ -1087,9 +1099,11 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
         }
       }
     }
-    anchorCommitment = worst(anchorParts, anchorCommitment)
-    if (anchorCommitment.status === 'pass') anchorCommitment = { status: 'pass', detail: { coveredPassports: [...covered].sort(compareCodePoints), uncoveredPassports: boundPassports.filter((p) => !covered.has(p)) } }
-    inclusion = worst(inclusionParts, inclusion)
+    const setAside = [...otherSubjects].sort(compareCodePoints)
+    const unnamed = setAside.length === 0 ? undefined : { status: 'unknown' as const, reasonCode: 'no-evidence', detail: `no supplied anchor names ${judged ?? 'a bound passport'}; those supplied name ${setAside.join(', ')}` }
+    anchorCommitment = worst(anchorParts, unnamed ?? anchorCommitment)
+    if (anchorCommitment.status === 'pass') anchorCommitment = { status: 'pass', detail: { coveredPassports: [...covered].sort(compareCodePoints), uncoveredPassports: boundPassports.filter((p) => !covered.has(p)), ...(setAside.length === 0 ? {} : { otherSubjects: setAside }) } }
+    inclusion = worst(inclusionParts, unnamed ?? inclusion)
   }
 
   const verification: EpcisLifecycleVerification = {
@@ -1114,8 +1128,10 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
     verification.relations = others.map((o) => ({ digest: o.digest, relation: epcisLifecycleClaimRelation(verification, o) }))
     if (event.errorDeclaration === undefined) {
       const declarations = others.filter((o) => epcisLifecycleClaimRelation(verification, o) === 'error-declaration' || (epcisLifecycleClaimRelation(verification, o) === 'other-issuer' && o.claim?.event.errorDeclaration !== undefined && bodyDigest(o.claim.event) === bodyDigest(event)))
+      // A declaration counts only from a claim that is itself sound (spec §7): one whose event structure or semantics fails declares nothing, and is not passed over as if it were absent.
+      const sound = declarations.filter((d) => d.findings.eventStructure.status !== 'fail' && d.findings.eventSemantics.status !== 'fail')
       const authorised: EpcisLifecycleVerification[] = []
-      for (const d of declarations) {
+      for (const d of sound) {
         if (d.claim!.issuer === claim.issuer && d.issuerKey === issuerKey) { authorised.push(d); continue }
         if (options.authorityResolver == null || d.issuerKey == null || type == null || eventId == null) continue
         let all = boundPassports.length > 0
@@ -1134,8 +1150,10 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
           status: 'declared-in-error',
           detail: { declaredBy: d.attestationId, errorDeclaration: declaration, correctiveClaims: others.filter((o) => o.findings.signature.status === 'pass' && o.eventId != null && corrective.includes(o.eventId)).map((o) => o.attestationId) },
         }
+      } else if (sound.length > 0) {
+        verification.findings.correction = { status: 'unknown', reasonCode: 'x-declaration-unauthorised', detail: { declaredBy: sound.map((d) => d.attestationId), why: 'another issuer declared the event in error and no authority resolver supports that issuer for every bound passport' } }
       } else if (declarations.length > 0) {
-        verification.findings.correction = { status: 'unknown', reasonCode: 'x-declaration-unauthorised', detail: { declaredBy: declarations.map((d) => d.attestationId), why: 'another issuer declared the event in error and no authority resolver supports that issuer for every bound passport' } }
+        verification.findings.correction = { status: 'unknown', reasonCode: 'x-declaration-unsound', detail: { declaredBy: declarations.map((d) => d.attestationId), why: 'each claim that declares the event in error fails its own event structure or semantics, so none of them counts as a declaration' } }
       } else if (options.related.complete) {
         verification.findings.correction = { status: 'none', detail: 'no verified claim among the complete set supplied declares this event in error' }
       } else {

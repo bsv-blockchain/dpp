@@ -87,6 +87,11 @@ export function assertSignedLifecycleClaim(value: unknown): asserts value is Sig
   validate(value, true)
 }
 
+/**
+ * Sign a native `dpp-lifecycle-v1` claim with one of its four event types.
+ *
+ * @deprecated New lifecycle claims are EPCIS lifecycle claims, `dpp-epcis-lifecycle@1` (`spec/epcis-lifecycle-claim.md`), signed with `signEpcisLifecycleClaim` from `@bsv/dpp-credentials/epcis-lifecycle`. The native format is kept for reading historical claims, which `verifyLifecycleClaim` verifies under their own rules, byte for byte. This signer is unchanged and stays so that those claims can be reproduced.
+ */
 export async function signLifecycleClaim(claim: LifecycleClaim, signer: DataSigner): Promise<SignedLifecycleClaim> {
   validate(claim, false)
   const { signature } = await signer.createSignature({

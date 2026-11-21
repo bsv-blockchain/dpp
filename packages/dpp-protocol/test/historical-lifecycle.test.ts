@@ -29,7 +29,8 @@ const FROZEN: Record<string, string> = {
   'fixtures/attestation-anchor-v1.json': '5a08fab4ee1739262b1f5f3c4521b92c3e84c9553e9077f1b78b8c786f6befd1',
   'fixtures/battery-lifecycle-v1.json': 'eeea5a2bc1cac27e3a8f4d6cb43ac9c8a9602673922b87ddab40fe6ca3dee330',
   'fixtures/vectors/dpp/attestation-anchor/v1.json': '417dda3c9353283302041a9fac03bde31fe2627c12e4a02260e8c3027fcaa34f',
-  'examples/lifecycle-v2.mjs': '2322077ddc982d3e1f4220ae9d5094e4358d3c184039faa898ab8f94a08b75b9',
+  // Moved once, for a comment that says the native signer is deprecated and kept for reading historical claims; the code is as published.
+  'examples/lifecycle-v2.mjs': '468cd9d95ee5499cc48bb836c09962ba56f1e23978764f59aff0c3c582a79cbe',
 }
 
 /** The complete-representation digest of each native claim in the battery fixture, in state order, with its historical category. */
