@@ -146,6 +146,7 @@ What it waits on before publication: each disposition the inventory lists as ope
 - `verifyEpcisLifecycleClaim` is stricter in four places, each stated in `spec/epcis-lifecycle-claim.md` and held by new vectors. A claim whose signature does not pass or whose event structure fails names no item participant (§5). An error declaration counts only when the declaring claim is itself sound; one that is not leaves the correction state `unknown` with `x-declaration-unsound` (§7). An event that uses an extension term while the claim lists no extension rule has its semantics `unavailable` (§4). Each passport is judged on the anchors that name it, the passport the caller expects when it names one, and an anchor about any other subject changes no finding (§8).
 - `GET /capabilities` of the index declares `dpp-epcis-lifecycle-json@1`, the representation the starter anchors on `tm_attestation`, and no longer declares the parked `epcis-event-vc@1`. The declaration gates nothing: an anchor of any representation is admitted and found as before.
 - `signLifecycleClaim` is marked deprecated in favour of the EPCIS lifecycle claim. It is unchanged and is kept, with the native format, for reading historical claims.
+- The `@bsv/dpp-credentials` archive no longer carries the build output of the parked signed-event module, which no entry point loads.
 - `scripts/deployment-inventory.mjs` recognises the full W3C licence text by its clauses, so the `w3c-context` disposition reads `held`.
 
 ## Published releases

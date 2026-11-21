@@ -358,6 +358,15 @@ describe('the parked module', () => {
   })
 })
 
+describe('the parked module in the published archive', () => {
+  it('is left out: the package lists its build output without the parked folder, which no entry point loads', () => {
+    const manifest = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8')) as { files: string[]; exports: Record<string, unknown> }
+    expect(manifest.files).toContain('dist')
+    expect(manifest.files).toContain('!dist/parked')
+    expect(JSON.stringify(manifest.exports)).not.toContain('parked')
+  })
+})
+
 describe('where the claim sits in the package', () => {
   const src = join(import.meta.dirname, '..', 'src')
   const specifiers = (file: string): string[] => [...readFileSync(join(src, file), 'utf8').matchAll(/from\s+['"]([^'"]+)['"]/g)].map((m) => m[1]!)
