@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-16",
+  "updatedAt": "2026-11-21",
   "sources": [
     {
       "id": "spec-record-model",
@@ -352,7 +352,7 @@
       "version": "dpp-epcis-lifecycle@1",
       "kind": "local",
       "path": "spec/epcis-lifecycle-claim.md",
-      "digest": "136eb9d5f7be57c6641aa6e7939f6ead6c747a27b6dde73c983d1c6b0844f6a1"
+      "digest": "83fbefd810d0475a8f4be3d5d10d02a82d99d583a46946c70ab75caa72538449"
     }
   ],
   "requirements": [
@@ -4540,9 +4540,9 @@
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §4, §5, §7, §8 and §9 were tightened for the verifier: the rule this row assesses is unchanged."
     },
     {
       "id": "ELC-3-bytes",
@@ -4572,9 +4572,9 @@
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#altered-secured-bytes"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §4, §5, §7, §8 and §9 were tightened for the verifier: the rule this row assesses is unchanged. The altered-secured-bytes vector now names no item participant; its bytes, digest and signature finding are the same."
     },
     {
       "id": "ELC-4-event",
@@ -4598,12 +4598,13 @@
         "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#extension-term-without-rule"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §4 said that an extension term needs a rule whether or not the issuer lists one: an event that uses one while the claim lists no rule has its semantics unavailable, which the extension-term-without-rule vector holds."
     },
     {
       "id": "ELC-5-binding",
@@ -4629,12 +4630,13 @@
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#transformation-event-manufacturing",
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#class-reference-as-item",
-        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#binding-to-another-passport"
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#binding-to-another-passport",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#altered-context-digest"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §5 said that a claim whose signature does not pass or whose event structure fails names no item: seven vectors that fail one of the two now carry no item participant."
     },
     {
       "id": "ELC-6-authority",
@@ -4663,9 +4665,9 @@
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#possession-without-ownership"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §4, §5, §7, §8 and §9 were tightened for the verifier: the rule this row assesses is unchanged."
     },
     {
       "id": "ELC-7-corrections",
@@ -4690,12 +4692,13 @@
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#duplicate-and-conflicting-observations",
-        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#error-declaration-applies"
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#error-declaration-applies",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#error-declaration-by-unsound-claim"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §7 said that a declaration counts only from a declaring claim whose signature passes and whose event structure and semantics do not fail, and that an unsound one leaves the state unknown with x-declaration-unsound, which the error-declaration-by-unsound-claim vector holds."
     },
     {
       "id": "ELC-8-anchoring",
@@ -4720,12 +4723,16 @@
         "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#transformation-event-manufacturing"
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#transformation-event-manufacturing",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#anchor-about-unbound-subject",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#anchor-about-unbound-subject-read-from-it",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#anchor-mismatch-on-bound-passport",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#anchor-mismatch-on-another-bound-passport"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §8 said that each passport is judged on the anchors that name it, the expected passport when the caller names one and every bound passport otherwise, and that an anchor about any other subject changes no finding; four vectors hold it."
     },
     {
       "id": "ELC-9-findings",
@@ -4752,9 +4759,9 @@
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-21",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §9 followed §4, §7 and §8 in the semantics, anchor commitment and inclusion rows and named x-declaration-unsound among the reason codes."
     },
     {
       "id": "ELC-REG-intake",

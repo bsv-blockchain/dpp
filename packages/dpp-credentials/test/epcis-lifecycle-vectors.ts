@@ -12,6 +12,7 @@ import {
   assertEpcisLifecycleClaim,
   buildEpcisLifecycleAnchors,
   buildEpcisLifecycleClaim,
+  epcisLifecycleAnchorMetadata,
   epcisLifecycleClaimBytes,
   epcisLifecycleSigningBytes,
   signEpcisLifecycleClaim,
@@ -25,7 +26,7 @@ import {
   type SignedEpcisLifecycleClaim,
 } from '../src/epcis-lifecycle.js'
 import { canonicalEpcisIdentifier, epcUriToDigitalLink } from '../src/epcis-lifecycle/shared.js'
-import { didKeyFromIdentityKey, type PartialCheck } from '@bsv/dpp-protocol'
+import { buildAttestationAnchor, didKeyFromIdentityKey, type PartialCheck } from '@bsv/dpp-protocol'
 
 /**
  * The published vectors of the EPCIS lifecycle claim, `dpp-epcis-lifecycle@1`
@@ -46,7 +47,9 @@ import { didKeyFromIdentityKey, type PartialCheck } from '@bsv/dpp-protocol'
  * passport) triples the resolver supports or refuses, any other question being
  * unavailable; `extension_rules_held` names the extension rules the verifier
  * holds, each of which passes; `anchors_hex` are anchor locking scripts;
- * `related` are other claims with whether they are complete.
+ * `related` are other claims with whether they are complete;
+ * `expected_passport_id` and `expected_event_id` are the passport and the
+ * event the caller expects.
  */
 
 const prefix = 9521234
@@ -97,6 +100,8 @@ export const S = {
   repairer: signer('repairer', 'a6'.repeat(32), PARTY.repairer),
 }
 export const ANCHOR_SERVICE = { scalar: 'a7'.repeat(32), identityKey: PrivateKey.fromHex('a7'.repeat(32)).toPublicKey().toString(), wallet: new ProtoWallet(PrivateKey.fromHex('a7'.repeat(32))) }
+/** Another anchoring service: anyone may anchor under a claim's identifier, so a verifier meets anchors the claim's own service never wrote. */
+export const SECOND_ANCHOR_SERVICE = { scalar: 'a8'.repeat(32), identityKey: PrivateKey.fromHex('a8'.repeat(32)).toPublicKey().toString(), wallet: new ProtoWallet(PrivateKey.fromHex('a8'.repeat(32))) }
 
 const uuid = (n: number): string => `urn:uuid:6b000000-0000-4000-8000-${String(n).padStart(12, '0')}`
 const at = (day: number, hour = 9): string => `2026-11-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:00:00.000Z`
@@ -331,6 +336,9 @@ export async function lifecycleClaims() {
     inspectionDeclaredInError: await issue(S.repairer, input(S.repairer, { ...EVENTS.inspection, errorDeclaration: { declarationTime: at(12, 9), reason: 'incorrect_data', correctiveEventIDs: [uuid(111)] } }, [bind(P.battery, 'epcList', ID.battery)], { issuedAt: at(12, 10) })),
     correctiveInspection: await issue(S.repairer, input(S.repairer, { ...EVENTS.inspection, eventID: uuid(111), disposition: 'non_conformant' }, [bind(P.battery, 'epcList', ID.battery)], { issuedAt: at(12, 10) })),
     declarationByAnother: await issue(S.carrier, input(S.carrier, { ...EVENTS.inspection, errorDeclaration: { declarationTime: at(12, 9), reason: 'did_not_occur' } }, [bind(P.battery, 'epcList', ID.battery)], { issuedAt: at(12, 10) })),
+    malformedDeclaration: await signUnchecked(S.repairer, unchecked(input(S.repairer, { ...EVENTS.inspection, errorDeclaration: { reason: 'incorrect_data' } }, [bind(P.battery, 'epcList', ID.battery)], { issuedAt: at(12, 10) }))),
+    // Extensions.
+    shreddingWithoutRule: await issue(S.recycler, input(S.recycler, EVENTS.shredding, [bind(P.moduleA, 'inputEPCList', ID.moduleA), bind(P.moduleC, 'inputEPCList', ID.moduleC)])),
   }
   return { c, n }
 }
@@ -338,6 +346,10 @@ export async function lifecycleClaims() {
 export async function lifecycleEventVectors(): Promise<Record<string, unknown> & { id: string; vectors: Array<Record<string, unknown> & { id: string }> }> {
   const { c, n } = await lifecycleClaims()
   const anchors = (await buildEpcisLifecycleAnchors(c.manufacturing, ANCHOR_SERVICE.identityKey, ANCHOR_SERVICE.wallet)).map((s) => s.toHex())
+  // Anchors another service wrote under the manufacturing claim's identifier: one about a passport the claim does not bind, one that names a bound passport with another attestation type.
+  const secondService = epcisLifecycleAnchorMetadata(c.manufacturing, SECOND_ANCHOR_SERVICE.identityKey)
+  const strayAnchor = (await buildAttestationAnchor({ ...secondService[0]!, subject: P.battery }, SECOND_ANCHOR_SERVICE.wallet)).toHex()
+  const mismatchedAnchor = (await buildAttestationAnchor({ ...secondService.find((m) => m.subject === P.moduleA)!, attestationType: 'ObjectEvent' }, SECOND_ANCHOR_SERVICE.wallet)).toHex()
   const altered = text(c.commissioning).replace('"bizStep":"commissioning"', '"bizStep":"decommissioning"')
   const spaced = text(c.commissioning).replace(/^\{/, '{ ')
 
@@ -364,6 +376,7 @@ export async function lifecycleEventVectors(): Promise<Record<string, unknown> &
     { id: 'recycling-3-shredding-rule-unavailable', tags: ['error-case'], description: 'The same claim read by a verifier that does not hold the required extension rule: event semantics is unavailable, never passed.', claim: text(c.shredding), options: FULL(S.recycler, [P.moduleA, P.moduleC]) },
     { id: 'recycling-4-end-of-life', tags: ['happy-path'], description: 'Recycling, step 4 of 4: an ObjectEvent DELETE decommissioning the battery identity.', claim: text(c.endOfLife), options: FULL(S.recycler, [P.battery2]) },
     { id: 'without-caller-evidence', tags: ['error-case'], description: 'The commissioning claim with nothing from the caller: the signature passes, and the schema, product comparison and authority stay unknown or unavailable, never passed.', claim: text(c.commissioning), options: {} },
+    { id: 'extension-term-without-rule', tags: ['error-case'], description: 'The same shredding event in a claim that lists no extension rule, read by a verifier that holds the shredding rule: the extension business step has no rule to be checked by, so event semantics is unavailable. An issuer does not get the semantics passed by leaving the rule out.', claim: text(n.shreddingWithoutRule), options: { ...FULL(S.recycler, [P.moduleA, P.moduleC]), extension_rules_held: [SHREDDING_RULE] } },
     { id: 'binding-to-another-passport', tags: ['error-case'], description: 'Incorrect product binding: the battery identifier bound to another passport. The identifier is where the binding says, and the comparison fails it.', claim: text(n.wrongPassport), options: FULL(S.maker, [P.battery2]) },
     { id: 'binding-identifier-absent', tags: ['error-case'], description: 'Incorrect product binding, signed without the issuance rules: the bound identifier is not in the field the binding names.', claim: text(n.identifierAbsent), options: FULL(S.maker, [P.battery2]) },
     { id: 'class-reference-as-item', tags: ['error-case'], description: 'A class-level reference standing in for an item: an instance binding through a quantity list. Refused as binding; no participation is fabricated.', claim: text(n.classAsItem), options: FULL(S.maker, [P.cell]) },
@@ -385,7 +398,12 @@ export async function lifecycleEventVectors(): Promise<Record<string, unknown> &
     { id: 'error-declaration-applies', tags: ['happy-path'], description: 'The inspection claim with its issuer\'s error declaration and the corrective inspection among the related claims: the correction state is declared-in-error, naming the corrective claim; the original is unaltered.', claim: text(c.inspection), options: { ...FULL(S.repairer, [P.battery]), related: { claims: [text(n.inspectionDeclaredInError), text(n.correctiveInspection)], complete: true } } },
     { id: 'error-declaration-itself', tags: ['happy-path'], description: 'The declaration is its own claim, carrying the original eventID and the errorDeclaration; it verifies, and its own correction state is declared-in-error.', claim: text(n.inspectionDeclaredInError), options: FULL(S.repairer, [P.battery]) },
     { id: 'error-declaration-by-another-issuer', tags: ['error-case'], description: 'Another issuer declares the inspection in error, and no resolver supports it: the correction state stays unknown.', claim: text(c.inspection), options: { ...FULL(S.repairer, [P.battery]), related: { claims: [text(n.declarationByAnother)], complete: true } } },
+    { id: 'error-declaration-by-unsound-claim', tags: ['error-case'], description: 'The original issuer signs a declaration whose errorDeclaration lacks its declaration time, so the declaring claim fails its own event structure. It declares nothing in error, and because it is not passed over as absent, the correction state is unknown, not none.', claim: text(c.inspection), options: { ...FULL(S.repairer, [P.battery]), related: { claims: [text(n.malformedDeclaration)], complete: true } } },
     { id: 'no-declaration-in-a-complete-set', tags: ['happy-path'], description: 'The inspection read beside a complete set that holds no declaration for it: the correction state is none.', claim: text(c.inspection), options: { ...FULL(S.repairer, [P.battery]), related: { claims: [text(n.correctiveInspection)], complete: true } } },
+    { id: 'anchor-about-unbound-subject', tags: ['happy-path'], description: 'The manufacturing claim with its four anchors and a fifth, by another anchoring service under the same identifier, about a passport the claim does not bind. The fifth is set aside: the anchor commitment passes for the bound passports.', claim: text(c.manufacturing), options: { ...FULL(S.maker, [P.battery2, P.moduleA, P.moduleB]), anchors_hex: [...anchors, strayAnchor] } },
+    { id: 'anchor-about-unbound-subject-read-from-it', tags: ['error-case'], description: 'The same claim and anchors read by a caller that expects the passport the fifth anchor names. The claim does not bind that passport, so the binding fails and so does the anchor commitment, on the one anchor that names it.', claim: text(c.manufacturing), options: { ...FULL(S.maker, [P.battery2, P.moduleA, P.moduleB]), anchors_hex: [...anchors, strayAnchor], expected_passport_id: P.battery } },
+    { id: 'anchor-mismatch-on-bound-passport', tags: ['error-case'], description: 'The manufacturing claim with its four anchors and a fifth that names a bound passport, module A, under another attestation type: a mismatch on an anchor that names a bound passport fails the anchor commitment.', claim: text(c.manufacturing), options: { ...FULL(S.maker, [P.battery2, P.moduleA, P.moduleB]), anchors_hex: [...anchors, mismatchedAnchor] } },
+    { id: 'anchor-mismatch-on-another-bound-passport', tags: ['happy-path'], description: 'The same claim and anchors read by a caller that expects the battery passport: each passport is judged on the anchors that name it, so the mismatched anchor for module A does not fail the battery.', claim: text(c.manufacturing), options: { ...FULL(S.maker, [P.battery2, P.moduleA, P.moduleB]), anchors_hex: [...anchors, mismatchedAnchor], expected_passport_id: P.battery2 } },
   ]
 
   const refusals: Refusal[] = [
@@ -418,8 +436,8 @@ export async function lifecycleEventVectors(): Promise<Record<string, unknown> &
     version: '1.0.0',
     reference_impl: 'dpp-protocol@0.3.0',
     parity_class: 'required',
-    notes: 'Each claim is the exact RFC 8785 text of the signed envelope; digest_hex is SHA-256 over its UTF-8 bytes and attestation_id is urn:sha256: and that digest. Signers derive their key under [1, "dpp epcis lifecycle v1"], key identifier "event", counterparty anyone; each issuer is the did:key of the identity key whose scalar is published under keys, and nothing derived from these scalars will ever hold value. Options are data: schema applies the pinned EPCIS 2.0.1 JSON schema to the event inside a minimal EPCISDocument; comparison "gs1-digital-link" passes an instance binding whose identifier\'s canonical GS1 Digital Link is the passport identifier and a class binding whose class carries the passport\'s GTIN; authority lists the (issuer, role, passport_id) triples a resolver answers, every other question being unavailable; extension_rules_held names the rules the verifier holds, each passing; anchors_hex are anchor locking scripts; related lists other claims with whether the set is complete. An issue vector names the reasons buildEpcisLifecycleClaim refuses with.',
-    keys: Object.fromEntries([...Object.values(S).map((s) => [s.name, { identity_private_key_hex: s.scalar, identity_key_hex: s.identityKey, issuer: s.issuer, party: s.party }]), ['anchoring_service', { identity_private_key_hex: ANCHOR_SERVICE.scalar, identity_key_hex: ANCHOR_SERVICE.identityKey }]]),
+    notes: 'Each claim is the exact RFC 8785 text of the signed envelope; digest_hex is SHA-256 over its UTF-8 bytes and attestation_id is urn:sha256: and that digest. Signers derive their key under [1, "dpp epcis lifecycle v1"], key identifier "event", counterparty anyone; each issuer is the did:key of the identity key whose scalar is published under keys, and nothing derived from these scalars will ever hold value. Options are data: schema applies the pinned EPCIS 2.0.1 JSON schema to the event inside a minimal EPCISDocument; comparison "gs1-digital-link" passes an instance binding whose identifier\'s canonical GS1 Digital Link is the passport identifier and a class binding whose class carries the passport\'s GTIN; authority lists the (issuer, role, passport_id) triples a resolver answers, every other question being unavailable; extension_rules_held names the rules the verifier holds, each passing; anchors_hex are anchor locking scripts; related lists other claims with whether the set is complete; expected_passport_id and expected_event_id are the passport and the event the caller expects. An issue vector names the reasons buildEpcisLifecycleClaim refuses with.',
+    keys: Object.fromEntries([...Object.values(S).map((s) => [s.name, { identity_private_key_hex: s.scalar, identity_key_hex: s.identityKey, issuer: s.issuer, party: s.party }]), ['anchoring_service', { identity_private_key_hex: ANCHOR_SERVICE.scalar, identity_key_hex: ANCHOR_SERVICE.identityKey }], ['second_anchoring_service', { identity_private_key_hex: SECOND_ANCHOR_SERVICE.scalar, identity_key_hex: SECOND_ANCHOR_SERVICE.identityKey }]]),
     vectors,
   }
 }
