@@ -131,8 +131,23 @@ test('an open disposition blocks a release, and a set that is no longer a candid
 test('the licence page names each open disposition and no other as open', () => {
   const page = readFileSync(join(root, 'docs', 'contribute', 'licence.md'), 'utf8')
   const section = page.slice(page.indexOf('## The whole deployment'))
-  const listed = [...section.slice(section.indexOf('are open in the current candidate')).matchAll(/^\| `([a-z0-9-]+)` \|/gm)].map((m) => m[1])
+  const listed = [...section.slice(section.indexOf('open in the current candidate')).matchAll(/^\| `([a-z0-9-]+)` \|/gm)].map((m) => m[1])
   assert.deepEqual(listed.sort(), inventory.dispositions.filter((d) => d.status === 'open').map((d) => d.id).sort())
+})
+
+test('the W3C context is held while its notice carries the licence text, however that text is punctuated, and open without it', () => {
+  const noticePath = 'packages/dpp-credentials/artifacts/w3c/NOTICE.md'
+  const status = (dir) => JSON.parse(readFileSync(join(dir, 'conformance', 'deployment-inventory.json'), 'utf8')).dispositions.find((d) => d.id === 'w3c-context').status
+  assert.equal(inventory.dispositions.find((d) => d.id === 'w3c-context').status, 'held')
+  const dir = copyOfSources()
+  try {
+    edit(dir, noticePath, (text) => text.replace('"AS IS,"', '\u201cAS IS\u201d,').replace('EXPRESS OR IMPLIED, INCLUDING', 'EXPRESS OR\nIMPLIED, INCLUDING'))
+    assert.equal(run('--root', dir).status, 0)
+    assert.equal(status(dir), 'held')
+    edit(dir, noticePath, (text) => text.slice(0, text.indexOf('### Disclaimers')))
+    assert.equal(run('--root', dir).status, 0)
+    assert.equal(status(dir), 'open')
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
 test('publishing both images closes that disposition and no other', () => {
