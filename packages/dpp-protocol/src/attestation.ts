@@ -12,6 +12,9 @@ export type LifecycleEventType = 'Origin' | 'Transfer' | 'Transformation' | 'Dis
 /** The form of `recordId`: the outpoint of the state the claim is about, `<txid>:<outputIndex>` (`spec/rules.md` §3). */
 export const RECORD_ID_PATTERN = /^[0-9a-f]{64}:(0|[1-9][0-9]*)$/
 
+/** The form written before the outpoint rule of 1 November 2026: the transaction identifier alone. A reader still reads it; nothing writes it (`spec/rules.md` §3). */
+export const HISTORICAL_RECORD_ID_PATTERN = /^[0-9a-f]{64}$/
+
 /** Native token-operation evidence. This is a different format from a VSC SEAL. */
 export interface LifecycleClaim {
   claimFormat: typeof LIFECYCLE_CLAIM_FORMAT
@@ -58,7 +61,8 @@ function validate(value: unknown, signed: boolean): asserts value is LifecycleCl
   }
   if (claim.claimFormat !== LIFECYCLE_CLAIM_FORMAT) throw new Error('unsupported claimFormat')
   for (const field of ['passportId', 'recordId', 'issuer'] as const) text(claim[field], field, 512)
-  if (!RECORD_ID_PATTERN.test(claim.recordId as string)) throw new Error('recordId must be the outpoint of the state the claim is about, <txid>:<outputIndex>')
+  // A claim being signed names its state by outpoint. A signed claim being read may also carry the transaction identifier alone, as claims signed before that rule do.
+  if (!RECORD_ID_PATTERN.test(claim.recordId as string) && !(signed && HISTORICAL_RECORD_ID_PATTERN.test(claim.recordId as string))) throw new Error('recordId must be the outpoint of the state the claim is about, <txid>:<outputIndex>')
   for (const field of ['issuerKeyId', 'profile'] as const) text(claim[field], field, 256)
   if (typeof claim.eventType !== 'string' || !types.has(claim.eventType)) throw new Error('unsupported eventType')
   if (!Number.isSafeInteger(claim.profile_version) || (claim.profile_version as number) < 1) throw new Error('invalid profile_version')

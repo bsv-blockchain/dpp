@@ -40,7 +40,7 @@ A current native claim has exactly the following properties; issuerKeyDid is opt
 |---|---|
 | claimFormat | Literal `dpp-lifecycle-v1` |
 | passportId | Nonempty printable UTF-8, at most 512 bytes; the subject identifier |
-| recordId | The outpoint of the state the claim is about, written `<txid>:<outputIndex>`: 64 lower-case hexadecimal characters, a colon, and the output index as a decimal integer with no leading zero. Nothing else is accepted |
+| recordId | The outpoint of the state the claim is about, written `<txid>:<outputIndex>`: 64 lower-case hexadecimal characters, a colon, and the output index as a decimal integer with no leading zero. A writer writes nothing else. A reader also reads a claim signed before 1 November 2026, whose `recordId` is the 64-character transaction identifier alone: its signature is checked under the same rule, and it names the transaction, not one of its outputs |
 | eventType | One of Origin, Transfer, Transformation, Disposition |
 | timestamp | ISO date-time with a timezone and valid calendar date |
 | issuer | DID of the claiming entity, at most 512 UTF-8 bytes |

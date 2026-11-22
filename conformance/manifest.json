@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-21",
+  "updatedAt": "2026-11-22",
   "sources": [
     {
       "id": "spec-record-model",
@@ -24,7 +24,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/rules.md",
-      "digest": "dc2b1a772cfa893010a20c659fd1b8d8d10f54e841e34c047bc9f609e7983388"
+      "digest": "ba6556ab040f6c00d1934b7bd672e96d2a068d27bada17da310e6746878c6b4a"
     },
     {
       "id": "spec-identity",
@@ -1208,7 +1208,7 @@
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
       "clause": "§3",
-      "summary": "The native claim's exact properties and bounds, recordId as the outpoint of the state the claim is about, no evidence facets; signature over the canonical JSON of §4 excluding signature under [1, 'dpp attestation v1'] with passportId; a nominated issuerKeyDid never authenticates a resolvable issuer.",
+      "summary": "The native claim's exact properties and bounds, recordId as the outpoint of the state the claim is about, or the transaction identifier alone in a claim signed before that rule and only when read, no evidence facets; signature over the canonical JSON of §4 excluding signature under [1, 'dpp attestation v1'] with passportId; a nominated issuerKeyDid never authenticates a resolvable issuer.",
       "layer": "core",
       "roles": [
         "attestation-issuer",
@@ -1229,9 +1229,9 @@
         "fixtures/vectors/dpp/attestation-anchor/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: recordId is <txid>:<outputIndex>, a shape both implementing parties produce; the fixture moved with it, and attestation.test.ts refuses a recordId that is not an outpoint. From 2026-11-12 the claim carries no evidence object, so the facets of §2 never travel in it: signLifecycleClaim refuses the property as an unsupported field, and the fixture's claimWithEvidence and its vector are gone; the claim without facets keeps its exact bytes and digest. Written acceptance by the second implementing party is pending under GOVERNANCE.md. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status was the Python reader, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing. The reader was parked the same day (docs/reference/parked/python-reader/), and the status rests on the TypeScript tests named here."
+      "notes": "Decided 2026-11-01: recordId is <txid>:<outputIndex>, a shape both implementing parties produce; the fixture moved with it, and attestation.test.ts refuses a recordId that is not an outpoint. From 2026-11-12 the claim carries no evidence object, so the facets of §2 never travel in it: signLifecycleClaim refuses the property as an unsupported field, and the fixture's claimWithEvidence and its vector are gone; the claim without facets keeps its exact bytes and digest. Written acceptance by the second implementing party is pending under GOVERNANCE.md. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status was the Python reader, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing. The reader was parked the same day (docs/reference/parked/python-reader/), and the status rests on the TypeScript tests named here. Re-read 2026-11-22 after §3 said what a reader does with a claim signed before the outpoint rule: verifyLifecycleClaim reads a recordId that is the transaction identifier alone and checks its signature under the same rule, signLifecycleClaim still refuses it, and attestation.test.ts holds both."
     },
     {
       "id": "RULES-2-version-2-vocabulary",
@@ -1255,7 +1255,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1289,9 +1289,9 @@
         "fixtures/attestation-anchor-v1.json#representationHex"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Reworded 2026-11-09 to name no credential representation; the meaning for a native claim is unchanged. The §4 table still lists only vsc-seal-json-v1, now parked, as a secured representation; exchange.md §1 gives vc-di-ecdsa-rdfc-2019@1 the same exact-byte rule, which EXTC-1 and EXTC-4 carry, and exchange.test.ts exercises its duplicate-key refusal through parseExternalCredentialBytes. From @bsv/dpp-credentials 0.2.0-beta.6 parseStrictJsonBytes lives in strict-json.ts with its own tests, and the parked SEAL parser that also used it is no longer in the package. Re-read 2026-11-12: the native claim is flat again, with no nested evidence object, and lifecycleClaimBytes is the restricted canonical form of canonical.ts; every claim's bytes are unchanged. Re-read 2026-11-12 after §4 became the one definition of the canonical JSON the native documents are signed or digested over, nested documents included, with RFC 8785 for the EPCIS body digest named as the exception, with the restricted flat form for a native claim and code point order stated; canonicalBytes now serialises through canonicalJson, and every claim's bytes are unchanged. Re-read 2026-11-14 after the §4 table marked epcis-event-vc@1 parked; the byte rules are unchanged."
+      "notes": "Reworded 2026-11-09 to name no credential representation; the meaning for a native claim is unchanged. The §4 table still lists only vsc-seal-json-v1, now parked, as a secured representation; exchange.md §1 gives vc-di-ecdsa-rdfc-2019@1 the same exact-byte rule, which EXTC-1 and EXTC-4 carry, and exchange.test.ts exercises its duplicate-key refusal through parseExternalCredentialBytes. From @bsv/dpp-credentials 0.2.0-beta.6 parseStrictJsonBytes lives in strict-json.ts with its own tests, and the parked SEAL parser that also used it is no longer in the package. Re-read 2026-11-12: the native claim is flat again, with no nested evidence object, and lifecycleClaimBytes is the restricted canonical form of canonical.ts; every claim's bytes are unchanged. Re-read 2026-11-12 after §4 became the one definition of the canonical JSON the native documents are signed or digested over, nested documents included, with RFC 8785 for the EPCIS body digest named as the exception, with the restricted flat form for a native claim and code point order stated; canonicalBytes now serialises through canonicalJson, and every claim's bytes are unchanged. Re-read 2026-11-14 after the §4 table marked epcis-event-vc@1 parked; the byte rules are unchanged. Re-read 2026-11-22 after §3 said a reader also reads a native claim signed before the outpoint rule, whose recordId is the transaction identifier alone: nothing in this row changed."
     },
     {
       "id": "RULES-5-anchor",
@@ -1324,7 +1324,7 @@
         "fixtures/vectors/dpp/attestation-anchor/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1356,9 +1356,9 @@
         "fixtures/evidence-v1.json#cases.anchor-unsupported-representation"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-14 after §6 named epcis-event-vc@1 parked; the anchor verification rules are unchanged."
+      "notes": "Re-read 2026-11-14 after §6 named epcis-event-vc@1 parked; the anchor verification rules are unchanged. Re-read 2026-11-22 after §3 said a reader also reads a native claim signed before the outpoint rule, whose recordId is the transaction identifier alone: nothing in this row changed."
     },
     {
       "id": "RULES-7-compatibility",
@@ -1389,7 +1389,7 @@
         "fixtures/anchor-v3.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3545,9 +3545,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "`mapNativeOperation` in @bsv/dpp-profiles evaluates a profile's eventMappings against structured evidence facets and returns one of the four outcomes with a loss list; a property test holds that no non-lossless result comes without one. The registry returns lifecycleMapping beside a native claim on POST /validate, reading facets under the eleven names; a native claim carrying no facets maps TRANSFER to insufficient-data with custodyRecord missing. From 2026-11-12 a native claim carries no facets (rules.md §3), so a mapping reads them from other evidence, such as a state's event_data in fixtures/battery-lifecycle-v1.json."
+      "notes": "`mapNativeOperation` in @bsv/dpp-profiles evaluates a profile's eventMappings against structured evidence facets and returns one of the four outcomes with a loss list; a property test holds that no non-lossless result comes without one. The registry returns lifecycleMapping beside a native claim on POST /validate, reading facets under the eleven names; a native claim carrying no facets maps TRANSFER to insufficient-data with custodyRecord missing. From 2026-11-12 a native claim carries no facets (rules.md §3), so a mapping reads them from other evidence, such as a state's event_data in fixtures/battery-lifecycle-v1.json. Re-read 2026-11-22 after §3 said a reader also reads a native claim signed before the outpoint rule, whose recordId is the transaction identifier alone: nothing in this row changed."
     },
     {
       "id": "MAP-1-row-level-inventory",
