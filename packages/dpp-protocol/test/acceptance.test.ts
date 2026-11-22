@@ -133,7 +133,8 @@ describe('managed-acceptance@2: the custodian signs with a derived key (managed-
   })
 
   it('refuses to sign a @1 claim: the package writes version 2 only', async () => {
-    await expect(signManagedAcceptance(v1, custodianWallet)).rejects.toThrow('dpp-managed-acceptance@2')
+    // The claim type admits version 2 only; the refusal at run time is for a caller without types.
+    await expect(signManagedAcceptance(v1 as unknown as ManagedAcceptanceClaim, custodianWallet)).rejects.toThrow('dpp-managed-acceptance@2')
   })
 
   it('refuses a malformed claim and a signer whose root is not the custodian', async () => {

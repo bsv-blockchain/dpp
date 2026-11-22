@@ -255,8 +255,7 @@ export function inspectEvidencePackage(manifest: EvidencePackageManifest, files:
   }
 }
 
-/** The representation an inventory entry carries for a managed acceptance record (`spec/managed-custody.md` §5). */
-/** The representation a custodian writes for the records it signs today: the record's own format literal. */
+/** The representation an inventory entry carries for a managed acceptance record a custodian signs today (`spec/managed-custody.md` §5): the record's own format literal. */
 export const ACCEPTANCE_RECORD_REPRESENTATION = MANAGED_ACCEPTANCE_FORMAT
 /** Every representation an acceptance record may be listed under: its format literal, one per version a reader reads. */
 export const ACCEPTANCE_RECORD_REPRESENTATIONS = [MANAGED_ACCEPTANCE_FORMAT_V1, MANAGED_ACCEPTANCE_FORMAT] as const

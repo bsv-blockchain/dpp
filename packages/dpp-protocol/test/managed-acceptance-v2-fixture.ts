@@ -5,6 +5,7 @@ import {
   acceptanceSigningPreimage,
   canonicalJson,
   signManagedAcceptance,
+  type ManagedAcceptanceClaim,
   type ManagedAcceptanceRecord,
 } from '../src/index.js'
 import { buildChainV2Fixture, controllerKeyOf, custodianPriv, custodianWallet, idKey, issuerPriv, recipientPriv, strangerPriv, strangerWallet } from './helpers-v2.js'
@@ -35,7 +36,7 @@ export async function managedAcceptanceV2Fixture() {
   if (transfer.version !== '2') throw new Error('fixture transfer is not version 2')
   const resign = async (edit: (r: ManagedAcceptanceRecord) => ManagedAcceptanceRecord): Promise<ManagedAcceptanceRecord> => {
     const { signature: _s, ...claim } = edit({ ...acceptance })
-    return await signManagedAcceptance(claim, custodianWallet)
+    return await signManagedAcceptance(claim as ManagedAcceptanceClaim, custodianWallet)
   }
   const derivedBy = async (wallet: ProtoWallet, preimage: number[]): Promise<string> =>
     Utils.toHex((await wallet.createSignature({ data: preimage, protocolID: MANAGED_RECORD_PROTOCOL_ID, keyID: acceptance.requestId, counterparty: 'anyone' })).signature)

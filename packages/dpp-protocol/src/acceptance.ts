@@ -42,7 +42,8 @@ export { MANAGED_CUSTODY_PROFILE, MANAGED_CUSTODY_PROFILE_V1 }
 export type OfferMechanism = 'claim-code' | 'named-recipient'
 
 export interface ManagedAcceptanceClaim {
-  acceptanceFormat: typeof MANAGED_ACCEPTANCE_FORMAT | typeof MANAGED_ACCEPTANCE_FORMAT_V1
+  /** The format a custodian writes: version 2 only. */
+  acceptanceFormat: typeof MANAGED_ACCEPTANCE_FORMAT
   /** Unique per offer; a retry names the same request and never a second one. */
   requestId: string
   passportId: string
@@ -73,7 +74,9 @@ export interface ManagedAcceptanceClaim {
   custodian: string
 }
 
-export interface ManagedAcceptanceRecord extends ManagedAcceptanceClaim {
+export interface ManagedAcceptanceRecord extends Omit<ManagedAcceptanceClaim, 'acceptanceFormat'> {
+  /** The format the record was written under: version 2, or the superseded version 1 a reader still reads. */
+  acceptanceFormat: typeof MANAGED_ACCEPTANCE_FORMAT | typeof MANAGED_ACCEPTANCE_FORMAT_V1
   /** DER ECDSA, lowercase hex, over SHA-256 of the canonical JSON of the record without this property: by the derived key under version 2, by the identity key directly under version 1. */
   signature: string
 }
@@ -249,7 +252,8 @@ export function bindAcceptanceToState(record: ManagedAcceptanceRecord, state: Dp
  * `MANAGED_RECORD_PROTOCOL_ID`, the claim's `requestId` and counterparty
  * 'anyone', from the wallet whose identity key is `claim.custodian`. The
  * result is checked before it is returned, so a wallet that holds another
- * root is refused. A version 1 claim is refused: nothing writes version 1.
+ * root is refused. A version 1 claim is refused: this package writes
+ * version 2 only.
  */
 export async function signManagedAcceptance(claim: ManagedAcceptanceClaim, signer: DataSigner): Promise<ManagedAcceptanceRecord> {
   const failures: AcceptanceFailure[] = []
