@@ -69,12 +69,24 @@ The source check installs the packed generator, creates the app, installs local 
 | MongoDB for records, journal and sign-in, started by the app's Compose file | A managed database |
 | A journal-driven worker for proofs and re-announcements | Scheduling and monitoring |
 | GS1 Digital Link identifiers under the demonstration prefix 952 | A licensed GS1 prefix |
+| In the source candidate: a GS1 resolver for those identifiers at the passport host, with the passport page as each item's default link | Further links, such as your own product page |
 | In the source candidate: forms, validation and structured display for `eu-battery@1` and `eu-textile@1`, and registration of a bound profile from a folder | Your own forms, and the profiles you trust |
 | In the source candidate: EPCIS file import, a configured pull and exact export, over a MongoDB storage adapter | Your sources, and what you do with the events |
 | In the source candidate: a choice of validation engine by setting, in the API's process or in a validator service | Which service, and who runs it |
 | In the source candidate: `export` and `restore` commands that move the whole application as one signed evidence package | Where the package is kept, and the keys and credentials you carry separately |
 
-**The starter's passport host is not yet a resolver.** It answers each identifier's own path, `/01/<gtin>/21/<serial>`, with the passport page, so it does not meet the rule in [GS1 discovery](../interoperability/gs1-discovery.md#do-you-need-a-resolver) that the host a GS1 Digital Link identifier is minted under be a GS1-Conformant Resolver or redirect every `/01/` request to one. The generated README's next steps say what to change.
+**The starter's passport host resolves its identifiers.** In the source candidate the API answers each identifier it issued at the identifier's own path, as [GS1 discovery](../interoperability/gs1-discovery.md#do-you-need-a-resolver) asks of the host a GS1 Digital Link identifier is minted under. The published `0.1.0-beta.1` answers that path with the passport page and is not a resolver.
+
+| Request to the generated application | Answer |
+|---|---|
+| `/01/<gtin>/21/<serial>` | 307 to the passport page at `/passport/01/<gtin>/21/<serial>`, the item's `gs1:dpp` default link, with the query string passed on |
+| The same with `Accept: application/linkset+json` or `?linkType=linkset` | The JSON linkset, never a redirect: the item's links, then its GTIN's |
+| `/01/<gtin>`, or a serial no passport was issued for under a GTIN that has passports | 307 to a product page at `/passport/01/<gtin>`, the GTIN's `gs1:pip` default link. The page holds no passport and says so |
+| A compressed identifier that carries an EPC binary string | Decompressed, then answered as the identifier it spells |
+| A malformed identifier; a GTIN no passport was issued under | 400; 404 |
+| `/.well-known/gs1resolver` | The resolver description file |
+
+The application makes the records from its journal for each request and answers with `describeResolver`, `resolveLinks` and `linksetDocument` of `@bsv/dpp-profiles`, after `resolutionRecordProblems` and `resolutionSetProblems`. It lists only pages it serves, so no evidence package and no master data. The generated project's `apps/api/test/identifier-host.test.ts` asks each of these over HTTP. It answers a linkset request with JSON whatever the `Accept`, and only for identifiers under its own `PASSPORT_HOST`.
 
 Change any of these files; the standard prefers none of these choices. [Issue and update passports](build-an-application.md) explains the included writer; [choose packages and services](../start/choose-components-and-services.md) identifies remaining services.
 

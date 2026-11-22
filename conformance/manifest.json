@@ -2814,16 +2814,23 @@
       ],
       "applicability": "when the passport identifier is a GS1 Digital Link",
       "profileId": "core (when selected)",
-      "implementationRefs": [],
-      "testRefs": [],
+      "implementationRefs": [
+        "packages/create-dpp-app/template/apps/api/src/resolver.ts",
+        "packages/dpp-profiles/src/gs1-resolution.ts"
+      ],
+      "testRefs": [
+        "packages/create-dpp-app/template/apps/api/test/identifier-host.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/exit-exercise.test.ts",
+        "packages/dpp-profiles/test/gs1-resolution.test.ts"
+      ],
       "evidenceRefs": [
-        "docs/deployment.md",
+        "packages/create-dpp-app/scripts/scaffold-check.mjs",
         "docs/packages/create-dpp-app.md"
       ],
-      "status": "gap",
-      "reviewedAt": "2026-11-14",
+      "status": "tested",
+      "reviewedAt": "2026-11-23",
       "reviewOwner": "dpp maintainers",
-      "notes": "Kept on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules; the rule stood in its section 1 before and no row assessed it. A gap because the application starter, this repository's writer, answers each identifier's path with the passport page and does not yet resolve or redirect key 01; the hosted reference application resolves the identifiers minted under its host, which is not evidence this repository can show. No test in this repository exercises the rule.",
+      "notes": "Kept on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules; the rule stood in its section 1 before and no row assessed it. A gap until 23 November 2026, while the application starter, this repository's writer, answered each identifier's path with the passport page. The starter's API now answers as a GS1-Conformant Resolver for primary key 01 at the host it mints under, from the reference helpers of @bsv/dpp-profiles (packages/create-dpp-app/template/apps/api/src/resolver.ts): the description file at /.well-known/gs1resolver; every path under /01/ validated first, with 400 for a malformed identifier or a failing check digit and 404 for a GTIN no passport was issued under; 307 to the item's passport page at /passport/01/<gtin>/21/<serial>, its gs1:dpp default link, with the whole query string passed on; the JSON linkset, never a redirect, for Accept application/linkset+json or linkType=linkset, with the Link header that names GS1's context; the GTIN alone, a lot and a serial nobody issued walking up to the GTIN's one public default, a product page under gs1:pip; the EPC binary compressed forms decompressed; and GET, HEAD and OPTIONS open to any origin. The records are made from the journal for each request and pass resolutionRecordProblems and resolutionSetProblems before they answer. Only pages the application serves are listed, so no evidence package. The starter's tests run in the generated application and not in this workspace: packages/create-dpp-app/scripts/scaffold-check.mjs scaffolds it against the packed candidates and runs them. identifier-host.test.ts asks each of these over HTTP and walks from an identifier, through the redirect and through the linkset, to the verification of the passport it names, and the exit exercise asks the same host over MongoDB. That the linkset and the description file validate against GS1's pinned schemas is held by packages/dpp-profiles/test/gs1-resolution.test.ts for the helpers' output, which the starter serves unchanged; the starter's own tests do not fetch those schemas. Limits: a linkset request is answered with JSON whatever the Accept, with no page of links for a person; the general GS1 Digital Link compression is not decoded, as the profile declares; TLS is the deployment's; the tests run over plain HTTP on one machine with the test wallet and an index in the process; GS1's own resolver test suite was not run against a generated application; the published starter 0.1.0-beta.1 does not resolve; and the hosted reference application's resolver is still not evidence this repository can show. No other implementation was tested.",
       "sourceDigest": "95eda52ad598d149b68e865af68181aaea3374dca410ea70d970c86262a9e409"
     },
     {
