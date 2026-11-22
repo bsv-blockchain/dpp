@@ -10,6 +10,7 @@
     * [BSV DIDs](learn/dids.md)
     * [Verifiable credentials](learn/verifiable-credentials.md)
     * [Versions and compatibility](learn/versions-and-compatibility.md)
+  * [What the ledger adds](start/what-the-ledger-adds.md)
   * [Where things stand](start/status.md)
   * [Words used here](start/glossary.md)
   * [All tasks](start/choose-your-path.md)

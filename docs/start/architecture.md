@@ -53,6 +53,7 @@ Indexes and registries find and keep records. Readers check transaction bytes ag
 | Find the path for your task | [Choose your path](choose-your-path.md) |
 | Learn what a state and a claim each carry | [Passport states and attestations](../learn/passport-and-attestations.md) |
 | See how accounts, keys and authority differ | [Identity and authority](../learn/identity-and-authority.md) |
+| Decide whether you need a ledger, and what it costs | [What the ledger adds](what-the-ledger-adds.md) |
 | Know what is not settled | [Known limitations](../operate/limitations.md) |
 
 Sources: [record model version 1](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md), [record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md), [rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md).
