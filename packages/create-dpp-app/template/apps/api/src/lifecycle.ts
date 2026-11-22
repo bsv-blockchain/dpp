@@ -232,14 +232,14 @@ export const historicalView = (record: ClaimRecord & { claim: SignedLifecycleCla
   ...(record.registry == null ? {} : { registry: record.registry }),
 })
 
-/** The claim's bytes from the registry's proof route, when this application does not hold them. */
+/** The claim's bytes from the registry's proof route, when this application does not hold them. The registry contract carries a current record's exact bytes as `securedBytes`. */
 async function bytesFromRegistry(registry: { url: string } | undefined, attestationId: string): Promise<{ bytes: string } | { unavailable: string }> {
   if (registry == null) return { unavailable: 'this application does not hold the claim, and no registry is configured to fetch its bytes from' }
   try {
     const response = await fetch(`${registry.url}/attestations/${encodeURIComponent(attestationId)}/proof`)
     if (!response.ok) return { unavailable: `the registry answered HTTP ${response.status} for the claim's bytes` }
-    const body = (await response.json()) as { envelope?: unknown }
-    return typeof body.envelope === 'string' ? { bytes: body.envelope } : { unavailable: 'the registry returned no bytes for the claim' }
+    const body = (await response.json()) as { securedBytes?: unknown }
+    return typeof body.securedBytes === 'string' ? { bytes: body.securedBytes } : { unavailable: 'the registry returned no bytes for the claim' }
   } catch (cause) {
     return { unavailable: `the registry could not be reached (${cause instanceof Error ? cause.message : String(cause)})` }
   }
