@@ -58,4 +58,17 @@ describe('native lifecycle claim v1', () => {
     await expect(signLifecycleClaim({ ...fixture.unsignedClaim, recordId: `${'aa'.repeat(32)}:01` }, wallet)).rejects.toThrow('recordId must be the outpoint')
     expect(verifyLifecycleClaim({ ...fixture.claim, recordId: `${'aa'.repeat(32)}:0` }).signature).toBe('invalid')
   })
+
+  it('still verifies a claim signed before the outpoint rule, whose recordId is the transaction identifier alone, and never signs one', async () => {
+    // Signed the way a writer did before 1 November 2026: the same bytes rule and key, with the transaction identifier as recordId.
+    const historical: LifecycleClaim = { ...fixture.unsignedClaim, recordId: 'ab'.repeat(32) }
+    const { signature } = await wallet.createSignature({ data: canonicalBytes(historical), protocolID: [1, 'dpp attestation v1'], keyID: historical.passportId, counterparty: 'anyone' })
+    const signed = { ...historical, signature: Utils.toHex(signature) }
+    expect(verifyLifecycleClaim(signed)).toEqual({ signature: 'verified', identityBinding: 'key-identified', issuerKey: fixture.issuerKey })
+    expect(verifyLifecycleClaim(signed, { recordId: 'ab'.repeat(32) }).signature).toBe('verified')
+    expect(verifyLifecycleClaim(signed, { recordId: `${'ab'.repeat(32)}:0` }).signature).toBe('invalid')
+    expect(verifyLifecycleClaim({ ...signed, recordId: 'cd'.repeat(32) }).signature).toBe('invalid')
+    for (const recordId of ['AB'.repeat(32), 'ab'.repeat(31), `${'ab'.repeat(32)}:`, 'state-1']) expect(verifyLifecycleClaim({ ...signed, recordId }).reason).toContain('recordId must be the outpoint')
+    await expect(signLifecycleClaim(historical, wallet)).rejects.toThrow('recordId must be the outpoint')
+  })
 })
