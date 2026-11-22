@@ -94,4 +94,20 @@ A store that fails is not a refusal. When the EPCIS store does not complete a ca
 
 ## The passport page
 
-The API serves the built web app for every path outside `/api`, including a passport's own identifier path `/01/<gtin>/21/<serial>`, so a label's QR code opens the passport page. The page reconstructs the identifier from the current origin and that path, then calls `GET /api/verify` and `GET /api/passports/:ref`. Serving the page at the identifier's path does not yet meet the standard's GS1 discovery profile, which asks that host to resolve `/01/` paths or redirect them to a resolver; the README's next steps say what to change.
+## The identifier host
+
+Outside `/api`, and open. The API answers each passport identifier at its own path as a GS1-Conformant Resolver for GTINs, which the standard's GS1 discovery profile asks of the host an identifier is minted under. Every rule is a helper of `@bsv/dpp-profiles`, and the records are made from the journal for each request (`src/resolver.ts`).
+
+| Route | Returns |
+|---|---|
+| `GET /.well-known/gs1resolver` | The resolver description file: `{ resolverRoot, supportedPrimaryKeys: ['01'], supportedLinkType, linkTypeDefaultCanBeLinkset: false, jsonLdContextLocation }` |
+| `GET /01/<gtin>/21/<serial>` | 307 with `Location: /passport/01/<gtin>/21/<serial>` and the request's query string: the passport page, the item's default link under `gs1:dpp`. With `?linkType=<type>`, 307 to the link of that type, or 404 `link-type-unknown` |
+| The same with `Accept: application/linkset+json`, with `?linkType=linkset`, or with `Accept: application/json` and no `linkType` | 200 `application/linkset+json`: `{ linkset: [{ anchor, <link type>: [{ href, title }] }] }`, the item first and then its GTIN, each anchored at its own identifier under `https://<PASSPORT_HOST>`, with a `Link` header that names GS1's JSON-LD context for linksets. Never a redirect |
+| `GET /01/<gtin>`, a lot, or a serial no passport was issued for, under a GTIN that has passports | 307 to the product page, `/passport/01/<gtin>`, the GTIN's default link under `gs1:pip`; its linkset holds the GTIN's links only |
+| `GET /eh<hexadecimal>` and `GET /ex<base 64>` | A compressed identifier that carries an SGTIN-96 or SGTIN-198 EPC binary string: decompressed, then answered as the identifier it spells |
+
+A path under `/01` that is not a GS1 Digital Link for a GTIN, a GTIN whose check digit fails, and a compressed form that does not decode are 400 `identifier-malformed` with `reason`. A GTIN no passport was issued under is 404 `identifier-unknown`. One trailing slash is tolerated. Every answer carries `Access-Control-Allow-Origin: *` and `Vary: Accept, Accept-Language`; `HEAD` is answered as `GET` without a body, `OPTIONS` with 204, and any other method with 405.
+
+A redirect's `Location` is a path, so it lands on this application wherever it was asked: at `PASSPORT_HOST`, behind a proxy, or at the Vite origin in development, where Vite passes these routes to the API. One difference in development: Vite answers an `OPTIONS` request itself, with its own headers.
+
+The API serves the built web app for every other path outside `/api`, the two public pages among them: `/passport/01/<gtin>/21/<serial>` for a passport and `/passport/01/<gtin>` for a product. The passport page takes the identifier from the passport host and its own path without `/passport`, then calls `GET /api/verify` and `GET /api/passports/:ref`.

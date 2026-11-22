@@ -18,8 +18,8 @@ export const humanise = (key: string): string =>
     .toLowerCase()
     .replace(/^./, (c) => c.toUpperCase())
 
-/** The identifier's own path, `/01/<gtin>/21/<serial>`, which this app serves as the public page. */
-export function publicPathOf(passportId: string): string | undefined {
+/** The identifier's own path, `/01/<gtin>/21/<serial>`: a short form of the identifier to show. The API answers this path as the identifier's resolver. */
+export function identifierPathOf(passportId: string): string | undefined {
   try {
     return new URL(passportId).pathname
   } catch {
@@ -27,9 +27,18 @@ export function publicPathOf(passportId: string): string | undefined {
   }
 }
 
+/** Where the public pages live: each at its identifier's own path after this prefix, where the resolver redirects a browser that asked for the identifier (apps/api/src/resolver.ts). */
+export const PAGE_PREFIX = '/passport'
+
+/** The passport's public page in this app, `/passport/01/<gtin>/21/<serial>`. A link inside the app goes straight to it; what is printed or copied stays the identifier. */
+export function publicPathOf(passportId: string): string | undefined {
+  const path = identifierPathOf(passportId)
+  return path == null ? undefined : `${PAGE_PREFIX}${path}`
+}
+
 /** The GTIN and serial an identifier names, when it is a GS1 Digital Link of the form this app serves. */
 export function parseIdentifier(passportId: string): { gtin: string; serial: string } | undefined {
-  const match = publicPathOf(passportId)?.match(/^\/01\/(\d+)\/21\/([^/]+)$/)
+  const match = identifierPathOf(passportId)?.match(/^\/01\/(\d+)\/21\/([^/]+)$/)
   if (match == null) return undefined
   let serial = match[2]
   try {

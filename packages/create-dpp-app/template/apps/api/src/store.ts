@@ -133,6 +133,8 @@ export interface SpendRecord {
 export interface Store {
   getPassport(passportId: string): Promise<PassportRecord | undefined>
   listPassports(filter?: { brandId?: string }): Promise<PassportRecord[]>
+  /** Whether the journal holds a passport whose identifier begins with this text, such as every item of one GTIN under this host. */
+  anyPassportUnder(idPrefix: string): Promise<boolean>
   savePassport(record: PassportRecord): Promise<void>
   /** Only for a passport whose genesis was never written: a journal with states is never deleted. */
   deletePassport(passportId: string): Promise<void>
@@ -170,6 +172,9 @@ export class MemoryStore implements Store {
   }
   async listPassports(filter: { brandId?: string } = {}) {
     return [...this.passports.values()].filter((p) => filter.brandId == null || p.brandId === filter.brandId).map(clone)
+  }
+  async anyPassportUnder(idPrefix: string) {
+    return [...this.passports.keys()].some((passportId) => passportId.startsWith(idPrefix))
   }
   async savePassport(record: PassportRecord) {
     this.passports.set(record.passportId, clone(record))
@@ -253,6 +258,10 @@ export class MongoStore implements Store {
   async listPassports(filter: { brandId?: string } = {}) {
     const docs = await this.passports.find(filter.brandId == null ? {} : { brandId: filter.brandId }).sort({ createdAt: -1 }).toArray()
     return docs.map((d) => this.strip(d)!)
+  }
+  async anyPassportUnder(idPrefix: string) {
+    // A range over the unique index on passportId: every identifier that begins with the prefix sorts from it to it followed by the highest code point.
+    return (await this.passports.findOne({ passportId: { $gte: idPrefix, $lt: `${idPrefix}\u{10ffff}` } }, { projection: { _id: 1 } })) != null
   }
   async savePassport(record: PassportRecord) {
     await this.passports.replaceOne({ passportId: record.passportId }, record, { upsert: true })
