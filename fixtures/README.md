@@ -86,7 +86,7 @@ One `dpp-managed-acceptance@2` record, as [`../spec/managed-custody.md`](../spec
 
 ## `managed-acceptance-v1.json`
 
-The superseded `dpp-managed-acceptance@1` record, signed with the custodian's identity key directly, as [`../spec/managed-custody.md`](../spec/managed-custody.md) §9 describes. Frozen: nothing writes this format any more, the file has no generator, and a reader reproduces it only to show it still reads the version 1 rule. Its `transfer` is the `TRANSFER` of the `chain-v2.json` that was current when the record was pinned, which the chain fixture has since left behind; the record and that transaction still bind to each other. Six refusals with the three separate verdicts, as above without the direct-signature case.
+The superseded `dpp-managed-acceptance@1` record, signed with the custodian's identity key directly, as [`../spec/managed-custody.md`](../spec/managed-custody.md) §9 describes. Frozen: this repository no longer writes this format, which packages published before `dpp-release-2026-11` still do, the file has no generator, and a reader reproduces it only to show it still reads the version 1 rule. Its `transfer` is the `TRANSFER` of the `chain-v2.json` that was current when the record was pinned, which the chain fixture has since left behind; the record and that transaction still bind to each other. Six refusals with the three separate verdicts, as above without the direct-signature case.
 
 ## `evidence-v2.json`
 

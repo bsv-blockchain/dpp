@@ -1762,7 +1762,7 @@
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
       "clause": "§2",
-      "summary": "tm_dpp admits a version 2 state only when its lineage genesis is traceable through the submitted bytes or the admitted history, never after a RETIRE, never as a genesis spending an admitted output, and under managed-custody@1 never as a TRANSFER without its commitment; the refused spend keeps the tip.",
+      "summary": "tm_dpp admits a version 2 state only when its lineage genesis is traceable through the submitted bytes or the admitted history, never after a RETIRE, never as a genesis spending an admitted output, and under managed-custody@2, or the superseded managed-custody@1, never as a TRANSFER without its commitment; the refused spend keeps the tip.",
       "layer": "role",
       "roles": [
         "overlay"
@@ -1781,9 +1781,9 @@
         "fixtures/chain-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged."
+      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged. Re-read 2026-11-22: the summary named managed-custody@1 alone where §2 names managed-custody@2 or the superseded managed-custody@1, and now follows §2; the assessment is unchanged."
     },
     {
       "id": "SVC-2-anchor-admission",
@@ -5074,7 +5074,7 @@
     {
       "id": "managed-custody-1",
       "minimumStatus": "tested",
-      "description": "The superseded managed-custody@1 profile as a reader meets it: records signed with the custodian's identity key directly, read under spec/managed-custody.md §9, with the acceptance record's binding, the report, the index's admission and declaration as version 2 defines them. Nothing writes version 1 records; no claim covers writing them.",
+      "description": "The superseded managed-custody@1 profile as a reader meets it: records signed with the custodian's identity key directly, read under spec/managed-custody.md §9, with the acceptance record's binding, the report, the index's admission and declaration as version 2 defines them. This repository writes no version 1 record, while packages published before dpp-release-2026-11 and deployments built on them still do; no claim covers writing them.",
       "requires": [
         "MC-9-version-1-records",
         "MC-4-transfer-binding",

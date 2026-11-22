@@ -206,7 +206,7 @@ export const OUTPOINT_FIELD_BYTES = 36
  * and commits to that record on chain. Version 2 signs the record with a
  * derived key (below); version 1 signed it with the custodian's identity key
  * directly, which a BRC-100 wallet cannot do, and is superseded. A reader
- * reads both; nothing writes version 1.
+ * reads both; this package writes version 2 only.
  */
 export const MANAGED_CUSTODY_PROFILE = 'managed-custody@2'
 export const MANAGED_CUSTODY_PROFILE_V1 = 'managed-custody@1'
