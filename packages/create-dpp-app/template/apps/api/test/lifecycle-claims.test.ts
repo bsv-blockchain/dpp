@@ -17,6 +17,7 @@ import * as claimsModule from '../src/claims.js'
 import { compareLifecycleProduct } from '../src/lifecycle.js'
 import { mintPassportId } from '../src/identifiers.js'
 import { samplePayload } from '../src/profiles.js'
+import { MemoryStore, type EpcisLifecycleClaimRecord } from '../src/store.js'
 import { HISTORICAL_LABEL, LIFECYCLE_NOTICE, correctionLabel, emptyEventForm, eventFromForm, findingRows, participationLabel, type LifecycleClaimView, type PassportClaimsReading } from '../../web/src/lib/lifecycle'
 import { epcisDocument, startApp, testConfig, utf8, type Answer, type TestApp } from './epcis-fixtures.js'
 import { PALLET, PARTY, PLACE, base, classOf, sgtinOf, startTestRegistry, type Json, type TestRegistry } from './lifecycle-fixtures.js'
@@ -236,6 +237,28 @@ describe('discovery from verified claims', () => {
     expect(found).toMatchObject({ foundBy: ['anchor'], held: true, participation: 'item' })
     expect(found!.findings!.anchorCommitment.status).toBe('pass')
     expect(found!.record).toBeUndefined()
+    // The bytes came from the member the registry contract gives them, in an answer with every member the contract requires.
+    const proof = (await (await fetch(`${registry.url}/attestations/${ref(view.attestationId)}/proof`)).json()) as Json
+    expect(Object.keys(proof)).toEqual(expect.arrayContaining(['attestationId', 'attestation', 'claimRelations', 'canonical', 'digest', 'algorithm', 'anchored']))
+    expect(`urn:sha256:${Utils.toHex(Hash.sha256(Utils.toArray(proof.securedBytes as string, 'utf8')))}`).toBe(view.attestationId)
+    expect(proof).not.toHaveProperty('envelope')
+  })
+
+  it('reports a registry refusal by the outcome and the first issue the registry contract gives it', async () => {
+    const view = await issued(P.moduleB, { event: { type: 'ObjectEvent', ...base(15), epcList: [P.moduleB], action: 'OBSERVE', bizStep: 'inspecting', disposition: 'conformant' }, assertedRole: 'observer' })
+    const record = (await api.platform.store.listClaims({ passportId: P.moduleB })).find((c) => c.id === view.record!.id) as EpcisLifecycleClaimRecord
+    // Sent from a store of its own, so the application's own record stays as it was signed.
+    const claims = new claimsModule.Claims({ store: new MemoryStore(), registry: { url: registry.url } })
+    // Changed after signing: the registry's own verification refuses the claim.
+    const altered = await claims.submit({ ...record, bytes: record.bytes.replace('"inspecting"', '"repairing"') })
+    expect(altered.registry).toEqual({ url: registry.url, status: 422, accepted: false, detail: 'invalid: the claim does not verify' })
+    // Sent for a passport the claim does not bind.
+    const unbound = await claims.submit({ ...record, passportId: P.bystander })
+    expect(unbound.registry).toEqual({ url: registry.url, status: 422, accepted: false, detail: `invalid: subject mismatch: the claim does not bind ${P.bystander}` })
+    // A refusal that is not a verification outcome keeps its error.
+    const gone = await new claimsModule.Claims({ store: new MemoryStore(), registry: { url: `${registry.url}/nowhere` } }).submit({ ...record })
+    expect(gone.registry).toEqual({ url: `${registry.url}/nowhere`, status: 404, accepted: false, detail: 'not_found' })
+    expect(registry.held.has(view.attestationId)).toBe(false)
   })
 })
 

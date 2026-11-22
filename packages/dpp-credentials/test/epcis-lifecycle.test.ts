@@ -334,6 +334,26 @@ describe('the verification report', () => {
     expect(other.proof).toMatchObject({ status: 'unknown', reasonCode: 'representation-unsupported' })
   })
 
+  it('reads a claim bound to several passports from each of them when all of its anchors are supplied', async () => {
+    const v = vector('transformation-event-manufacturing')
+    const bound: string[] = v.expected.bound_passports
+    expect(bound).toHaveLength(4)
+    const evidence = { anchors: (v.input.options.anchors_hex as string[]).map((lockingScript) => ({ lockingScript, securedBytes: v.input.claim as string })) }
+    const policy = { checkedAt: '2026-11-16T00:00:00Z', credentialVerifier: epcisLifecycleCredentialVerifierFor(optionsOf(v.input.options)), authority: { required: false, reason: 'not under test' } }
+    const check = async (anchors: typeof evidence.anchors, passportId: string, name: string) => (await verifyPassportEvidence({ anchors }, { passportId, source: 'request-context' }, policy)).checks.find((k) => k.name === name)!
+    // One anchor per bound passport (spec/epcis-lifecycle-claim.md section 8): the anchors for the other bound passports are no mismatch for the one being read.
+    for (const passportId of bound) {
+      expect((await check(evidence.anchors, passportId, 'anchorDigestAndMetadataBinding')).status, passportId).toBe('pass')
+      expect(await check(evidence.anchors, passportId, 'subjectBinding'), passportId).toMatchObject({ status: 'pass', detail: { otherSubjects: bound.filter((p) => p !== passportId) } })
+    }
+    // A passport the claim does not bind is not read from it, whatever the anchors name.
+    expect(await check(evidence.anchors, P.battery, 'subjectBinding')).toMatchObject({ status: 'fail', reasonCode: 'subject-mismatch' })
+    // An anchor about a subject the claim does not bind is still a mismatch in the report.
+    const stray = vector('anchor-about-unbound-subject')
+    const withStray = (stray.input.options.anchors_hex as string[]).map((lockingScript) => ({ lockingScript, securedBytes: stray.input.claim as string }))
+    expect(await check(withStray, P.battery2, 'subjectBinding')).toMatchObject({ status: 'fail', reasonCode: 'subject-mismatch' })
+  })
+
   it('reports a declared-in-error claim as a failed status entry', async () => {
     const v = vector('error-declaration-itself')
     const entries = lifecycle.epcisLifecycleReportEntries(await runVector(v.input.claim, v.input.options))

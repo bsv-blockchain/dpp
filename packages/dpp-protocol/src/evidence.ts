@@ -807,11 +807,21 @@ export async function verifyPassportEvidence(
         problems.push({ reasonCode: 'issuer-mismatch', detail: `native claim ${c.ref} is issued by ${c.claim.issuer}` })
       }
     }
+    // A credential that names several subjects may be anchored once for each,
+    // and a reader of one of them may hold all of those anchors
+    // (spec/verification.md section 4). An anchor that commits to a verified
+    // credential and names another of its subjects concerns that subject: it
+    // is named in the detail and is no mismatch for the passport being read.
+    const otherSubjects: string[] = []
     for (const a of anchors) {
       if (a.metadata == null) continue
       subjectRefs.push(a.ref)
       const accepted = [expected.passportId, ...(expected.productIdentifier == null ? [] : [expected.productIdentifier])]
-      if (!accepted.includes(a.metadata.subject)) problems.push({ reasonCode: 'subject-mismatch', detail: `anchor ${a.ref} names ${a.metadata.subject}` })
+      if (accepted.includes(a.metadata.subject)) continue
+      const committed = verifications.get(a.metadata.digest)
+      if (committed?.proof.status === 'pass' && committed.subjects?.includes(a.metadata.subject) === true) {
+        if (!otherSubjects.includes(a.metadata.subject)) otherSubjects.push(a.metadata.subject)
+      } else problems.push({ reasonCode: 'subject-mismatch', detail: `anchor ${a.ref} names ${a.metadata.subject}` })
     }
     for (const [digest, v] of verifications) {
       subjectRefs.push(digestRef(digest))
@@ -822,7 +832,7 @@ export async function verifyPassportEvidence(
       problems.push({ reasonCode: 'genesis-ambiguous', detail: `${rivalGenesis.length + 1} valid genesis records carry this passport identifier` })
     }
     if (subjectRefs.length === 0) subjectBinding = check('subjectBinding', 'unknown', 'no-evidence')
-    else if (problems.length === 0) subjectBinding = check('subjectBinding', 'pass', undefined, subjectRefs)
+    else if (problems.length === 0) subjectBinding = check('subjectBinding', 'pass', undefined, subjectRefs, otherSubjects.length === 0 ? {} : { detail: { otherSubjects } })
     else {
       const ambiguous = problems.every((p) => p.reasonCode === 'genesis-ambiguous')
       subjectBinding = check('subjectBinding', ambiguous ? 'unknown' : 'fail', problems[0].reasonCode, subjectRefs, { detail: problems })

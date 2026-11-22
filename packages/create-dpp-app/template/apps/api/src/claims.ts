@@ -61,6 +61,20 @@ export interface IssueClaimInput {
 
 const now = (): string => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 
+/**
+ * What a registry's answer says when it did not accept the claim, in the
+ * registry contract's members: a verification refusal carries `outcome` and
+ * `issues`, and is reported as the outcome and the first issue; any other
+ * refusal carries `error`.
+ */
+function refusalDetail(body: { outcome?: unknown; issues?: unknown; error?: unknown }): string | undefined {
+  if (typeof body.outcome === 'string') {
+    const first: unknown = Array.isArray(body.issues) ? body.issues[0] : undefined
+    return first == null ? body.outcome : `${body.outcome}: ${typeof first === 'string' ? first : JSON.stringify(first)}`
+  }
+  return typeof body.error === 'string' ? body.error : undefined
+}
+
 export class Claims {
   constructor(private readonly options: ClaimsOptions) {}
 
@@ -160,13 +174,14 @@ export class Claims {
       await this.options.store.saveClaim(record)
       return record
     }
-    const body = (await response.json().catch(() => ({}))) as { accepted?: boolean; attestationId?: string; description?: string; error?: string }
+    const body = (await response.json().catch(() => ({}))) as { accepted?: boolean; attestationId?: string; outcome?: unknown; issues?: unknown; error?: unknown }
+    const detail = refusalDetail(body)
     record.registry = {
       url: registry.url,
       status: response.status,
       accepted: response.status === 202 && body.accepted === true,
       ...(body.attestationId == null ? {} : { attestationId: body.attestationId }),
-      ...((body.description ?? body.error) == null ? {} : { detail: body.description ?? body.error }),
+      ...(detail == null ? {} : { detail }),
     }
     await this.options.store.saveClaim(record)
     return record

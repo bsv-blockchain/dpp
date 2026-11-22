@@ -6,9 +6,11 @@
 // `dpp-epcis-lifecycle-json@1`, and no more: it verifies the claim, keeps
 // the exact bytes, anchors them once per bound passport in one transaction
 // on the index's `tm_attestation`, and serves the bytes from its proof
-// route. It is not the reference registry, listens on 127.0.0.1 only, and
-// funds its transactions the way the test wallet does, with made-up coins
-// only an index with its header checks off takes.
+// route. Its proof answer and its refusals have the members the contract
+// gives them: `securedBytes` for the exact bytes, `outcome` and `issues`
+// for a refusal. It is not the reference registry, listens on 127.0.0.1
+// only, and funds its transactions the way the test wallet does, with
+// made-up coins only an index with its header checks off takes.
 import { once } from 'node:events'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
@@ -83,8 +85,10 @@ export async function startTestRegistry(index: () => { url: string; submitToken:
   const anchoredBy = key.toPublicKey().toString()
   const held = new Map<string, string>()
   const anchors: Transaction[] = []
+  /** The transaction that anchors each held claim, by attestation identifier. */
+  const anchoredIn = new Map<string, string>()
 
-  const write = async (scripts: LockingScript[]): Promise<void> => {
+  const write = async (scripts: LockingScript[]): Promise<string> => {
     const tx = new Transaction()
     tx.addInput({ sourceTransaction: funding(), sourceOutputIndex: 0, unlockingScript: new UnlockingScript([]) })
     for (const lockingScript of scripts) tx.addOutput({ satoshis: 1, lockingScript })
@@ -92,6 +96,7 @@ export async function startTestRegistry(index: () => { url: string; submitToken:
     const response = await fetch(`${url}/submit`, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Topics': JSON.stringify(['tm_attestation']), Authorization: `Bearer ${submitToken}` }, body: new Uint8Array(tx.toAtomicBEEF()) })
     if (!response.ok) throw new Error(`the index answered HTTP ${response.status} to the anchors`)
     anchors.push(tx)
+    return tx.id('hex')
   }
 
   const server: Server = createServer((request, response) => {
@@ -103,15 +108,15 @@ export async function startTestRegistry(index: () => { url: string; submitToken:
         const answer = (status: number, body: unknown): void => void response.writeHead(status, { 'content-type': 'application/json' }).end(JSON.stringify(body))
         if (request.method === 'POST' && url.pathname === '/attestations') {
           const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as { representation?: string; claim?: string; subject?: string }
-          if (body.representation !== EPCIS_LIFECYCLE_REPRESENTATION || typeof body.claim !== 'string') return answer(422, { outcome: 'unsupported', description: 'this stand-in admits dpp-epcis-lifecycle-json@1 only' })
+          if (body.representation !== EPCIS_LIFECYCLE_REPRESENTATION || typeof body.claim !== 'string') return answer(422, { outcome: 'unsupported', issues: ['representation-unsupported: this stand-in admits dpp-epcis-lifecycle-json@1 only'] })
           const verified = await verifyEpcisLifecycleClaim(body.claim)
-          if (verified.findings.signature.status !== 'pass' || verified.findings.eventStructure.status === 'fail') return answer(422, { outcome: 'invalid', description: 'the claim does not verify' })
-          if (body.subject != null && !verified.boundPassports.includes(body.subject)) return answer(422, { outcome: 'invalid', error: 'subject_mismatch', description: `the claim does not bind ${body.subject}` })
+          if (verified.findings.signature.status !== 'pass' || verified.findings.eventStructure.status === 'fail') return answer(422, { outcome: 'invalid', issues: ['the claim does not verify'], checks: verified.findings })
+          if (body.subject != null && !verified.boundPassports.includes(body.subject)) return answer(422, { outcome: 'invalid', issues: [`subject mismatch: the claim does not bind ${body.subject}`], checks: verified.findings })
           if (!held.has(verified.attestationId!)) {
             const claim = parseEpcisLifecycleClaim(body.claim)
             const scripts: LockingScript[] = []
             for (const metadata of epcisLifecycleAnchorMetadata(claim, anchoredBy)) scripts.push(await buildAttestationAnchor(metadata, wallet))
-            await write(scripts)
+            anchoredIn.set(verified.attestationId!, await write(scripts))
             held.set(verified.attestationId!, body.claim)
           }
           return answer(202, { accepted: true, attestationId: verified.attestationId, digest: verified.digest, representation: EPCIS_LIFECYCLE_REPRESENTATION, mediaType: EPCIS_LIFECYCLE_MEDIA_TYPE, verdict: 'valid' })
@@ -120,7 +125,21 @@ export async function startTestRegistry(index: () => { url: string; submitToken:
         if (request.method === 'GET' && proof != null) {
           const id = decodeURIComponent(proof[1]!)
           const bytes = held.get(id)
-          return bytes == null ? answer(404, { error: 'not_found' }) : answer(200, { attestationId: id, envelope: bytes, representation: EPCIS_LIFECYCLE_REPRESENTATION })
+          if (bytes == null) return answer(404, { error: 'not_found' })
+          // The contract's AnchorProof: the exact bytes travel as `securedBytes`, and as `canonical` for a reader of older records.
+          return answer(200, {
+            attestationId: id,
+            attestation: JSON.parse(bytes),
+            claimRelations: { relations: [], derived: [], conflicts: [], notProduced: ['supersedes', 'disputes'], evaluatedAt: new Date().toISOString() },
+            canonical: bytes,
+            securedBytes: bytes,
+            representation: EPCIS_LIFECYCLE_REPRESENTATION,
+            mediaType: EPCIS_LIFECYCLE_MEDIA_TYPE,
+            digest: id.slice('urn:sha256:'.length),
+            algorithm: 'SHA-256 over the exact secured bytes, hex',
+            anchored: true,
+            anchor: { recordId: anchoredIn.get(id), outputIndex: 0, format: 'bsv-attestation-anchor-v1' },
+          })
         }
         answer(404, { error: 'not_found' })
       })().catch((cause: unknown) => void response.writeHead(500).end(String(cause)))
