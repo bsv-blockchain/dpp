@@ -46,12 +46,12 @@ The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab19
 
 ## Declare what you support
 
-A capability document declares supported and unsupported features as JSON under the [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json). Reviewers check this support claim against the ledger; it is not proof of conformance ([conformance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/conformance.md) section 4). An index serves it at `GET /capabilities`; a library or tool publishes it with its report.
+A capability document declares supported and unsupported features as JSON under the [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json). Reviewers check this support claim against the ledger; it is not proof of conformance ([conformance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/conformance.md) section 4). An index or a registry serves it at `GET /capabilities`; a library or tool publishes it with its report.
 
 | Requiredness | Fields |
 |---|---|
 | Required | `capabilitiesVersion`, `implementation`, `roles`, `protocols`, `profiles`, `representations`, `proofSuites`, `anchorFormats`, `unsupported` |
-| Services, where applicable | `topics`, `services`, `publisherPolicy`, `synchronisation`, `limits` |
+| Services, where applicable | `topics`, `services`, `publisherPolicy`, `synchronisation`, `limits`; `interoperability` for a registry |
 
 The [reference index's document](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/examples/capabilities-reference-node.json) shows service fields.
 

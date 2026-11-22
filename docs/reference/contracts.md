@@ -157,7 +157,7 @@ The answer names its contract and checks, with a shared `report` when the subjec
 | `POST /attestations` | Bearer write token when the registry sets one | Verifies and stores a claim, then reports its anchor; 422 when verification fails, the representation is unsupported, such as a parked `vsc-seal-json-v1` SEAL, or the body names no current representation, such as a historical UORA body, with nothing stored |
 | `GET /attestations`, `GET /attestations/{id}/proof` | Open | The stored claims in pages, and everything a third party needs to check one claim's anchor |
 | `GET /chain`, `GET /passports/{passportId}/evidence-package` | Open | A passport's custody timeline, and its evidence package, signed by the child of the registry's anchoring identity for the passport |
-| `GET /capabilities` | Open | The registry's own capability document, which may name its anchoring key as `anchoredBy`, the identity its evidence packages name as exporter |
+| `GET /capabilities` | Open | The capability document every role serves, with the members the contract asks of a registry; it may name the registry's anchoring key under `publisherPolicy.anchoringServices` and, as `exporterIdentityKey`, the identity its evidence packages name as exporter |
 
 The GS1 resolver a registry may run is the [GS1 discovery](../interoperability/gs1-discovery.md) profile's, outside the registry contract. EPCIS import and passport projection routes are the reference application's own, not a contract of the standard ([interoperability](../interoperability/README.md)).
 
@@ -178,7 +178,7 @@ A 200 carries the engine's own result, including one that says it could not fini
 
 | Schema | Defines |
 |---|---|
-| [capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) | An index's or implementation's capability document |
+| [capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) | An index's, registry's or other implementation's capability document |
 | [publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/publisher-policy.schema.json) | One version of a publisher policy, `dpp-publisher-policy@1` |
 | [verification-report.schema.json](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) | The report a reader produces for one passport |
 | `contracts/verification-report-v1.schema.json` | Report version 1, for validating a stored version 1 report |

@@ -57,7 +57,7 @@ The registry contract lists seven operations, and they are all it lists. Impleme
 
 | Operation | What it must do | Package support |
 |---|---|---|
-| `GET /capabilities` | Declare the representations, proof suites, topic and lookup service, interoperability profiles and explicit `unsupported` entries, and name your anchoring key, under `publisherPolicy.anchoringServices` in the schema's document or as `anchoredBy` in the contract's, so a verifier can tell your anchors from others'; never a certification claim | The [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) and the contract's [capabilities operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml#L111-L120), which define two different documents (see below) |
+| `GET /capabilities` | Serve the capability document every role serves: declare the `registry` role, the contract, the representations, proof suites, topic and lookup service, interoperability profiles and explicit `unsupported` entries, and name your anchoring key under `publisherPolicy.anchoringServices`, so a verifier can tell your anchors from others'; never a certification claim | The [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json), with the members the contract asks of a registry (see below) |
 | `POST /validate` | Verify without storing, as above | `verifyLifecycleClaim`, `verifyPassportEvidence` |
 | `POST /attestations` | Verify the explicit secured representation under the declared policy; store the exact bytes with their media type, representation, digest and scoped report; refuse an invalid or unsupported submission by name (a `vsc-seal-json-v1` SEAL, whose profile is parked, as `unsupported` with `representation-unsupported`, and a body naming no current representation, a historical UORA body among them, as `invalid`); store a duplicate once; report acceptance, anchoring and inclusion as separate fields | `verifyLifecycleClaim`, `lifecycleClaimBytes`, `lifecycleClaimDigest` |
 | `GET /attestations` | Page the held records over a stable snapshot | The contract's cursor and snapshot rules |
@@ -84,14 +84,25 @@ Given an anchor without its claim bytes, six checks remain `unknown` ([full comp
 | `anchorDigestAndMetadataBinding` | `unknown` | `secured-bytes-absent` |
 | `evidenceAvailability` | `unknown` | `referenced-artefact-unavailable` |
 
-The two capability documents are not one:
+A registry serves one capability document, the one [conformance](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) section 4 requires of every implementation and an index serves at the same route. The registry contract asks these members of it; `conformance/examples/capabilities-registry.json` in the repository is a complete example.
 
-| Document | Fields and scope |
-|---|---|
-| DPP [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) | `capabilitiesVersion`, `implementation`, `roles`, `protocols`, `profiles`, `anchorFormats`; required of every implementation by [conformance](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) section 4. |
-| Registry contract's `Capabilities` | `protocol: attestation-registry/1`, `representations`, `proofSuites`, `unsupported`, which names the parked `vsc-seal-json-v1` and, where historical records are held, `legacy-uora-json`; served by the hosted demonstration registry. |
+| Member | What a registry declares | In the earlier registry document |
+|---|---|---|
+| `capabilitiesVersion` | `"1"` | Absent |
+| `implementation` | Your registry's `name` and `version`; optionally `sourceRevision` and `baselineId` | Absent |
+| `roles` | `registry`, beside any other role you claim | Absent |
+| `protocols` | `{ "id": "attestation-registry", "version": "1" }`. You should also name `registry-http` at the contract version you implement and each anchor protocol you write, such as `bsv-attestation-anchor` at `1` | `protocol: "attestation-registry/1"` |
+| `profiles` | The exact profiles you implement, such as the exchange profile `vc-di-ecdsa-rdfc-2019` at `1`; an empty list when you name none | Absent |
+| `representations` | One object for each representation intake accepts: its `id`, its `mediaType` and `verification: "content"` | A list of the identifiers alone |
+| `proofSuites` | The proof suites you verify | Unchanged |
+| `anchorFormats` | Each anchor format you write or still hold records under, with its status, such as `bsv-attestation-anchor-v1` as `current`; an empty list when you anchor nothing | Absent |
+| `topics` and `services` | `tm_attestation` and `ls_attestation` | `topic` and `lookupService` |
+| `interoperability` | `discovery`, `externalCredential` and `externalCredentialPolicy`, with `resolverOrigin` when you serve a resolver | Unchanged |
+| `publisherPolicy.anchoringServices` | Your anchoring identity key, when you anchor | `anchoredBy` |
+| `exporterIdentityKey` | The identity key your evidence packages name as `exporter.id`, when you sign packages | `anchoredBy` |
+| `unsupported` | What you do not implement, each with only an `id` and a `reason`: the parked `vsc-seal-json-v1` and, where historical records are held, `legacy-uora-json` | Unchanged |
 
-Serve the schema's document to conform. Which document `GET /capabilities` answers with is not settled yet. Stop before claiming that either shape resolves which document the route serves.
+The schema refuses a member it does not define, so the earlier members cannot stay beside these. An earlier draft of the registry contract defined a document of its own for this route, the third column, which a registry could not serve together with this one. The hosted demonstration registry still serves that earlier document until it is redeployed, so read a registry's anchoring key from `publisherPolicy.anchoringServices` first and from `anchoredBy` where that is absent, as `examples/check-registry.mjs` does.
 
 ## Add storage and retrieval
 

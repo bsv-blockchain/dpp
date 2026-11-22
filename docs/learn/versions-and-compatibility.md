@@ -85,7 +85,7 @@ custody managed-custody 2 {"acceptanceCommitment":"required","controlAuthorities
 
 3. Check required history, export and profile operations in [Contracts](../reference/contracts.md). Reachability alone does not establish support; that guide defines the capability request and operations.
 
-For a registry, read `protocol` to check its contract. Its `GET /capabilities` does not yet return the index document: the hosted registry returns its own contract document with `attestation-registry/1`. Which document a registry should serve remains unsettled ([known limitations](../operate/limitations.md)).
+A registry serves the same document at `GET /capabilities`: read `protocols` for `attestation-registry` to check its contract. The hosted registry does not yet: until it is redeployed it returns the earlier contract's document, whose `protocol` reads `attestation-registry/1` ([known limitations](../operate/limitations.md#capability-documents)).
 
 ## Find the exact definition
 

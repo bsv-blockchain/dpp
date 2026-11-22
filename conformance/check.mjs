@@ -18,7 +18,7 @@
  * rows for the role, and those rows include the frozen native-baseline@1
  * rows for the role; every report
  * in fixtures/evidence-v1.json and fixtures/evidence-v2.json validates
- * against the report schema with its checks in the schema's order; the example capability document validates;
+ * against the report schema with its checks in the schema's order; the example capability documents validate;
  * the operator preset under deploy/ names the images the current release set records, each by digest;
  * and the recorded dependency licences match what is installed.
  *
@@ -394,8 +394,9 @@ for (const dir of readdirSync(join(root, 'packages'))) {
   else if (Object.keys(manifest.devDependencies ?? {}).some((name) => /mongodb-memory-server/.test(name))) note(`${manifest.name} names the test-time MongoDB server as a development dependency only.`)
 }
 
-// 5. The capability document.
+// 5. The capability document: one schema for every role, an index's and a registry's.
 validateWith('contracts/capabilities.schema.json', read('conformance/examples/capabilities-reference-node.json'), 'conformance/examples/capabilities-reference-node.json')
+validateWith('contracts/capabilities.schema.json', read('conformance/examples/capabilities-registry.json'), 'conformance/examples/capabilities-registry.json')
 
 // 6. Licences, as recorded against what is installed.
 if (existsSync(join(root, 'conformance/licences.json'))) {

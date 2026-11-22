@@ -17,8 +17,8 @@
  *   4. binding            the anchor commits to this digest and names this claim
  *   5. inclusion          the anchor transaction's merkle path matches a block header
  *   6. anchoring service  the key that wrote the anchor is one you accept, or else one the
- *                         registry's capability document names (anchoredBy in the registry
- *                         contract's document, publisherPolicy.anchoringServices in the schema's)
+ *                         registry's capability document names (publisherPolicy.anchoringServices,
+ *                         or anchoredBy from a registry still on the earlier contract)
  *
  * The registry hands over the stored bytes and says which transaction holds
  * the anchor. Everything else comes from the chain: the transaction
@@ -158,7 +158,7 @@ function fixtureSources() {
       records: async () => [...proofs.values()].map(({ attestationId, representation }) => ({ attestationId, representation })),
       proof: async (attestationId) => proofs.get(attestationId),
       // The test registry names its anchoring key, as a registry under the contract may.
-      capabilities: async () => ({ anchoredBy: native.anchor.anchoredBy }),
+      capabilities: async () => ({ publisherPolicy: { anchoringServices: [native.anchor.anchoredBy] } }),
     },
     chain: {
       transaction: async (txid) => transactions.get(txid) ?? null,
@@ -339,8 +339,9 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
 const sources = fixtureMode
   ? fixtureSources()
   : { registry: liveRegistry(registryUrl), chain: liveChain(), accepted: option('anchoring-services')?.split(',').filter(Boolean) }
-// The registry contract's document names the key as anchoredBy; the capabilities schema's names
-// its anchoring services under publisherPolicy.anchoringServices. Read whichever the registry serves.
+// The capability document names the registry's anchoring keys under publisherPolicy.anchoringServices
+// (contracts/registry.yaml). A registry still on the earlier contract names one key as anchoredBy;
+// read whichever the registry serves.
 const capabilities = await sources.registry.capabilities()
 const named = [capabilities.anchoredBy, ...(Array.isArray(capabilities.publisherPolicy?.anchoringServices) ? capabilities.publisherPolicy.anchoringServices : [])]
 sources.registryKeys = [...new Set(named.filter((k) => typeof k === 'string' && /^0[23][0-9a-f]{64}$/.test(k)))]

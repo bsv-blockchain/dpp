@@ -76,7 +76,7 @@ The overlay package keeps SHIP peer discovery and SHIP/SLAP advertising as optio
 |---|---|---|
 | An index on an earlier release names no exporter key | Its capability document carries no `exporterIdentityKey`, and its packages are signed with a raw key. | Use the [hosted reference key](../deployment.md#the-hosted-reference); ask other operators for theirs. From this release an index names `exporterIdentityKey`, which you still compare with the key its operator gives you. |
 | Operator names bind no key | Documents can share a name. | [Distinguish operators by keys](federation.md#tell-operators-apart). |
-| Registry capabilities have two definitions | The capabilities schema and registry contract locate the anchoring key differently; which document `GET /capabilities` returns is unsettled. | Conform by serving the schema document with the anchoring key under `publisherPolicy.anchoringServices`. Verifiers read that or the contract's `anchoredBy` ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)). |
+| The hosted registry serves an earlier capability document | The registry contract now asks a registry for the capability document every role serves. Until it is redeployed, the hosted registry answers `GET /capabilities` with the contract's earlier document: `protocol`, `topic` and `lookupService`, no `capabilitiesVersion`, `implementation` or `roles`, and no anchoring key. | Build your registry to the current document, with the anchoring key under `publisherPolicy.anchoringServices`. Verifiers read that, or `anchoredBy` from a registry on the earlier contract ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)). |
 
 ## Finding records
 

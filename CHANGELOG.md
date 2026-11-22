@@ -148,6 +148,7 @@ What it waits on before publication: each disposition the inventory lists as ope
 - `signLifecycleClaim` is marked deprecated in favour of the EPCIS lifecycle claim. It is unchanged and is kept, with the native format, for reading historical claims.
 - The `@bsv/dpp-credentials` archive no longer carries the build output of the parked signed-event module, which no entry point loads.
 - `scripts/deployment-inventory.mjs` recognises the full W3C licence text by its clauses, so the `w3c-context` disposition reads `held`.
+- A registry serves the one capability document at `GET /capabilities`. The registry contract, still `0.6.0`, drops the document of its own that no registry could serve together with the one `spec/conformance.md` §4 requires: a registry now declares `capabilitiesVersion`, `implementation`, `roles`, `protocols`, `profiles` and `anchorFormats` under `contracts/capabilities.schema.json`, names `tm_attestation` under `topics` and `ls_attestation` under `services`, lists each representation as an object, and names its anchoring key under `publisherPolicy.anchoringServices` and `exporterIdentityKey` in place of `anchoredBy`. The schema gains the optional `interoperability` member, which a registry declares unchanged, and `conformance/examples/capabilities-registry.json` is an example. An index's document does not change. The reference registry still serves the earlier document ([registry](docs/implement/roles/registry.md#the-minimum-a-registry-serves) lists every member).
 
 ## Published releases
 
