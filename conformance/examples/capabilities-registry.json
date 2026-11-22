@@ -1,0 +1,87 @@
+{
+  "capabilitiesVersion": "1",
+  "implementation": {
+    "name": "example-attestation-registry",
+    "version": "0.1.0"
+  },
+  "roles": [
+    "registry"
+  ],
+  "protocols": [
+    {
+      "id": "attestation-registry",
+      "version": "1"
+    },
+    {
+      "id": "registry-http",
+      "version": "0.6.0"
+    },
+    {
+      "id": "bsv-attestation-anchor",
+      "version": "1"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "vc-di-ecdsa-rdfc-2019",
+      "version": "1",
+      "kind": "exchange"
+    }
+  ],
+  "representations": [
+    {
+      "id": "dpp-lifecycle-json-v1",
+      "mediaType": "application/json",
+      "verification": "content"
+    },
+    {
+      "id": "vc-di-ecdsa-rdfc-2019@1",
+      "mediaType": "application/vc+ld+json",
+      "verification": "content"
+    }
+  ],
+  "proofSuites": [
+    "ecdsa-rdfc-2019"
+  ],
+  "anchorFormats": [
+    {
+      "prefix": "bsv-attestation-anchor-v1",
+      "status": "current"
+    }
+  ],
+  "topics": [
+    "tm_attestation"
+  ],
+  "services": [
+    "ls_attestation"
+  ],
+  "publisherPolicy": {
+    "anchoringServices": [
+      "037962d45b38e8bcf82fa8efa8432a01f20c9a53e24c7d3f11df197cb8e70926da"
+    ]
+  },
+  "exporterIdentityKey": "037962d45b38e8bcf82fa8efa8432a01f20c9a53e24c7d3f11df197cb8e70926da",
+  "interoperability": {
+    "discovery": "not-configured",
+    "externalCredential": "vc-di-ecdsa-rdfc-2019@1",
+    "externalCredentialPolicy": "configured"
+  },
+  "unsupported": [
+    {
+      "id": "en18223-serialisation",
+      "reason": "Not implemented: no representation, media type, schema artefact or conformance clause of EN 18223 is claimed."
+    },
+    {
+      "id": "eu-dpp-registry-adapter",
+      "reason": "No adapter to the Union digital product passport registry: a supplied registration reference is stored as an opaque, unverified string."
+    },
+    {
+      "id": "vsc-seal-json-v1",
+      "reason": "Parked with the vsc-draft-compat/0.1.0 profile: a new submission is refused as representation-unsupported, and nothing is verified, stored or anchored."
+    },
+    {
+      "id": "dpp-epcis-lifecycle-json@1",
+      "reason": "Not implemented: an EPCIS lifecycle claim is refused as representation-unsupported."
+    }
+  ]
+}

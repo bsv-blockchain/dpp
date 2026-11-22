@@ -114,10 +114,10 @@ paths:
 
   /capabilities:
     get:
-      summary: Current representations, discovery and overlay contracts, and what is explicitly not supported; no certification claim.
+      summary: The registry's capability document, in the shape contracts/capabilities.schema.json fixes for every role; no certification claim.
       responses:
         '200':
-          description: Supported representations and proof suites, the interoperability profiles in force, tm_attestation, ls_attestation, and under `unsupported` the two readiness statements, the parked `vsc-seal-json-v1` and, on a registry holding historical records, `legacy-uora-json`.
+          description: The capability document of the standard's spec/conformance.md section 4, as a registry declares it. It names the registry role, this contract, tm_attestation and ls_attestation, the supported representations and proof suites, the interoperability profiles in force and, under `unsupported`, the two readiness statements, the parked `vsc-seal-json-v1` and, on a registry holding historical records, `legacy-uora-json`.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Capabilities' }
@@ -538,44 +538,40 @@ components:
         tokenHistory: { $ref: '#/components/schemas/TokenHistory' }
       unevaluatedProperties: false
     Capabilities:
-      type: object
-      required: [protocol, topic, lookupService, representations, proofSuites, interoperability, unsupported]
-      properties:
-        protocol: { const: attestation-registry/1 }
-        topic: { const: tm_attestation }
-        lookupService: { const: ls_attestation }
-        representations:
-          type: array
-          description: The representations intake accepts. The parked `vsc-seal-json-v1` is not among them and is named under `unsupported`.
-          items: { enum: [dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
-        proofSuites: { type: array, items: { enum: [ecdsa-rdfc-2019, ES256K] } }
-        interoperability:
-          type: object
-          required: [discovery, externalCredential, externalCredentialPolicy]
+      description: The capability document of the standard's spec/conformance.md section 4. A registry serves the one document every role declares itself in, contracts/capabilities.schema.json, and this contract asks the members below of it. An earlier draft of this contract defined a document of its own here (`protocol`, `topic`, `lookupService`, `representations` as a list of identifiers, `anchoredBy`), which no registry could serve together with the document the specification requires. Those facts are now members of the one document, `protocol` under `protocols`, `topic` under `topics`, `lookupService` under `services`, each representation as an object, and `anchoredBy` under `publisherPolicy.anchoringServices` and `exporterIdentityKey`, while `proofSuites`, `interoperability` and `unsupported` keep their names and shapes.
+      allOf:
+        - $ref: './capabilities.schema.json'
+        - type: object
+          required: [topics, services, interoperability]
           properties:
-            discovery: { enum: ['gs1-digital-link@1', not-configured] }
-            resolverOrigin: { type: string, format: uri }
-            externalCredential: { const: 'vc-di-ecdsa-rdfc-2019@1' }
-            externalCredentialPolicy: { enum: [configured, not-configured] }
-        unsupported:
-          type: array
-          description: 'What is explicitly not implemented, each with its reason, such as the parked `vsc-seal-json-v1` and, on a registry holding records stored under it, the historical `legacy-uora-json`: records of both stay readable, and neither is accepted as a new submission.'
-          items:
-            type: object
-            required: [id, reason]
-            properties:
-              id: { type: string }
-              reason: { type: string }
-        anchoredBy:
-          type: string
-          pattern: '^0[23][0-9a-f]{64}$'
-          description: >-
-            The compressed identity key that every anchor this registry writes
-            names as anchoredBy, so a verifier can tell this registry's anchors
-            from anyone else's without asking, and that its evidence packages
-            name as exporter.id, so a reader derives each package's signer. Optional. Naming the key does not
-            make the registry trusted: which anchoring services to accept stays
-            the verifier's policy.
+            roles:
+              description: Names `registry`, beside any other role the implementation claims.
+              contains: { const: registry }
+            protocols:
+              description: Names this contract as `attestation-registry` at version `1`, the identifier `POST /validate` answers under. A registry should also name `registry-http` at this document's `info.version`, as an index names `overlay-http`, and each anchor protocol it writes.
+              contains:
+                type: object
+                required: [id, version]
+                properties:
+                  id: { const: attestation-registry }
+                  version: { const: '1' }
+            topics:
+              contains: { const: tm_attestation }
+            services:
+              contains: { const: ls_attestation }
+            representations:
+              description: The representations intake accepts, each verified before anything is stored. The parked `vsc-seal-json-v1` is not among them and is named under `unsupported`.
+              items:
+                properties:
+                  id: { enum: [dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
+                  verification: { const: content }
+            proofSuites: { items: { enum: [ecdsa-rdfc-2019, ES256K] } }
+            publisherPolicy:
+              description: A registry that anchors names, under `anchoringServices`, the compressed identity key that every anchor it writes names as anchoredBy, so a verifier can tell this registry's anchors from anyone else's without asking. Optional. Naming the key does not make the registry trusted, and which anchoring services to accept stays the verifier's policy.
+            exporterIdentityKey:
+              description: The identity key the registry's evidence packages name as exporter.id, its anchoring identity key, so a reader derives each package's signer. Absent when the registry signs no package.
+            unsupported:
+              description: 'What is explicitly not implemented, each with its reason, such as the parked `vsc-seal-json-v1` and, on a registry holding records stored under it, the historical `legacy-uora-json`: records of both stay readable, and neither is accepted as a new submission.'
     TokenHistory:
       type: string
       pattern: '^([0-9a-fA-F]{2})+$'

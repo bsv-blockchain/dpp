@@ -125,7 +125,7 @@ The first runs offline on repository test data and ends `Every sentence above ho
 | `anchor` | Decode using the first field's format; verify signature and locking key | WhatsOnChain transaction (`/tx/<txid>/hex`), located by the proof's `anchor.recordId` and `anchor.outputIndex`. Any registry-supplied script must match. |
 | `binding` | The anchor commits to the digest and names the claim's identifier, issuer, subject and type | The decoded anchor and the claim |
 | `inclusion` | Verify the transaction's merkle path against headers. A registry-supplied path counts only if its root matches the header. | The proof's `anchor.merklePath`, otherwise WhatsOnChain's `/tx/<txid>/proof/bump`. Both are BUMPs read unchanged by `MerklePath.fromHex` from `@bsv/sdk`. Block headers come from your header source. |
-| `anchoring service` | Compare the anchor's signing key with accepted services; without your own list, use the registry's keys. | Decoded anchor and `--anchoring-services`, otherwise `GET /capabilities` keys in `anchoredBy` or `publisherPolicy.anchoringServices`. |
+| `anchoring service` | Compare the anchor's signing key with accepted services; without your own list, use the registry's keys. | Decoded anchor and `--anchoring-services`, otherwise `GET /capabilities` keys in `publisherPolicy.anchoringServices`, or `anchoredBy` from a registry on the earlier contract. |
 
 What each kind of record can establish:
 

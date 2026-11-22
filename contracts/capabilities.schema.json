@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/contracts/capabilities.schema.json",
   "title": "DPP capability document, version 1",
-  "description": "What one implementation declares it supports (spec/conformance.md section 4): roles, protocol versions, exact profiles with artefact digests, representations, proof suites, anchor formats, topics and services, limits, and what it explicitly does not support. A claim of support, checkable against the ledger; never proof of authority or conformance.",
+  "description": "What one implementation declares it supports (spec/conformance.md section 4): roles, protocol versions, exact profiles with artefact digests, representations, proof suites, anchor formats, topics and services, limits, and what it explicitly does not support. An index and a registry serve it at GET /capabilities (contracts/overlay.yaml, contracts/registry.yaml). A claim of support, checkable against the ledger; never proof of authority or conformance.",
   "type": "object",
   "additionalProperties": false,
   "required": ["capabilitiesVersion", "implementation", "roles", "protocols", "profiles", "representations", "proofSuites", "anchorFormats", "unsupported"],
@@ -91,7 +91,7 @@
       "properties": {
         "policyVersion": { "type": "string" },
         "publisherKeys": { "type": "array", "items": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" } },
-        "anchoringServices": { "type": "array", "items": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" } },
+        "anchoringServices": { "type": "array", "items": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" }, "description": "For an index, the anchoring services whose anchors it admits. For a registry, the identity keys its own anchors name as anchoredBy." },
         "ownerConsent": { "enum": ["not-selected", "required"], "description": "Declared only by an index on a release before 12 November 2026, when the owner-signed transfer it names was removed from the standard; a current index omits it." },
         "transferAuthorities": { "type": "array", "items": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" }, "description": "Declared only beside ownerConsent, by an index on a release before 12 November 2026; a current index names its control authorities in its custody profile entry." }
       }
@@ -112,6 +112,18 @@
       "type": "string",
       "pattern": "^0[23][0-9a-f]{64}$",
       "description": "The identity key every dpp-evidence-package@1 this implementation signs names as exporter.id. Each manifest is signed by its BRC-42 child for protocol [1, 'dpp evidence package v1'], the passport identifier as key identifier and counterparty anyone, which a reader derives from this key alone (spec/portable-evidence.md section 2). Absent when the implementation signs no package."
+    },
+    "interoperability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Declared by a registry (contracts/registry.yaml): the discovery profile in force, with the resolver origin when one is served, the external credential representation and whether a policy for it is configured.",
+      "required": ["discovery", "externalCredential", "externalCredentialPolicy"],
+      "properties": {
+        "discovery": { "enum": ["gs1-digital-link@1", "not-configured"] },
+        "resolverOrigin": { "type": "string", "format": "uri" },
+        "externalCredential": { "const": "vc-di-ecdsa-rdfc-2019@1" },
+        "externalCredentialPolicy": { "enum": ["configured", "not-configured"] }
+      }
     },
     "limits": {
       "type": "object",

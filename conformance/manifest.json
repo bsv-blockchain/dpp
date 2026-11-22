@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/conformance.md",
-      "digest": "d3b310853b849eaa2dfa66f3d7f2a27a97fdd013ca1b624ce7dce55a19e77baa"
+      "digest": "3f0511ec0cca73634cd7b73d237c89f67b84287c256cb08564db5c140227fa0e"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -104,7 +104,7 @@
       "version": "0.6.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "6441dc1355d5c0cefee2fe4e5b632fbeee6d7c5227569d2d92d7bd8a9475dd25"
+      "digest": "094c94045e64f0d51c7e9198dfe733feb9023103a358db6a1cb46ad6c260968c"
     },
     {
       "id": "spec-profiles",
@@ -2339,9 +2339,9 @@
         "conformance/baseline-native-2.json#quickStarts"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after the overlay role of §2 dropped its synchronisation profile; the reader quick start rule is unchanged. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after the overlay role of §2 dropped its synchronisation profile; the reader quick start rule is unchanged. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-3-baseline",
@@ -2365,9 +2365,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; native-baseline@1 keeps its bytes and this row is unchanged."
+      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; native-baseline@1 keeps its bytes and this row is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-3-baseline-2",
@@ -2392,9 +2392,9 @@
         "conformance/baseline-native-2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-4-capability-schema",
@@ -2411,16 +2411,17 @@
       "profileId": "core",
       "implementationRefs": [
         "contracts/capabilities.schema.json",
-        "conformance/examples/capabilities-reference-node.json"
+        "conformance/examples/capabilities-reference-node.json",
+        "conformance/examples/capabilities-registry.json"
       ],
       "testRefs": [
         "conformance/check.mjs"
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §4 said the named operator profiles are the reference index package's own; the capability document rule this row assesses is unchanged. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §4 said the named operator profiles are the reference index package's own; the capability document rule this row assesses is unchanged. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities: the schema gains the optional interoperability member a registry declares, moved unchanged from the registry contract, and the checker holds a registry's example, conformance/examples/capabilities-registry.json, to the schema beside the index's."
     },
     {
       "id": "CONF-4-overlay-capabilities",
@@ -2446,9 +2447,34 @@
         "conformance/examples/capabilities-reference-node.json (hand-written example of what the node would serve)"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "GET /capabilities builds the document from constants and configuration, validates against contracts/capabilities.schema.json, and under the reference configuration equals conformance/examples/capabilities-reference-node.json exactly; the operator profile, active publisher keys, export and retraction availability and every unsupported item are stated by name. Re-read 2026-11-12: the operator profile the document names is a label of the reference package, documented in its README. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
+      "notes": "GET /capabilities builds the document from constants and configuration, validates against contracts/capabilities.schema.json, and under the reference configuration equals conformance/examples/capabilities-reference-node.json exactly; the operator profile, active publisher keys, export and retraction availability and every unsupported item are stated by name. Re-read 2026-11-12: the operator profile the document names is a label of the reference package, documented in its README. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities; the index's document and its route are unchanged, and the schema's new optional interoperability member is a registry's."
+    },
+    {
+      "id": "CONF-4-registry-capabilities",
+      "sourceId": "contract-registry",
+      "sourceUri": "contracts/registry.yaml",
+      "sourceVersion": "0.6.0",
+      "clause": "GET /capabilities",
+      "summary": "A registry serves the capability document of spec/conformance.md §4 at GET /capabilities, conforming to contracts/capabilities.schema.json and naming the registry role, the attestation-registry protocol, tm_attestation and ls_attestation, each representation it accepts as an object, its interoperability profiles and what it does not support.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "the reference registry (not published)"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [
+        "conformance/examples/capabilities-registry.json (hand-written example of what a registry serves)"
+      ],
+      "status": "gap",
+      "reviewedAt": "2026-11-22",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Added 2026-11-22, when the registry contract dropped its own Capabilities document. Until then the contract and spec/conformance.md §4 asked a registry for two documents with almost no required member in common at one route, which an independent implementation reported. The reference registry still serves the earlier document (protocol, topic, lookupService, representations as identifiers and no capabilitiesVersion, implementation, roles, protocols, profiles or anchorFormats), so this row is a gap until it serves this one. The checker holds the example to contracts/capabilities.schema.json; nothing in this repository parses contracts/registry.yaml, so no test here holds a document to the members the contract adds. The row is outside every claim and baseline until a registry serves the document."
     },
     {
       "id": "CONF-6-ledger-gate",
@@ -2472,9 +2498,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-6-selected-claim-qualification",
@@ -2503,9 +2529,9 @@
         "conformance/selections/dpp-release-2026-11.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "The diagnostic checker keeps exit code 0 with a blocked future claim and reports every selection's blocked required claims by sentence; qualify.mjs exits 1 for the same selection. Both read assess.mjs, so they cannot disagree. Neither is a conformity certificate. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
+      "notes": "The diagnostic checker keeps exit code 0 with a blocked future claim and reports every selection's blocked required claims by sentence; qualify.mjs exits 1 for the same selection. Both read assess.mjs, so they cannot disagree. Neither is a conformity certificate. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities; the rule this row assesses is unchanged."
     },
     {
       "id": "STATUS-validate-algorithm",
@@ -2847,9 +2873,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Rewritten 2026-11-12, when the contract was cut to the minimum every registry serves: GET /capabilities, POST /validate, POST /attestations, the paged GET /attestations, GET /attestations/{id}/proof, GET /chain and GET /passports/{passportId}/evidence-package, still version 0.6.0, which no release set or receipt has published. The report, history, statistics, health, certification, profile, showcase and GS1 resolver and printed-label routes left the contract with the components only they used, and so did x-intentional-omissions, which listed what the reference registry serves beyond it; the reference registry documents those routes itself. The reference registry's contract test parses its own openapi.yaml and asserts documented routes are served and served routes are documented or listed as omissions with a reason; it serves every operation of this contract in the documented shape and more besides. contracts/registry.yaml carries additions the registry's copy does not yet: the recordId pattern of NativeLifecycleClaim, the optional anchoredBy of Capabilities, the optional blockHeight and merklePath of an anchor reference and, from 0.6.0, the envelopes of the proposed epcis-event-vc@1 on POST /attestations and POST /validate, their per-issuer collision rule and the representation, application/vc+jwt and ES256K in its enumerations; the registry does not yet accept that representation (EPEV-4-registry-intake). A stored vc-di-ecdsa-rdfc-2019@1 record is served on the collection, proof and chain routes with its own representation, which both documents list in the collection filter and the response enums. Re-read 2026-11-12 after the legacy intake left the contract: Capabilities has no legacyIntake and names legacy-uora-json under unsupported, POST /validate answers under attestation-registry/1 alone, and the legacy-uora result and the placeholder, SD-JWT and refusal shapes are gone, as they are from the registry's own openapi.yaml, which keeps NotImplemented and ValidateContract for its own use; this contract drops both, since none of its operations uses them. Contract 0.6.0 gives the report on POST /validate as report version 2, while the reference registry still emits report version 1: it pins the published @bsv/dpp-protocol 0.3.0-beta.9, whose reports are version 1, and its own openapi.yaml says version 1. Until it upgrades to a protocol release that carries version 2, its report does not match this contract's EvidenceReport. Re-read 2026-11-14, when epcis-event-vc@1 was parked: the contract marks the representation parked in its descriptions and keeps its envelopes, the collision rule and its enumerations with no change of shape, path or status code; EPEV-4-registry-intake is in the ledger archive with the profile's other rows. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake)."
+      "notes": "Rewritten 2026-11-12, when the contract was cut to the minimum every registry serves: GET /capabilities, POST /validate, POST /attestations, the paged GET /attestations, GET /attestations/{id}/proof, GET /chain and GET /passports/{passportId}/evidence-package, still version 0.6.0, which no release set or receipt has published. The report, history, statistics, health, certification, profile, showcase and GS1 resolver and printed-label routes left the contract with the components only they used, and so did x-intentional-omissions, which listed what the reference registry serves beyond it; the reference registry documents those routes itself. The reference registry's contract test parses its own openapi.yaml and asserts documented routes are served and served routes are documented or listed as omissions with a reason; it serves every operation of this contract in the documented shape and more besides. contracts/registry.yaml carries additions the registry's copy does not yet: the recordId pattern of NativeLifecycleClaim, the optional anchoredBy of Capabilities, the optional blockHeight and merklePath of an anchor reference and, from 0.6.0, the envelopes of the proposed epcis-event-vc@1 on POST /attestations and POST /validate, their per-issuer collision rule and the representation, application/vc+jwt and ES256K in its enumerations; the registry does not yet accept that representation (EPEV-4-registry-intake). A stored vc-di-ecdsa-rdfc-2019@1 record is served on the collection, proof and chain routes with its own representation, which both documents list in the collection filter and the response enums. Re-read 2026-11-12 after the legacy intake left the contract: Capabilities has no legacyIntake and names legacy-uora-json under unsupported, POST /validate answers under attestation-registry/1 alone, and the legacy-uora result and the placeholder, SD-JWT and refusal shapes are gone, as they are from the registry's own openapi.yaml, which keeps NotImplemented and ValidateContract for its own use; this contract drops both, since none of its operations uses them. Contract 0.6.0 gives the report on POST /validate as report version 2, while the reference registry still emits report version 1: it pins the published @bsv/dpp-protocol 0.3.0-beta.9, whose reports are version 1, and its own openapi.yaml says version 1. Until it upgrades to a protocol release that carries version 2, its report does not match this contract's EvidenceReport. Re-read 2026-11-14, when epcis-event-vc@1 was parked: the contract marks the representation parked in its descriptions and keeps its envelopes, the collision rule and its enumerations with no change of shape, path or status code; EPEV-4-registry-intake is in the ledger archive with the profile's other rows. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake). Re-read 2026-11-22 after the contract, still version 0.6.0, dropped its own Capabilities document and asked a registry for the capability document of spec/conformance.md §4 (contracts/capabilities.schema.json) at GET /capabilities, because no registry could serve both documents at one route: the reference registry still serves the earlier document there, which CONF-4-registry-capabilities records as a gap, and nothing else this row states changed."
     },
     {
       "id": "STACK-vector-format",
@@ -3211,9 +3237,9 @@
         "GOVERNANCE.md (Declaring version 1.0, condition 2)"
       ],
       "status": "gap",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Lowered from implemented to gap on 12 November 2026, when the programme's Python reader, the only second reader the row cited, was parked (docs/reference/parked/python-reader/; it last passed at c678cf9281168179d16d599e5fdb3846ddbbaf61). It was written by the same programme, so it never met this row, and no implementation by another implementing party has passed every fixture: the organisational independence GOVERNANCE.md requires before 1.0 remains an open gate. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
+      "notes": "Lowered from implemented to gap on 12 November 2026, when the programme's Python reader, the only second reader the row cited, was parked (docs/reference/parked/python-reader/; it last passed at c678cf9281168179d16d599e5fdb3846ddbbaf61). It was written by the same programme, so it never met this row, and no implementation by another implementing party has passed every fixture: the organisational independence GOVERNANCE.md requires before 1.0 remains an open gate. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities; the rule this row assesses is unchanged."
     },
     {
       "id": "EXCH-1-representations",
@@ -3684,9 +3710,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process. Re-read 2026-11-09 for contract 0.6.0, which refuses the parked vsc-seal-json-v1 before anything is stored or anchored and adds the epcis-event-vc@1 envelopes, which the reference registry does not yet accept (EPEV-4-registry-intake); the insert-first order for accepted submissions is unchanged. Re-read 2026-11-12 after the contract dropped the legacy intake and its placeholder request; the insert-first order for the current representations is unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the insert-first order is unchanged, and EPEV-4-registry-intake is in the ledger archive. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake)."
+      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process. Re-read 2026-11-09 for contract 0.6.0, which refuses the parked vsc-seal-json-v1 before anything is stored or anchored and adds the epcis-event-vc@1 envelopes, which the reference registry does not yet accept (EPEV-4-registry-intake); the insert-first order for accepted submissions is unchanged. Re-read 2026-11-12 after the contract dropped the legacy intake and its placeholder request; the insert-first order for the current representations is unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the insert-first order is unchanged, and EPEV-4-registry-intake is in the ledger archive. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake). Re-read 2026-11-22 after the contract, still version 0.6.0, dropped its own Capabilities document and asked a registry for the capability document of spec/conformance.md §4 (contracts/capabilities.schema.json) at GET /capabilities; intake is unchanged."
     },
     {
       "id": "VEC-1-publisher-policy-vectors",
@@ -4400,10 +4426,10 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "6441dc1355d5c0cefee2fe4e5b632fbeee6d7c5227569d2d92d7bd8a9475dd25",
-      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged. Re-read 2026-11-09 after contract 0.6.0 refused the parked vsc-seal-json-v1, removed the status list routes, dropped vscProfile and vscConformance from the capability document and added the epcis-event-vc@1 envelopes with their per-issuer collision rule; the external intake shapes are unchanged. Re-read 2026-11-12 after UoraType admitted an external credential's own type on the read routes; the external intake shapes are unchanged. Re-read 2026-11-12 after EvidenceReport moved to report version 2; the external intake shapes are unchanged. Re-read 2026-11-12 after the legacy intake left the contract; the external intake shapes are unchanged. Re-read 2026-11-12 after six descriptions, ExternalCredentialEnvelope.credential's among them, were quoted so that each parses as one string with no stray property; the external intake shapes are unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the external intake shapes are unchanged. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake)."
+      "sourceDigest": "094c94045e64f0d51c7e9198dfe733feb9023103a358db6a1cb46ad6c260968c",
+      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged. Re-read 2026-11-09 after contract 0.6.0 refused the parked vsc-seal-json-v1, removed the status list routes, dropped vscProfile and vscConformance from the capability document and added the epcis-event-vc@1 envelopes with their per-issuer collision rule; the external intake shapes are unchanged. Re-read 2026-11-12 after UoraType admitted an external credential's own type on the read routes; the external intake shapes are unchanged. Re-read 2026-11-12 after EvidenceReport moved to report version 2; the external intake shapes are unchanged. Re-read 2026-11-12 after the legacy intake left the contract; the external intake shapes are unchanged. Re-read 2026-11-12 after six descriptions, ExternalCredentialEnvelope.credential's among them, were quoted so that each parses as one string with no stray property; the external intake shapes are unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the external intake shapes are unchanged. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake). Re-read 2026-11-22 after the contract, still version 0.6.0, dropped its own Capabilities document and asked a registry for the capability document of spec/conformance.md §4 (contracts/capabilities.schema.json) at GET /capabilities; intake is unchanged."
     },
     {
       "id": "PROF-2-manifest-version-2",
@@ -4782,9 +4808,9 @@
       "testRefs": [],
       "evidenceRefs": [],
       "status": "gap",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "The contract states the envelope, the claim schema and the enumerations; the reference registry does not yet accept the representation, so a registry claim for it cannot be made."
+      "notes": "The contract states the envelope, the claim schema and the enumerations; the reference registry does not yet accept the representation, so a registry claim for it cannot be made. Re-read 2026-11-22 after the contract, still version 0.6.0, dropped its own Capabilities document and asked a registry for the capability document of spec/conformance.md §4 (contracts/capabilities.schema.json) at GET /capabilities; intake is unchanged."
     }
   ],
   "claims": [
