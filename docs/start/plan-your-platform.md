@@ -69,7 +69,7 @@ Assign owners and record decisions and evidence before estimating delivery and o
 | User support | What users see for unavailable services, missing records or unknown verification | | |
 | Change management | Pinned versions, profile updates, migration and changes to a pre-1.0 standard | | |
 
-Estimate development and integration, hosted or self-operated services, storage and recovery, support, transaction funding, and identifier or assessment requirements. Costs depend on these choices; an example transaction fee is not the full operating cost.
+Estimate development and integration, hosted or self-operated services, storage and recovery, support, transaction funding, and identifier or assessment requirements. Costs depend on these choices; an example transaction fee is not the full operating cost. [What the ledger adds](what-the-ledger-adds.md#what-it-costs) gives transaction sizes and a way to count them.
 
 ## 5. Check dependencies before committing
 
