@@ -152,6 +152,7 @@ What it waits on before publication: each disposition the inventory lists as ope
 - The application `@bsv/create-dpp-app` generates reads a claim's bytes from `securedBytes` of the registry's `GET /attestations/{id}/proof`, the member the registry contract gives them, where it read `envelope`, which that route does not carry, and so found no bytes at a registry that follows the contract.
 - The same application reports a registry's refusal of a claim by the contract's `outcome` and first of its `issues`, as in `invalid: <issue>`, where it read `description`, which the contract does not define, and showed nothing.
 - `verifyPassportEvidence` no longer fails `subjectBinding` for a credential that names several subjects when the anchors for its other subjects are supplied beside the one for the passport being read: an anchor that commits to a verified credential and names another of its subjects is listed in the check's `detail` as `otherSubjects` (`spec/verification.md` §4, `spec/epcis-lifecycle-claim.md` §8). An anchor that names a subject the credential does not name, and a credential that does not name the passport, still fail.
+- The registry contract, still `0.6.0`, patterns `tokenRecordId` as a native claim's `recordId` in either form it is signed in, the outpoint `<txid>:<outputIndex>` or the transaction identifier alone in a claim signed before 1 November 2026, where it admitted the transaction identifier only.
 
 ## Published releases
 

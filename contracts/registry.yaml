@@ -647,7 +647,7 @@ components:
           description: '`unsupported` names a representation, or a feature of one, this registry does not implement: an external credential on another curve, suite or structure, or the parked `vsc-seal-json-v1`, whose issue names `representation-unsupported`. A body naming no current representation, a historical UORA input included, is `invalid` with the issue `unsupported representation; an explicit claimFormat or representation is required`.'
         issues: { type: array, items: {} }
         checks: { description: "The registry's named checks with their evidence scope." }
-        tokenRecordId: { type: string, pattern: '^[0-9a-f]{64}$' }
+        tokenRecordId: { type: string, pattern: '^[0-9a-f]{64}(:(0|[1-9][0-9]*))?$', description: "A native claim's `recordId` as signed: the outpoint `<txid>:<outputIndex>`, or the transaction identifier alone in a claim signed before 1 November 2026 (spec/rules.md section 3)." }
         report: { $ref: '#/components/schemas/EvidenceReport' }
         reportOmitted: { type: string, description: Why no report accompanies this answer. }
         lifecycleMapping:
@@ -836,8 +836,8 @@ components:
         representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, 'dpp-epcis-lifecycle-json@1', vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
         tokenRecordId:
           type: string
-          pattern: '^[0-9a-f]{64}$'
-          description: The token record a signed binding names, when the record carries one.
+          pattern: '^[0-9a-f]{64}(:(0|[1-9][0-9]*))?$'
+          description: "The token record a signed binding names, when the record carries one: a native claim's `recordId` as signed, which is the outpoint `<txid>:<outputIndex>`, or the transaction identifier alone in a claim signed before 1 November 2026 (spec/rules.md section 3)."
         assurance:
           type: object
           additionalProperties: true
