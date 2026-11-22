@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "2c01030f5aeafe4327f35700e2695ba70c2a74c65db38c8203afc355503b8d48"
+      "digest": "419fc6a6ae10c05e39f6997194f54ee8664356a3420ebbd49b8f902ab0b3d444"
     },
     {
       "id": "spec-conformance",
@@ -2126,9 +2126,9 @@
         "fixtures/evidence-v2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Report version 2 from 12 November 2026: the shared reason codes nothing produces any more left the vocabulary, and every pinned report was regenerated with no other change."
+      "notes": "Report version 2 from 12 November 2026: the shared reason codes nothing produces any more left the vocabulary, and every pinned report was regenerated with no other change. Re-read 2026-11-22 after §4 said, under subjectBinding, that an anchor which commits to a verified credential and names another of its subjects is listed in the detail and is no mismatch: the report's shape, its schema and every pinned report are unchanged."
     },
     {
       "id": "VER-3-expected-subject",
@@ -2157,7 +2157,7 @@
         "fixtures/evidence-v1.json#cases.subject-not-independent"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2186,7 +2186,7 @@
         "fixtures/evidence-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2221,9 +2221,9 @@
         "fixtures/battery-lifecycle-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: validate inside the report. The pinned chain fixtures predate the profile stamps, so their reports pin profile-undeclared; the battery lifecycle fixture declares battery@2 and its states passed under the profiles package's validator when its report was recorded. Re-read 2026-11-14 after §4 said the reference hands the validator the passport_id of the state beside its payload: DeclaredPayload.passportId is read from the decoded state, and evidence.test.ts pins that for a genesis and a later state and that it never comes from the payload, the expected subject or the outpoint. No finding, reason code, fixture or report changed. Re-read 2026-11-14 once more when battery@2 was retired (spec/profiles.md §4): the profiles package's validator now answers unknown with schema-unavailable and the cause profile-retired for a state that declares a retired profile, never a pass and never a failure. The battery lifecycle fixture keeps its bytes and its recorded report; battery-lifecycle.test.ts reads it as history and holds that every check but schema answers as recorded. No reason code and no report schema changed."
+      "notes": "Decided 2026-11-01: validate inside the report. The pinned chain fixtures predate the profile stamps, so their reports pin profile-undeclared; the battery lifecycle fixture declares battery@2 and its states passed under the profiles package's validator when its report was recorded. Re-read 2026-11-14 after §4 said the reference hands the validator the passport_id of the state beside its payload: DeclaredPayload.passportId is read from the decoded state, and evidence.test.ts pins that for a genesis and a later state and that it never comes from the payload, the expected subject or the outpoint. No finding, reason code, fixture or report changed. Re-read 2026-11-14 once more when battery@2 was retired (spec/profiles.md §4): the profiles package's validator now answers unknown with schema-unavailable and the cause profile-retired for a state that declares a retired profile, never a pass and never a failure. The battery lifecycle fixture keeps its bytes and its recorded report; battery-lifecycle.test.ts reads it as history and holds that every check but schema answers as recorded. No reason code and no report schema changed. Re-read 2026-11-22 after §4 said, under subjectBinding, that an anchor which commits to a verified credential and names another of its subjects is listed in the detail and is no mismatch: the schema check this row assesses is unchanged."
     },
     {
       "id": "VER-5-observations",
@@ -2249,7 +2249,7 @@
         "fixtures/evidence-v1.json#cases.stale-prefix-superseded"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2282,7 +2282,7 @@
         "fixtures/evidence-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2311,9 +2311,9 @@
         "fixtures/evidence-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-22",
       "reviewOwner": "dpp maintainers",
-      "notes": "The standalone tool (CI), the application route (apps/web/test/verify-report-route.test.ts) and the registry (test/evidence-report.test.ts) each reproduce all twenty-one pinned cases byte for byte, and the embedded view draws the same report object. Independent testing, by a party outside the programme, is still open."
+      "notes": "The standalone tool (CI), the application route (apps/web/test/verify-report-route.test.ts) and the registry (test/evidence-report.test.ts) each reproduce all twenty-one pinned cases byte for byte, and the embedded view draws the same report object. Independent testing, by a party outside the programme, is still open. Re-read 2026-11-22 after §4 said, under subjectBinding, that an anchor which commits to a verified credential and names another of its subjects is listed in the detail and is no mismatch: no pinned case carries such an anchor, so the pinned reports are unchanged."
     },
     {
       "id": "CONF-2-reader-quickstart",

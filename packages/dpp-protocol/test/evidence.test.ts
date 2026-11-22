@@ -339,6 +339,42 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
     expect(byName(unproven, 'anchorDigestAndMetadataBinding')).toMatchObject({ status: 'unknown', reasonCode: 'referenced-artefact-mismatch' })
   })
 
+  it('judges a credential anchored once per subject on what concerns the passport being read', async () => {
+    const others = ['https://id.example.test/products/second', 'https://id.example.test/products/third']
+    const subjects = [ANCHOR.anchor.subject, ...others]
+    const bytes = JSON.stringify({ stub: 'credential', products: subjects })
+    const digest = Utils.toHex(Hash.sha256(Utils.toArray(bytes, 'utf8')))
+    const wallet = new ProtoWallet(PrivateKey.fromHex(ANCHOR.anchoringPrivateKey))
+    const anchorFor = async (subject: string) => ({ lockingScript: await buildAttestationAnchor({ ...ANCHOR.anchor, subject, digest, attestationId: 'urn:uuid:stub', issuer: 'did:web:issuer.example', attestationType: 'VSC-SEAL', representation: 'vsc-seal-json-v1', mediaType: 'application/vc+ld+json' }, wallet) })
+    const anchors = await Promise.all(subjects.map(anchorFor))
+    const verifier = (named: string[], proof: 'pass' | 'fail' = 'pass') => async () => ({
+      id: 'urn:uuid:stub', issuer: 'did:web:issuer.example', subjects: named, attestationType: 'VSC-SEAL',
+      proof: { status: proof, ...(proof === 'fail' ? { reasonCode: 'signature-invalid' } : {}) }, schema: { status: 'pass' }, time: { status: 'pass' }, status: { status: 'pass' }, authority: { status: 'pass' },
+    } as const)
+    const read = async (supplied: typeof anchors, passportId: string, credentialVerifier = verifier(subjects)) =>
+      await verifyPassportEvidence({ anchors: supplied, externalCredentials: [{ representation: 'vsc-seal-json-v1', bytes }] }, { passportId, source: 'request-context' }, { checkedAt: CHECKED_AT, credentialVerifier })
+
+    // Every anchor of the credential supplied, read from each subject in turn: the anchors for the other subjects are no mismatch.
+    for (const passportId of subjects) {
+      const report = await read(anchors, passportId)
+      expect(byName(report, 'anchorDigestAndMetadataBinding').status, passportId).toBe('pass')
+      expect(byName(report, 'subjectBinding'), passportId).toMatchObject({ status: 'pass', detail: { otherSubjects: subjects.filter((s) => s !== passportId) } })
+    }
+    // Only the anchor for the passport being read: a pass with nothing set aside.
+    expect(byName(await read(anchors.slice(0, 1), ANCHOR.anchor.subject), 'subjectBinding')).not.toHaveProperty('detail')
+    // An anchor that names a subject the credential does not name stays a mismatch.
+    const stray = await anchorFor('https://id.example.test/products/unnamed')
+    expect(byName(await read([...anchors, stray], ANCHOR.anchor.subject), 'subjectBinding')).toMatchObject({ status: 'fail', reasonCode: 'subject-mismatch', detail: [{ reasonCode: 'subject-mismatch', detail: expect.stringContaining('products/unnamed') }] })
+    // An anchor that names the passport being read while the credential does not name it: the anchor disagrees with the credential, and both checks fail.
+    const disagreeing = await read(anchors, ANCHOR.anchor.subject, verifier(others))
+    expect(byName(disagreeing, 'anchorDigestAndMetadataBinding')).toMatchObject({ status: 'fail', reasonCode: 'metadata-mismatch' })
+    expect(byName(disagreeing, 'subjectBinding')).toMatchObject({ status: 'fail', reasonCode: 'subject-mismatch' })
+    // A credential none of whose subjects is the passport being read, with only its own anchors.
+    expect(byName(await read(anchors.slice(1), ANCHOR.anchor.subject, verifier(others)), 'subjectBinding')).toMatchObject({ status: 'fail', reasonCode: 'subject-mismatch' })
+    // A credential whose proof does not hold names nothing that could excuse an anchor.
+    expect(byName(await read(anchors, ANCHOR.anchor.subject, verifier(subjects, 'fail')), 'subjectBinding')).toMatchObject({ status: 'fail', reasonCode: 'subject-mismatch' })
+  })
+
   it('reports empty evidence as unknown everywhere it could not look', async () => {
     const report = await verifyPassportEvidence({}, asked, { checkedAt: CHECKED_AT })
     expect(report.suppliedTip).toBeNull()
