@@ -44,15 +44,15 @@ Install directly for custom embedding or configuration. The Compose preset runs 
 
 1. At the checkout root, run `npm ci`, `node scripts/release-candidates.mjs` and `node scripts/consumer-check.mjs` to build, pack and test archives in a separate project. Nothing is published.
 2. In your application, use `npm install /absolute/path/to/the-produced-package.tgz` with protocol, profiles and overlay archive paths together to resolve unpublished dependencies locally. Find `bsv-dpp-overlay-0.4.0-beta.13.tgz` in `release/candidates`; retain archives and lockfile.
-3. Declare direct imports of the SDK and upstream overlay package at the versions below.
+3. For the candidate examples, pin direct imports to `@bsv/sdk@4.1.2` and `@bsv/overlay@2.8.0`.
 
-The npm command below applies once these exact versions have been published. Run it in your project:
+To install the published October release from npm, use its exact pins. The examples below use the November candidate archives.
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.13 @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@4.1.2 @bsv/overlay@2.8.0
+npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.12 @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
 ```
 
-The package already depends on `@bsv/overlay` 2.8.0; declare it directly because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay` selects `latest`, the newest beta. Pin versions so upgrades are your choice, and keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
+A bare `npm install @bsv/dpp-overlay` selects `latest`, the newest beta. Pin versions so upgrades are your choice, and keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
 
 ## Embed an index
 

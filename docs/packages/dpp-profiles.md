@@ -27,10 +27,10 @@ Developers and data reviewers can use `@bsv/dpp-profiles` to build, validate and
 npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@4.1.2
 ```
 
-The npm command below applies once these exact versions have been published. Run it in your project:
+To install the published October release from npm, use its exact pins. The examples below use the November candidate archives.
 
 ```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.10
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.9
 ```
 
 Use 0.3.0-beta.4 or later: earlier readers accept identifiers the package does not publish. A bare `npm install @bsv/dpp-profiles` selects `latest`, the newest beta. Pin versions, keep the lockfile and review compatibility before upgrading. The [support table](support-table.md) distinguishes Node modules from data entry points.

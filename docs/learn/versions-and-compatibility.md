@@ -38,6 +38,8 @@ Versions move independently. Installing a package never selects a record format 
 
 ## Record versions 1 and 2
 
+The npm release `@bsv/dpp-protocol@0.3.0-beta.9` advertises v1, v2 and v3. The November candidate `0.3.0-beta.10` advertises v1 and v2. New passports use PushDrop v2. The candidate release checks and starter block v3 for production until 1Color is ready and adoption has been approved. Other packages can be upgraded independently of that decision.
+
 | | Version 1 | Version 2 |
 |---|---|---|
 | Fields | 14 | 17 |

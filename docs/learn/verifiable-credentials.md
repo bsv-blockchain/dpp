@@ -66,7 +66,7 @@ node examples/verify-external-credential.mjs
 
 ## Connect an issuer or verifier
 
-1. Install [@bsv/dpp-credentials](../packages/dpp-credentials.md) at its exact version: `npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6`.
+1. For this November example, install the local `@bsv/dpp-credentials@0.2.0-beta.6` and `@bsv/dpp-protocol@0.3.0-beta.10` archives together. [Credentials installation](../packages/dpp-credentials.md#install)
 2. **Verify an external credential:** pass the retained bytes to `verifyExternalCredential` from `@bsv/dpp-credentials/exchange`. [External credential verification](../interoperability/external-credentials.md) supplies the complete call, policy and vector mapping.
 3. **Include it in a passport report:** pass exact bytes as `externalCredentials` evidence to `verifyPassportEvidence`. Supply a policy `credentialVerifier` made with `externalCredentialVerifierFor` from `@bsv/dpp-credentials/exchange`.
 

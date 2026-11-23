@@ -30,19 +30,13 @@ Connect over HTTP to a compatible index, or [run your own](../operate/README.md)
 
 ### Create and check offline
 
-Run the following sequence one step at a time:
-
-1. Create the project and enter `my-app`.
-2. Run `npm test` for the offline lifecycle exercise.
-3. Run `npm run dev` to serve the app with an index in this process.
-4. Stop before the final command until you have met the live requirements below.
+The published starter installs its dependencies when it creates the project. Run its offline lifecycle exercise, then start the development server.
 
 ```sh
 npm create @bsv/dpp-app@0.1.0-beta.1 my-app
 cd my-app
 npm test
 npm run dev
-npm run go-live
 ```
 
 To test a source candidate instead, run these commands from the DPP repository root, choosing a new directory for the app:
@@ -53,11 +47,15 @@ npm run build
 npm run starter:check -- --directory ../my-app
 ```
 
-The source check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. It publishes nothing.
+The source check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it.
+
+The `0.1.0-beta.2` starter candidate pins the API to `@bsv/wallet-toolbox@2.18.0` and `mongodb@7.9.1`. The API and web app use `better-auth@1.7.27`. The web app pins `react@19.3.1`, `react-dom@19.3.1` and `react-router@8.5.2`. [DPP package pins for both releases](README.md#install-from-npm)
 
 ### Stop before activating live writes
 
-`npm run go-live` registers the app's publisher key with the default testnet index, checks the wallet, funds and admission, and switches real writes on. Use the generated README for each check's inputs and mainnet settings. Its `connect-index` command connects another provider's index or your own: with `--from`, it takes the connection file an index operator writes with `dpp-index connection` ([connect an application](../operate/README.md#connect-an-application)). It then runs the same checks and, when all pass, switches real writes on as `go-live` does.
+The published starter writes PushDrop v2. Its generated README explains how to configure live writes.
+
+The November candidate adds a check that blocks live publishing with a v3-capable protocol. Its `npm run go-live` command registers the app's publisher key with the default testnet index, checks the wallet, funds and admission, and switches real writes on. Use the generated README for each check's inputs and mainnet settings. Its `connect-index` command connects another provider's index or your own: with `--from`, it takes the connection file an index operator writes with `dpp-index connection` ([connect an application](../operate/README.md#connect-an-application)). It then runs the same checks and, when all pass, switches real writes on as `go-live` does.
 
 ## What is included
 
