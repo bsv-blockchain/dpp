@@ -63,9 +63,12 @@ export function makeData(overrides: Partial<DppStateData> = {}): DppStateData {
   }
 }
 
-/** A mined funding source. 'scripts only' never checks the path itself. */
+let fundingNonce = 0
+
+/** Give each synthetic funding coin a distinct outpoint. */
 export function fundingTx(): Transaction {
   const tx = new Transaction()
+  tx.lockTime = ++fundingNonce
   tx.addOutput({ satoshis: 10_000, lockingScript: ANYONE })
   tx.merklePath = MerklePath.fromCoinbaseTxidAndHeight(tx.id('hex'), 800_000)
   return tx
@@ -219,7 +222,7 @@ export interface NodeOptions {
 const silence = (): void => {}
 
 /**
- * A real Engine over in-memory stores, 'scripts only', both rails, with the
+ * A real Engine over in-memory stores and a fixture header source, with the
  * pieces the extension routes need beside it. `admittedOutputs` is wired as
  * the node does it, so a state whose BEEF omits its predecessor is judged
  * against the predecessor this node holds.
@@ -244,7 +247,7 @@ export function newNode(identityKey: string = SERVER_ID, admission: DppAdmission
     },
     lookupServices,
     storage,
-    'scripts only',
+    { currentHeight: async () => 900_000, isValidRootForHeight: async () => true },
     options.hostingURL,
     undefined,
     undefined,
@@ -290,7 +293,7 @@ export interface FixtureChain {
  * `fixtures/chain-v1.json`, prepared the way `scripts/announce.ts` announces a
  * stored chain: every state given its own (synthetic) merkle path, then each
  * submitted as the atomic subject of a BEEF holding every predecessor, so the
- * topic manager finds the parent's bytes and the engine's 'scripts only' SPV
+ * topic manager finds the parent's bytes and the engine's SPV
  * check is satisfied by the proof. The fixture's own transactions are unfunded
  * and, for four of six states, unsigned at the input, so nothing else would
  * admit them through a real Engine, which is exactly the backfill situation

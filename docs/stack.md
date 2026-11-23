@@ -6,7 +6,7 @@ Application integrators can use this page to connect BSV and DPP components, ass
 
 | Input | Source and selection |
 |---|---|
-| Package versions and runtime | [Dependency ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/licences.json) and [release support table](packages/support-table.md). The source candidate uses Node 22 or later and `@bsv/sdk@2.8.10`; select exact DPP versions through [release sets](reference/release-sets.md). |
+| Package versions and runtime | [Dependency ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/licences.json) and [release support table](packages/support-table.md). The source candidate uses Node 22 or later and `@bsv/sdk@4.1.2`; select exact DPP versions through [release sets](reference/release-sets.md). |
 | Service access | Index URL and publisher policy from your selected operator; header source for inclusion evidence. |
 | Writer signing | BRC-100 wallet with access authorised for the intended write. |
 | Product or exchange format | Selected profile or credential format from your application requirements. |

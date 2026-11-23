@@ -117,10 +117,8 @@ const UID = 'HTTP-UID-1'
 const ANYONE = new LockingScript([{ op: 0x51 }])
 
 /**
- * A genesis DPP transaction, spending a synthetic mined funding output. The
- * engine below runs 'scripts only', as engine.test.ts does and for the same
- * reason: this suite proves the transport, and SPV was proved against a real
- * mainnet record instead.
+ * A genesis DPP transaction spending a synthetic mined funding output.
+ * The engine checks the fixture against a test header source.
  *
  * `server` defaults to the key `realEngine` checks; pass another to build a
  * state the admission policy refuses.
@@ -155,12 +153,12 @@ async function genesisBeef(server: PrivateKey = serverPriv): Promise<number[]> {
   return tx.toBEEF()
 }
 
-function realEngine(): Engine {
+function realEngine(chainTracker: ChainTracker | 'scripts only' = tracker(async () => true)): Engine {
   return new Engine(
     { tm_dpp: new DppTopicManager(SERVER_ID) },
     { ls_dpp: new DppLookupService(new InMemoryDppStorage()) },
     new InMemoryOverlayStorage(),
-    'scripts only',
+    chainTracker,
     undefined,
     undefined,
     undefined,
@@ -592,8 +590,8 @@ describe('a real record, over HTTP', () => {
 /**
  * A synthetic proof for one transaction: the single-leaf path of a block whose
  * only transaction it is, the same shape the funding output above carries.
- * The engine here is 'scripts only', so only the route's own check ever sees
- * a header source, and a stub tracker passed to `serve` is that source.
+ * The engine uses a test tracker. Some cases also supply the HTTP host
+ * with a tracker to exercise its invalid-proof and unavailable responses.
  */
 function proofFor(txid: string, height: number): MerklePath {
   return MerklePath.fromCoinbaseTxidAndHeight(txid, height)
@@ -667,6 +665,15 @@ describe('a proof, over HTTP', () => {
     // The same proof again is applied again, not refused: a callback retried
     // by a broadcaster must not turn into an error.
     expect((await pushProof(base, { txid, merklePath: proof.toHex() })).status).toBe(200)
+  })
+
+  it('defers proof ingestion on a scripts-only engine and keeps the state unproven', async () => {
+    const base = await serve(realEngine('scripts only'), { chainTracker: 'scripts only' })
+    const txid = await submitGenesis(base)
+    const pushed = await pushProof(base, { txid, merklePath: proofFor(txid, 800_001).toHex() })
+    expect(pushed.status).toBe(503)
+    expect((await bodyOf(pushed)).description).toBe('proof ingestion requires a chain tracker')
+    expect((await servedState(base)).merklePath).toBeUndefined()
   })
 
   it('acknowledges and ignores a status-only callback, so a broadcaster does not retry it', async () => {

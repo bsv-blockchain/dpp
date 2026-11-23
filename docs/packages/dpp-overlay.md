@@ -49,10 +49,10 @@ Install directly for custom embedding or configuration. The Compose preset runs 
 The npm command below applies once these exact versions have been published. Run it in your project:
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.13 @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
+npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.13 @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@4.1.2 @bsv/overlay@2.8.0
 ```
 
-The package already depends on `@bsv/overlay` 2.3.1; declare it directly because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay` selects `latest`, the newest beta. Pin versions so upgrades are your choice, and keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
+The package already depends on `@bsv/overlay` 2.8.0; declare it directly because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay` selects `latest`, the newest beta. Pin versions so upgrades are your choice, and keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
 
 ## Embed an index
 

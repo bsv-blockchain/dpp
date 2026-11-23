@@ -29,10 +29,10 @@ Generated from `release/dpp-release-2026-11.json` in the documentation build for
 
 Source: `conformance/licences.json` in the same source checkout. See the [licence guide](../contribute/licence.md).
 
-- `@bsv/dpp-protocol` 0.3.0-beta.10: `@bsv/sdk` 2.8.10
-- `@bsv/dpp-overlay` 0.4.0-beta.13: `@bsv/dpp-protocol` 0.3.0-beta.10, `@bsv/dpp-profiles` 0.3.0-beta.10, `@bsv/overlay` 2.3.1, `@bsv/sdk` 2.8.10, `mongodb` 7.6.0
-- `@bsv/dpp-profiles` 0.3.0-beta.10: `canonicalize` 5.0.0
-- `@bsv/dpp-credentials` 0.2.0-beta.6: `@bsv/dpp-protocol` 0.3.0-beta.10, `@bsv/sdk` 2.8.10, `@digitalbazaar/credentials-context` 3.2.0, `@digitalbazaar/data-integrity` 2.5.0, `@digitalbazaar/data-integrity-context` 2.0.1, `@digitalbazaar/ecdsa-multikey` 1.8.0, `@digitalbazaar/ecdsa-rdfc-2019-cryptosuite` 1.3.0, `@digitalbazaar/multikey-context` 2.0.1, `ajv` 8.20.0, `ajv-formats` 3.0.1, `did-context` 3.1.1, `jsonld-signatures` 11.6.0
+- `@bsv/dpp-protocol` 0.3.0-beta.10: `@bsv/sdk` 4.1.2
+- `@bsv/dpp-overlay` 0.4.0-beta.13: `@bsv/dpp-protocol` 0.3.0-beta.10, `@bsv/dpp-profiles` 0.3.0-beta.10, `@bsv/overlay` 2.8.0, `@bsv/sdk` 4.1.2, `mongodb` 7.9.1
+- `@bsv/dpp-profiles` 0.3.0-beta.10: `canonicalize` 5.1.0
+- `@bsv/dpp-credentials` 0.2.0-beta.6: `@bsv/dpp-protocol` 0.3.0-beta.10, `@bsv/sdk` 4.1.2, `@digitalbazaar/credentials-context` 3.2.0, `@digitalbazaar/data-integrity` 2.5.0, `@digitalbazaar/data-integrity-context` 2.0.1, `@digitalbazaar/ecdsa-multikey` 1.8.0, `@digitalbazaar/ecdsa-rdfc-2019-cryptosuite` 1.3.0, `@digitalbazaar/multikey-context` 2.0.1, `ajv` 8.20.0, `ajv-formats` 3.0.1, `did-context` 3.1.1, `jsonld-signatures` 11.6.0
 
 ## Images
 

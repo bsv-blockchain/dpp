@@ -24,7 +24,7 @@ The candidate inventory below gives each release-set field and the exact spellin
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|
 | Packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-credentials@0.2.0-beta.6` | `packages` | `implementation`: the index's own package and version |
-| Runtime | Node 22 or later, `@bsv/sdk` 2.8.10 | `runtime` | Not advertised |
+| Runtime | Node 22 or later, `@bsv/sdk` 4.1.2 | `runtime` | Not advertised |
 | Passport records | Version 1 (14 fields) and version 2 (17 fields); version 3, the token carrier, is [parked](../reference/parked/token-carrier/README.md) | `wire.records` | `protocols`: `dpp-record` version `1` and version `2` |
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |
 | Anchor | `bsv-attestation-anchor-v1` | `wire.anchor` | `protocols`: `bsv-attestation-anchor` version `1`; `anchorFormats` lists it as `current` |

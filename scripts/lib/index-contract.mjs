@@ -252,8 +252,8 @@ export async function runIndexContract({ base, modules, states, own, tokens, val
   const pushed = await ask(base, '/arc-ingest', { method: 'POST', headers: { ...JSON_BODY, 'X-Callback-Token': tokens.callback }, body: JSON.stringify({ txid: shared.states[0].txid, merklePath: proof.toHex(), blockHeight: 800_001 }) })
   const afterProof = await lookup(base, { passportId: shared.passportId })
   const proven = (afterProof.body?.outputs ?? []).map((o) => sdk.Transaction.fromBEEF(o.beef)).find((tx) => tx.id('hex') === shared.states[0].txid)
-  say(pushed.status === 200 && pushed.body?.status === 'applied' && proven?.merklePath?.blockHeight === 800_001, `a proof of the genesis, presented as X-Callback-Token, is applied and the lookup then serves the state with its merkle path (${pushed.status}, ${pushed.body?.status}).`)
-  observed.proofs = { statusOnly: statusOnly.body, unknown: { status: unknownProof.status, description: unknownProof.body?.description }, malformed: { status: malformedProof.status, description: malformedProof.body?.description }, applied: pushed.body, served: served(sdk, afterProof) }
+  say(pushed.status === 503 && pushed.body?.description === 'proof ingestion requires a chain tracker' && proven != null && proven.merklePath == null, `the scripts-only index defers proof ingestion and continues serving the unproven state (${pushed.status}).`)
+  observed.proofs = { statusOnly: statusOnly.body, unknown: { status: unknownProof.status, description: unknownProof.body?.description }, malformed: { status: malformedProof.status, description: malformedProof.body?.description }, deferred: pushed.body, served: served(sdk, afterProof) }
 
   // The passport this index alone is sent.
   for (const state of mine.states) {

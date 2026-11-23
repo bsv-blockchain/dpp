@@ -98,7 +98,7 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     // An address with no tokens is an index this app has not joined yet: it
     // would answer 401 to every write. The in-process index stands in until
     // go-live registers the key and stores the tokens.
-    devIndex = await startDevIndex({ publisherKey: wallet.identityKey, network: config.network })
+    devIndex = await startDevIndex({ publisherKey: wallet.identityKey, network: config.network, chainTracker: wallet.testChain ?? headerSource(config.network, config.wallet.wocApiKey) })
     index = new IndexClient({ url: devIndex.url, submitToken: devIndex.submitToken, callbackToken: devIndex.callbackToken })
     if (mode === 'live') {
       log(

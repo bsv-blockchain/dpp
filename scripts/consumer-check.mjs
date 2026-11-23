@@ -270,7 +270,7 @@ console.log(JSON.stringify(out))
   }
 
   // 4. The types: a strict TypeScript project importing every package and every credentials subpath, using a declaration from each.
-  run(['npm', 'install', '--no-save', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, 'typescript@7.0.2', '@types/node@22.20.3'], dir)
+  run(['npm', 'install', '--no-save', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, 'typescript@7.0.2', '@types/node@26.6.6'], dir)
   writeFileSync(join(dir, 'types.ts'), `
 import type { DppState, DppStateV2, ManagedAcceptanceRecord, EvidenceReport, EvidencePackageManifest } from '@bsv/dpp-protocol'
 import { verifyChain } from '@bsv/dpp-protocol'

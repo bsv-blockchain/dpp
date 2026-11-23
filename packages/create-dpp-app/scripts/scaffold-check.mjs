@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
+import { assertProductionRecordVersions } from '../template/apps/api/src/production-records.mjs'
 import { sourceState } from '../../../scripts/lib/images.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -29,6 +30,7 @@ const { values } = parseArgs({ options: {
 if (values['prepare-only'] && !values.directory) throw new Error('--prepare-only requires --directory for the generated project')
 if (!existsSync(join(root, 'dist', 'index.js'))) throw new Error('build the packages first: npm run build')
 const release = read(join(repository, 'release', `${pkg.dpp.releaseSet}.json`))
+assertProductionRecordVersions(release.wire.records.map(record => record.version))
 const runtime = release.packages.filter(p => Object.hasOwn(pkg.dpp.packages, p.name))
 for (const entry of runtime) assert.equal(entry.version, pkg.dpp.packages[entry.name], 'starter pins must match the declared release set')
 assert.equal(runtime.length, 4, 'the app uses the protocol, profiles, overlay and credentials runtime')
@@ -136,7 +138,7 @@ try {
         releaseSet: pkg.dpp.releaseSet,
         sourceRevision: sourceState(repository).revision,
         sourceState: sourceState(repository).state,
-        note: 'Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. The application resolves its own ranges, so another install on another day may differ.',
+        note: 'Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. Direct dependencies have exact pins. Transitive dependencies may resolve differently in a fresh installation.',
         packageCount: installed.length,
         licences: Object.fromEntries(Object.entries(licences).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'en'))),
         packages: installed,

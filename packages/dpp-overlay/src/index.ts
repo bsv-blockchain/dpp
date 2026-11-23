@@ -222,8 +222,8 @@ export interface OverlayHttpOptions {
   /**
    * The header source a pushed proof is validated against before it is
    * applied, normally the same one the engine verifies submissions with.
-   * 'scripts only' or unset applies a proof on its local check alone, which
-   * is the local-development setting the engine's own option already is.
+   * A scripts-only engine cannot ingest proofs. With no extra tracker here,
+   * the engine performs its own header check.
    */
   chainTracker?: ChainTracker | 'scripts only'
   /** Reported by /health. */
@@ -886,15 +886,16 @@ async function handle(
         if (mismatch != null) throw new NamedError(403, 'token-publisher-mismatch', mismatch)
       }
       const steak = await engine.submit({ beef, topics, offChainValues })
-      let outcomes = topics
-        .filter((topic) => steak[topic] != null)
-        .map((topic) => [topic, admissionOutcome(steak[topic])] as const)
+      const txid = txidOf(beef)
+      const outcomesForSubmission = () => topics.filter((topic) => steak[topic] != null).map((topic) => {
+        const outcome = admissionOutcome(steak[topic])
+        // A rejected topic and a duplicate can both have an empty STEAK.
+        const refused = outcome === 'duplicate' && refusalReasons(engine, [topic], txid).length > 0
+        return [topic, refused ? 'none' : outcome] as const
+      })
+      let outcomes = outcomesForSubmission()
       const refusedEarlier = await reconsiderRefusedEarlier(engine, options, beef, offChainValues, steak, outcomes)
-      if (refusedEarlier.length > 0) {
-        outcomes = topics
-          .filter((topic) => steak[topic] != null)
-          .map((topic) => [topic, admissionOutcome(steak[topic])] as const)
-      }
+      if (refusedEarlier.length > 0) outcomes = outcomesForSubmission()
       const refused = outcomes.filter(([, outcome]) => outcome === 'none').map(([topic]) => topic)
       const reasons = refused.length === 0 ? [] : refusalReasons(engine, refused, txidOf(beef))
       if (refused.length > 0) {
@@ -1018,7 +1019,13 @@ async function handle(
       // No answer from the source is neither agreement nor refutation; the
       // proof is not applied and the caller is told to try again.
       const tracker = options.chainTracker
-      if (tracker != null && tracker !== 'scripts only') {
+      if (tracker === 'scripts only') {
+        if (options.components != null && (await options.components.engineStorage.findOutputsForTransaction(txid)).length === 0) {
+          throw new HttpError(404, 'this index holds no output of that transaction')
+        }
+        throw new HttpError(503, 'proof ingestion requires a chain tracker')
+      }
+      if (tracker != null) {
         let proven: boolean
         try {
           proven = await merklePath.verify(txid, tracker)
@@ -1031,6 +1038,9 @@ async function handle(
       try {
         await engine.handleNewMerkleProof(txid, merklePath, merklePath.blockHeight)
       } catch (cause) {
+        if (cause instanceof Error && cause.message === 'Merkle proof ingestion requires a ChainTracker') {
+          throw new HttpError(503, 'proof ingestion requires a chain tracker')
+        }
         if (cause instanceof Error && /Could not find matching transaction outputs/.test(cause.message)) {
           throw new HttpError(404, 'this index holds no output of that transaction')
         }

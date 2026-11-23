@@ -3,10 +3,11 @@ import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { OverlayGASPRemote } from '@bsv/overlay/GASP/OverlayGASPRemote.ts'
 import { OverlayGASPStorage } from '@bsv/overlay/GASP/OverlayGASPStorage.ts'
 import { Beef, MerklePath, PrivateKey, ProtoWallet, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
-import { buildAttestationAnchor, chainFromBeef, verifyChain, type PublisherPolicy } from '@bsv/dpp-protocol'
+import { buildAttestationAnchor, chainFromBeef, evidencePackageSigner, inspectEvidencePackage, verifyChain, type PublisherPolicy } from '@bsv/dpp-protocol'
 import { loadPublisherPolicy, type PublisherPolicyConfig } from '../src/policyConfig.js'
 import { startPeerSynchronisation } from '../src/sync.js'
 import { startOverlayService, type RunningService } from '../src/index.js'
@@ -45,9 +46,36 @@ interface Operator {
   name: 'A' | 'B'
   node: TestNode
   base: string
+  peer: string
   token: string
   stop: () => Promise<void>
 }
+
+// GASP sees HTTPS peer identities. Only the test transport knows which local
+// HTTP handler serves each identity, including the deliberately faulty peer.
+const handlers = new Map<string, string>()
+function fixturePeer(port: number): string {
+  const peer = `https://peer-${port}.example`
+  handlers.set(peer, `http://${HOST}:${port}`)
+  return peer
+}
+const fixtureFetch: typeof fetch = async (input, init) => {
+  const url = new URL(String(input))
+  const handler = handlers.get(url.origin)
+  if (handler == null) throw new Error('Unknown fixture peer')
+  return await fetch(handler + url.pathname, init)
+}
+beforeEach(() => {
+  handlers.clear()
+  const { getInitialResponse, requestNode } = OverlayGASPRemote.prototype
+  const remote = (peer: OverlayGASPRemote) => new OverlayGASPRemote(peer.endpointURL, peer.topic, fixtureFetch)
+  vi.spyOn(OverlayGASPRemote.prototype, 'getInitialResponse').mockImplementation(function (this: OverlayGASPRemote, request) {
+    return getInitialResponse.call(remote(this), request)
+  })
+  vi.spyOn(OverlayGASPRemote.prototype, 'requestNode').mockImplementation(function (this: OverlayGASPRemote, ...args) {
+    return requestNode.call(remote(this), ...args)
+  })
+})
 
 let running: Array<{ close: () => Promise<void> }> = []
 afterEach(async () => {
@@ -68,13 +96,14 @@ function writePolicy(chain: PublisherPolicy[]): PublisherPolicyConfig {
 async function startOperator(
   name: 'A' | 'B',
   policy: PublisherPolicyConfig,
-  options: { peers?: string[]; stores?: TestStores } = {}
+  options: { peers?: string[]; stores?: TestStores; exportIdentityKey?: string } = {}
 ): Promise<Operator> {
   const node = newNode('', {}, { publisherPolicy: policy, syncPeers: options.peers, stores: options.stores, now: () => NOW, quiet: true })
   const service: RunningService = await startOverlayService(node.engine, {
     port: 0,
     host: HOST,
     components: node.components,
+    exportIdentityKey: options.exportIdentityKey,
     submitToken: TOKENS[name],
     now: () => NOW,
   })
@@ -83,6 +112,7 @@ async function startOperator(
     name,
     node,
     base: `http://${HOST}:${service.port}`,
+    peer: fixturePeer(service.port),
     token: TOKENS[name],
     stop: async () => {
       running = running.filter((r) => r !== service)
@@ -182,7 +212,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
   it('B synchronises both rails from A and answers byte-identical lookups; a second round changes nothing', async () => {
     const policy = writePolicy([federatedChain().genesis])
     const { A } = await operatorAWithHistory(policy)
-    const B = await startOperator('B', policy, { peers: [A.base] })
+    const B = await startOperator('B', policy, { peers: [A.peer] })
     expect(await lookup(B, 'ls_dpp', { passportId: PASSPORT_ID })).toEqual([])
 
     await syncOnce(B)
@@ -212,8 +242,8 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     const capabilitiesA = await bodyOf(await fetch(`${A.base}/capabilities`))
     expect(capabilitiesA.synchronisation).toEqual({ profile: 'single-operator@1', discovery: 'none', gasp: false, peers: [] })
     const capabilitiesB = await bodyOf(await fetch(`${B.base}/capabilities`))
-    expect(capabilitiesB.synchronisation).toEqual({ profile: 'federated-operators@1', discovery: 'static-peers', gasp: true, peers: [A.base] })
-    expect(capabilitiesB.profiles[0]).toMatchObject({ id: 'federated-operators', version: '1', kind: 'operator', options: { discovery: 'static-peers', gasp: true, peers: [A.base], syncIntervalMs: 0 } })
+    expect(capabilitiesB.synchronisation).toEqual({ profile: 'federated-operators@1', discovery: 'static-peers', gasp: true, peers: [A.peer] })
+    expect(capabilitiesB.profiles[0]).toMatchObject({ id: 'federated-operators', version: '1', kind: 'operator', options: { discovery: 'static-peers', gasp: true, peers: [A.peer], syncIntervalMs: 0 } })
     expect(capabilitiesB.limits.syncIntervalMs).toBe(0)
     expect(capabilitiesB.unsupported.map((u: { id: string }) => u.id)).not.toContain('gasp-synchronisation')
     expect(capabilitiesB.publisherPolicy).toMatchObject({ policyVersion: '1', publisherKeys: [pub(K1)], anchoringServices: [pub(A1)] })
@@ -227,14 +257,14 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     expect(B.node.engine.syncConfiguration).toMatchObject({ tm_dpp: false, tm_attestation: false })
     const synchronisation = startPeerSynchronisation(B.node.engine, {
       intervalMs: 0, peers: [], log: () => {}, warn: () => {},
-      reconcile: { storage: B.node.storage, topics: ['tm_dpp', 'tm_attestation'] },
-      plan: async () => ({ tm_dpp: [A.base], tm_attestation: [A.base] }),
+      reconcile: { fetchImpl: fixtureFetch, storage: B.node.storage, topics: ['tm_dpp', 'tm_attestation'] },
+      plan: async () => ({ tm_dpp: [A.peer], tm_attestation: [A.peer] }),
     })
     const round = await synchronisation.runOnce()
     synchronisation.stop()
     expect(round.ok).toBe(true)
     expect(round.unreachable).toBeUndefined()
-    expect(B.node.engine.syncConfiguration).toMatchObject({ tm_dpp: [A.base], tm_attestation: [A.base] })
+    expect(B.node.engine.syncConfiguration).toMatchObject({ tm_dpp: [A.peer], tm_attestation: [A.peer] })
     expect(normalise(await lookup(B, 'ls_dpp', { passportId: PASSPORT_ID }))).toEqual(normalise(await lookup(A, 'ls_dpp', { passportId: PASSPORT_ID })))
     expect(normalise(await lookup(B, 'ls_attestation', { subject: PASSPORT_ID }))).toEqual(normalise(await lookup(A, 'ls_attestation', { subject: PASSPORT_ID })))
     expect(round.reconciliation?.map((r) => [r.topic, r.missing, r.abandoned.length])).toEqual([['tm_dpp', 0, 0], ['tm_attestation', 0, 0]])
@@ -256,7 +286,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     const { tx: e2 } = await changeFundedEventTx(e1, { timestamp: IN_WINDOW, op: 'REPAIRED', eventData: '{"workshop":"north"}' }, K1_WALLET)
     for (const tx of [g, e1, e2]) expect(await announce(A, tx)).toBe('tm_dpp=admitted')
 
-    const B = await startOperator('B', policy, { peers: [A.base] })
+    const B = await startOperator('B', policy, { peers: [A.peer] })
     await syncOnce(B)
     const statesA = normalise(await lookup(A, 'ls_dpp', { passportId: PASSPORT_ID }))
     expect(statesA).toHaveLength(3)
@@ -267,6 +297,36 @@ describe('two operators under one publisher policy (federated-operators@1, the l
       [e1.id('hex'), true, e2.id('hex')],
       [e2.id('hex'), false, ''],
     ])
+  })
+
+  it('restores a change-funded passport from signed evidence to a fresh operator', async () => {
+    const policy = writePolicy([federatedChain().genesis])
+    const exporter = PrivateKey.fromRandom()
+    const source = await startOperator('A', policy, { exportIdentityKey: exporter.toHex() })
+    const destination = await startOperator('B', policy)
+    const { tx: genesis } = await genesisTx({ timestamp: IN_WINDOW }, K1_WALLET)
+    const { tx: event } = await changeFundedEventTx(genesis, { timestamp: IN_WINDOW }, K1_WALLET)
+    for (const tx of [genesis, event]) expect(await announce(source, tx)).toBe('tm_dpp=admitted')
+
+    const response = await fetch(`${source.base}/evidence-package?${new URLSearchParams({ passportId: PASSPORT_ID })}`)
+    expect(response.status).toBe(200)
+    const { manifest, files } = await response.json()
+    const contents = new Map(Object.entries(files as Record<string, string>).map(([path, value]) => [path, Utils.toArray(value, 'base64')]))
+    expect(inspectEvidencePackage(manifest, contents, {
+      expectedPassportId: PASSPORT_ID, expectedSigner: evidencePackageSigner(pub(exporter), PASSPORT_ID),
+    }).failures).toEqual([])
+    expect(manifest.completeness.snapshots[0].completeForSnapshot).toBe(true)
+    const merged = new Beef()
+    for (const [path, bytes] of contents) if (path.startsWith('proofs/')) merged.mergeBeef(bytes)
+    for (const state of chainFromBeef(merged, PASSPORT_ID)) {
+      const answer = await fetch(`${destination.base}/submit`, {
+        method: 'POST', headers: { ...OCTET, 'x-topics': '["tm_dpp"]', authorization: `Bearer ${destination.token}` },
+        body: new Uint8Array(contents.get(`proofs/${state.id('hex')}.beef`)!),
+      })
+      expect(answer.headers.get('x-admission')).toBe('tm_dpp=admitted')
+    }
+    expect(historyItems(await historyOf(destination))).toEqual(historyItems(await historyOf(source)))
+    expect(normalise(await lookup(destination, 'ls_dpp', { passportId: PASSPORT_ID }))).toEqual(normalise(await lookup(source, 'ls_dpp', { passportId: PASSPORT_ID })))
   })
 
   it.each([['unproven', false], ['proven', true]])('a four-state lineage funded from its own change arrives whole with every state %s', async (_label, proven) => {
@@ -284,7 +344,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     const lineage = [g, e1, e2, e3]
     for (const tx of lineage) expect(await announce(A, tx)).toBe('tm_dpp=admitted')
     if (proven) for (const [i, tx] of lineage.entries()) await pushProof(A, tx, 800_500 + i)
-    const B = await startOperator('B', policy, { peers: [A.base] })
+    const B = await startOperator('B', policy, { peers: [A.peer] })
     await syncOnce(B)
     const statesA = normalise(await lookup(A, 'ls_dpp', { passportId: PASSPORT_ID }))
     expect(statesA).toHaveLength(4)
@@ -326,7 +386,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
       // behaviour.
       const policy = writePolicy([federatedChain().genesis])
       const { A } = await crossFunded(policy)
-      const B = await startOperator('B', policy, { peers: [A.base] })
+      const B = await startOperator('B', policy, { peers: [A.peer] })
       await syncOnce(B)
       expect(await lookup(B, 'ls_dpp', { passportId: OTHER_ID })).toEqual([])
     })
@@ -356,7 +416,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
       })
       const policy = writePolicy([federatedChain().genesis])
       const { A, funder } = await crossFunded(policy)
-      const B = await startOperator('B', policy, { peers: [A.base] })
+      const B = await startOperator('B', policy, { peers: [A.peer] })
       await syncOnce(B)
       const statesA = normalise(await lookup(A, 'ls_dpp', { passportId: OTHER_ID }))
       expect(statesA).toHaveLength(1)
@@ -373,7 +433,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     const [, , e2] = states
     // B starts after A has admitted its three states: the whole lineage is
     // fetched through the tip's inputs.
-    const B = await startOperator('B', policy, { peers: [A.base] })
+    const B = await startOperator('B', policy, { peers: [A.peer] })
     await syncOnce(B)
     expect(normalise(await lookup(B, 'ls_dpp', { passportId: PASSPORT_ID }))).toEqual(normalise(await lookup(A, 'ls_dpp', { passportId: PASSPORT_ID })))
 
@@ -416,7 +476,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
   it('a proof ingested on A after synchronisation does not reach B through GASP; B takes it through its own /arc-ingest', async () => {
     const policy = writePolicy([federatedChain().genesis])
     const { A, states } = await operatorAWithHistory(policy)
-    const B = await startOperator('B', policy, { peers: [A.base] })
+    const B = await startOperator('B', policy, { peers: [A.peer] })
     await syncOnce(B)
     const tip = states[2]
     const tipOn = async (operator: Operator): Promise<Transaction> => {
@@ -441,7 +501,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
   it('a retraction on A stays on A: the next round does not offer the withdrawn state, and B keeps it until B withdraws it itself', async () => {
     const policy = writePolicy([federatedChain().genesis])
     const { A, states } = await operatorAWithHistory(policy)
-    const B = await startOperator('B', policy, { peers: [A.base] })
+    const B = await startOperator('B', policy, { peers: [A.peer] })
     await syncOnce(B)
     const tip = states[2]
     const holds = async (operator: Operator): Promise<string[]> =>
@@ -482,7 +542,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
   it('A stops and B keeps serving the complete history, verified from the bytes', async () => {
     const policy = writePolicy([federatedChain().genesis])
     const { A, states } = await operatorAWithHistory(policy)
-    const B = await startOperator('B', policy, { peers: [A.base] })
+    const B = await startOperator('B', policy, { peers: [A.peer] })
     await syncOnce(B)
     await A.stop()
     await expect(fetch(`${A.base}/health`)).rejects.toThrow()
@@ -540,7 +600,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     })
     await new Promise<void>((resolve) => stub.listen(0, HOST, resolve))
     running.push({ close: () => new Promise<void>((resolve) => stub.close(() => resolve())) })
-    const stubBase = `http://${HOST}:${(stub.address() as AddressInfo).port}`
+    const stubBase = fixturePeer((stub.address() as AddressInfo).port)
 
     const B = await startOperator('B', policy, { peers: [stubBase] })
     await syncOnce(B)
@@ -556,7 +616,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     const { genesis, rotation } = federatedChain()
     let policy = writePolicy([genesis])
     const A = await startOperator('A', policy)
-    const B = await startOperator('B', policy, { peers: [A.base] })
+    const B = await startOperator('B', policy, { peers: [A.peer] })
     const { tx: g } = await genesisTx({ timestamp: IN_WINDOW }, K1_WALLET)
     expect(await announce(A, g)).toBe('tm_dpp=admitted')
     await syncOnce(B)
@@ -569,7 +629,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     await A.stop()
     await B.stop()
     const A2 = await startOperator('A', policy, { stores: A.node })
-    const B2 = await startOperator('B', policy, { peers: [A2.base], stores: B.node })
+    const B2 = await startOperator('B', policy, { peers: [A2.peer], stores: B.node })
     expect(await lookup(B2, 'ls_dpp', { passportId: PASSPORT_ID })).toHaveLength(1)
     for (const operator of [A2, B2]) {
       const capabilities = await bodyOf(await fetch(`${operator.base}/capabilities`))

@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@bsv/dpp-protocol": "0.3.0-beta.10",
-    "@bsv/sdk": "2.8.10",
+    "@bsv/sdk": "4.1.2",
     "@digitalbazaar/credentials-context": "3.2.0",
     "@digitalbazaar/data-integrity": "2.5.0",
     "@digitalbazaar/data-integrity-context": "2.0.1",
@@ -62,9 +62,9 @@
     "jsonld-signatures": "11.6.0"
   },
   "devDependencies": {
-    "@types/node": "^22.20.3",
-    "typescript": "^7.0.2",
-    "vitest": "5.0.5",
+    "@types/node": "26.6.6",
+    "typescript": "7.0.2",
+    "vitest": "5.1.1",
     "jsonld": "9.0.0",
     "n3": "2.13.12",
     "shacl-engine": "1.1.3"

@@ -499,7 +499,7 @@ try {
     say(code === 0, `${paths[name].label}: told to stop, the index closed with exit code ${code}; its database container was removed and made again over the same volume.`)
     afterRestart[name] = await runAfterRestart({ base: paths[name].base(), modules, states, own: name, tokens: tokens[name] })
     for (const check of afterRestart[name].checks) say(check.ok, `${paths[name].label}: ${check.sentence}`)
-    say(isDeepStrictEqual(afterRestart[name].observed['lookup:shared'], contract[name].observed.proofs.served) && isDeepStrictEqual(afterRestart[name].observed.evidenceFiles, contract[name].observed.evidencePackage.files) && isDeepStrictEqual(afterRestart[name].observed.history, contract[name].observed.history), `${paths[name].label}: what it serves after the restart is what it served before, byte for byte, the applied proof included.`)
+    say(isDeepStrictEqual(afterRestart[name].observed['lookup:shared'], contract[name].observed.proofs.served) && isDeepStrictEqual(afterRestart[name].observed.evidenceFiles, contract[name].observed.evidencePackage.files) && isDeepStrictEqual(afterRestart[name].observed.history, contract[name].observed.history), `${paths[name].label}: what it serves after the restart is what it served before, byte for byte, including the state whose proof was deferred.`)
   }
   const { 'lookup:own': _npmOwn, ...npmAfter } = afterRestart.npm.observed
   const { 'lookup:own': _imageOwn, ...imageAfter } = afterRestart.image.observed

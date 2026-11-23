@@ -1,9 +1,8 @@
 // An index in this process for development and tests: the real topic
 // managers, lookup services and HTTP host the reference deployment runs, over
 // in-memory storage, on a loopback port, with a publisher policy naming the
-// platform wallet and the managed-custody profile selected. Its header
-// checks are off, so it takes the made-up proofs a dry run pushes and claims
-// no inclusion. Beside the passport topic it admits generic attestation
+// platform wallet and the managed-custody profile selected. The dry run
+// checks the synthetic block roots recorded by its own test wallet. Beside the passport topic it admits generic attestation
 // anchors on tm_attestation, from any anchoring service, as the reference
 // index does when its operator names none; a lifecycle claim's anchors are
 // found there by passport. Production runs the reference index as its own service
@@ -11,7 +10,7 @@
 //
 // The HTTP host is the package's ./server export. Imported, it is a library
 // and starts nothing by itself.
-import { PrivateKey } from '@bsv/sdk'
+import { PrivateKey, type ChainTracker } from '@bsv/sdk'
 import { policySigningPreimage, type PublisherPolicy } from '@bsv/dpp-protocol'
 import type { RegistrationSettings } from '@bsv/dpp-overlay'
 import type { Network } from './config.js'
@@ -32,6 +31,7 @@ export interface DevIndex {
 export interface DevIndexOptions {
   /** The key the genesis names as the state publisher. */
   publisherKey: string
+  chainTracker?: ChainTracker
   /** What the index reports on GET /health, so it agrees with the app's NETWORK. */
   network: Network
   /** Run POST /register in this mode, for the go-live test; off by default. */
@@ -70,7 +70,7 @@ export async function startDevIndex(options: DevIndexOptions): Promise<DevIndex>
     { tm_dpp: new topics.DppTopicManager('', { publisherPolicy: policy.chain, managedAcceptance, admittedOutputs: storage }), tm_attestation: new topics.AttestationTopicManager() },
     lookupServices,
     storage,
-    'scripts only',
+    options.chainTracker ?? 'scripts only',
     undefined,
     undefined,
     undefined,
@@ -101,6 +101,7 @@ export async function startDevIndex(options: DevIndexOptions): Promise<DevIndex>
     port: 0,
     host: '127.0.0.1',
     network,
+    chainTracker: options.chainTracker ?? 'scripts only',
     submitToken,
     proofToken: callbackToken,
     exportIdentityKey: exporterKey.toHex(),

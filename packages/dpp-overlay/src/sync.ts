@@ -20,6 +20,7 @@
  * never ones a lookup found, so the capability document says
  * `static-peers` and nothing here authorises a publisher.
  */
+import { normalizePeerEndpoint, securePeerFetch } from '@bsv/overlay/RemoteSecurity.ts'
 import type { Engine, Storage } from '@bsv/overlay'
 
 /** The Engine's shape for `syncConfiguration`: peers per topic, 'SHIP' for discovered peers, or false. */
@@ -45,7 +46,7 @@ export function stripTrailingSlashes(value: string): string {
 
 /**
  * Comma-separated base URLs, normalised and each once. Anything that is not
- * an http or https URL stops the boot; a peer is not a thing to guess.
+ * a credential-free HTTPS URL stops the boot; a peer is not a thing to guess.
  * `setting` names the variable in errors.
  */
 export function parseSyncPeers(value: string | undefined, setting = 'SYNC_PEERS'): string[] {
@@ -53,16 +54,12 @@ export function parseSyncPeers(value: string | undefined, setting = 'SYNC_PEERS'
   for (const raw of (value ?? '').split(',')) {
     const candidate = raw.trim()
     if (candidate === '') continue
-    let url: URL
+    let normalised: string
     try {
-      url = new URL(candidate)
+      normalised = stripTrailingSlashes(normalizePeerEndpoint(candidate))
     } catch {
-      throw new Error(`${setting} entry "${candidate}" is not a URL`)
+      throw new Error(`${setting} entry must be an HTTPS URL without credentials, query or fragment`)
     }
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      throw new Error(`${setting} entry "${candidate}" must be an http or https URL`)
-    }
-    const normalised = stripTrailingSlashes(candidate)
     if (!peers.includes(normalised)) peers.push(normalised)
   }
   return peers
@@ -179,9 +176,10 @@ async function offeredSince(
   topic: string,
   since: number,
   limit: number,
-  fetchImpl: typeof fetch
+  fetchImpl?: typeof fetch
 ): Promise<Array<{ txid: string; outputIndex: number; score: number }>> {
-  const response = await fetchImpl(`${peer}/requestSyncResponse`, {
+  const request = fetchImpl ?? securePeerFetch(peer).fetchImpl
+  const response = await request(`${peer}/requestSyncResponse`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-BSV-Topic': topic },
     body: JSON.stringify({ version: 1, since, limit }),
@@ -251,7 +249,7 @@ export function startPeerSynchronisation(
   const reconcile = options.reconcile
   const maxAttempts = reconcile?.maxAttempts ?? DEFAULT_RECONCILIATION_ATTEMPTS
   const limit = Math.min(reconcile?.limit ?? RECONCILIATION_PAGE, RECONCILIATION_PAGE)
-  const fetchImpl = reconcile?.fetchImpl ?? fetch
+  const fetchImpl = reconcile?.fetchImpl
   const firstWait = reconcile?.retryAfterRounds ?? roundsFor(LEFT_BEHIND_RETRY_MS, options.intervalMs, 60)
   const maxWait = Math.max(firstWait, reconcile?.maxRetryAfterRounds ?? roundsFor(LEFT_BEHIND_MAX_RETRY_MS, options.intervalMs, 1440))
   /** Rounds an offered outpoint has been missing, by peer, topic and outpoint. */

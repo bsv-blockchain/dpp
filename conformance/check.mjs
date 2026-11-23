@@ -39,6 +39,7 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dependencyManifest } from '../scripts/lib/dependency-manifest.mjs'
+import { assertProductionRecordVersions } from '../packages/create-dpp-app/template/apps/api/src/production-records.mjs'
 import { RELEASE_ARCHIVE, SELECTION_ARCHIVE, releaseSetPath, selectionMisplacement, setMisplacement } from '../scripts/lib/candidates.mjs'
 import { presetFindings } from '../scripts/lib/images.mjs'
 import { Ajv2020 } from 'ajv/dist/2020.js'
@@ -61,6 +62,7 @@ import {
   REPORT_VERSION,
   STANDARD_VERSION,
   STANDARD_VERSION_V2,
+  SUPPORTED_VERSIONS,
 } from '@bsv/dpp-protocol'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -335,7 +337,13 @@ for (const path of [...setFiles('release'), ...setFiles(RELEASE_ARCHIVE)]) {
     else defect(`${set.releaseSet} runtime names ${dep.name}@${dep.version} but ${version} is installed.`)
   }
   const versions = set.wire.records.map((r) => r.version)
-  const exportedVersions = [STANDARD_VERSION, STANDARD_VERSION_V2]
+  try {
+    assertProductionRecordVersions(versions)
+    assertProductionRecordVersions(SUPPORTED_VERSIONS)
+  } catch (cause) {
+    defect(`${set.releaseSet}: ${cause.message}`)
+  }
+  const exportedVersions = SUPPORTED_VERSIONS
   if (same(versions, exportedVersions)) note(`${set.releaseSet} names record versions ${versions.join(' and ')}, as the reference exports them.`)
   else defect(`${set.releaseSet} names record versions ${versions.join(', ')}; the reference exports ${exportedVersions.join(' and ')}.`)
   const exportedRecords = {

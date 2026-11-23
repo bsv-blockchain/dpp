@@ -5,7 +5,8 @@
 // key to the index's policy and answers with this app's two write tokens,
 // which go into .env beside the root key the first run generated. A passing
 // run writes LIVE_PUBLISHING=true; a failing run leaves it as it was.
-import { INDEX_REGISTRATION_FORMAT, signRegistration } from '@bsv/dpp-protocol'
+import { assertProductionRecordVersions } from './production-records.mjs'
+import { INDEX_REGISTRATION_FORMAT, signRegistration, SUPPORTED_VERSIONS } from '@bsv/dpp-protocol'
 import { KNOWN_INDEX_HOSTS, loadConfig, type Config } from './config.js'
 import { generateRootKey, ROOT_KEY_GENERATED, updateEnvFile } from './env-file.js'
 import { IndexClient } from './index-client.js'
@@ -73,6 +74,13 @@ export async function goLive(options: GoLiveOptions): Promise<GoLiveResult> {
     out(`no  ${check}: ${problem}. Fix: ${fix}`)
   }
   const result = (): GoLiveResult => ({ ok: failures.length === 0, passed, failures })
+
+  try {
+    assertProductionRecordVersions(SUPPORTED_VERSIONS)
+  } catch (cause) {
+    fail('protocol', describe(cause), 'install the PushDrop protocol version pinned by the release set')
+    return result()
+  }
 
   // 1. Configuration.
   let config: Config

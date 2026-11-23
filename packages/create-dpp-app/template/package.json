@@ -29,20 +29,15 @@
   "dpp": {
     "releaseSet": "dpp-release-2026-11"
   },
-  "overrides": {
-    "@bsv/overlay": {
-      "@bsv/sdk": "2.8.10"
-    }
-  },
   "devDependencies": {
-    "concurrently": "^9.2.1",
-    "oxlint": "^1.87.0",
-    "prettier": "^3.9.9",
-    "typescript": "^7.0.2"
+    "concurrently": "10.0.7",
+    "oxlint": "1.95.0",
+    "prettier": "3.10.1",
+    "typescript": "7.0.2"
   },
   "allowScripts": {
     "better-sqlite3@13.0.3": true,
     "esbuild@0.28.2": true,
-    "mongodb-memory-server@11.2.0": false
+    "mongodb-memory-server@11.4.0": false
   }
 }

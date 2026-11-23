@@ -299,7 +299,7 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     for (const [index, input] of tx.inputs.entries()) {
       const sourceTxid = input.sourceTransaction?.id('hex') ?? input.sourceTXID
       if (sourceTxid !== state.previousTxid) continue
-      if ((await this.admitted.findOutput(sourceTxid, input.sourceOutputIndex, DPP_TOPIC)) != null) found.push(index)
+      if ((await this.admitted.findOutput(sourceTxid, input.sourceOutputIndex, DPP_TOPIC, false)) != null) found.push(index)
     }
     return found
   }
@@ -321,22 +321,15 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     }
     const txid = tx.id('hex')
 
-    /*
-     * A refusal keeps the coins the Engine offered. Without this the Engine
-     * reads a refused spend of an admitted tip as that tip's consumption by a
-     * transaction the topic did not care to retain, and its stale-output
-     * eviction removes the tip and, recursively, every predecessor nothing
-     * else consumes: one refused announcement emptied a passport's index
-     * entry in the 2026-08-12 rehearsal. Retaining the offered coins on
-     * refusal is the documented half of the contract that keeps the lineage.
-     * What the Engine still does with a refused transaction is written up in
-     * this package's README (a refused spend of the tip): it marks the tip
-     * spent in its own storage, tells the lookup services of the spend, and
-     * records the transaction as applied to the topic.
-     */
     const refuse = (reason: DppRefusal): AdmittanceInstructions => {
       this.noteRefusal(txid, reason)
-      return previousCoins.length === 0 ? none() : { outputsToAdmit: [], coinsToRetain: [...previousCoins] }
+      // Overlay 2.8 treats a returned instruction as permission to consume
+      // previous coins. Throwing rejects this topic before any storage mutation.
+      if (previousCoins.length === 0) return none()
+      // Standalone callers can inspect the instructions without submitting.
+      // The engine supplies a transaction mode on every admission.
+      if (mode == null) return { outputsToAdmit: [], coinsToRetain: [...previousCoins] }
+      throw new Error(`DPP admission refused: ${reason}`)
     }
     const admit = (instructions: AdmittanceInstructions): AdmittanceInstructions => {
       this.refusals.delete(txid)
@@ -404,7 +397,9 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     } catch {
       parsedBeef = undefined
     }
-    const coins = await this.previousCoinsFor(tx, state, previousCoins)
+    const coins = mode === 'historical-tx'
+      ? await this.previousCoinsFor(tx, state, previousCoins)
+      : previousCoins
     // A coin that spends the predecessor but whose bytes no source holds is a
     // different repair from a state that spends no admitted coin at all.
     let predecessorUnavailable = false
@@ -446,7 +441,7 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
         console.warn(`${DPP_TOPIC} refused ${txid}: ${ACCEPTANCE_COMMITMENT_REFUSAL}`)
         return refuse('acceptance-commitment-absent')
       }
-      return admit({ outputsToAdmit: [outputIndex], coinsToRetain: [inputIndex] })
+      return admit({ outputsToAdmit: [outputIndex], coinsToRetain: previousCoins.includes(inputIndex) ? [inputIndex] : [] })
     }
 
     // No previously admitted coin matches previous_txid: not the admitted tip.

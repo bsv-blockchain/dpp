@@ -1,19 +1,18 @@
 {
   "check": "packages/create-dpp-app/scripts/scaffold-check.mjs",
-  "recordedAt": "2026-11-18",
+  "recordedAt": "2026-11-24",
   "releaseSet": "dpp-release-2026-11",
-  "sourceRevision": "f9683628a6ff281f4600aee4ec06cc4b04015a45",
-  "sourceState": "committed",
-  "note": "Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. The application resolves its own ranges, so another install on another day may differ.",
-  "packageCount": 756,
+  "sourceRevision": "155a71df1132e53ef78ce9e4f8f77f25f76a8eea",
+  "sourceState": "working-tree",
+  "note": "Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. Direct dependencies have exact pins. Transitive dependencies may resolve differently in a fresh installation.",
+  "packageCount": 753,
   "licences": {
-    "MIT": 673,
-    "Apache-2.0": 18,
+    "MIT": 672,
+    "Apache-2.0": 21,
     "BSD-3-Clause": 16,
     "ISC": 16,
     "MPL-2.0": 12,
     "BSD-2-Clause": 9,
-    "SEE LICENSE IN LICENSE.txt": 5,
     "SEE LICENSE IN LICENSE.md": 2,
     "(MIT OR CC0-1.0)": 1,
     "(WTFPL OR MIT)": 1,
@@ -29,42 +28,37 @@
     },
     {
       "name": "@better-auth/core",
-      "version": "1.7.7",
+      "version": "1.7.27",
       "licence": "MIT"
     },
     {
       "name": "@better-auth/drizzle-adapter",
-      "version": "1.7.7",
+      "version": "1.7.27",
       "licence": "MIT"
     },
     {
       "name": "@better-auth/kysely-adapter",
-      "version": "1.7.7",
+      "version": "1.7.27",
       "licence": "MIT"
     },
     {
       "name": "@better-auth/memory-adapter",
-      "version": "1.7.7",
+      "version": "1.7.27",
       "licence": "MIT"
     },
     {
       "name": "@better-auth/mongo-adapter",
-      "version": "1.7.7",
+      "version": "1.7.27",
       "licence": "MIT"
     },
     {
       "name": "@better-auth/prisma-adapter",
-      "version": "1.7.7",
+      "version": "1.7.27",
       "licence": "MIT"
     },
     {
       "name": "@better-auth/telemetry",
-      "version": "1.7.7",
-      "licence": "MIT"
-    },
-    {
-      "name": "@better-auth/utils",
-      "version": "0.4.2",
+      "version": "1.7.27",
       "licence": "MIT"
     },
     {
@@ -74,7 +68,7 @@
     },
     {
       "name": "@better-fetch/fetch",
-      "version": "1.3.2",
+      "version": "1.3.3",
       "licence": "MIT"
     },
     {
@@ -108,13 +102,13 @@
     },
     {
       "name": "@bsv/gasp",
-      "version": "1.3.10",
-      "licence": "SEE LICENSE IN LICENSE.txt"
+      "version": "1.3.11",
+      "licence": "Apache-2.0"
     },
     {
       "name": "@bsv/overlay",
-      "version": "2.3.1",
-      "licence": "SEE LICENSE IN LICENSE.txt"
+      "version": "2.8.0",
+      "licence": "Apache-2.0"
     },
     {
       "name": "@bsv/payment-express-middleware",
@@ -123,18 +117,18 @@
     },
     {
       "name": "@bsv/sdk",
-      "version": "2.8.10",
-      "licence": "SEE LICENSE IN LICENSE.txt"
+      "version": "4.1.2",
+      "licence": "Apache-2.0"
     },
     {
       "name": "@bsv/wallet-toolbox",
-      "version": "2.14.6",
-      "licence": "SEE LICENSE IN LICENSE.txt"
+      "version": "2.18.0",
+      "licence": "Apache-2.0"
     },
     {
       "name": "@bsv/wallet-toolbox-client",
-      "version": "2.11.0",
-      "licence": "SEE LICENSE IN LICENSE.txt",
+      "version": "2.18.0",
+      "licence": "Apache-2.0",
       "optional": true
     },
     {
@@ -1648,11 +1642,6 @@
       "licence": "MIT"
     },
     {
-      "name": "@opentelemetry/semantic-conventions",
-      "version": "1.45.0",
-      "licence": "Apache-2.0"
-    },
-    {
       "name": "@oxc-project/types",
       "version": "0.156.0",
       "licence": "MIT"
@@ -2231,12 +2220,12 @@
     },
     {
       "name": "@types/node",
-      "version": "22.20.5",
+      "version": "24.19.2",
       "licence": "MIT"
     },
     {
       "name": "@types/node",
-      "version": "24.19.2",
+      "version": "26.6.6",
       "licence": "MIT"
     },
     {
@@ -2316,12 +2305,12 @@
     },
     {
       "name": "@vitest/mocker",
-      "version": "5.1.0",
+      "version": "5.1.1",
       "licence": "MIT"
     },
     {
       "name": "@vitest/spy",
-      "version": "5.1.0",
+      "version": "5.1.1",
       "licence": "MIT"
     },
     {
@@ -2406,12 +2395,12 @@
     },
     {
       "name": "better-auth",
-      "version": "1.7.7",
+      "version": "1.7.27",
       "licence": "MIT"
     },
     {
       "name": "better-call",
-      "version": "1.4.0",
+      "version": "1.4.6",
       "licence": "MIT"
     },
     {
@@ -2461,7 +2450,7 @@
     },
     {
       "name": "canonicalize",
-      "version": "5.0.0",
+      "version": "5.1.0",
       "licence": "Apache-2.0"
     },
     {
@@ -2486,7 +2475,7 @@
     },
     {
       "name": "cn",
-      "version": "0.4.0",
+      "version": "0.5.2",
       "licence": "MIT"
     },
     {
@@ -2741,7 +2730,7 @@
     },
     {
       "name": "express-rate-limit",
-      "version": "8.7.4",
+      "version": "8.7.5",
       "licence": "MIT"
     },
     {
@@ -2957,7 +2946,7 @@
     },
     {
       "name": "jose",
-      "version": "6.2.17",
+      "version": "6.2.18",
       "licence": "MIT"
     },
     {
@@ -3113,7 +3102,7 @@
     },
     {
       "name": "lucide-react",
-      "version": "1.74.0",
+      "version": "1.78.0",
       "licence": "ISC"
     },
     {
@@ -3168,12 +3157,7 @@
     },
     {
       "name": "mongodb",
-      "version": "7.6.0",
-      "licence": "Apache-2.0"
-    },
-    {
-      "name": "mongodb",
-      "version": "7.7.0",
+      "version": "7.9.1",
       "licence": "Apache-2.0"
     },
     {
@@ -3238,7 +3222,7 @@
     },
     {
       "name": "object-inspect",
-      "version": "1.13.4",
+      "version": "1.14.0",
       "licence": "MIT"
     },
     {
@@ -3398,12 +3382,12 @@
     },
     {
       "name": "react",
-      "version": "19.3.0",
+      "version": "19.3.1",
       "licence": "MIT"
     },
     {
       "name": "react-dom",
-      "version": "19.3.0",
+      "version": "19.3.1",
       "licence": "MIT"
     },
     {
@@ -3418,7 +3402,7 @@
     },
     {
       "name": "react-router",
-      "version": "8.4.0",
+      "version": "8.5.2",
       "licence": "MIT"
     },
     {
@@ -3453,7 +3437,7 @@
     },
     {
       "name": "relative-to-absolute-iri",
-      "version": "1.0.8",
+      "version": "1.0.9",
       "licence": "MIT"
     },
     {
@@ -3578,7 +3562,7 @@
     },
     {
       "name": "source-map-js",
-      "version": "1.2.2",
+      "version": "1.2.4",
       "licence": "BSD-3-Clause"
     },
     {
@@ -3593,7 +3577,7 @@
     },
     {
       "name": "sql-escaper",
-      "version": "1.8.0",
+      "version": "1.9.1",
       "licence": "MIT"
     },
     {
@@ -3663,7 +3647,7 @@
     },
     {
       "name": "tinybench",
-      "version": "6.2.3",
+      "version": "6.2.5",
       "licence": "MIT"
     },
     {
@@ -3723,7 +3707,7 @@
     },
     {
       "name": "undici",
-      "version": "8.12.4",
+      "version": "8.13.1",
       "licence": "MIT"
     },
     {
@@ -3733,12 +3717,12 @@
     },
     {
       "name": "undici-types",
-      "version": "6.21.0",
+      "version": "7.24.6",
       "licence": "MIT"
     },
     {
       "name": "undici-types",
-      "version": "7.24.6",
+      "version": "8.9.0",
       "licence": "MIT"
     },
     {
@@ -3783,7 +3767,7 @@
     },
     {
       "name": "vitest",
-      "version": "5.1.0",
+      "version": "5.1.1",
       "licence": "MIT"
     },
     {
@@ -3853,7 +3837,7 @@
     },
     {
       "name": "yargs",
-      "version": "17.7.2",
+      "version": "17.7.3",
       "licence": "MIT"
     },
     {

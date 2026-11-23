@@ -10,21 +10,21 @@
     "dependencies": [
       {
         "name": "@bsv/sdk",
-        "version": "2.8.10"
+        "version": "4.1.2"
       },
       {
         "name": "@bsv/overlay",
-        "version": "2.3.1",
-        "note": "resolves @bsv/gasp 1.3.6 in this repository's lockfile and in the index image; a consumer's own install resolves its range, ^1.3.6, and may get a later version; consumed by @bsv/dpp-overlay only"
+        "version": "2.8.0",
+        "note": "resolves @bsv/gasp 1.3.11 in this repository's lockfile and in the index image; a consumer's own install resolves its range, ^1.3.11, and may get a later version; consumed by @bsv/dpp-overlay only"
       },
       {
         "name": "mongodb",
-        "version": "7.6.0",
+        "version": "7.9.1",
         "note": "the reference persistence of the index node, replaceable"
       },
       {
         "name": "@bsv/wallet-toolbox-client",
-        "version": "2.11.0",
+        "version": "2.18.0",
         "note": "the application service's wallet, and from this set an optional dependency of @bsv/dpp-overlay for advertising, at the same version; npm install --omit=optional leaves it out"
       }
     ]
@@ -386,7 +386,7 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "5db960bf669d821c02f86336d54d14c8298378213bba669b51d67f7180659afb",
+      "sha256": "7ffb7f7b791129b32b790643125bb69bf2e3be107531a92662be6051676705ee",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {

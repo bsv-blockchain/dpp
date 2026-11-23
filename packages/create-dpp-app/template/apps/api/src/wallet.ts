@@ -24,6 +24,7 @@ import {
   Transaction,
   UnlockingScript,
   Utils,
+  type ChainTracker,
   type WalletInterface,
   type WalletProtocol,
 } from '@bsv/sdk'
@@ -72,6 +73,8 @@ export interface FundingAddress {
 
 export interface PlatformWallet {
   kind: 'toolbox' | 'test'
+  /** The test wallet's synthetic blocks, for its in-process index only. */
+  testChain?: ChainTracker
   network: Network
   identityKey: string
   publisher: PublisherWallet
@@ -285,8 +288,8 @@ function syntheticFunding(): Transaction {
 
 /**
  * A wallet for tests and dry runs: fixed keys, synthetic funding, transactions
- * built here the way a wallet would fund them, and made-up proofs that only
- * an index with its header checks off would take. Nothing is sent anywhere.
+ * built here the way a wallet would fund them, and proofs checked against
+ * the synthetic roots this wallet records. Nothing is sent anywhere.
  */
 export function openTestWallet(rootKeyHex = '11'.repeat(32), network: Network = 'main'): PlatformWallet {
   const rootKey = PrivateKey.fromHex(rootKeyHex)
@@ -326,6 +329,11 @@ export function openTestWallet(rootKeyHex = '11'.repeat(32), network: Network = 
 
   return {
     kind: 'test',
+    testChain: {
+      currentHeight: async () => proofHeight + 100,
+      isValidRootForHeight: async (root, height) =>
+        (height === 800_000 && root === syntheticFunding().id('hex')) || proofs.get(root)?.blockHeight === height,
+    },
     network,
     identityKey,
     publisher: wallet,

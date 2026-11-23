@@ -29,7 +29,7 @@ Choose a route before gathering inputs. Docker, index secrets and index header s
 Repository examples use the packages the checkout links. For your own application, [pack the source candidate](README.md#use-the-renamed-source-candidate), then install these exact versions. Replace `/absolute/path/to/dpp` with the checkout path. This uses source archives rather than published versions and leaves upgrades to you:
 
 ```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@4.1.2
 ```
 
 Validate the payload against its declared profile with the [profile checker](dpp-profiles.md#check-a-payload-against-its-profile); signatures and linkage do not validate product data. Keep the journal and evidence from steps 3 and 5. The packages do not supply your full application, permissions or background scheduler.
@@ -223,7 +223,7 @@ const { publicKey } = await wallet.getPublicKey({ identityKey: true })
 console.log(publicKey)
 ```
 
-Expect 66 hexadecimal characters. `localhost` is the originator, the hostname by which the wallet knows the program. In Node, `@bsv/sdk` 2.8.10 needs it to find a local wallet; otherwise it reports no wallet even when one is running.
+Expect 66 hexadecimal characters. `localhost` is the originator, the hostname by which the wallet knows the program. The example supplies that originator when opening the local wallet connection from Node.
 
 ### 2.2 Create the settings file and two secrets
 

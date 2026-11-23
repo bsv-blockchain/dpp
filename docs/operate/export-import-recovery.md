@@ -78,7 +78,8 @@ The hosted reference supports this route. Its passports require the replacement 
 
 ```js
 // Copy one passport from an index's bounded evidence package into another index.
-import { evidencePackageSigner, inspectEvidencePackage } from '@bsv/dpp-protocol'
+import { Beef } from '@bsv/sdk'
+import { chainFromBeef, evidencePackageSigner, inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
@@ -101,15 +102,21 @@ if (!envelope.manifest.completeness.snapshots[0].completeForSnapshot) {
 }
 console.log(`package checked: signed by ${expectedSigner}, complete for its snapshot`)
 
-for (const [path, bytes] of files) {
-  if (!path.startsWith('proofs/')) continue
+const merged = new Beef()
+for (const [path, bytes] of files) if (path.startsWith('proofs/')) merged.mergeBeef(bytes)
+for (const state of chainFromBeef(merged, passportId)) {
+  const path = `proofs/${state.id('hex')}.beef`
+  const bytes = files.get(path)
+  if (bytes == null) throw new Error(`Missing ${path}`)
   const answer = await fetch(`${replacement}/submit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/octet-stream', 'X-Topics': '["tm_dpp"]', Authorization: `Bearer ${process.env.SUBMIT_TOKEN}` },
     body: new Uint8Array(bytes),
   })
   if (!answer.ok) throw new Error(`POST /submit answered ${answer.status} for ${path}: ${await answer.text()}`)
-  console.log(path, answer.status, answer.headers.get('x-admission'))
+  const admission = answer.headers.get('x-admission')
+  if (admission !== 'tm_dpp=admitted' && admission !== 'tm_dpp=duplicate') throw new Error(`Index refused ${path}: ${admission}`)
+  console.log(path, answer.status, admission)
 }
 ```
 

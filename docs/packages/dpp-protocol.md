@@ -24,13 +24,13 @@ JavaScript and TypeScript application builders can use `@bsv/dpp-protocol` to bu
 2. In your application, install protocol, profiles and SDK together below. Replace `/absolute/path/to/dpp` with the checkout's absolute path; retain archives and lockfile.
 
 ```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@4.1.2
 ```
 
 The npm command below applies once these exact versions have been published. Run it in your project:
 
 ```sh
-npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@4.1.2
 ```
 
 Pin versions, keep the lockfile and review compatibility before upgrading. After publication, a bare `npm install @bsv/dpp-protocol` selects `latest`, the newest beta. The [support table](support-table.md) lists entry-point support; browser use is untested.

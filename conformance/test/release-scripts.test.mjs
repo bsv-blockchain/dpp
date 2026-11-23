@@ -8,6 +8,7 @@
  * no build and no npm.
  */
 import { test } from 'node:test'
+import { assertProductionRecordVersions } from '../../packages/create-dpp-app/template/apps/api/src/production-records.mjs'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -134,4 +135,11 @@ test('a set is found under release/ while current and under the archive once sup
     assert.equal(releaseSetPath(dir, 'dpp-release-none'), null)
     assert.equal(releaseSetPath(dir, undefined), null)
   } finally { rmSync(dir, { recursive: true, force: true }) }
+})
+
+test('the production gate accepts PushDrop and rejects a protocol advertising the v3 carrier', () => {
+  assert.doesNotThrow(() => assertProductionRecordVersions(['1', '2']))
+  for (const versions of [['1', '2', '3'], ['3'], [], undefined]) {
+    assert.throws(() => assertProductionRecordVersions(versions), /1Color/)
+  }
 })

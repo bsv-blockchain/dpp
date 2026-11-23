@@ -27,7 +27,7 @@ npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10
 This source tree is the November candidate, `0.3.0-beta.10`, not yet published. [Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test it. After publication, install these exact versions from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@4.1.2
 ```
 
 Node >=22 and ECMAScript modules are supported. Browser use of the runtime is untested. The installed archive includes the built package.

@@ -68,7 +68,7 @@ Edit `deploy/operator-b.env`:
 | `OVERLAY_PORT` | `8081` (used below), or any free port other than the first index's. |
 | `SERVICE_IDENTITY_KEY` | The first index's value, so the second admits what the first admitted. Can stay empty under a publisher policy (step 3), which decides instead. |
 | `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN` | New secrets, not the first index's. Make each with `openssl rand -hex 32`. |
-| `SYNC_PEERS` | `http://host.docker.internal:8080` when both indexes run on this machine. On separate hosts, the first index's base URL as the second container reaches it. |
+| `SYNC_PEERS` | The first operator’s public HTTPS base URL, with a trusted TLS certificate. For two nodes on one machine, route that hostname through a TLS reverse proxy to the first index. |
 | `WOC_API_KEY` | Your WhatsOnChain API key. |
 | `ACCEPTANCE_COMMITMENT` | The first index's value, `required` in the example file. A stricter one refuses version 2 transfers the first admitted. |
 | `ANCHOR_SERVICE_KEYS` | The first index's value, so the second admits the anchors the first admitted. Empty admits a well-formed anchor from any anchoring service, as the hosted reference does. |
@@ -149,7 +149,7 @@ curl --fail http://localhost:8081/health
 curl --fail -s http://localhost:8081/capabilities | node -e "const c = JSON.parse(require('fs').readFileSync(0, 'utf8')); console.log(JSON.stringify({ synchronisation: c.synchronisation, publisherKeys: c.publisherPolicy.publisherKeys }, null, 2))"
 ```
 
-Expect `"profile": "single-operator@2"`, `"discovery": "static-peers"`, `"gasp": true`, `peers` listing `http://host.docker.internal:8080`, and `publisherKeys` listing the keys the index admits now. An index on beta.9 says `single-operator@1` here. Key windows are not shown: they are only in the operator's signed chain ([tell operators apart](#tell-operators-apart)).
+Expect `"profile": "single-operator@2"`, `"discovery": "static-peers"`, `"gasp": true`, `peers` listing `https://index-a.example.org`, and `publisherKeys` listing the keys the index admits now. An index on beta.9 says `single-operator@1` here. Key windows are not shown: they are only in the operator's signed chain ([tell operators apart](#tell-operators-apart)).
 
 If the index does not start, read its log:
 
@@ -244,7 +244,7 @@ The copy stays in both indexes until `down -v` on a preset removes everything th
 
 ### 6. Exchange records both ways
 
-1. Each operator sets `SYNC_PEERS` to the other's base URL and applies the environment change by rerunning that index's `up -d` command. On one machine, only the second preset maps `host.docker.internal` to the host. Docker Desktop supplies it anyway; on Linux, give the first container a reachable host address.
+1. Each operator sets `SYNC_PEERS` to the other operator’s public HTTPS base URL and reruns its index’s `up -d` command. Both URLs must resolve to public network addresses.
 2. Each publisher policy names the other's state-publisher keys, with windows that cover the states to exchange.
 3. Each reads the other's `GET /capabilities`: `synchronisation.discovery` is `static-peers` and `synchronisation.peers` lists its own URL.
 4. Each writes a state and looks it up on the other after the next round.
@@ -551,7 +551,7 @@ The index never revokes adverts. After a move or shutdown, trackers still return
 
 ### The wallet library
 
-The wallet comes from `@bsv/wallet-toolbox-client` 2.11.0, an optional dependency of the package. `npm install` installs it; `npm install --omit=optional` leaves it out, and `ADVERTISE=1` then logs `advertising failed, so other indexes find this one only if they name it: ADVERTISE=1 needs @bsv/wallet-toolbox-client installed beside this package (npm install @bsv/wallet-toolbox-client)` and serves without advertising. The image the [Dockerfile](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/packages/dpp-overlay/Dockerfile) builds includes it. The library is loaded only when an index with `ADVERTISE=1` starts; importing the package loads nothing of it.
+The wallet comes from `@bsv/wallet-toolbox-client` 2.18.0, an optional dependency of the package. `npm install` installs it; `npm install --omit=optional` leaves it out, and `ADVERTISE=1` then logs `advertising failed, so other indexes find this one only if they name it: ADVERTISE=1 needs @bsv/wallet-toolbox-client installed beside this package (npm install @bsv/wallet-toolbox-client)` and serves without advertising. The image the [Dockerfile](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/packages/dpp-overlay/Dockerfile) builds includes it. The library is loaded only when an index with `ADVERTISE=1` starts; importing the package loads nothing of it.
 
 ### The capability document with advertising on
 
@@ -591,6 +591,7 @@ Retry repairs nothing: admission still refuses an unacceptable state, and a grap
 | `tm_dpp refused <txid>: <another reason>` | The state breaks a record rule your index applies, such as a missing acceptance commitment under `ACCEPTANCE_COMMITMENT=required`. | Match the admission settings to the index you pull from, or accept that the two disagree. |
 | `Failed to verify merkleroot for height <height>` | Your header source did not answer for that block, usually WhatsOnChain limiting anonymous requests, so the proven state was dropped for that round. | Set `WOC_API_KEY`; if an output was left behind, [move the checkpoint back](#move-a-checkpoint-back). |
 | `Error with incoming UTXO <txid>.<output>: HTTP error! Status: 404` | The peer cannot serve the state's graph, usually because it holds a mined state without its merkle path, so your index asks for ancestors the peer lacks. | Ask the peer's operator to deliver the missing proofs to its own `POST /arc-ingest`, then move the checkpoint back. Or [take the record from the chain](#take-a-record-from-the-chain) yourself. |
+| A wallet-funded state spends two outputs of the same parent | Overlay 2.8.0 can count the parent transaction twice and refuse the graph as a conflicting spend. Restore that passport using the [signed evidence package](export-import-recovery.md#restore-a-passport-from-the-bounded-package), then compare the two histories. |
 | The state is unproven and its writer's wallet funded it from another passport's change | A known limit of the overlay package: the peer reaches the other passport through the change output and asks for its predecessor, which it cannot get. The topic now asks only through the passport output, but `@bsv/overlay` up to 2.6.2 does not say which output a walk arrived by. | Wait for the first round after the state is mined ([known limitations](limitations.md)). |
 | Nothing: the peer keeps the previous tip of a passport it holds | The new state is unproven. The overlay SDK needs an unproven state's parent in the graph it assembles but leaves out a parent the peer already holds, so the state cannot arrive; a new passport can. | Push the state's proof to the node the peer pulls from. The next round carries the state with its proof, and the peer admits it on the tip it holds. |
 | Nothing: the state arrived, but readers of the peer see `inclusion` pending | A proof that arrives after a peer synchronised the state does not follow it. | Deliver the proof to the peer (below), or [take it from the chain](#take-a-record-from-the-chain) yourself. |
@@ -612,7 +613,7 @@ A mined transaction's proof does not depend on any peer. WhatsOnChain serves it 
 After fixing the cause, delete the peer's checkpoints. No setting selects a restart point. Next round asks for everything again; existing outputs are admitted as no-ops. Each `{ host, topic, since }` document is in `overlayInteractions`; `host` matches `SYNC_PEERS` without a trailing slash. For the second preset, using database `dpp` unless `MONGO_DB` overrides it:
 
 ```sh
-docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-b.env exec mongo-b mongosh dpp --quiet --eval 'db.overlayInteractions.deleteMany({ host: "http://host.docker.internal:8080" })'
+docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-b.env exec mongo-b mongosh dpp --quiet --eval 'db.overlayInteractions.deleteMany({ host: "https://index-a.example.org" })'
 ```
 
 Expect `{ acknowledged: true, deletedCount: 1 }` or more, one per topic the peer had delivered from. In a local test, the next round read the peer from the start (`since: 0`) and admitted nothing twice.
