@@ -1,4 +1,5 @@
-// The HTTP surface. JSON under /api; the built web app and the passport
+// The HTTP surface. JSON under /api; the identifier host under /01 and
+// /.well-known/gs1resolver (resolver.ts); the built web app and the passport
 // pages under everything else. Reads are open: anyone may verify a passport.
 // Writes need a signed-in member of the brand that holds the passport, or,
 // for a recipient under managed custody, the claim code they accepted with.
@@ -19,6 +20,7 @@ import { eventSchemaCheck, readLifecycleClaim, readPassportClaims, type ClaimsRe
 import { sectorExamples } from './sector-examples.js'
 import type { Party } from './parties.js'
 import type { Platform } from './platform.js'
+import { resolverRoutes } from './resolver.js'
 import { currentProfiles, isProfileId, manifestFor, sampleWithProblems } from './profiles.js'
 import { isEpcisLifecycleRecord, type PassportRecord, type StateEntry } from './store.js'
 import { pendingDuties, runDuties, summariseJournal } from './worker.js'
@@ -543,12 +545,17 @@ export function createServer(options: ServerOptions): express.Express {
     })
   )
 
+  // ------------------------------------------------------------------ the identifier host
+
+  // Each identifier's own path is the resolver's: it redirects a browser to the passport page and gives the linkset to a client that asks for it.
+  app.use(resolverRoutes({ store, policy }))
+
   // ------------------------------------------------------------------ the web app
 
   const webDist = options.webDist
   if (webDist != null && existsSync(join(webDist, 'index.html'))) {
     app.use(express.static(webDist, { index: false }))
-    // The passport page lives at the identifier's own path, and every other path is the single-page app's. Its shell is read once, not per request.
+    // The passport page lives under /passport, at its identifier's path after it, and every other path is the single-page app's. Its shell is read once, not per request.
     const shell = readFileSync(join(webDist, 'index.html'), 'utf8')
     app.get('/{*splat}', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next()

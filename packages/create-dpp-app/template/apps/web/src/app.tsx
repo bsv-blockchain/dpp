@@ -1,5 +1,6 @@
-// The routes. The public passport page sits at the identifier's own path,
-// /01/<gtin>/21/<serial>, so a label's QR code opens it directly.
+// The routes. A label's QR code carries the identifier, whose own path,
+// /01/<gtin>/21/<serial>, the API answers as a resolver: it redirects a
+// browser to the public passport page under /passport, at the same path.
 import { Link, Route, Routes } from 'react-router'
 import { Layout } from '@/components/layout'
 import { Accept } from '@/pages/accept'
@@ -10,7 +11,7 @@ import { Home } from '@/pages/home'
 import { NewPassport } from '@/pages/new-passport'
 import { Operations } from '@/pages/operations'
 import { Passport } from '@/pages/passport'
-import { PublicPassport } from '@/pages/public-passport'
+import { PublicPassport, PublicProduct } from '@/pages/public-passport'
 import { SignIn } from '@/pages/sign-in'
 import { Verify } from '@/pages/verify'
 import { Wallet } from '@/pages/wallet'
@@ -40,7 +41,8 @@ export function App() {
         <Route path="brands/:brandId" element={<Brand />} />
         <Route path="brands/:brandId/new" element={<NewPassport />} />
         <Route path="passports/:ref" element={<Passport />} />
-        <Route path="01/:gtin/21/:serial" element={<PublicPassport />} />
+        <Route path="passport/01/:gtin/21/:serial" element={<PublicPassport />} />
+        <Route path="passport/01/:gtin" element={<PublicProduct />} />
         <Route path="verify" element={<Verify />} />
         <Route path="accept/:requestId" element={<Accept />} />
         <Route path="events" element={<Events />} />

@@ -167,7 +167,7 @@ try {
     run('npm', ['test'], target)
     await goLivePath(target)
     await connectionFilePath(target, freshEnv)
-    console.log(`The packed app starter and its ${values['registry-dependencies'] ? 'public registry dependencies' : 'local runtime candidates'} install, build, typecheck and pass the generated application's tests without dpp-core, the sector and custom profile tests, the EPCIS exchange tests, the two validation engines and the exit exercise among them, with the validation libraries at their pinned versions; go-live registers with an index, and connect-index takes the connection file the index's own command writes.`)
+    console.log(`The packed app starter and its ${values['registry-dependencies'] ? 'public registry dependencies' : 'local runtime candidates'} install, build, typecheck and pass the generated application's tests without dpp-core, the sector and custom profile tests, the EPCIS exchange tests, the two validation engines, the identifier host tests and the exit exercise among them, with the validation libraries at their pinned versions; go-live registers with an index, and connect-index takes the connection file the index's own command writes.`)
   }
 } finally {
   for (const stop of stops) stop()

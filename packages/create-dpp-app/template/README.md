@@ -9,7 +9,7 @@ The application uses `@bsv/dpp-protocol` directly and pins the `dpp-release-2026
 | Part | Where | What it does |
 |---|---|---|
 | Web app | `apps/web` | React single-page app: brand dashboard, passport pages, hand-on acceptance, public verification |
-| API | `apps/api` | Express service that owns the platform wallet, writes and reads passports with the `@bsv/dpp` packages, validates product data against its profile, keeps the journal and runs the unattended duties. It also imports, pulls and exports EPCIS events, as data kept apart from every passport |
+| API | `apps/api` | Express service that owns the platform wallet, writes and reads passports with the `@bsv/dpp` packages, validates product data against its profile, keeps the journal and runs the unattended duties. It answers each passport identifier as its GS1 resolver. It also imports, pulls and exports EPCIS events, as data kept apart from every passport |
 | Application database | `deploy/compose.yml` | MongoDB for application records, journal and sign-in |
 
 The API's routes are in [apps/api/API.md](apps/api/API.md).
@@ -65,6 +65,22 @@ Under managed custody a compromised platform can forge what it holds. Keep the r
 ## Identifiers
 
 Passports are GS1 Digital Links, `https://<PASSPORT_HOST>/01/<GTIN>/21/<serial>`. The default GS1 prefix, 952, is GS1's demonstration prefix, never licensed to anyone; every payload written under it starts with a notice saying nothing real stands behind it. When you hold a licensed GS1 company prefix, set `GS1_PREFIX` and the notice switches off. The API refuses any identifier outside the configured prefix and host, because a state under someone else's GTIN is permanent.
+
+**The identifier host.** An identifier is a web address, and the code printed on a product carries the identifier itself, never the address of a page. The API answers every identifier it issued at the identifier's own path, as the standard's GS1 discovery profile asks of the host an identifier is minted under (`spec/gs1-discovery.md` §1): it is a GS1-Conformant Resolver for GTINs, made of the resolver helpers of `@bsv/dpp-profiles` in `apps/api/src/resolver.ts`. The passport page is at a path of its own, one redirect away.
+
+| Request | Answer |
+|---|---|
+| `GET /01/<gtin>/21/<serial>` from a browser or a scanner | 307 to the passport page, `/passport/01/<gtin>/21/<serial>`, with the query string passed on |
+| The same with `Accept: application/linkset+json`, or with `?linkType=linkset` | 200 with the linkset: the passport page under `gs1:dpp` as the item's default link, and the product page under `gs1:pip` as the default link of its GTIN |
+| `GET /01/<gtin>`, or a serial nobody issued under a GTIN that has passports | 307 to the product page, `/passport/01/<gtin>`. It holds no passport and says so: it names the product and says where an item's passport is found |
+| A compressed identifier, `/eh...` or `/ex...` | Decompressed, then answered as the identifier it spells |
+| A malformed identifier | 400 `identifier-malformed`, with the reason |
+| A GTIN no passport was issued under | 404 `identifier-unknown` |
+| `GET /.well-known/gs1resolver` | The resolver description file |
+
+The links are made from the journal, so an identifier resolves from the moment its passport is issued, and nothing is registered by hand. Only pages this application serves are listed. It lists no evidence package, because it serves none at an address of its own. Every answer allows any origin, and the host answers `GET`, `HEAD` and `OPTIONS`. `npm run dev` answers the same at http://localhost:5173, because Vite passes these paths to the API; only an `OPTIONS` request is answered by Vite itself. `apps/api/test/identifier-host.test.ts` asks each of these over HTTP and walks from an identifier to the verification of its passport.
+
+Serve the application over HTTPS at `PASSPORT_HOST`: the identifier is an address under that host, and a scan goes there.
 
 ## Product documents under a binding
 
@@ -315,7 +331,7 @@ Things this starter leaves to you, each a known path:
 
 - **A registry of your own.** Claims are sent to `REGISTRY_URL`, which anchors each one once per bound passport. The hosted reference does not accept EPCIS lifecycle claims yet. Running your own is the registry role of the standard.
 - **Authority evidence.** Every claim's authority reads unavailable here. To support a role, give the reader an authority resolver backed by evidence you hold, such as a record of who held a passport when.
-- **A GS1 resolver at `PASSPORT_HOST`.** This starter answers each identifier's own path, `/01/<gtin>/21/<serial>`, with the passport page, so its host does not yet meet the standard's GS1 discovery profile (`spec/gs1-discovery.md` §1): the host a GS1 Digital Link identifier is minted under should be a GS1-Conformant Resolver for GTINs, and one that is not must redirect every `/01/` path with 307 to a resolver that is. To meet it, move the page to a path of its own and answer `/01/` paths with the resolver helpers in `@bsv/dpp-profiles`, naming the page under `gs1:dpp` as the item's default, or redirect them to a resolver that holds those records. Printed codes keep working either way, because the identifier does not change.
+- **More links at the identifier host.** The resolver lists two links: the passport page of an item, and a plain product page for its GTIN. Your own product page as the GTIN's default, a link at lot level, or an evidence package once you serve one at a stable address, are records to add where `apps/api/src/resolver.ts` makes them, and the checks of `@bsv/dpp-profiles` it applies refuse a set that breaks a rule. It answers a linkset request with JSON whatever the `Accept`, with no page for a person, and it answers only for identifiers under its own `PASSPORT_HOST`.
 - **Server-rendered passport pages.** The public page renders in the browser. If crawlers or no-JavaScript readers matter, serve a plain HTML view of it from the API at the page's own path, not at the identifier's.
 - **Self-custody.** Let a brand or a holder sign from their own BRC-100 wallet: implement a `Party` backed by a wallet connection in the browser, and let a transfer go to a key the holder's wallet derived.
 - **Who sees which events.** Every signed-in user sees every import and may start a pull, as with the wallet and operations pages. Scope them to a brand if your users should not see each other's.

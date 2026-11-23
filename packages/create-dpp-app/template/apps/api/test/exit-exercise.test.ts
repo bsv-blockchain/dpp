@@ -55,6 +55,7 @@ import { EPCIS_RECORD_KINDS, checkEpcisExchangeInvariants, type EpcisExchangeSto
 import { loadConfig } from '../src/config.js'
 import { startDevIndex, type DevIndex } from '../src/dev-index.js'
 import { startEpcisExchange, type EpcisExchange } from '../src/epcis/exchange.js'
+import { mintGtin } from '../src/identifiers.js'
 import { openPlatform, type Platform } from '../src/platform.js'
 import { runExportCommand, runRemapCommand, runRestoreCommand } from '../src/portability/commands.js'
 import type { ApplicationExportDescriptor } from '../src/portability/package.js'
@@ -349,6 +350,20 @@ describe('the exit exercise', () => {
         kept.passports.push({ profile, passportId, product, reading, authorised })
         const journal = (await a.platform.store.getPassport(passportId))!
         kept.ownerTiers.push(...journal.states.map((state) => state.ownerTier!.ciphertext))
+      }
+
+      // The identifier host answers from the journal on MongoDB as it does from memory: an item with its passport page, its GTIN and a serial nobody issued with the product page, and a GTIN with no passport with nothing.
+      const itemPath = new URL(kept.passports[0]!.passportId).pathname
+      const gtinPath = itemPath.slice(0, itemPath.indexOf('/21/'))
+      for (const [path, status, location] of [
+        [itemPath, 307, `/passport${itemPath}`],
+        [gtinPath, 307, `/passport${gtinPath}`],
+        [`${gtinPath}/21/NOBODY-ISSUED-THIS`, 307, `/passport${gtinPath}`],
+        [`/01/${mintGtin('952', '999999999')}`, 404, null],
+      ] as const) {
+        const answer = await fetch(`${a.base}${path}`, { redirect: 'manual' })
+        expect(answer.status, path).toBe(status)
+        expect(answer.headers.get('location'), path).toBe(location)
       }
 
       // A file under the default scope, the request a client will make again in B.

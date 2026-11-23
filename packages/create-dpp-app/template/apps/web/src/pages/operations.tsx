@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { CopyButton, ErrorNotice, Loading, Mono, PageTitle, Section, ToneBadge, statusTone } from '@/components/bits'
 import { RequireAccount } from '@/components/layout'
 import { api, passportRef } from '@/lib/api'
-import { formatTime, publicPathOf, shortTxid } from '@/lib/format'
+import { formatTime, identifierPathOf, shortTxid } from '@/lib/format'
 import { useLoad } from '@/lib/use-load'
 
 export function Operations() {
@@ -106,7 +106,7 @@ function OperationsPage() {
                     <TableRow key={`${duty.txid}-${duty.duty}`}>
                       <TableCell>
                         <Link to={`/passports/${passportRef(duty.passportId)}`} className="font-mono text-xs underline-offset-4 hover:underline">
-                          {publicPathOf(duty.passportId) ?? duty.passportId}
+                          {identifierPathOf(duty.passportId) ?? duty.passportId}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -146,7 +146,7 @@ function OperationsPage() {
                     <TableRow key={p.passportId}>
                       <TableCell>
                         <Link to={`/passports/${passportRef(p.passportId)}`} className="font-mono text-xs underline-offset-4 hover:underline">
-                          {publicPathOf(p.passportId) ?? p.passportId}
+                          {identifierPathOf(p.passportId) ?? p.passportId}
                         </Link>
                       </TableCell>
                       <TableCell>{p.brandId}</TableCell>
