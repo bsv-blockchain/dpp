@@ -56,6 +56,10 @@ import {
 import {
   EPCIS_PULL_VERSION,
   EPCIS_RECORD_KINDS,
+  addEvents,
+  countEvents,
+  latestRecordTime,
+  noEvents,
   epcisPullDefinitionDigest,
   epcisPullId,
   epcisPullKey,
@@ -254,9 +258,13 @@ const MAX_VALUE = 2048;
 const MAX_PARAMETER = 4096;
 const STOP_LIMITS: readonly EpcisPullReason[] = ['page-limit', 'byte-limit', 'time-limit'];
 
+/** The completion recorded when a run ends for this reason. */
+export function pullCompletion(reason: EpcisPullReason): EpcisPullCompletion {
+  return reason === 'exhausted' ? 'exhausted' : STOP_LIMITS.includes(reason) ? 'stopped-at-limit' : 'failed';
+}
+
 const systemClock = (): string => new Date().toISOString();
 const toValue = (record: object): JsonObject => JSON.parse(JSON.stringify(record)) as JsonObject;
-const noEvents = (): EpcisPullEventCounts => ({ total: 0, new: 0, duplicate: 0, newObservation: 0, conflict: 0 });
 const refused = (reason: EpcisPullRefusal['reason'], detail: string, remedy?: string): EpcisPullRefusal => ({ outcome: 'refused', reason, detail, ...(remedy == null ? {} : { remedy }) });
 
 /** One run at a time for each pull in this process. Another process is held off by the revision every batch expects. */
@@ -439,31 +447,6 @@ function prepare(input: PullEpcisEventsInput): EpcisPullRefusal | Prepared {
 
 /* ---------------------------------- the run ------------------------------ */
 
-function countEvents(record: EpcisImportRecord, importReplayed: boolean): EpcisPullEventCounts {
-  const counts = noEvents();
-  for (const event of record.events) {
-    counts.total += 1;
-    // A page that answered an import already held added nothing: each of its events repeats one that is held.
-    if (importReplayed || event.arrival === 'duplicate') counts.duplicate += 1;
-    else if (event.arrival === 'new') counts.new += 1;
-    else if (event.arrival === 'new-observation') counts.newObservation += 1;
-    else if (event.arrival === 'conflict') counts.conflict += 1;
-  }
-  return counts;
-}
-
-const addEvents = (to: EpcisPullEventCounts, from: EpcisPullEventCounts): void => { for (const member of Object.keys(to) as Array<keyof EpcisPullEventCounts>) to[member] += from[member]; };
-
-/** The latest of the record times a page's events carry, when any can be read as a time. */
-function latestRecordTime(record: EpcisImportRecord, floor: string | undefined): string | undefined {
-  let latest = floor == null ? Number.NEGATIVE_INFINITY : Date.parse(floor);
-  for (const event of record.events) {
-    const at = event.recordTime == null ? Number.NaN : Date.parse(event.recordTime);
-    if (!Number.isNaN(at) && at > latest) latest = at;
-  }
-  return latest === Number.NEGATIVE_INFINITY ? undefined : new Date(latest).toISOString();
-}
-
 /** A query page import of this pull that already holds exactly these bytes, if there is one. */
 async function heldPageImport(storage: EpcisExchangeStorage, key: string, sourceId: string, sha256: string, mediaType: string): Promise<EpcisImportRecord | undefined> {
   let after: string | undefined;
@@ -621,7 +604,7 @@ async function run(input: PullEpcisEventsInput, prepared: Prepared): Promise<Epc
 
   const finish = async (reason: EpcisPullReason, detail: string, extra: { status?: number; importRefusal?: EpcisPullResult['importRefusal'] } = {}): Promise<EpcisPullResult> => {
     const outcome = EPCIS_PULL_REASON_OUTCOME[reason];
-    const completion: EpcisPullCompletion = reason === 'exhausted' ? 'exhausted' : STOP_LIMITS.includes(reason) ? 'stopped-at-limit' : 'failed';
+    const completion = pullCompletion(reason);
     const safe = guard.redact(detail);
     Object.assign(summary, { endedAt: clock(), outcome, reason, completion, detail: safe });
     state.status = completion;

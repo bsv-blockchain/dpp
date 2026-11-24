@@ -35,6 +35,7 @@ import {
   findDppOutputs,
   inspectEvidencePackage,
   verifyChain,
+  verifyOwnerBlob,
   type EvidencePackageManifest,
   type InventoryEntry,
   type ManagedAcceptanceRecord,
@@ -49,7 +50,7 @@ import { epcisRecoveryFiles, restoreEpcisRecovery, verifyEpcisRecovery, type Epc
 import type { EpcisSourceConfig } from '../epcis/sources.js'
 import type { Platform } from '../platform.js'
 import { isProfileId } from '../profiles.js'
-import { isEpcisLifecycleRecord, type BrandRecord, type ClaimRecord, type OfferRecord, type PassportRecord, type StateEntry } from '../store.js'
+import { isEpcisLifecycleRecord, isInterrupted, type BrandRecord, type ClaimRecord, type OfferRecord, type PassportRecord, type StateEntry } from '../store.js'
 import { declaredBindingDigest, summariseReading } from './export.js'
 import {
   APPLICATION_EXPORT_DESCRIPTOR,
@@ -201,9 +202,13 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
       } catch {
         return refuse('record-invalid', `A state of ${passportId} does not hold a transaction that parses.`, { passportId, txid: state.txid })
       }
-      const held = findDppOutputs(tx)[0]?.state
+      const held = findDppOutputs(tx).find((output) => output.outputIndex === state.outputIndex)?.state
       if (tx.id('hex') !== state.txid || carried.id('hex') !== state.txid || held == null || held.passportId !== passportId || held.payloadPublic !== state.payloadPublic) {
         refuse('records-inconsistent', `The state ${state.txid} of ${passportId} is not the transaction its journal entry describes.`, { passportId, txid: state.txid })
+      }
+      const tier = state.ownerTier
+      if (tier != null && (typeof tier.ciphertext !== 'string' || tier.hash !== held!.payloadOwnerHash || !verifyOwnerBlob(Utils.toArray(tier.ciphertext, 'base64'), held!.payloadOwnerHash))) {
+        refuse('records-inconsistent', `The retained owner tier of ${state.txid} differs from its signed commitment.`, { passportId, txid: state.txid })
       }
       lineage.push(tx)
       const digest = declaredBindingDigest(state.payloadPublic)
@@ -581,7 +586,11 @@ export async function restoreApplication(input: RestoreApplicationInput): Promis
   }
 
   for (const brand of plan.brands) await store.saveBrand(brand)
-  for (const record of plan.passports) await store.savePassport(record)
+  for (const record of plan.passports) await store.changePassport(record.passportId, (held) => {
+    if (held == null) return record
+    if (same(withoutIndexAnswers(held), withoutIndexAnswers(record))) return held
+    refuse('reconciliation-required', 'the destination journal changed during restore', { passportId: record.passportId })
+  })
   for (const offer of plan.offers) await store.saveOffer(offer)
   for (const claim of plan.claims) await store.saveClaim(claim)
 
@@ -593,37 +602,31 @@ export async function restoreApplication(input: RestoreApplicationInput): Promis
   } else {
     for (const exported of verified.journals) {
       const record = (await store.getPassport(exported.passportId))!
-      let changed = false
       for (const state of record.states) {
         // A state whose send was never answered for is the operator's to resolve. It is not announced as if it had been written.
-        if (state.network === 'pending' || state.network === 'refused' || state.network === 'not-sent') {
+        if (isInterrupted(state)) {
           indexReport.notAnnounced.push({ passportId: record.passportId, txid: state.txid, answer: 'not-announced', detail: `its journal entry says the network answer is ${state.network}` })
           continue
         }
-        const answer = await index.announce(Utils.toArray(state.beef, 'base64') as number[])
+        const answer = await index.announce(Utils.toArray(state.sentBeef ?? state.beef, 'base64') as number[])
         indexReport.announced += 1
-        if (answer === 'admitted' || answer === 'duplicate') {
+        const refusal = index.lastRefusal
+        const admitted = answer === 'admitted' || answer === 'duplicate'
+        await store.changePassport(record.passportId, (latest) => {
+          const entry = latest?.states.find((item) => item.txid === state.txid)
+          if (entry != null && entry.index === state.index && entry.refusal === state.refusal) {
+            if (!admitted || (entry.index !== 'admitted' && entry.index !== 'duplicate')) Object.assign(entry, { index: answer, refusal: admitted ? undefined : refusal })
+          }
+          return latest
+        })
+        if (admitted) {
           if (answer === 'admitted') indexReport.admitted += 1
           else indexReport.duplicate += 1
-          // A state an earlier restore could not announce is recorded as held, now that this deployment's index holds it. An answer the journal carried from the deployment it came from is left as it was.
-          if (state.index !== 'admitted' && state.index !== 'duplicate') {
-            state.index = answer
-            state.refusal = undefined
-            changed = true
-          }
         } else {
-          indexReport.notAnnounced.push({ passportId: record.passportId, txid: state.txid, answer, ...(index.lastRefusal == null ? {} : { detail: index.lastRefusal }) })
-          // The journal now says what this deployment's index answered, so the worker announces again when that is possible.
-          if (state.index !== answer || state.refusal !== index.lastRefusal) {
-            state.index = answer
-            state.refusal = index.lastRefusal
-            changed = true
-          }
-          // A later state cannot be admitted before the one it follows.
+          indexReport.notAnnounced.push({ passportId: record.passportId, txid: state.txid, answer, ...(refusal == null ? {} : { detail: refusal }) })
           break
         }
       }
-      if (changed) await store.savePassport(record)
     }
   }
 

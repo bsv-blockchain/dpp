@@ -12,6 +12,8 @@
  * every server is the fixture server on 127.0.0.1.
  */
 import { createHash } from 'node:crypto';
+import { PrivateKey } from '@bsv/sdk';
+import { evidencePackageSigner, evidencePackageSigningKey, inspectEvidencePackage, signEvidenceManifest } from '@bsv/dpp-protocol';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -834,6 +836,159 @@ describe('a snapshot that is refused, each by its own name', () => {
     await expect(verifyEpcisRecovery(epcisRecoveryFiles(exported.files), {} as never)).rejects.toThrow(TypeError);
   });
 
+  it('refuses incomplete operational records on export and independently on verification and restore', async () => {
+    await prepared();
+    const required = ['receivedAt', 'idempotency', 'contextRefs', 'profileRefs', 'policyId'];
+    const changes: Array<[string, string, (record: Record<string, any>) => void]> = [
+      ...[...required.map((field) => [field]), required].map((fields): [string, string, (record: Record<string, any>) => void] =>
+        ['import', fields.join(', '), (record) => { for (const field of fields) delete record[field]; }]),
+      ['import', 'wrong receipt type', (record) => { record.receivedAt = true; }],
+      ['import', 'unsupported idempotency scope', (record) => { record.idempotency.scope = 'store'; }],
+      ['import', 'absent effective limit', (record) => { delete record.limits.maxDocumentBytes; }],
+      ['import', 'missing event identifiers', (record) => { delete record.events[0].identifiers; }],
+      ['import', 'event ID contradicts source', (record) => { record.events[0].eventId = 'urn:test:other'; }],
+      ['import', 'stripped context references', (record) => { record.contextRefs = []; }],
+      ['observation', 'missing observation time', (record) => { delete record.observedAt; }],
+      ['observation', 'contradictory source digest', (record) => { record.sourceSha256 = 'a'.repeat(64); }],
+      ['resolution', 'missing decision', (record) => { delete record.decision; }],
+      ['resolution', 'missing competing reference', (record) => { record.observations.pop(); }],
+      ['resolution', 'contradictory reference', (record) => { record.observations[0].sourceSha256 = 'a'.repeat(64); }],
+      ['pull', 'incomplete run', (record) => { delete record.lastRun.startedAt; }],
+      ['pull', 'wrong source binding', (record) => { record.source.sourceId = 'source-b'; }],
+      ['pull', 'wrong query digest', (record) => { record.query.perPage += 1; }],
+      ['pull', 'pass ahead of durable pages', (record) => { record.pass.pagesAcknowledged += 10; }],
+      ['pull', 'pending sequence ahead of durable pages', (record) => { record.pending.sequence += 10; }],
+      ['pull', 'watermark ahead of any completed pass', (record) => { record.watermark = { recordTime: AT, pass: 99, establishedAt: AT }; }],
+      ['pull', 'pass maximum ahead of retained events', (record) => { record.pass.maxRecordTime = '2099-12-31T00:00:00Z'; }],
+      ['pull', 'false exhausted checkpoint', (record) => { record.pass.exhausted = true; }],
+      ['resolution', 'alternate selected body', (record) => { record.selectedBodyDigest = 'a'.repeat(64); }],
+      ['resolution', 'repeated competing observation', (record) => { record.observations[1] = record.observations[0]; }],
+      ['pull', 'altered query bounds', (record) => { record.pass.parameters.perPage = '5000'; }],
+      ['pull-page', 'missing query provenance', (record) => { delete record.query; }],
+      ['pull-page', 'length contradicts retained import', (record) => { record.byteLength += 10; }],
+    ];
+    for (const [kind, label, change] of changes) {
+      const storedKind = kind === 'pull-page' ? EPCIS_RECORD_KINDS.pullPage : kind;
+      const [held] = await source.list(storedKind, { limit: 1 });
+      const value = structuredClone(held!.value);
+      change(value);
+      const refile = (record: JsonObject) => source.commit([{ op: 'put', kind: storedKind, key: held!.key, value: record }]);
+      await refile(value);
+      const attempt = await exportEpcisRecovery({ storage: source });
+      await refile(held!.value);
+      expect.soft(attempt.ok, `export: ${label}`).toBe(false);
+
+      const altered = rewritten(exported, (snapshot) => {
+        const path = snapshot.paths(kind).find((candidate) => candidate.endsWith(`/${held!.key}.json`))!;
+        const record = snapshot.read(path);
+        change(record);
+        snapshot.write(path, record);
+      });
+      const destination = createMemoryEpcisState();
+      const verified = await verifyEpcisRecovery(epcisRecoveryFiles(altered.files), { inventory: altered.inventory });
+      expect.soft(verified.ok, `verify: ${label}`).toBe(false);
+      const restored = await restoreInto(createMemoryEpcisStorage(destination), altered);
+      expect.soft(restored.ok, `restore: ${label}`).toBe(false);
+      expect.soft(destination.bytes.size, label).toBe(0);
+      expect.soft([...destination.records.values()].some((table) => table.size > 0), label).toBe(false);
+    }
+  });
+
+  it('checks receipt and observation projections against the retained event before writing to either adapter', async () => {
+    const storage = createMemoryEpcisStorage();
+    const original: JsonObject = { ...commissioning(), recordTime: AT, errorDeclaration: { declarationTime: AT, reason: 'urn:example:corrected', correctiveEventIDs: ['urn:example:replacement'] } };
+    delete original.eventID;
+    const clean = { ...commissioning() };
+    delete clean.recordTime;
+    delete clean.errorDeclaration;
+    const sourceBytes = bytesOf(epcisDocument([original, clean]));
+    await fileImport(storage, 'source-a', 'two-events', sourceBytes);
+    const snapshot = await takeSnapshot(storage);
+    const edits: Array<[string, (receipt: any, observations: any[]) => void]> = [
+      ['receipt event time', (receipt) => { receipt.events[0].eventTime = LATER; }],
+      ['receipt record time', (receipt) => { receipt.events[0].recordTime = LATER; }],
+      ['receipt missing record time', (receipt) => { delete receipt.events[0].recordTime; }],
+      ['receipt invented record time', (receipt) => { receipt.events[1].recordTime = AT; }],
+      ['receipt correction reason', (receipt) => { receipt.events[0].errorDeclaration.reason = 'urn:example:other'; }],
+      ['receipt declaration time', (receipt) => { delete receipt.events[0].errorDeclaration.declarationTime; }],
+      ['receipt invented declaration', (receipt) => { receipt.events[1].errorDeclaration = receipt.events[0].errorDeclaration; }],
+      ['receipt event extensions', (receipt) => { receipt.events[0].preservedExtensions.push('other:member'); }],
+      ['receipt corrective references', (receipt) => { receipt.events[0].errorDeclaration.correctiveEventIDs = []; }],
+      ['receipt missing foreign reference', (receipt) => { receipt.events[0].errorDeclaration.missing = ['urn:example:other']; }],
+      ['receipt contradictory correction outcome', (receipt) => { receipt.events[0].errorDeclaration.resolution = 'resolved'; }],
+      ['receipt claims an unheld correction is resolved', (receipt) => { receipt.events[0].errorDeclaration.resolution = 'resolved'; delete receipt.events[0].errorDeclaration.missing; }],
+      ['receipt missing declaration', (receipt) => { delete receipt.events[0].errorDeclaration; }],
+      ['receipt identifier value', (receipt) => { receipt.events[0].identifiers[0].value = 'urn:example:other'; }],
+      ['receipt envelope', (receipt) => { receipt.envelope.hasHeader = !receipt.envelope.hasHeader; }],
+      ['observation metadata', (_, observations) => { observations[0].recordTime = LATER; }],
+      ['observation missing raw declaration', (_, observations) => { delete observations[0].errorDeclaration; }],
+      ['observation invented null declaration', (_, observations) => { observations[1].errorDeclaration = null; }],
+      ['observation invented null record time', (_, observations) => { observations[1].recordTime = null; }],
+      ['observation source digest', (_, observations) => { observations[0].sourceSha256 = 'a'.repeat(64); }],
+      ['observation event ID', (_, observations) => { observations[0].eventId = 'urn:example:invented'; }],
+      ['observation event type', (_, observations) => { observations[0].eventType = 'AggregationEvent'; }],
+      ['observation timestamp', (_, observations) => { observations[0].observedAt = LATER; }],
+      ['receipt observation coordinates', (receipt) => { receipt.events[0].observation.pointer = receipt.events[1].pointer; }],
+    ];
+    for (const [label, edit] of edits) {
+      const altered = rewritten(snapshot, files => {
+        const path = files.paths('import')[0]!;
+        const receipt = files.read(path);
+        const observations = files.paths('observation').map(path => ({ path, record: files.read(path) })).sort((a, b) => a.record.pointer.localeCompare(b.record.pointer));
+        edit(receipt, observations.map(item => item.record));
+        files.write(path, receipt);
+        for (const item of observations) files.write(item.path, item.record);
+      });
+      expect.soft((await verifyEpcisRecovery(epcisRecoveryFiles(altered.files), { inventory: altered.inventory })).ok, label).toBe(false);
+      for (const adapter of ['memory', 'file'] as const) {
+        const destination = await newStore(adapter);
+        expect.soft((await restoreInto(destination.storage, altered)).ok, label).toBe(false);
+        expect.soft(await dump(destination.storage), label).toEqual([]);
+        expect.soft(await destination.storage.getBytes(sha256(sourceBytes)), label).toBeUndefined();
+      }
+    }
+  });
+
+  it('preserves invalid raw repository values and the historical duplicate judgement for a missing value', async () => {
+    const from = await newStore('memory');
+    const absent = { ...commissioning() };
+    delete absent.recordTime;
+    delete absent.errorDeclaration;
+    await fileImport(from.storage, 'source-a', 'null-fields', bytesOf(epcisDocument([{ ...absent, recordTime: null, errorDeclaration: null }])));
+    await fileImport(from.storage, 'source-a', 'absent-fields', bytesOf(epcisDocument([absent])));
+    const { storage } = await newStore('file');
+    restoredOk(await restoreInto(storage, await takeSnapshot(from.storage)));
+    const observations = await kindOf(storage, 'observation');
+    expect(observations).toHaveLength(1);
+    expect(observations[0]).toMatchObject({ recordTime: null, errorDeclaration: null });
+    const before = await kindOf(from.storage, 'import');
+    expect(await kindOf(storage, 'import')).toEqual(before);
+    expect(before.find(receipt => receipt.requestId === 'absent-fields')?.events).toEqual([expect.objectContaining({ arrival: 'duplicate' })]);
+  });
+
+  it('refuses a missing receipt time even with a verified exporter signature over the altered snapshot', async () => {
+    await prepared();
+    const altered = rewritten(exported, snapshot => {
+      const path = snapshot.paths('import')[0]!;
+      const record = snapshot.read(path);
+      delete record.receivedAt;
+      snapshot.write(path, record);
+    });
+    const passportId = 'https://passports.example/01/09521234543213/21/SER1';
+    const exporter = PrivateKey.fromRandom();
+    const identity = exporter.toPublicKey().toString();
+    const key = evidencePackageSigningKey(exporter, passportId);
+    const manifest = await signEvidenceManifest({
+      format: 'dpp-evidence-package', version: '1', passportId, exportedAt: AT, exporter: { id: identity, role: 'writer' },
+      disclosure: exported.manifest.disclosure, completeness: { snapshots: exported.manifest.snapshots, withheld: exported.manifest.withheld, absent: [] },
+      sources: [], inventory: altered.inventory, signature: { suite: 'bsv-ecdsa-der', signer: key.toPublicKey().toString() },
+    }, { sign: preimage => key.sign(preimage).toDER() });
+    const files = new Map([...altered.files].map(([path, bytes]) => [path, Array.from(bytes)]));
+    const inspection = inspectEvidencePackage(manifest, files, { expectedPassportId: passportId, expectedSigner: evidencePackageSigner(identity, passportId) });
+    expect(inspection).toMatchObject({ structureValid: true, signatureValid: true, inventoryVerified: true, failures: [] });
+    expect(await refusedRestore({ files: altered.files, inventory: manifest.inventory })).toMatchObject({ code: 'snapshot-inconsistent' });
+  });
+
   it('checkpoint-imports-omitted: a pull whose checkpoint stands on an import or a page the snapshot leaves out', async () => {
     await prepared();
     const [page] = await listEpcisPullPages(source, epcisPullId('source-a', 'query-1'));
@@ -1423,6 +1578,18 @@ describe.each(PAIRS)('restoring more than once: from the %s adapter into the %s 
     expect(await checkEpcisExchangeInvariants(source, { associations: true })).toEqual([]);
   });
 
+  it('refuses a damaged destination restore receipt on an identical retry', async () => {
+    const { storage } = await build(from);
+    const destination = await newStore(to);
+    const exported = await takeSnapshot(storage);
+    const first = restoredOk(await restoreInto(destination.storage, exported));
+    const held = await destination.storage.get('restore', first.snapshotId);
+    const { restoredAt: _missing, ...value } = held!.value;
+    await destination.storage.commit([{ op: 'put', kind: 'restore', key: first.snapshotId, value }]);
+    expect(await restoreInto(destination.storage, exported)).toMatchObject({ ok: false, code: 'destination-inconsistent' });
+    expect((await destination.storage.get('restore', first.snapshotId))?.value).toEqual(value);
+  });
+
   it('resumes to the same store after a crash before or after any durable call', async () => {
     const { storage: source } = await build(from);
     const exported = await takeSnapshot(source);
@@ -1518,6 +1685,23 @@ describe.each(PAIRS)('restoring more than once: from the %s adapter into the %s 
 });
 
 describe('the records a restore keeps', () => {
+  it('restores a standalone event upload as an invalid original with no event observations', async () => {
+    const source = (await newStore('file')).storage;
+    const destination = (await newStore('memory')).storage;
+    const bytes = utf8(JSON.stringify(commissioning(), null, 2));
+    const first = await fileImport(source, 'supplier', 'standalone', bytes);
+    expect(first.outcome).toBe('retained');
+    const receipt = await findEpcisImportByRequest(source, 'supplier', 'standalone');
+    expect(receipt).toMatchObject({ documentValidity: 'invalid', events: [], sha256: sha256(bytes) });
+    restoredOk(await restoreInto(destination, await takeSnapshot(source)));
+    expect(await findEpcisImportByRequest(destination, 'supplier', 'standalone')).toEqual(receipt);
+    expect(await destination.getBytes(sha256(bytes))).toEqual(bytes);
+    expect(await kindOf(destination, 'observation')).toEqual([]);
+    expect(await kindOf(destination, 'association')).toEqual([]);
+    expect(await fileImport(destination, 'supplier', 'standalone', bytes, LATER)).toMatchObject({ outcome: 'retained', replayed: true, record: receipt });
+  });
+
+
   it('holds the journal entry of an unfinished restore to the exchange records contract', async () => {
     const { storage: source } = await build('memory');
     const exported = await takeSnapshot(source);
@@ -1530,4 +1714,94 @@ describe('the records a restore keeps', () => {
     expect(validateRecord({ recordType: 'epcis-restore', recordVersion: '1' })).toBe(false);
     expect(validateRecord({ recordType: 'epcis-relocation', recordVersion: '2', snapshotId: 'a'.repeat(64), sha256: 'b'.repeat(64), byteLength: 1, exportedRef: 'x', path: 'originals/x', destinationRef: 'y' })).toBe(false);
   });
+});
+
+describe('recovery of source counts and pull checkpoints', () => {
+  it('counts the different originals retained by each scope, including shared bytes and repeated receipts', async () => {
+    const storage = createMemoryEpcisStorage();
+    for (const [scope, request, bytes] of [
+      ['source-a', 'first', FIRST], ['source-a', 'again', FIRST], ['source-a', 'second', OTHER], ['source-b', 'first', FIRST],
+    ] as const) expect((await fileImport(storage, scope, request, bytes)).outcome).toBe('retained');
+    const exported = await takeSnapshot(storage);
+    expect(exported.descriptor.scopes.map(({ sourceId, originals }) => [sourceId, originals])).toEqual([['source-a', 2], ['source-b', 1]]);
+    expect((await restoreInto(createMemoryEpcisStorage(), exported)).ok).toBe(true);
+    const wrongScopes = rewritten(exported, (snapshot) => {
+      snapshot.scope('source-a').originals = 1;
+      snapshot.scope('source-b').originals = 2;
+    });
+    expect((await refusedRestore(wrongScopes)).code).toBe('snapshot-inconsistent');
+  });
+
+  it('refuses export and restore when the recorded run ending or active cursor contradicts its checkpoint', async () => {
+    const { storage } = await build('memory');
+    const [held] = await storage.list('pull', { limit: 1 });
+    const original = held!.value as unknown as EpcisPullRecord;
+    const exported = await takeSnapshot(storage, { cursors: 'include' });
+    const changes: Array<[string, (record: EpcisPullRecord) => void]> = [
+      ['cursor beyond its page', (r) => { r.cursor!.afterPage += 1; }],
+      ['pending cursor beyond its page', (r) => { r.pending!.next!.afterPage += 1; }],
+      ['unfinished run with an ending', (r) => { r.lastRun.endedAt = AT; }],
+      ['completed run without a summary', (r) => { r.status = 'failed'; }],
+      ['exhausted run without a final page', (r) => {
+        r.status = 'exhausted';
+        Object.assign(r.lastRun, { endedAt: AT, reason: 'exhausted', completion: 'exhausted', outcome: 'ok', detail: 'End of the query.' });
+      }],
+      ['reason and completion disagree', (r) => {
+        r.status = 'failed';
+        Object.assign(r.lastRun, { endedAt: AT, reason: 'page-limit', completion: 'failed', outcome: 'partial-history', detail: 'Page limit reached.' });
+      }],
+      ['reason and outcome disagree', (r) => {
+        r.status = 'failed';
+        Object.assign(r.lastRun, { endedAt: AT, reason: 'http-401', completion: 'failed', outcome: 'ok', detail: 'Authentication required.' });
+      }],
+    ];
+    for (const [name, change] of changes) {
+      const altered = structuredClone(original);
+      change(altered);
+      if (altered.status !== 'running') delete altered.pending;
+      await storage.commit([{ op: 'put', kind: 'pull', key: held!.key, value: altered as unknown as JsonObject }]);
+      expect.soft(await exportEpcisRecovery({ storage }), name).toMatchObject({ ok: false, code: 'store-inconsistent' });
+      const snapshot = rewritten(exported, (editable) => {
+        const path = editable.paths('pull')[0]!;
+        editable.write(path, altered);
+        editable.scope(altered.sourceId).pulls[0].status = altered.status;
+      });
+      expect((await refusedRestore(snapshot)).code, name).toBe('snapshot-inconsistent');
+    }
+  });
+});
+
+it('restores consecutive conflict decisions and refuses missing or contradictory decision history before writing', async () => {
+  const { storage } = await build('memory');
+  const second = await resolveEpcisConflict(storage, {
+    conflictId: CONFLICT_ID, disposition: 'all-retained', decision: 'Retain both observations.', decidedAt: LATER,
+  });
+  expect(second.outcome).toBe('recorded');
+  const exported = await takeSnapshot(storage);
+  const destination = createMemoryEpcisStorage();
+  expect((await restoreInto(destination, exported)).ok).toBe(true);
+  const history = (await getEpcisConflict(destination, CONFLICT_ID))!.resolutions;
+  expect(history.map(r => r.sequence)).toEqual([1, 2]);
+  expect(history[1]!.supersedes).toBe(history[0]!.resolutionId);
+  const changes: Array<[string, (s: Editable, paths: string[]) => void]> = [
+    ['first has a predecessor', (s, [first]) => s.write(first!, { ...s.read(first!), supersedes: history[1]!.resolutionId })],
+    ['decision ID disagrees with its position', (s, [first]) => s.write(first!, { ...s.read(first!), resolutionId: history[1]!.resolutionId })],
+    ['missing predecessor link', (s, [, next]) => {
+      const value = s.read(next!);
+      delete value.supersedes;
+      s.write(next!, value);
+    }],
+    ['incorrect predecessor link', (s, [, next]) => s.write(next!, { ...s.read(next!), supersedes: history[1]!.resolutionId })],
+    ['earlier decision omitted', (s, [first]) => { s.remove(first!); s.scope('source-a').resolutions -= 1; }],
+    ['referenced final decision omitted', (s, [, next]) => { s.remove(next!); s.scope('source-a').resolutions -= 1; }],
+  ];
+  for (const [name, change] of changes) {
+    const snapshot = rewritten(exported, s => change(s, s.paths('resolution').sort()));
+    expect.soft(await verifyEpcisRecovery(epcisRecoveryFiles(snapshot.files), { inventory: snapshot.inventory }), name).toMatchObject({ ok: false, code: 'snapshot-inconsistent' });
+  }
+  const missing = rewritten(exported, s => { s.remove(s.paths('resolution').sort()[0]!); s.scope('source-a').resolutions -= 1; });
+  expect((await refusedRestore(missing)).code).toBe('snapshot-inconsistent');
+  const [first] = await storage.list('resolution', { limit: 1 });
+  await storage.commit([{ op: 'delete', kind: 'resolution', key: first!.key }]);
+  expect(await exportEpcisRecovery({ storage })).toMatchObject({ ok: false, code: 'store-inconsistent' });
 });

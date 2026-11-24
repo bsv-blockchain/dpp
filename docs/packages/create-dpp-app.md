@@ -55,6 +55,16 @@ npm run starter:check -- --directory ../my-app
 
 The source check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. It publishes nothing.
 
+For release qualification, use the four archives written by `npm run release:candidates`. The checker verifies the release set and the recorded size, SHA-256 and npm integrity of each archive before creating the app. To retain the generator that the check actually installs, supply an output file alongside the exit and dependency records.
+
+```sh
+npm run starter:check -- --candidate-record release/candidates.json \
+  --starter-archive ../create-dpp-app-candidate.tgz \
+  --exit-record ../starter-exit.json --dependency-record ../starter-dependencies.json
+```
+
+The dependency record identifies the generator and all four installed runtime archives by SHA-256 and npm integrity. For a project with the same archives ready for a separate install, use `--prepare-only --directory ../my-app`.
+
 ### Stop before activating live writes
 
 `npm run go-live` registers the app's publisher key with the default testnet index, checks the wallet, funds and admission, and switches real writes on. Use the generated README for each check's inputs and mainnet settings. Its `connect-index` command connects another provider's index or your own: with `--from`, it takes the connection file an index operator writes with `dpp-index connection` ([connect an application](../operate/README.md#connect-an-application)). It then runs the same checks and, when all pass, switches real writes on as `go-live` does.
@@ -70,7 +80,7 @@ The source check installs the packed generator, creates the app, installs local 
 | A journal-driven worker for proofs and re-announcements | Scheduling and monitoring |
 | GS1 Digital Link identifiers under the demonstration prefix 952 | A licensed GS1 prefix |
 | In the source candidate: a GS1 resolver for those identifiers at the passport host, with the passport page as each item's default link | Further links, such as your own product page |
-| In the source candidate: forms, validation and structured display for `eu-battery@1` and `eu-textile@1`, and registration of a bound profile from a folder | Your own forms, and the profiles you trust |
+| In the source candidate: forms, validation and structured display for current and historical battery and textile passports, and registration of a bound profile from a folder | Your own forms, and the profiles you trust |
 | In the source candidate: EPCIS file import, a configured pull and exact export, over a MongoDB storage adapter | Your sources, and what you do with the events |
 | In the source candidate: a choice of validation engine by setting, in the API's process or in a validator service | Which service, and who runs it |
 | In the source candidate: `export` and `restore` commands that move the whole application as one signed evidence package | Where the package is kept, and the keys and credentials you carry separately |
@@ -94,17 +104,19 @@ Change any of these files; the standard prefers none of these choices. [Issue an
 
 This section describes the source candidate `0.1.0-beta.2`. The published `0.1.0-beta.1` writes manifest profiles only.
 
-The generated application writes and reads passports under the two bindings `@bsv/dpp-profiles` ships, `eu-battery@1` and `eu-textile@1` ([EU battery and textile bindings](../profiles/eu-sector-bindings.md)), and under a bound profile of your own. Each name states a data model. Neither claims that a product complies with any law.
+The generated application offers `eu-battery@2` and `eu-textile@2` for new sector passports. The version 2 bindings check the identified product's type against their pinned ontology. An existing `eu-battery@1` or `eu-textile@1` passport retains its signed binding and can be read, updated or handed on. Each profile names a data model. [EU battery and textile bindings](../profiles/eu-sector-bindings.md)
+
+The starter trusts the four packaged binding digests by default. `GET /api/profiles` lists every registered edition and includes `issueSuccessor` on its two historical entries. An explicit new ISSUE under a version 1 sector binding returns HTTP 409 with `profile-superseded` and its successor in `replacedBy`. An application-owned binding requires the operator's explicit digest. If `PROFILE_BUNDLE_DIR` contains an older bundle with only version 1, install a reviewed offline bundle containing both editions or use the installed package as the binding source before issuing under version 2.
 
 | Step | What the application does |
 |---|---|
-| Start | Builds the validation engine once, registers the two bundled bindings under the shipped digest list and any folder you trust. It fetches nothing. Without the engine it still starts: a bound profile then cannot be written, and readings say not checked |
+| Start | Builds the validation engine once, registers the four bundled bindings under the shipped digest list and any folder you trust. It fetches nothing. Without the engine it still starts: a bound profile then cannot be written, and readings say not checked |
 | Write | Takes the complete product document and the passport identifier it is about to sign, calls `prepareBoundPayload`, signs exactly the public payload returned and seals the restricted part as an owner tier. A document that fails, that could not be checked, or whose public part is over 65,535 bytes is refused before anything is signed |
 | Read | Passes `bindingPayloadValidator` to the report as `payloadValidator`, so each state's payload is checked against that state's own passport identifier. For the holder it also opens the restricted part, after the owner-tier check, and runs the authorised view on the rejoined document |
 | Show | Reports the public view and the authorised view apart, with each property's tier and the findings. A check that could not run is shown as not checked, never as passed |
 
-1. Run `npm run dev` in the generated project and open the web app.
-2. Issue a passport and choose `eu-battery@1` or `eu-textile@1`.
+1. Set `LIVE_PUBLISHING=false` in the generated project, run `npm run dev` and open the web app.
+2. Choose **Issue a passport** and select `eu-battery@2` or `eu-textile@2`.
 3. Select **Load example** for a document of invented data under the demonstration prefix, or enter your own. The item reference and serial you enter make the passport identifier, and the form writes the document's own identifier, GTIN and serial from them.
 4. Read the **Public** and **Restricted** label on every property, then the two lists under **Before you write it**. Public data is on chain for good. A restricted value you repeat inside a public property is published with it.
 5. Confirm the public list and issue. If the API refuses the document, each finding appears at the field it concerns.
@@ -128,12 +140,13 @@ TRUSTED_BINDING_DIGESTS=<SHA-256 of that folder's binding.json>
 
 The folder is registered at start with no source change. A folder whose digest is not listed, or whose files changed since you trusted it, is refused in the start-up log and on the Operations page with its code, and the application runs without it. An untrusted folder's refusal names the digest of the file it found, so you can review that file and then trust it. The generated project holds the repository's two example profiles under `apps/api/test/fixtures/custom-profile/` to try this with. A profile with no form in the web app is written as a JSON document.
 
+On a managed transfer the giver checks the restricted bytes against the signed predecessor, encrypts their contents to the recipient and commits the new ciphertext. The recipient can open it immediately. An older transfer that kept the original ciphertext still needs the key used for that ciphertext.
+
 ### What the candidate does not do
 
 - It captures no EPCIS events, subscribes to none, reads no EPCIS XML and maps no event to a passport state ([EPCIS exchange](#epcis-exchange)).
 - It writes nothing under a retired profile. `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` are not offered, a write under one is refused with `profile-retired`, and a record that declares one reads as not checked, with the replacement named. `general@2` works as before ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)).
 - It converts nothing. A passport already in the journal under a retired profile stays there as written, and it gets no further state, hand-on or claim.
-- After a hand-on the restricted part stays sealed to the holder who wrote it. The new holder's authorised view is not checked until they write an update.
 - The web app has no test runner. Its form logic is tested by the API's tests, and its pages are type-checked by the build.
 - An export carries no key, credential, sign-in account, session or brand membership, and the API serves neither command over HTTP ([export and restore](#export-and-restore)).
 
@@ -143,13 +156,17 @@ This section describes the source candidate `0.1.0-beta.2`. The published `0.1.0
 
 The generated application issues lifecycle claims only as EPCIS lifecycle claims, `dpp-epcis-lifecycle@1` ([the EPCIS lifecycle claim](add-a-claim.md#the-epcis-lifecycle-claim)). A signed-in member signs one EPCIS 2.0.1 event of the five types, either one they enter on the passport's page or one the EPCIS exchange retained. A retained event is signed exactly as received, with a link back to its import, and never as the observer. Nothing is made from a passport operation, a metadata edit or a sale.
 
+Before the member signs, set `LIFECYCLE_AUTHORITY_GRANTS_FILE` to the absolute path of an operator-managed JSON file and restart the API. The file contains a `grants` array. Each entry names the issuer DID, compressed `issuerKey`, exact `passportId`, `role`, `purpose`, and UTC `validFrom` and `validUntil`. The EPCIS event time must fall within that interval, including the start and excluding the end. A multi-product event needs a matching grant for every passport it binds.
+
+Use `purpose: "claim"` for an ordinary grant. A correction requires the original signed claim and the issuer's applicable role grant. A corrector acting for another issuer additionally needs `purpose: "error-declaration"` for each affected passport. The generated README's **Lifecycle claims** section shows how to derive the public DID and identity key from the intended member's configured identity and prepare an entry. Missing authority evidence returns `authority-unavailable`. A configured file without a matching grant returns `authority-unconfirmed`.
+
 | Part | What the application does |
 |---|---|
 | Bindings | Matches the event's own identifiers to the application's passports under the identity rules of `@bsv/dpp-profiles`. An item identifier binds that item's passport, written as a GS1 Digital Link or an EPC URN; a quantity element's class binds at class level only, which never says an item took part. An event that names none of the passports is refused |
-| Signing | Applies the pinned EPCIS 2.0.1 schema, then signs the claim's RFC 8785 bytes with the member's managed identity and keeps the exact bytes |
-| Anchoring | Only when the member asks: the exact bytes go to the configured registry, which anchors them once per bound passport in one transaction on the index's `tm_attestation`. The hosted registry does not accept the format yet |
-| Reading | A passport lists the claims whose anchors name it and those the application holds that bind it. Each is verified, and only a verified binding makes the passport part of the event, as an item or by its class. Each finding is shown on its own: event structure, semantics, product binding, signature, authority, possession, ownership, anchor, inclusion and correction. Authority reads unavailable, because the application holds no evidence of who holds which role. An anchor is never shown as proof of the event, of ownership or of compliance |
-| Corrections | A member declares an event in error with a new claim that carries the same event and an EPCIS error declaration. The original is never changed, and reads as declared in error when its own issuer made the declaration |
+| Signing | Checks the pinned EPCIS 2.0.1 schema and the operator’s role, purpose and event-time grant for every bound passport before the member’s managed wallet signs. Keeps the exact signed bytes |
+| Anchoring | Only when the member asks: the exact bytes go to the configured registry, which anchors them once per bound passport in one transaction on the index's `tm_attestation`. Check the receiving registry’s advertised representation before requesting submission |
+| Reading | A passport lists the claims whose anchors name it and those the application holds that bind it. Each is verified, and only a verified binding makes the passport part of the event, as an item or by its class. Each finding is shown on its own: event structure, semantics, product binding, signature, authority, possession, ownership, anchor, inclusion and correction. The reader checks the operator’s independent evidence for the issuer’s role on each bound passport at the event time. An anchor is never shown as proof of the event, of ownership or of compliance |
+| Corrections | A correction records the referenced event in a new signed claim. Readers verify the original, the declaration and the corrector’s authority |
 | Historical claims | The native claims the application issued before are kept as they were signed, verify under their own rules and are shown apart, labelled historical. No new one is issued, and a request for one is refused |
 | Export | Carries each EPCIS lifecycle claim once, as its exact bytes, and the restoring deployment verifies them before it writes anything |
 

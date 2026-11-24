@@ -162,11 +162,22 @@ for (const name of readdirSync(join(root, bindingsDir)).sort()) {
   const bindingPath = `${bindingsDir}/${name}/binding.json`
   if (!existsSync(join(root, bindingPath))) continue
   const binding = json(bindingPath)
+  const origin = `${binding.source.repository} at ${binding.source.revision} (release ${binding.source.release})`
+  const notice = `${bindingsDir}/${name}/NOTICE.md`
   for (const artefact of binding.artefacts) {
     const path = `${bindingsDir}/${name}/${artefact.path}`
     const bytes = read(path)
     if (sha256(bytes) !== artefact.sha256) throw new Error(`${path} is not the bytes its binding records.`)
-    copied.push({ path, sha256: artefact.sha256, bytes: bytes.length, role: artefact.role, origin: `${binding.source.repository} at ${binding.source.revision} (release ${binding.source.release})`, address: artefact.uri ?? null, licence: artefact.licence ?? binding.source.licence, modified: false, notice: `${bindingsDir}/${name}/NOTICE.md`, distribution: 'In the @bsv/dpp-profiles archive. In neither image.', disposition: 'bundled-bindings' })
+    copied.push({ path, sha256: artefact.sha256, bytes: bytes.length, role: artefact.role, origin, address: artefact.uri ?? null, licence: artefact.licence ?? binding.source.licence, modified: false, notice, distribution: 'In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.', disposition: 'bundled-bindings' })
+  }
+  const upstreamNotice = read(notice).toString('utf8')
+  for (const vector of binding.vectors.positive) {
+    const path = `packages/dpp-profiles/test/fixtures/sector-bindings/${name}/${vector}`
+    const bytes = read(path)
+    const digest = sha256(bytes)
+    const row = upstreamNotice.split('\n').find((line) => line.startsWith('| `' + vector + '` |'))
+    if (!row?.includes('`' + digest + '` | ' + bytes.length + ' |')) throw new Error(`${path} is not the bytes its upstream notice records.`)
+    copied.push({ path, sha256: digest, bytes: bytes.length, role: 'example-product', origin, address: null, licence: binding.source.licence, modified: false, notice, distribution: 'In the implementer bundle.', disposition: 'bundled-bindings' })
   }
 }
 const w3cDir = 'packages/dpp-credentials/artifacts/w3c'
@@ -217,7 +228,7 @@ const DISPOSITIONS = [
   { id: 'npm-permissive', subject: 'Third-party npm packages under permissive licences', status: 'held', basis: 'Every package an npm package of this set installs is listed above with its licence. Each licence is in the reviewed list of scripts/deployment-inventory.mjs, which stops on any other. Two context packages name a licence file: BSD-3-Clause for the package and the W3C Software and Document License for the context files inside it. Each package publishes its own licence file, which npm installs in place.' },
   { id: 'bsv-packages', subject: '@bsv/sdk, @bsv/overlay, @bsv/gasp and @bsv/wallet-toolbox-client at the pinned versions', status: 'conditional', basis: 'The archives of these versions carry the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. It is not Apache-2.0. The index image installs them and every install of @bsv/dpp-overlay brings them. The repository these packages are built from changed its licence to Apache-2.0 on 11 November 2026: @bsv/sdk 4.1.1 and @bsv/wallet-toolbox-client 2.17.0 are published with that text, and no published @bsv/overlay or @bsv/gasp carries it yet.', conditions: ['The pinned versions are used under the Open BSV License Version 6 their archives carry; this repository states no other terms for them.', 'The documentation names the four packages, the pinned versions and the licence each archive carries, and never describes an install or a deployment as a whole as Apache-2.0.', 'The pins move to versions published with the Apache-2.0 text once the index runtime is tested against them.'] },
   { id: 'validator-engines', subject: 'The three engine libraries of the validator image and what they install', status: 'held', basis: `${validatorInventory.packageCount} packages, all permissive, listed in ${validatorInventoryPath}, which stops on any other licence. The image carries the text of every licence and notice file those packages publish. Some publish none; for those the inventory records what the manifest states.` },
-  { id: 'bundled-bindings', subject: 'The contexts, shapes and ontology files of the bundled bindings', status: 'held', basis: 'Apache-2.0, unmodified, each held to its SHA-256 by its binding. The NOTICE.md beside each binding names the source, its revision and every file, and reproduces the one notice a file carries.' },
+  { id: 'bundled-bindings', subject: 'The contexts, shapes, ontology files and example product documents of the bundled bindings', status: 'held', basis: 'Apache-2.0, unmodified, each held to the SHA-256 in its binding or upstream notice. The NOTICE.md beside each binding names the source, its revision and every file, and reproduces the one notice a file carries.' },
   { id: 'w3c-context', subject: 'The W3C credentials context retained in @bsv/dpp-credentials', status: w3cFullText ? 'held' : 'open', basis: w3cFullText ? 'Unmodified, with the full W3C Software and Document License text beside it.' : 'Unmodified. The notice beside it names the licence and does not yet reproduce its full text, which that licence asks for on every copy.', ...(w3cFullText ? {} : { waitsOn: 'The full licence text beside the file.' }) },
   { id: 'gs1-files', subject: 'GS1\'s EPCIS and resolver schemas and contexts', status: 'held', basis: 'Not redistributed. The packages name each file by address and SHA-256, and scripts/image-contents-check.mjs holds that no archive or image contains one.' },
   { id: 'mongodb', subject: 'MongoDB Community Server in the presets', status: 'conditional', basis: 'Server Side Public License, version 1. A separate program reached over the network through the Apache-2.0 driver.', conditions: ['No image, package, bundle or mirror of this repository contains the server.', 'The presets name the publisher\'s image by tag and digest.', 'The documentation states its licence and never describes a deployment as a whole as Apache-2.0.', 'An operator reads the SSPL for its own use; offering MongoDB\'s functionality to third parties as a service, or redistributing it, is the operator\'s own obligation.', 'MONGO_URL points the index at any other compatible database.'] },

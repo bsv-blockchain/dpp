@@ -4,12 +4,19 @@ import { Hash, LockingScript, PrivateKey, ProtoWallet, Transaction, Utils, type 
 import {
   EVIDENCE_CHECK_NAMES,
   buildAttestationAnchor,
+  canonicalBytes,
+  didKeyFromIdentityKey,
+  lifecycleClaimBytes,
+  lifecycleClaimDigest,
+  signLifecycleClaim,
   verifyPassportEvidence,
   type EvidenceCheck,
   type EvidenceReport,
   type ExpectedSubject,
   type LatestStateObserver,
+  type ObservationResult,
 } from '../src/index.js'
+import { nativeAnchorMetadataMismatches } from '../src/nativeAnchorBinding.js'
 import { CHAIN_V1_FIXTURE as F } from './chain-v1-fixture.js'
 import { attachProof, buildChainFixture, makeData, mockTracker, serverPriv, signedState, stateTx, makerPriv, idKey } from './helpers.js'
 
@@ -113,6 +120,50 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
     expect(outage.observations.sources[0]).toMatchObject({ result: 'unavailable', detail: 'timeout' })
   })
 
+  it.each<[ObservationResult[], string]>([
+    [['not-found'], 'unknown'],
+    [['not-found', 'unavailable'], 'unknown'],
+    [['unspent', 'unavailable'], 'unknown'],
+    [['not-found', 'unspent'], 'unknown'],
+    [['spent', 'not-found', 'unavailable'], 'superseded'],
+    [['unspent', 'spent', 'unspent', 'unavailable'], 'conflicting'],
+    [['unavailable', 'conflicting'], 'conflicting'],
+  ])('combines the source results %j as %s and records every answer', async (results, expected) => {
+    const observers: LatestStateObserver[] = results.map((result, i) => ({
+      id: String(i), kind: 'spend-status', observe: async () => ({ result }),
+    }))
+    const report = await verifyPassportEvidence({ tokenHistory: chain.slice(0, 1) }, asked, { checkedAt: CHECKED_AT, observers })
+    expect(report.observations.sources.map((source) => source.result)).toEqual(results)
+    expect(report.observations.latestState).toBe(expected)
+  })
+
+  it('requires a supplied tip for an observed or superseded result', async () => {
+    for (const result of ['unspent', 'spent'] as const) {
+      const observers: LatestStateObserver[] = [{ id: 'a', kind: 'spend-status', observe: async () => ({ result }) }]
+      const report = await verifyPassportEvidence({}, asked, { checkedAt: CHECKED_AT, observers })
+      expect(report.suppliedTip).toBeNull()
+      expect(report.observations.latestState).toBe('unknown')
+    }
+  })
+
+  it('compares named spending transactions and keeps distinct candidate outpoints visible', async () => {
+    const tip = { txid: F.states[0].txid, outputIndex: F.states[0].outputIndex }
+    const successor = { txid: F.states[1].txid, outputIndex: F.states[1].outputIndex }
+    const rival = { txid: 'ab'.repeat(32), outputIndex: 1 }
+    type Answer = Awaited<ReturnType<LatestStateObserver['observe']>>
+    const observe = async (...answers: Answer[]) => {
+      const observers: LatestStateObserver[] = answers.map((answer, i) => ({
+        id: String(i), kind: 'spend-status', observe: async () => answer,
+      }))
+      return (await verifyPassportEvidence({ tokenHistory: chain.slice(0, 1) }, asked, { checkedAt: CHECKED_AT, observers })).observations
+    }
+    const spent: Answer = { result: 'spent', spendingTxid: successor.txid, candidateOutpoints: [successor] }
+    expect(await observe(spent, spent, { result: 'spent' })).toMatchObject({ latestState: 'superseded', candidateOutpoints: [tip, successor] })
+    expect((await observe(spent, { result: 'spent', spendingTxid: rival.txid })).latestState).toBe('conflicting')
+    expect(await observe({ result: 'spent', candidateOutpoints: [successor, rival] })).toMatchObject({ latestState: 'conflicting', candidateOutpoints: [tip, successor, rival] })
+    expect((await observe({ result: 'unspent', candidateOutpoints: [rival] })).latestState).toBe('conflicting')
+  })
+
   it('fails linkage on a missing middle and keeps the findings before it', async () => {
     const report = await verifyPassportEvidence({ tokenHistory: [chain[0], chain[1], chain[3]] }, asked, { checkedAt: CHECKED_AT, publisherKeys: [F.serverKey], chainTracker: 'scripts only' })
     expect(byName(report, 'linkage')).toMatchObject({ status: 'fail', reasonCode: 'link-broken', scope: { stateIndex: 2 } })
@@ -166,6 +217,134 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
     expect(byName(selected, 'subjectBinding').status).toBe('pass')
   })
 
+  it('retains an interrupted history tip without reporting a fork with the only complete history', async () => {
+    const interrupted = chain.filter((_, i) => i !== 2)
+    const report = await verifyPassportEvidence({ tokenHistory: interrupted, alternativeHistories: [chain] }, asked, { checkedAt: CHECKED_AT })
+    expect(byName(report, 'linkage').status).toBe('fail')
+    expect(report.observations).toMatchObject({
+      latestState: 'unknown',
+      candidateOutpoints: [
+        { txid: F.states[3].txid, outputIndex: F.states[3].outputIndex },
+        { txid: F.states[5].txid, outputIndex: F.states[5].outputIndex },
+      ],
+    })
+    expect(report.limits.some((l) => l.includes('Two valid successors'))).toBe(false)
+  })
+
+  it('keeps repeated histories and different lengths of one valid history on a single branch', async () => {
+    const prefix = chain.slice(0, 2)
+    const report = await verifyPassportEvidence({ tokenHistory: prefix, alternativeHistories: [prefix, chain, chain] }, asked, { checkedAt: CHECKED_AT })
+    expect(byName(report, 'linkage').status).toBe('pass')
+    expect(byName(report, 'subjectBinding').status).toBe('pass')
+    expect(report.observations).toMatchObject({
+      latestState: 'unknown',
+      candidateOutpoints: [
+        { txid: F.states[1].txid, outputIndex: F.states[1].outputIndex },
+        { txid: F.states[5].txid, outputIndex: F.states[5].outputIndex },
+      ],
+    })
+    expect(report.limits.some((l) => l.includes('Two valid successors'))).toBe(false)
+  })
+
+  it('reports two distinct valid successors in the alternatives even with no primary history', async () => {
+    const fixture = JSON.parse(readFileSync(new URL('../../../fixtures/evidence-v2.json', import.meta.url), 'utf8')) as {
+      cases: Array<{ id: string; evidence: { tokenHistory: string[]; alternativeHistories: string[][] }; expectedSubject: ExpectedSubject }>
+    }
+    const fork = fixture.cases.find((c) => c.id === 'v2-fork')!
+    const branches = [fork.evidence.tokenHistory, ...fork.evidence.alternativeHistories].map((raw) => raw.map((hex) => Transaction.fromHex(hex)))
+    const report = await verifyPassportEvidence({ alternativeHistories: branches }, fork.expectedSubject, { checkedAt: CHECKED_AT })
+    expect(report.suppliedTip).toBeNull()
+    expect(report.observations.latestState).toBe('conflicting')
+    expect(report.observations.candidateOutpoints.map((p) => p.txid)).toEqual(branches.map((branch) => branch.at(-1)!.id('hex')))
+    expect(report.limits.some((l) => l.includes('Two valid successors'))).toBe(true)
+    expect(byName(report, 'subjectBinding').reasonCode).not.toBe('genesis-ambiguous')
+  })
+
+  it('counts each valid rival genesis once when only alternative histories were supplied', async () => {
+    const rival = stateTx(await signedState(makeData({ timestamp: '2026-06-11T12:00:01Z' })), makerPriv.toPublicKey())
+    const report = await verifyPassportEvidence({ alternativeHistories: [chain, [rival], [rival]] }, asked, { checkedAt: CHECKED_AT })
+    expect(report.observations.latestState).toBe('conflicting')
+    expect(report.observations.candidateOutpoints).toHaveLength(2)
+    expect(report.limits.some((l) => l.includes('Two valid successors'))).toBe(false)
+    expect(byName(report, 'subjectBinding')).toMatchObject({
+      status: 'unknown', reasonCode: 'genesis-ambiguous', evidenceRefs: [F.states[0].txid + ':0', rival.id('hex') + ':0'],
+      detail: [{ reasonCode: 'genesis-ambiguous', detail: '2 valid genesis records carry this passport identifier' }],
+    })
+  })
+
+  describe('subject expectations with alternative histories', () => {
+    const genesis = { txid: F.states[0].txid, outputIndex: 0 }
+    const tip = { txid: F.states[5].txid, outputIndex: F.states[5].outputIndex }
+    const claimRef = 'sha256:' + ANCHOR.digest
+    const read = async (alternatives: Transaction[][], pins: Partial<ExpectedSubject>, claims: unknown[] = [], primary?: Transaction[]) => {
+      const report = await verifyPassportEvidence({ tokenHistory: primary, alternativeHistories: alternatives, nativeClaims: claims }, { ...asked, ...pins }, { checkedAt: CHECKED_AT })
+      return byName(report, 'subjectBinding')
+    }
+
+    it('compares a trusted genesis with the two actual alternatives even when a native claim matches the passport', async () => {
+      const rival = stateTx(await signedState(makeData({ timestamp: '2026-06-11T12:00:01Z' })), makerPriv.toPublicKey())
+      const branches = [chain, [rival], [rival]]
+      const refs = [F.states[0].txid + ':0', rival.id('hex') + ':0', claimRef]
+      expect(await read(branches, { source: 'none', expectedGenesisOutpoint: genesis }, [ANCHOR.claim])).toMatchObject({ status: 'unknown', reasonCode: 'subject-not-independent', evidenceRefs: [] })
+      expect(await read(branches, {}, [ANCHOR.claim])).toMatchObject({ status: 'unknown', reasonCode: 'genesis-ambiguous', evidenceRefs: refs })
+      for (const selected of [genesis, { txid: rival.id('hex'), outputIndex: 0 }]) {
+        expect(await read(branches, { expectedGenesisOutpoint: selected }, [ANCHOR.claim])).toMatchObject({ status: 'pass', evidenceRefs: refs })
+      }
+      expect(await read(branches, { expectedGenesisOutpoint: tip }, [ANCHOR.claim])).toMatchObject({ status: 'fail', reasonCode: 'genesis-mismatch', evidenceRefs: refs })
+    })
+
+    it('checks the only eligible alternative against the requested genesis, issuer and exact tip', async () => {
+      const pins = { expectedGenesisOutpoint: genesis, expectedIssuer: F.makerKey, expectedStateOutpoint: tip }
+      expect(await read([chain], pins)).toMatchObject({ status: 'pass', evidenceRefs: [genesis.txid + ':0', tip.txid + ':' + tip.outputIndex] })
+      expect(await read([chain], { ...pins, expectedIssuer: didKeyFromIdentityKey(F.makerKey) })).toMatchObject({ status: 'pass' })
+      expect(await read([chain], { ...pins, expectedGenesisOutpoint: tip })).toMatchObject({ status: 'fail', reasonCode: 'genesis-mismatch' })
+      expect(await read([chain], { ...pins, expectedIssuer: F.owner1Key })).toMatchObject({ status: 'fail', reasonCode: 'issuer-mismatch' })
+      expect(await read([chain], { ...pins, expectedStateOutpoint: genesis })).toMatchObject({ status: 'fail', reasonCode: 'state-mismatch' })
+      expect(await read([chain.filter((_, index) => index !== 2)], { expectedGenesisOutpoint: genesis }, [ANCHOR.claim])).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
+    })
+
+    it('requires the selected genesis, issuer and tip to belong to the same history', async () => {
+      const rival = stateTx(await signedState(makeData({ actorIdentityKey: idKey(serverPriv) }), new ProtoWallet(serverPriv)), makerPriv.toPublicKey())
+      const branches = [chain, [rival]]
+      const rivalGenesis = { txid: rival.id('hex'), outputIndex: 0 }
+      expect(await read(branches, { expectedGenesisOutpoint: rivalGenesis, expectedIssuer: idKey(serverPriv), expectedStateOutpoint: rivalGenesis })).toMatchObject({ status: 'pass' })
+      expect(await read(branches, { expectedGenesisOutpoint: rivalGenesis, expectedIssuer: F.makerKey })).toMatchObject({ status: 'fail', reasonCode: 'issuer-mismatch' })
+      expect(await read(branches, { expectedGenesisOutpoint: rivalGenesis, expectedStateOutpoint: tip })).toMatchObject({ status: 'fail', reasonCode: 'state-mismatch' })
+      expect(await read([[rival]], { expectedGenesisOutpoint: rivalGenesis }, [], chain)).toMatchObject({ status: 'fail', reasonCode: 'genesis-mismatch' })
+      expect(await read([chain], { expectedStateOutpoint: tip }, [], chain.filter((_, index) => index !== 2))).toMatchObject({ status: 'fail', reasonCode: 'state-mismatch' })
+    })
+
+    it('compares a signed native state reference without inferring a genesis from it', async () => {
+      expect(await read([], { expectedGenesisOutpoint: genesis }, [ANCHOR.claim])).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
+      expect(await read([], { expectedStateOutpoint: genesis }, [ANCHOR.claim])).toMatchObject({ status: 'pass' })
+      expect(await read([], { expectedStateOutpoint: tip }, [ANCHOR.claim])).toMatchObject({ status: 'fail', reasonCode: 'state-mismatch' })
+      expect(await read([], { expectedStateOutpoint: { ...genesis, outputIndex: 1 } }, [ANCHOR.claim])).toMatchObject({ status: 'fail', reasonCode: 'state-mismatch' })
+    })
+
+    it('compares each signed recordId on an exact-state read and accepts earlier claims on a passport-level read', async () => {
+      const wallet = new ProtoWallet(PrivateKey.fromHex(ANCHOR.issuerPrivateKey))
+      const tipClaim = await signLifecycleClaim({ ...ANCHOR.unsignedClaim, recordId: tip.txid + ':' + tip.outputIndex }, wallet)
+      for (const primary of [undefined, chain]) {
+        const alternatives = primary == null ? [chain] : []
+        expect(await read(alternatives, {}, [ANCHOR.claim, tipClaim], primary)).toMatchObject({ status: 'pass' })
+        expect(await read(alternatives, { expectedStateOutpoint: tip }, [tipClaim], primary)).toMatchObject({ status: 'pass' })
+        expect(await read(alternatives, { expectedStateOutpoint: tip }, [ANCHOR.claim, tipClaim], primary)).toMatchObject({ status: 'fail', reasonCode: 'state-mismatch' })
+      }
+    })
+
+    it('retains the identity and limited precision of a historical transaction-only signed claim', async () => {
+      const historical = { ...ANCHOR.unsignedClaim, recordId: genesis.txid }
+      const wallet = new ProtoWallet(PrivateKey.fromHex(ANCHOR.issuerPrivateKey))
+      const { signature } = await wallet.createSignature({ data: canonicalBytes(historical), protocolID: [1, 'dpp attestation v1'], keyID: historical.passportId, counterparty: 'anyone' })
+      const signed = { ...historical, signature: Utils.toHex(signature) }
+      for (const primary of [undefined, [chain[0]]]) {
+        expect(await read([], {}, [signed], primary)).toMatchObject({ status: 'pass' })
+        expect(await read([], { expectedStateOutpoint: genesis }, [signed], primary)).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
+        expect(await read([], { expectedStateOutpoint: tip }, [signed], primary)).toMatchObject({ status: 'fail', reasonCode: 'state-mismatch' })
+      }
+    })
+  })
+
   it('reports inclusion from the header source: proved, refuted, outage, or not selected', async () => {
     const { txs } = await buildChainFixture()
     const roots: Record<number, string> = {}
@@ -210,9 +389,39 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
     const changed = ANCHOR.representationBytes.replace('"eventType":"Origin"', '"eventType":"Transfer"')
     const tampered = await verifyPassportEvidence({ anchors: [{ lockingScript: ANCHOR.lockingScript, securedBytes: changed }] }, subject, { checkedAt: CHECKED_AT })
     expect(byName(tampered, 'anchorDigestAndMetadataBinding')).toMatchObject({ status: 'fail', reasonCode: 'digest-mismatch' })
+    expect(byName(tampered, 'evidenceAvailability')).toMatchObject({
+      status: 'fail', reasonCode: 'referenced-artefact-mismatch',
+      evidenceRefs: byName(tampered, 'anchorDigestAndMetadataBinding').evidenceRefs,
+    })
     const absent = await verifyPassportEvidence({ anchors: [{ lockingScript: ANCHOR.lockingScript }] }, subject, { checkedAt: CHECKED_AT })
     expect(byName(absent, 'anchorDigestAndMetadataBinding')).toMatchObject({ status: 'unknown', reasonCode: 'secured-bytes-absent' })
     expect(byName(absent, 'evidenceAvailability')).toMatchObject({ status: 'unknown', reasonCode: 'referenced-artefact-unavailable' })
+  })
+
+  it('compares the complete signed representation when a decoded claim and exact bytes are both supplied', async () => {
+    const battery = JSON.parse(readFileSync(new URL('../../../fixtures/battery-lifecycle-v1.json', import.meta.url), 'utf8')).states[0].claim
+    const subject = { passportId: ANCHOR.claim.passportId, source: 'request-context' as const }
+    const report = async (securedBytes: number[]) => verifyPassportEvidence({
+      nativeClaims: [ANCHOR.claim],
+      anchors: [{ lockingScript: ANCHOR.lockingScript, securedBytes }],
+    }, subject, { checkedAt: CHECKED_AT })
+
+    const aligned = await report(lifecycleClaimBytes(ANCHOR.claim))
+    expect(byName(aligned, 'anchorDigestAndMetadataBinding').status).toBe('pass')
+    const other = await report(lifecycleClaimBytes(battery))
+    expect(byName(other, 'nativeAttestationSignature').status).toBe('pass')
+    expect(byName(other, 'anchorDigestAndMetadataBinding')).toMatchObject({
+      status: 'fail', reasonCode: 'digest-mismatch',
+      evidenceRefs: expect.arrayContaining([`sha256:${ANCHOR.digest}`, `sha256:${lifecycleClaimDigest(battery)}`]),
+    })
+  })
+
+  it('compares the native registry identifier with the verified signed claim digest', () => {
+    const digest = lifecycleClaimDigest(ANCHOR.claim)
+    const content = ANCHOR.anchor
+    expect(nativeAnchorMetadataMismatches(content, ANCHOR.claim, digest)).toEqual([])
+    // The digest label used in report evidence references belongs to a different identifier scheme.
+    expect(nativeAnchorMetadataMismatches({ ...content, attestationId: `sha256:${digest}` }, ANCHOR.claim, digest)).toEqual(['attestationId'])
   })
 
   it('fails metadata binding and subject binding for an anchor whose carried metadata disagrees with its claim', async () => {
@@ -289,6 +498,28 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
     expect(byName(genesis, 'issuerAuthority').status).toBe('pass')
     const stranger = await verifyPassportEvidence({ tokenHistory: chain }, asked, { checkedAt: CHECKED_AT, authority: { required: true, genesisIssuers: [idKey(serverPriv)] } })
     expect(byName(stranger, 'issuerAuthority')).toMatchObject({ status: 'fail', reasonCode: 'authority-unconfirmed' })
+  })
+
+  it('requires verified subject and issuer information before affirming an external credential binding', async () => {
+    const checked = { status: 'pass' as const }
+    const expected = { ...asked, expectedIssuer: 'did:web:maker.example' }
+    const evidence = { externalCredentials: [{ representation: 'fixture', bytes: 'issued bytes' }] }
+    const read = async (subjects?: string[], issuer?: string, proof: 'pass' | 'fail' = 'pass') => {
+      const report = await verifyPassportEvidence(evidence, expected, {
+        credentialVerifier: async () => ({ subjects, issuer, proof: { status: proof }, schema: checked, time: checked, status: checked, authority: checked }),
+      })
+      return byName(report, 'subjectBinding')
+    }
+    expect(await read([passportId], expected.expectedIssuer)).toMatchObject({ status: 'pass' })
+    expect(await read([passportId], 'did:web:other.example')).toMatchObject({ status: 'fail', reasonCode: 'issuer-mismatch' })
+    expect(await read(['urn:other'], expected.expectedIssuer)).toMatchObject({ status: 'fail', reasonCode: 'subject-mismatch' })
+    expect(await read(undefined, expected.expectedIssuer)).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
+    expect(await read([passportId], undefined)).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
+    expect(await read([passportId], expected.expectedIssuer, 'fail')).toMatchObject({ status: 'unknown' })
+    const unavailable = await verifyPassportEvidence({ ...evidence, nativeClaims: [ANCHOR.claim] }, { ...asked, expectedIssuer: ANCHOR.claim.issuer }, { checkedAt: CHECKED_AT })
+    expect(byName(unavailable, 'nativeAttestationSignature')).toMatchObject({ status: 'pass' })
+    expect(byName(unavailable, 'externalCredentialProof')).toMatchObject({ status: 'unknown', reasonCode: 'verifier-not-supplied' })
+    expect(byName(unavailable, 'subjectBinding')).toMatchObject({ status: 'unknown', reasonCode: 'no-evidence' })
   })
 
   it('routes external credentials through the supplied verifier and reports each check separately', async () => {

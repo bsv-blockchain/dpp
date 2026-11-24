@@ -10,6 +10,7 @@ import {
   BUNDLED_BINDINGS,
   BUNDLED_BINDING_DIGESTS,
   BUNDLED_BINDING_LICENCE,
+  CURRENT_SECTOR_BINDINGS,
   GS1_RESOLVER_ARTEFACTS,
   PROFILE_BUNDLE_DESCRIPTOR,
   PROFILE_BUNDLE_LIMITS,
@@ -364,19 +365,25 @@ describe('notices and licence texts travel with the files they account for', () 
     for (const [path, bytes] of again.files) expect(bytes, path).toEqual(first.files.get(path))
   })
 
-  it('the bundled bindings leave with their notice and with the licence text the notice points to', async () => {
-    const registry = createProfileRegistry({ trustedBindingDigests: BUNDLED_BINDING_DIGESTS })
-    for (const result of await registerBundledBindings(registry)) expect(result).toMatchObject({ ok: true })
+  it('carries every selected sector version under its own name with the original artefacts, notices and licence', async () => {
+    const entries = BUNDLED_BINDINGS
+    const registry = createProfileRegistry({ trustedBindingDigests: entries.map((entry) => entry.bindingDigest) })
+    for (const result of await registerBundledBindings(registry, { profiles: entries.map((entry) => entry.profile) })) expect(result).toMatchObject({ ok: true })
     const bundle = await exported({ registry, readNotice: bundledBindingNotices(), licenceTexts: bundledBindingLicenceTexts() })
-    for (const { profile, bindingDigest } of BUNDLED_BINDINGS) {
-      const folder = join(packageRoot, 'bindings', profile)
-      // Every file of the package folder is in the bundle, byte for byte: the binding, its artefacts and the notice.
-      const binding = jsonOf<ProfileBinding>(join(folder, 'binding.json'))
-      for (const name of ['binding.json', 'NOTICE.md', ...binding.artefacts.map((artefact) => artefact.path)]) {
+    for (const entry of entries) {
+      const { profile, bindingDigest } = entry
+      const folder = join(packageRoot, 'bindings', 'artefactDirectory' in entry ? entry.artefactDirectory : profile)
+      const bytes = readFileSync(join(folder, 'artefactDirectory' in entry ? 'binding.v2.json' : 'binding.json'))
+      const binding = JSON.parse(bytes.toString()) as ProfileBinding
+      expect(bundle.files.get(`profiles/${profile}/binding.json`)).toEqual(new Uint8Array(bytes))
+      for (const name of ['NOTICE.md', ...binding.artefacts.map((artefact) => artefact.path)]) {
         expect(bundle.files.get(`profiles/${profile}/${name}`), `${profile}/${name}`).toEqual(new Uint8Array(readFileSync(join(folder, name))))
       }
-      expect(bundle.descriptor.profiles.find((entry) => entry.profile === profile)).toEqual({ profile, bindingDigest, notices: ['NOTICE.md'] })
+      expect(bundle.descriptor.profiles.find((item) => item.profile === profile)).toEqual({ profile, bindingDigest, notices: ['NOTICE.md'] })
     }
+    const restored = await opened(profileBundleFiles(bundle.files))
+    const destination = createProfileRegistry({ trustedBindingDigests: CURRENT_SECTOR_BINDINGS.map((entry) => entry.bindingDigest) })
+    expect(await registerProfileBundle(destination, restored, { profiles: CURRENT_SECTOR_BINDINGS.map((entry) => entry.profile), expected: entries })).toMatchObject([{ ok: true }, { ok: true }])
     expect(bundle.descriptor.licences).toEqual([{ licence: BUNDLED_BINDING_LICENCE, path: 'licences/Apache-2.0.txt' }])
     expect(bundle.files.get('profiles/licences/Apache-2.0.txt')).toEqual(new Uint8Array(readFileSync(join(packageRoot, 'LICENSE'))))
     expect(new TextDecoder().decode(bundle.files.get('profiles/licences/Apache-2.0.txt'))).toContain('Apache License')

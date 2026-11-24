@@ -113,6 +113,11 @@ export function conflictScopeKeyOf(conflictId: string): string | undefined {
   return CONFLICT_ID.exec(conflictId)?.[1];
 }
 
+/** The identity of one decision in its conflict's append-only history. */
+export function epcisResolutionId(scopeKey: string, sequence: number): string {
+  return `urn:bsv:dpp:epcis:conflict-resolution:sha256:${digestOf(['resolution', scopeKey, sequence])}`;
+}
+
 const padded = (value: number, width: number): string => String(value).padStart(width, '0');
 
 export const observationKey = (scopeKey: string, sequence: number): string => `${scopeKey}.${padded(sequence, 10)}`;
@@ -644,6 +649,33 @@ export const pullPageKey = (pullKey: string, sequence: number): string => `${pul
 /** The digest a query name is bound to. Limits, permitted origins, credentials, the versions sent and how a list is written into the address are not part of it: an operator may change those without making a new source. */
 export function epcisPullDefinitionDigest(definition: { sourceId: string; baseUrl: string; query: EpcisPullQuery; recordTimeOverlapSeconds: number }): string {
   return digestOf({ baseUrl: definition.baseUrl, query: definition.query, recordTimeOverlapSeconds: definition.recordTimeOverlapSeconds, sourceId: definition.sourceId });
+}
+
+export const noEvents = (): EpcisPullEventCounts => ({ total: 0, new: 0, duplicate: 0, newObservation: 0, conflict: 0 });
+
+export function countEvents(record: EpcisImportRecord, importReplayed: boolean): EpcisPullEventCounts {
+  const counts = noEvents();
+  for (const event of record.events) {
+    counts.total += 1;
+    // A page that answered an import already held added nothing: each of its events repeats one that is held.
+    if (importReplayed || event.arrival === 'duplicate') counts.duplicate += 1;
+    else if (event.arrival === 'new') counts.new += 1;
+    else if (event.arrival === 'new-observation') counts.newObservation += 1;
+    else if (event.arrival === 'conflict') counts.conflict += 1;
+  }
+  return counts;
+}
+
+export const addEvents = (to: EpcisPullEventCounts, from: EpcisPullEventCounts): void => { for (const member of Object.keys(to) as Array<keyof EpcisPullEventCounts>) to[member] += from[member]; };
+
+/** The latest of the record times a page's events carry, when any can be read as a time. */
+export function latestRecordTime(record: EpcisImportRecord, floor: string | undefined): string | undefined {
+  let latest = floor == null ? Number.NEGATIVE_INFINITY : Date.parse(floor);
+  for (const event of record.events) {
+    const at = event.recordTime == null ? Number.NaN : Date.parse(event.recordTime);
+    if (!Number.isNaN(at) && at > latest) latest = at;
+  }
+  return latest === Number.NEGATIVE_INFINITY ? undefined : new Date(latest).toISOString();
 }
 
 /* ------------------------------ associations ----------------------------- */

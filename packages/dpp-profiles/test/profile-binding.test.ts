@@ -19,6 +19,7 @@ const withAccess = (change: Mutation): unknown => { const copy = syntheticAccess
 
 const positives: Array<[string, unknown]> = [
   ['the binding that uses every step', syntheticBinding()],
+  ['a binding selecting the product subject class', vary((b) => { b.validation.subjectClass = 'https://profiles.example/lamp/v1#Lamp' })],
   ['a plain JSON Schema profile: one schema artefact and two steps', vary((b) => { b.artefacts = [b.artefacts[0]]; b.validation = { steps: ['json-schema', 'passport-identity'], blockingSeverities: ['Violation'] } })],
   ['a source that names its repository, release and revision', vary((b) => { b.source = { name: 'A public source', repository: 'https://source.example/profiles', release: '1.2.0', revision: 'a'.repeat(40), licence: 'CC-BY-4.0', notices: ['notices/source.txt'] } })],
   ['no granularity member and no related identifiers', vary((b) => { delete b.identity.granularityMember; b.identity.related = []; b.identity.mustEqual = []; b.identity.mustNotContradict = [] })],
@@ -71,6 +72,7 @@ const negatives: Array<[string, unknown]> = [
   ['a step listed twice', vary((b) => { b.validation.steps = ['json-schema', 'json-schema', 'passport-identity'] })],
   ['steps without the identity check', vary((b) => { b.validation.steps = ['json-schema'] })],
   ['an engine capability the format does not name', vary((b) => { b.validation.engine.requires = ['shacl-advanced'] })],
+  ['a relative subject class', vary((b) => { b.validation.subjectClass = 'Lamp' })],
   ['an engine capability listed twice', vary((b) => { b.validation.engine.requires = ['shacl-core', 'shacl-core'] })],
   ['an engine member without its list', vary((b) => { b.validation.engine = {} })],
   ['no blocking severity', vary((b) => { b.validation.blockingSeverities = [] })],

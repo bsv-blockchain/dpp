@@ -8,7 +8,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model.md",
-      "digest": "f5c259c8c876610d7eccaa537c0d0f95cc86ab759b32caf9e0c5452d8f0229dd"
+      "digest": "2592fd021239870fdac4f5af3ef69a4e7feee8c62794741c5f7fba8febd6e915"
     },
     {
       "id": "spec-record-model-v2",
@@ -16,7 +16,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model-v2.md",
-      "digest": "db611e96ef878dc5e57d4051f32e9905f4312d73bc5bd8f38111086de9ef050b"
+      "digest": "ef830b2d99527c40fd2ea2a3ef141f55ede1fff968b9e33d8e2bdb2a6ff81501"
     },
     {
       "id": "spec-rules",
@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "419fc6a6ae10c05e39f6997194f54ee8664356a3420ebbd49b8f902ab0b3d444"
+      "digest": "ad3425faf2fc74de27fa0c37ae5dfb6b7e2747393a6892a4bbc8bff0b56080a3"
     },
     {
       "id": "spec-conformance",
@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/conformance.md",
-      "digest": "3f0511ec0cca73634cd7b73d237c89f67b84287c256cb08564db5c140227fa0e"
+      "digest": "cfd1a29af95790eae209ce3df0ae7619fe0a8f53815f68be0476b2b9b863dab6"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -104,7 +104,23 @@
       "version": "0.6.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "80130b309492666c12a05a2f469a1644f5e59a1cc84fac28ca4351c600860db1"
+      "digest": "19ffe32eb6e134c4315bd342b653aac6301bd3986096252c48ab81822c98d6ab"
+    },
+    {
+      "id": "contract-capabilities",
+      "uri": "contracts/capabilities.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/capabilities.schema.json",
+      "digest": "93b45960333dbb4f6e07c32863ab9e27f75a7cf6ec7a6fd89f00a9890a159dea"
+    },
+    {
+      "id": "contract-registry-capabilities",
+      "uri": "contracts/registry-capabilities.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/registry-capabilities.schema.json",
+      "digest": "d87ef93bbe749f74169b260d8ba459374a1bf8ce52bdeb93c30250fb9c4bc020"
     },
     {
       "id": "spec-profiles",
@@ -112,7 +128,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "aff33b253ac4f719bfc2e67771373d05b73f31f2ab9f2efa9e6baff9c15629bb"
+      "digest": "952df4ab6d1f035bfd932fe255f36126e3820a5b4833a9f803d36090c2128faa"
     },
     {
       "id": "profiles-frozen",
@@ -232,7 +248,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "a5f2cdc86314624f23ef6b35ba1812352f03b347bd4ca26b21c14c01c8bf04a2"
+      "digest": "1cbaeb143d40f60b23137b5dfdc1f8b9821eb95e91d9d36ca8c185fea7deacb4"
     },
     {
       "id": "vectors-publisher-policy",
@@ -272,7 +288,7 @@
       "version": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "9cc4b56e3f24e59841d53c553e938789ea0c089d940287b824cf57df16da8393"
+      "digest": "563b594996ae378a4a88cfdd9c208b31545596645ccc9d1dde11d78e063696ff"
     },
     {
       "id": "spec-external-credential-profile",
@@ -304,7 +320,7 @@
       "version": "1",
       "kind": "local",
       "path": "contracts/epcis-recovery.schema.json",
-      "digest": "87464c91edef5be1bf853dfe5d14089f151352b1a2dc851d646b67af85bb4e24"
+      "digest": "d52dd5f452bc4b4182e5e50dbd6fbbd06dd70c5de3d8781b3a15ba8bea5e54ad"
     },
     {
       "id": "contract-validator",
@@ -352,7 +368,7 @@
       "version": "dpp-epcis-lifecycle@1",
       "kind": "local",
       "path": "spec/epcis-lifecycle-claim.md",
-      "digest": "83fbefd810d0475a8f4be3d5d10d02a82d99d583a46946c70ab75caa72538449"
+      "digest": "ff7cda77eca054c6bc35c0a69b87273241a0aab595021cd6cf5a2f35bbc841b5"
     }
   ],
   "requirements": [
@@ -604,16 +620,19 @@
       "profileId": "core",
       "implementationRefs": [
         "examples/write-passport-v2.mjs",
-        "docs/packages/how-the-writer-works.md"
+        "examples/manifest-disclosure.mjs"
       ],
-      "testRefs": [],
+      "testRefs": [
+        "conformance/test/manifest-disclosure.test.mjs"
+      ],
       "evidenceRefs": [
+        "docs/packages/how-the-writer-works.md",
         "docs/profiles/README.md"
       ],
-      "status": "unassessed",
+      "status": "tested",
       "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: one owner blob, re-encrypted per reader. The writer example shows the owner tier's encryption; the disclosure call is shown on the writer page and not yet exercised by a test."
+      "notes": "The offline reference example checks the one owner ciphertext against field 11, opens it, validates the complete object and re-encrypts the permitted subset for the already entitled reader. SDK wallet tests decrypt to two distinct audiences and check the original commitment, wrong-recipient refusal and mismatched commitment. Entitlement verification and delivery are deployment responsibilities."
     },
     {
       "id": "RM-8-verifier",
@@ -1286,10 +1305,11 @@
         "packages/dpp-credentials/test/strict-json.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/attestation-anchor-v1.json#representationHex"
+        "fixtures/attestation-anchor-v1.json#representationHex",
+        "fixtures/vectors/dpp/attestation-anchor/native-binding-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-22",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
       "notes": "Reworded 2026-11-09 to name no credential representation; the meaning for a native claim is unchanged. The §4 table still lists only vsc-seal-json-v1, now parked, as a secured representation; exchange.md §1 gives vc-di-ecdsa-rdfc-2019@1 the same exact-byte rule, which EXTC-1 and EXTC-4 carry, and exchange.test.ts exercises its duplicate-key refusal through parseExternalCredentialBytes. From @bsv/dpp-credentials 0.2.0-beta.6 parseStrictJsonBytes lives in strict-json.ts with its own tests, and the parked SEAL parser that also used it is no longer in the package. Re-read 2026-11-12: the native claim is flat again, with no nested evidence object, and lifecycleClaimBytes is the restricted canonical form of canonical.ts; every claim's bytes are unchanged. Re-read 2026-11-12 after §4 became the one definition of the canonical JSON the native documents are signed or digested over, nested documents included, with RFC 8785 for the EPCIS body digest named as the exception, with the restricted flat form for a native claim and code point order stated; canonicalBytes now serialises through canonicalJson, and every claim's bytes are unchanged. Re-read 2026-11-14 after the §4 table marked epcis-event-vc@1 parked; the byte rules are unchanged. Re-read 2026-11-22 after §3 said a reader also reads a native claim signed before the outpoint rule, whose recordId is the transaction identifier alone: nothing in this row changed."
     },
@@ -1352,11 +1372,12 @@
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json#cases.anchor-and-claim",
-        "fixtures/evidence-v1.json#cases.anchor-tampered-bytes",
-        "fixtures/evidence-v1.json#cases.anchor-unsupported-representation"
+        "fixtures/evidence-v1.json#cases.anchor-supplied-bytes-digest-mismatch",
+        "fixtures/evidence-v1.json#cases.anchor-unsupported-representation",
+        "fixtures/vectors/dpp/attestation-anchor/native-binding-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-22",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
       "notes": "Re-read 2026-11-14 after §6 named epcis-event-vc@1 parked; the anchor verification rules are unchanged. Re-read 2026-11-22 after §3 said a reader also reads a native claim signed before the outpoint rule, whose recordId is the transaction identifier alone: nothing in this row changed."
     },
@@ -1622,14 +1643,18 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport-v2.mjs (liveAdapter, acceptDelayedBroadcast false)"
+        "examples/write-passport-v2.mjs (liveAdapter, acceptDelayedBroadcast false)",
+        "packages/create-dpp-app/template/apps/api/src/writer.ts",
+        "packages/create-dpp-app/template/apps/api/src/store.ts"
       ],
-      "testRefs": [],
+      "testRefs": [
+        "packages/create-dpp-app/template/apps/api/test/writer-journal.test.ts"
+      ],
       "evidenceRefs": [],
-      "status": "implemented",
-      "reviewedAt": "2026-11-12",
+      "status": "tested",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "notes": "The example writes one state under one wallet; concurrent-writer discipline for a multi-instance service is the consuming application's duty."
+      "notes": "The example writes one state under one wallet; concurrent-writer discipline for a multi-instance service is the consuming application's duty. The generated application reserves the tip before announcing or sending. Its MongoDB test runs two writers on the same journal, recovers a known outcome for the exact stored transaction and verifies that an unrelated passport can proceed. Network outcomes in these cases use the development wallet."
     },
     {
       "id": "WR-5-broadcast",
@@ -2246,10 +2271,16 @@
         "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/evidence-v1.json#cases.stale-prefix-superseded"
+        "fixtures/evidence-v1.json#cases.stale-prefix-superseded",
+        "fixtures/evidence-v2.json#cases.v2-tip-unspent-unavailable",
+        "fixtures/evidence-v2.json#cases.v2-tip-not-found",
+        "fixtures/evidence-v2.json#cases.v2-tip-unspent-not-found",
+        "fixtures/evidence-v2.json#cases.v2-tip-spent-partial",
+        "fixtures/evidence-v2.json#cases.v2-tip-spent-unspent",
+        "fixtures/evidence-v2.json#cases.v2-tip-competing-spenders"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-22",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2398,10 +2429,10 @@
     },
     {
       "id": "CONF-4-capability-schema",
-      "sourceId": "spec-conformance",
-      "sourceUri": "spec/conformance.md",
-      "sourceVersion": "working draft",
-      "clause": "§4",
+      "sourceId": "contract-capabilities",
+      "sourceUri": "contracts/capabilities.schema.json",
+      "sourceVersion": "1",
+      "clause": "Role capability document, as required by spec/conformance.md §4",
       "summary": "A capability document declares roles, protocols, exact profiles with digests, representations, proof suites, anchor formats, limits and explicit unsupported items.",
       "layer": "core",
       "roles": [
@@ -2419,9 +2450,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-22",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §4 said the named operator profiles are the reference index package's own; the capability document rule this row assesses is unchanged. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities: the schema gains the optional interoperability member a registry declares, moved unchanged from the registry contract, and the checker holds a registry's example, conformance/examples/capabilities-registry.json, to the schema beside the index's."
+      "notes": "The common schema describes each implementation’s declaration. The registry contract adds its role-specific fields and HTTP route. An overlay may expose its document through the optional capability extension."
     },
     {
       "id": "CONF-4-overlay-capabilities",
@@ -2434,7 +2465,7 @@
       "roles": [
         "overlay"
       ],
-      "applicability": "always",
+      "applicability": "when the overlay capabilities extension is offered",
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-overlay/src/capabilities.ts",
@@ -2447,16 +2478,16 @@
         "conformance/examples/capabilities-reference-node.json (hand-written example of what the node would serve)"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-22",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
       "notes": "GET /capabilities builds the document from constants and configuration, validates against contracts/capabilities.schema.json, and under the reference configuration equals conformance/examples/capabilities-reference-node.json exactly; the operator profile, active publisher keys, export and retraction availability and every unsupported item are stated by name. Re-read 2026-11-12: the operator profile the document names is a label of the reference package, documented in its README. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged. Re-read 2026-11-22 after §4 said the capability document is one document for every role, which an index and a registry serve at GET /capabilities; the index's document and its route are unchanged, and the schema's new optional interoperability member is a registry's."
     },
     {
       "id": "CONF-4-registry-capabilities",
-      "sourceId": "contract-registry",
-      "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.6.0",
-      "clause": "GET /capabilities",
+      "sourceId": "contract-registry-capabilities",
+      "sourceUri": "contracts/registry-capabilities.schema.json",
+      "sourceVersion": "1",
+      "clause": "Role conditions on GET /capabilities",
       "summary": "A registry serves the capability document of spec/conformance.md §4 at GET /capabilities, conforming to contracts/capabilities.schema.json and naming the registry role, the attestation-registry protocol, tm_attestation and ls_attestation, each representation it accepts as an object, its interoperability profiles and what it does not support.",
       "layer": "role",
       "roles": [
@@ -2465,16 +2496,21 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "the reference registry (not published)"
+        "Reference registry capability builder and GET /capabilities handler"
       ],
-      "testRefs": [],
+      "testRefs": [
+        "conformance/test/registry-capabilities.test.mjs",
+        "Reference registry HTTP contract suite, GET /capabilities"
+      ],
       "evidenceRefs": [
-        "conformance/examples/capabilities-registry.json (hand-written example of what a registry serves)"
+        "contracts/registry-capabilities.schema.json",
+        "conformance/examples/capabilities-registry.json",
+        "docs/implement/roles/registry.md"
       ],
-      "status": "gap",
-      "reviewedAt": "2026-11-22",
+      "status": "tested",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "notes": "Added 2026-11-22, when the registry contract dropped its own Capabilities document. Until then the contract and spec/conformance.md §4 asked a registry for two documents with almost no required member in common at one route, which an independent implementation reported. The reference registry still serves the earlier document (protocol, topic, lookupService, representations as identifiers and no capabilitiesVersion, implementation, roles, protocols, profiles or anchorFormats), so this row is a gap until it serves this one. The checker holds the example to contracts/capabilities.schema.json; nothing in this repository parses contracts/registry.yaml, so no test here holds a document to the members the contract adds. The row is outside every claim and baseline until a registry serves the document."
+      "notes": "The common JSON Schema and the registry-specific conditions are checked together. The merged reference service served the common registry document in a local HTTP test. The hosted service returned its earlier document at the 24 November 2026 check. Service qualification applies to the tested source and configuration."
     },
     {
       "id": "CONF-6-ledger-gate",
@@ -2864,8 +2900,8 @@
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
       "sourceVersion": "0.6.0",
-      "clause": "paths",
-      "summary": "A registry serves the operations the registry contract lists, its capability document, validation, intake, the paged record list, a record's anchor proof, a passport's chain and its evidence package, each in the documented shape; it may serve more, which the contract does not describe.",
+      "clause": "paths, seven required operations",
+      "summary": "A registry implements the seven operations in the registry contract for the representations it declares, including exact-byte retrieval and the specified outcomes for unsupported inputs.",
       "layer": "role",
       "roles": [
         "registry"
@@ -2873,16 +2909,47 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "the reference registry (not published)"
+        "Reference registry HTTP handlers"
       ],
       "testRefs": [
-        "the reference registry (not published)"
+        "Reference registry HTTP contract and OpenAPI route suites"
       ],
-      "evidenceRefs": [],
+      "evidenceRefs": [
+        "contracts/registry.yaml",
+        "docs/implement/roles/registry.md"
+      ],
       "status": "tested",
-      "reviewedAt": "2026-11-22",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "notes": "Rewritten 2026-11-12, when the contract was cut to the minimum every registry serves: GET /capabilities, POST /validate, POST /attestations, the paged GET /attestations, GET /attestations/{id}/proof, GET /chain and GET /passports/{passportId}/evidence-package, still version 0.6.0, which no release set or receipt has published. The report, history, statistics, health, certification, profile, showcase and GS1 resolver and printed-label routes left the contract with the components only they used, and so did x-intentional-omissions, which listed what the reference registry serves beyond it; the reference registry documents those routes itself. The reference registry's contract test parses its own openapi.yaml and asserts documented routes are served and served routes are documented or listed as omissions with a reason; it serves every operation of this contract in the documented shape and more besides. contracts/registry.yaml carries additions the registry's copy does not yet: the recordId pattern of NativeLifecycleClaim, the optional anchoredBy of Capabilities, the optional blockHeight and merklePath of an anchor reference and, from 0.6.0, the envelopes of the proposed epcis-event-vc@1 on POST /attestations and POST /validate, their per-issuer collision rule and the representation, application/vc+jwt and ES256K in its enumerations; the registry does not yet accept that representation (EPEV-4-registry-intake). A stored vc-di-ecdsa-rdfc-2019@1 record is served on the collection, proof and chain routes with its own representation, which both documents list in the collection filter and the response enums. Re-read 2026-11-12 after the legacy intake left the contract: Capabilities has no legacyIntake and names legacy-uora-json under unsupported, POST /validate answers under attestation-registry/1 alone, and the legacy-uora result and the placeholder, SD-JWT and refusal shapes are gone, as they are from the registry's own openapi.yaml, which keeps NotImplemented and ValidateContract for its own use; this contract drops both, since none of its operations uses them. Contract 0.6.0 gives the report on POST /validate as report version 2, while the reference registry still emits report version 1: it pins the published @bsv/dpp-protocol 0.3.0-beta.9, whose reports are version 1, and its own openapi.yaml says version 1. Until it upgrades to a protocol release that carries version 2, its report does not match this contract's EvidenceReport. Re-read 2026-11-14, when epcis-event-vc@1 was parked: the contract marks the representation parked in its descriptions and keeps its envelopes, the collision rule and its enumerations with no change of shape, path or status code; EPEV-4-registry-intake is in the ledger archive with the profile's other rows. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake). Re-read 2026-11-22 after the contract, still version 0.6.0, dropped its own Capabilities document and asked a registry for the capability document of spec/conformance.md §4 (contracts/capabilities.schema.json) at GET /capabilities, because no registry could serve both documents at one route: the reference registry still serves the earlier document there, which CONF-4-registry-capabilities records as a gap, and nothing else this row states changed. Re-read 2026-11-22 after tokenRecordId was patterned as a native claim's recordId in either form it is signed in, the outpoint or the transaction identifier alone, still version 0.6.0; no route, shape or status code changed otherwise."
+      "notes": "The locally exercised service implements the seven operations. The capability response and verification report edition have separate requirements in the current baseline. Optional EPCIS intake has its own requirement. Production deployments can run earlier contract editions."
+    },
+    {
+      "id": "REG-validate-report-version",
+      "sourceId": "contract-registry",
+      "sourceUri": "contracts/registry.yaml",
+      "sourceVersion": "0.6.0",
+      "clause": "POST /validate, SecuredValidateResult and EvidenceReport",
+      "summary": "A validation response includes a report conforming to version 2 when the supplied evidence identifies one subject or the caller names one. Otherwise the response gives the documented reason for omitting the report.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "Reference registry validation handler with the November candidate packages"
+      ],
+      "testRefs": [
+        "Reference registry HTTP report and report-fixture suites"
+      ],
+      "evidenceRefs": [
+        "contracts/verification-report.schema.json",
+        "docs/implement/roles/registry.md"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-24",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The integrated November candidate passed the HTTP report cases and the compatible report fixture cases locally. The merged registry on its earlier dependencies produces version 1. This result applies to the integrated source candidate. Publication and hosted rollout require separate evidence."
     },
     {
       "id": "STACK-vector-format",
@@ -2986,7 +3053,7 @@
       "sourceUri": "spec/profiles.md",
       "sourceVersion": "working draft",
       "clause": "§3",
-      "summary": "The four access tiers and who is entitled to each: owner fields reach the owner alone, legitimate fields the owner and the parties with a legitimate interest, authority fields those and the authorities; a disclosure to an authority may carry legitimate fields, one to a party with a legitimate interest never carries authority or owner fields; a disclosure is a subset of the restricted object checked against the same schema.",
+      "summary": "The four access tiers and who is entitled to each: owner fields reach the owner alone, legitimate fields the owner and the parties with a legitimate interest, authority fields the owner and the authorities; a disclosure to an authority may carry legitimate fields, one to a party with a legitimate interest never carries authority or owner fields; a disclosure is a subset of the restricted object checked against the same schema.",
       "layer": "core",
       "roles": [
         "passport-writer",
@@ -2995,16 +3062,20 @@
       "applicability": "when a profile declares restricted fields",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-profiles/src/index.ts#readRestrictedPayloadSchema"
+        "packages/dpp-profiles/src/index.ts#readRestrictedPayloadSchema",
+        "examples/manifest-disclosure.mjs"
       ],
       "testRefs": [
-        "packages/dpp-profiles/test/payload-schema.test.ts"
+        "packages/dpp-profiles/test/payload-schema.test.ts",
+        "conformance/test/manifest-disclosure.test.mjs"
       ],
-      "evidenceRefs": [],
-      "status": "unassessed",
+      "evidenceRefs": [
+        "docs/packages/how-the-writer-works.md"
+      ],
+      "status": "tested",
       "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "The restricted schema covers the three tiers together; no test yet checks a per-tier subset against it. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the access tiers this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the tiers §3 gives a manifest profile are unchanged, the split a binding states is a separate rule of §7 that this row does not assess, and the row stays unassessed. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the access tiers are unchanged and the row stays unassessed."
+      "notes": "The offline example checks the complete owner object and the disclosed subset with the same property constraints. Required fields in a withheld tier are omitted from the subset requirement. The supported general@2 test separates owner and legitimate fields. A synthetic three-tier manifest exercises authority inclusion and owner-only exclusion for both recipients. The example receives the audience from an application that has established entitlement."
     },
     {
       "id": "PROF-4-freeze",
@@ -3062,7 +3133,8 @@
         "packages/dpp-profiles/test/battery-lifecycle.test.ts",
         "packages/create-dpp-app/template/apps/api/test/retired-profiles.test.ts",
         "conformance/test/retired-profiles-bytes.test.mjs",
-        "packages/dpp-overlay/test/retired-profile-reset.test.ts"
+        "packages/dpp-overlay/test/retired-profile-reset.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/sector-cutover.test.ts"
       ],
       "evidenceRefs": [
         "packages/dpp-profiles/frozen.json",
@@ -3070,9 +3142,9 @@
         "docs/operate/retired-profile-records.md"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "notes": "Added 2026-11-14 with the rule. RETIRED_PROFILE_IDS is the one list; the refusal code and the cause are both profile-retired. The file readers, the field lists, the change report and the lifecycle mapping still accept a retired manifest, because they describe a frozen definition and judge no payload. The byte comparison with the main branch is skipped, and says so, in a checkout that does not hold that branch. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the retirement rule is unchanged. A retired profile resolves to nothing, so an export has nothing to carry under one and refuses it as not registered. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it. The rules for writers, readers and registries are unchanged. The new sentence of §4 states what an index already did: packages/dpp-overlay/test/retired-profile-reset.test.ts admits states that declare battery@2, battery@3 and textile@4 through the reference index's own topic manager, then runs the listing and removal commands of docs/operate/retired-profile-records.md against the index's and the application's databases and finds only the reviewed passports' rows removed."
+      "notes": "Added 2026-11-14 with the rule. RETIRED_PROFILE_IDS is the one list; the refusal code and the cause are both profile-retired. The file readers, the field lists, the change report and the lifecycle mapping still accept a retired manifest, because they describe a frozen definition and judge no payload. The byte comparison with the main branch is skipped, and says so, in a checkout that does not hold that branch. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the retirement rule is unchanged. A retired profile resolves to nothing, so an export has nothing to carry under one and refuses it as not registered. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it. The rules for writers, readers and registries are unchanged. The new sentence of §4 states what an index already did: packages/dpp-overlay/test/retired-profile-reset.test.ts admits states that declare battery@2, battery@3 and textile@4 through the reference index's own topic manager, then runs the listing and removal commands of docs/operate/retired-profile-records.md against the index's and the application's databases and finds only the reviewed passports' rows removed. The replacement recorded at retirement remains the original @1 sector binding. New sector passports use eu-battery@2 or eu-textile@2 with a required class on the identified product. Existing @1 passports resolve under their original bytes and can be maintained."
     },
     {
       "id": "PROF-5-identifiers",
@@ -3116,16 +3188,24 @@
       ],
       "applicability": "when a record describes no real product, or a reader shows a record's product data",
       "profileId": "core",
-      "implementationRefs": [],
-      "testRefs": [],
+      "implementationRefs": [
+        "packages/create-dpp-app/template/apps/api/src/writer.ts",
+        "packages/create-dpp-app/template/apps/api/src/profiles.ts",
+        "packages/create-dpp-app/template/apps/web/src/components/reading.tsx",
+        "packages/create-dpp-app/template/apps/web/src/pages/passport.tsx"
+      ],
+      "testRefs": [
+        "packages/create-dpp-app/template/apps/api/test/manifest-notice.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/bound-profiles.test.ts"
+      ],
       "evidenceRefs": [
         "docs/identifiers.md",
         "docs/packages/what-an-application-offers.md"
       ],
-      "status": "unassessed",
+      "status": "tested",
       "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Every industry manifest declares the notice stamp; no reference check enforces the rule yet. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged, and the binding envelope of §7 permits the same notice; the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged and the row stays unassessed. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §5 is unchanged and the row stays unassessed. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; §5 is unchanged and the row stays unassessed. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; §5 is unchanged and the row stays unassessed."
+      "notes": "The starter writes a one-sentence default notice first for the demonstration prefix, including a configured subprefix. It preserves a supplied localised demonstration notice on manifest writes and refuses a notice on a real-product manifest write before signing. The binding writer chooses the envelope stamp from the same prefix policy. Public and holder pages display a received notice before the product in a separate alert. A prefix or a supplied statement is not evidence of a physical product."
     },
     {
       "id": "PROF-6-generated-consumers",
@@ -3375,11 +3455,11 @@
         "the reference registry (not published)"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/evidence.test.ts (anchor-tampered-bytes)",
+        "packages/dpp-protocol/test/evidence.test.ts (compares the complete signed representation when a decoded claim and exact bytes are both supplied)",
         "the reference registry (not published)"
       ],
       "evidenceRefs": [
-        "fixtures/evidence-v1.json#cases.anchor-tampered-bytes"
+        "fixtures/evidence-v1.json#cases.anchor-supplied-bytes-digest-mismatch"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-16",
@@ -4010,10 +4090,10 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "9cc4b56e3f24e59841d53c553e938789ea0c089d940287b824cf57df16da8393",
-      "notes": "Re-read 2026-11-14 after section 1 named the context limit refusals, the refusal of a string with an unpaired surrogate and the refusal of an import without the pinned schema. importEpcisSource enforces those three and the retention rule, and its tests hold every refusal to leaving nothing in the store; parseEpcisSource is unchanged. Re-read 2026-11-14 once more after sections 2, 3 and 8 were refined for the query pull; section 1 is unchanged. A page of a pull is held to the same refusals, because pullEpcisEvents hands every page to importEpcisSource, and its tests hold a refused page to leaving nothing in the store. Re-read 2026-11-14 a third time after section 3 stated the versions a request names by default and how a list parameter is sent; section 1 is unchanged. Re-read 2026-11-15 after section 2 named the records of a restore among the durable records, section 3 said that a configured query is bound to its address and how an operator declares that the same source is reached at another, and operational recovery became section 8 with the former section 8 as section 9; section 1 is unchanged. A restore parses and validates no source again: it restores each record as it was recorded. Re-read 2026-11-16 after section 1 said that the reference implementation reads a bare event in its parser only, its import and its pull taking whole documents, that an import record keeps at most 1,000 findings, and that the ceilings on a raised limit bound a pull and not a file import. The refusals and the retention rule this row assesses are unchanged. packages/dpp-credentials/test/epcis-exchange.test.ts now holds a bare event handed to the import to being retained as invalid with no event read, an extension event type written as a URI to being retained and exported unchanged, and a file import to applying no ceiling, and packages/dpp-credentials/test/epcis-published-limits.test.ts holds the findings cap and the limits to the pages that state them."
+      "sourceDigest": "563b594996ae378a4a88cfdd9c208b31545596645ccc9d1dde11d78e063696ff",
+      "notes": "Re-read 2026-11-14 after section 1 named the context limit refusals, the refusal of a string with an unpaired surrogate and the refusal of an import without the pinned schema. importEpcisSource enforces those three and the retention rule, and its tests hold every refusal to leaving nothing in the store; parseEpcisSource is unchanged. Re-read 2026-11-14 once more after sections 2, 3 and 8 were refined for the query pull; section 1 is unchanged. A page of a pull is held to the same refusals, because pullEpcisEvents hands every page to importEpcisSource, and its tests hold a refused page to leaving nothing in the store. Re-read 2026-11-14 a third time after section 3 stated the versions a request names by default and how a list parameter is sent; section 1 is unchanged. Re-read 2026-11-15 after section 2 named the records of a restore among the durable records, section 3 said that a configured query is bound to its address and how an operator declares that the same source is reached at another, and operational recovery became section 8 with the former section 8 as section 9; section 1 is unchanged. A restore parses and validates no source again: it restores each record as it was recorded. Re-read 2026-11-16 after section 1 said that the reference implementation reads a bare event in its parser only, its import and its pull taking whole documents, that an import record keeps at most 1,000 findings, and that the ceilings on a raised limit bound a pull and not a file import. The refusals and the retention rule this row assesses are unchanged. packages/dpp-credentials/test/epcis-exchange.test.ts now holds a bare event handed to the import to being retained as invalid with no event read, an extension event type written as a URI to being retained and exported unchanged, and a file import to applying no ceiling, and packages/dpp-credentials/test/epcis-published-limits.test.ts holds the findings cap and the limits to the pages that state them. Section 1 limits durable event interpretation to complete documents and accepts a standalone event only in the parser with explicit context and envelope type."
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -4100,9 +4180,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "9cc4b56e3f24e59841d53c553e938789ea0c089d940287b824cf57df16da8393",
+      "sourceDigest": "563b594996ae378a4a88cfdd9c208b31545596645ccc9d1dde11d78e063696ff",
       "notes": "Re-read 2026-11-14 after section 2 said how an arrival is compared when the identity holds more than one observation, kept the two kinds of identity apart and defined the conflict decision. The pair rule of classifyEventArrival is unchanged; the exchange module applies it to every held observation and records decisions. Re-read 2026-11-14 once more after section 2 gave a page of a query the request digest of a file and named the pull records, and sections 3 and 8 were refined; the arrival rules are unchanged. The pull tests exercise a repeat, a changed body and an error declaration arriving on a later page and in a later run, and two source scopes that share an eventID. Re-read 2026-11-14 a third time after section 3 stated the versions a request names by default and how a list parameter is sent; section 2 and the arrival rules are unchanged. Re-read 2026-11-15 after section 2 named the records of a restore among the durable records, section 3 said that a configured query is bound to its address and how an operator declares that the same source is reached at another, and operational recovery became section 8 with the former section 8 as section 9; the arrival rules of section 2 are unchanged. A restore classifies nothing: it carries each observation and each decision as recorded, and the recovery tests hold a restored store to the same conflict, the same observations and the same decision as the store it came from, with two source scopes that share an eventID kept apart. Re-read 2026-11-16 after section 1 said that the reference implementation reads a bare event in its parser only, its import and its pull taking whole documents, that an import record keeps at most 1,000 findings, and that the ceilings on a raised limit bound a pull and not a file import; the arrival rules of section 2 are unchanged. The starter's apps/api/test/epcis-http.test.ts now takes a new observation and an error declaration of the same event through its routes."
     },
     {
@@ -4128,14 +4208,16 @@
         "packages/dpp-credentials/test/epcis-exchange-contract.test.ts",
         "packages/dpp-credentials/test/epcis-exchange.test.ts",
         "packages/dpp-credentials/test/epcis-exchange-adapters.test.ts",
-        "packages/dpp-credentials/test/epcis-pull.test.ts"
+        "packages/dpp-credentials/test/epcis-pull.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/epcis-http.test.ts",
+        "packages/dpp-credentials/test/epcis-recovery.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-14",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
       "sourceDigest": "323abe890bc84bbef81eacbbfc9b3573314f6a98da6f0b8a9cc523c37c3557bf",
-      "notes": "Moved to version 2 on 2026-11-14: requestDigest, idempotency, documentValidity and limits are required, an event may name its observation and its conflict decision, eventId is recorded as declared and eventType may be empty. The public tests build records through every arrival, a refusal, an unfinished import and a conflict decision, validate each against the schema, and hold the exact bytes and the record to surviving a stop before and after every durable step on both shipped storage adapters. The version 1 schema is kept byte for byte apart from its $id and a comment. The reference application, which is not published, was assessed against version 1 and is not cited for version 2. From 2026-11-14 importEpcisSource also records query provenance, which the schema already named: the origin, the standard query parameters sent and the page. Every page import a pull writes validates against the schema, and a page reads complete false. The schema is unchanged."
+      "notes": "Moved to version 2 on 2026-11-14: requestDigest, idempotency, documentValidity and limits are required, an event may name its observation and its conflict decision, eventId is recorded as declared and eventType may be empty. The public tests build records through every arrival, a refusal, an unfinished import and a conflict decision, validate each against the schema, and hold the exact bytes and the record to surviving a stop before and after every durable step on both shipped storage adapters. The version 1 schema is kept byte for byte apart from its $id and a comment. The reference application, which is not published, was assessed against version 1 and is not cited for version 2. From 2026-11-14 importEpcisSource also records query provenance, which the schema already named: the origin, the standard query parameters sent and the page. Every page import a pull writes validates against the schema, and a page reads complete false. The schema is unchanged. A standalone event submitted for durable import retains its invalid receipt and original bytes, including after a duplicate request and signed recovery. Only a document or query document supplies durable event observations."
     },
     {
       "id": "EPCIS-8-no-token-operation",
@@ -4161,9 +4243,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "9cc4b56e3f24e59841d53c553e938789ea0c089d940287b824cf57df16da8393",
+      "sourceDigest": "563b594996ae378a4a88cfdd9c208b31545596645ccc9d1dde11d78e063696ff",
       "notes": "Import and pull retain and evaluate only; the passport store is untouched by every import. Re-read 2026-11-12: the publication of a mapped event and the treatment of an EPCIS error declaration, which the summary also stated, are parked with the epcis-vsc mappings (spec/epcis-interoperability.md sections 5 to 7), so the row keeps only the rule that stays with epcis-json@1. Re-read 2026-11-14 after sections 1, 2 and 6 were refined; section 7 is unchanged. From that day the exchange module of @bsv/dpp-credentials is held by a public test to an import graph that reaches no signing, wallet or chain code and to results that name no token operation. Re-read 2026-11-14 once more after sections 2, 3 and 8 were refined for the query pull; section 7 is unchanged. The pull modules are inside the import graph the public test holds to reaching no signing, wallet or chain code, and a pull's results and records are held to naming no token operation. Re-read 2026-11-14 a third time after section 3 stated the versions a request names by default and how a list parameter is sent; section 7 is unchanged. Re-read 2026-11-15 after section 2 named the records of a restore among the durable records, section 3 said that a configured query is bound to its address and how an operator declares that the same source is reached at another, and operational recovery became section 8 with the former section 8 as section 9; section 7 is unchanged. The recovery modules are inside the import graph the public test holds to reaching no signing, wallet or chain code. Re-read 2026-11-16 after section 1 said that the reference implementation reads a bare event in its parser only, its import and its pull taking whole documents, that an import record keeps at most 1,000 findings, and that the ceilings on a raised limit bound a pull and not a file import; section 7 is unchanged."
     },
     {
@@ -4190,9 +4272,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "9cc4b56e3f24e59841d53c553e938789ea0c089d940287b824cf57df16da8393",
+      "sourceDigest": "563b594996ae378a4a88cfdd9c208b31545596645ccc9d1dde11d78e063696ff",
       "notes": "Rewritten 2026-11-14, when the pull client entered the public package as pullEpcisEvents and section 3 was refined: the same query continues from its checkpoint after an interruption, a page token that has expired, is rejected or is missing leads to a bounded replay from the retained bounds, plain http is refused with private targets outside a local-test configuration that every result discloses, and an answer that names no EPCIS wire version is refused. The public tests run against a fixture server they start on the local machine, over both shipped storage adapters. They exercise all eight outcomes; the checkpoint held behind the retained page at a stop before and after every durable call of a run; a restart; an expired, a rejected and a missing page token; each run limit; a redirect and a next page to an origin that is not permitted, with no request made to it; a credential that never reaches a second permitted origin and is in no record, result or log entry; an oversized and a compressed page abandoned while read; an HTML page with status 200; and a slow source. No independently written repository has been pulled from: scripts/epcis-pull-interop.mjs exists for that and has been run only against a local fixture. The values sent in GS1-EPCIS-Version and GS1-CBV-Version, and the separator of a list parameter, are the build's reading of the pinned REST binding, which is not carried in the repository, and are not yet checked against a second implementation. The reference application, which is not published, was assessed against the earlier text and is not cited for this one. Re-read 2026-11-14 once more after section 3 stated the versions a request names by default, the pinned EPCIS 2.0.1 and CBV 2.0.0 with three parts each, and that a list-valued parameter is pipe-delimited unless repetition is configured for a source, which the pull record and every result disclose as the leniency list-parameters-repeated. pullEpcisEvents sends the pinned constants unless a source configures others, and takes repeatListParameters per source, off by default and outside the definition of a pull. The public tests hold the default headers to the pinned constants and exercise both list encodings against the fixture server, which in one mode answers a server error to the pipe-delimited form; the same query under the same name then succeeds with the option on and retains what the pipe-delimited query retains. Extended 2026-11-15 after section 3 said that a configured query is bound to its address and how an operator declares that the same source is reached at another. remapEpcisSourceEndpoint binds every pull of a source scope to the declared address, records the declaration in the pull record as endpointRemaps, and holds the cursor of the checkpoint and the one a pending page named to the declared origins: one that is permitted is kept and one that is not is dropped, also when the address declared is the one the pull is already bound to. It makes no request and reads no credential. The recovery tests run it against two fixture servers: the same query name at another address is refused as pull-conflict and changes nothing, a dropped cursor leads to a replay from the retained bounds with nothing asked of the old endpoint, a kept cursor is used, each import keeps the origin it was read from, and a declaration made twice is recorded once. A cursor at an origin that is not permitted is never requested, and until the operator declares the configuration the run ends as partial-history with the reason pagination-target-refused: it does not replay by itself. Re-read 2026-11-16 after section 1 said that the reference implementation reads a bare event in its parser only, its import and its pull taking whole documents, that an import record keeps at most 1,000 findings, and that the ceilings on a raised limit bound a pull and not a file import; the pull outcomes are unchanged. packages/dpp-credentials/test/epcis-pull.test.ts now compares each retained page with the bytes the source wrote, continues after a refused connection with no page skipped or held twice, and refuses every limit set above its ceiling."
     },
     {
@@ -4263,9 +4345,9 @@
         "deploy/evidence/exit-exercise.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "9cc4b56e3f24e59841d53c553e938789ea0c089d940287b824cf57df16da8393",
+      "sourceDigest": "563b594996ae378a4a88cfdd9c208b31545596645ccc9d1dde11d78e063696ff",
       "notes": "Added 2026-11-15 with the rule. The public tests build one deployment with two source scopes that share an event identifier, a decided conflict with both of its observations, and a pull of four pages that stopped after its second page was retained and before its checkpoint moved. They export it from each shipped storage adapter and restore it into the other, and compare the originals byte for byte, every carried record, and the rebuilt associations index and retention entries with the source's. The restore is stopped before and after every durable call and run again to the same store. They exercise each refusal by name on a snapshot whose digests, inventory and identity were all made to agree again, so that only what the records say can refuse it: a checkpoint without its import or its page, a decision without an observation, a missing and an altered original and record, a descriptor that does not match the inventory, an unknown record version, a misfiled record, a record of one source scope made to stand on a record of another, and records that carry cursor material the descriptor says was left out. They exercise the collisions a restore reports and never overwrites, a retry of an acknowledged request, the same request identifier with other bytes, and a pull resumed with its cursor left out, carried, expired, and at an origin the destination does not permit, and with its source declared at another endpoint. They search every exported byte of both forms for a planted credential in four encodings, the page tokens the source issued and a secret the source wrote into its next-page addresses. The shared adapter suite takes a snapshot of a store, restores it into a second store of the same adapter and stops that restore at every durable call. The boundary is established on the six-method storage interface by the store's turn, by two readings held to equal revisions and by the invariant check, and it assumes one process writes to the store: a writer that changes a record and puts its revision back is not detected. An export refuses while work is journalled and finishes none of it. A snapshot is held in memory while it is assembled and while it is restored. Re-read 2026-11-15 with the application starter, which now carries the snapshot in its complete export and restores it with its restore command. Its exit exercise, packages/create-dpp-app/template/apps/api/test/exit-exercise.test.ts, exports from the starter's MongoDB adapter with three source scopes, two of which share an event identifier, one decided conflict and a pull interrupted after two of four pages, stops that deployment's database and index, and restores into the module's file-system adapter through the signed manifest's inventory: every original is returned byte for byte, every import record, observation, decision and page record equals the exported one apart from bytesRef and the excluded page tokens, the rebuilt associations equal the ones the first deployment held, a repeated request answers the same import with no new receipt, the same request identifier with other bytes conflicts, the source refuses the pull until its credential is configured again, and the pull then replays from its retained bounds with no cursor and no event held twice. Packages assembled without the import a checkpoint stands on, without an observation a decision names, and with one bit of an original changed are refused by name with nothing written. deploy/evidence/exit-exercise.json records a run. Both deployments ran in one test process, so no exit between two independently operated deployments has been exercised, and no claim is made that a snapshot written by one implementation restores into another. Re-read 2026-11-16 after section 1 said that the reference implementation reads a bare event in its parser only, its import and its pull taking whole documents, that an import record keeps at most 1,000 findings, and that the ceilings on a raised limit bound a pull and not a file import; section 8 is unchanged. The exit exercise now writes its package with npm run export and restores it a second time with npm run restore, each run as a process of its own, and restores it into a deployment without the keys, which reads both passports and refuses an UPDATE by name."
     },
     {
@@ -4291,9 +4373,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "87464c91edef5be1bf853dfe5d14089f151352b1a2dc851d646b67af85bb4e24",
+      "sourceDigest": "d52dd5f452bc4b4182e5e50dbd6fbbd06dd70c5de3d8781b3a15ba8bea5e54ad",
       "notes": "Added 2026-11-15 with the contract. A hand-written check, epcisRecoveryProblems, is held to the schema's verdict on 7 accepted and 50 refused descriptors and names the member each problem is at. The rules a schema cannot state are epcisRecoveryInconsistencies: a file or a scope listed twice, a file outside the folder of its kind, an identity that is not the digest of the inventory, counts the inventory does not bear out, a cursor state its mode cannot have and a claim its access path cannot make. A restore refuses a descriptor with any of them, and then holds the records to what the descriptor says of each scope, each pull and the cursors. Every descriptor the module exports in the tests, in both forms and from both shipped storage adapters, validates against the schema. The package does not run the schema at run time."
     },
     {
@@ -4433,9 +4515,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-22",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "80130b309492666c12a05a2f469a1644f5e59a1cc84fac28ca4351c600860db1",
+      "sourceDigest": "19ffe32eb6e134c4315bd342b653aac6301bd3986096252c48ab81822c98d6ab",
       "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged. Re-read 2026-11-09 after contract 0.6.0 refused the parked vsc-seal-json-v1, removed the status list routes, dropped vscProfile and vscConformance from the capability document and added the epcis-event-vc@1 envelopes with their per-issuer collision rule; the external intake shapes are unchanged. Re-read 2026-11-12 after UoraType admitted an external credential's own type on the read routes; the external intake shapes are unchanged. Re-read 2026-11-12 after EvidenceReport moved to report version 2; the external intake shapes are unchanged. Re-read 2026-11-12 after the legacy intake left the contract; the external intake shapes are unchanged. Re-read 2026-11-12 after six descriptions, ExternalCredentialEnvelope.credential's among them, were quoted so that each parses as one string with no stray property; the external intake shapes are unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the external intake shapes are unchanged. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake). Re-read 2026-11-22 after the contract, still version 0.6.0, dropped its own Capabilities document and asked a registry for the capability document of spec/conformance.md §4 (contracts/capabilities.schema.json) at GET /capabilities; intake is unchanged. Re-read 2026-11-22 after tokenRecordId was patterned as a native claim's recordId in either form it is signed in, the outpoint or the transaction identifier alone, still version 0.6.0; the external intake shapes are unchanged."
     },
     {
@@ -4487,9 +4569,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "aff33b253ac4f719bfc2e67771373d05b73f31f2ab9f2efa9e6baff9c15629bb",
+      "sourceDigest": "952df4ab6d1f035bfd932fe255f36126e3820a5b4833a9f803d36090c2128faa",
       "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged. Re-read 2026-11-12 after §3 took the evaluator rules from the parked projection specification, three outcomes and unresolved never a pass; the evaluator is unchanged. From 2026-11-12 profile-governance requires it. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the evaluator rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the evaluator rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the evaluator rules are unchanged. Every published manifest version 2 profile is now retired, so the completeness check refuses them and applicability.test.ts holds the evaluator with a manifest of its own. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the evaluator rules are unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the evaluator rules are unchanged."
     },
     {
@@ -4516,10 +4598,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-16",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
       "notes": "Re-pointed on 12 November 2026 from PROJ-6-shapes-language-dates, now in the ledger archive, when the shapes moved into spec/profiles.md from the parked projection specification. battery@4 uses measurement, relatedDocument and warrantyTerms. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the shared shapes are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the shared shapes are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the shared shapes are unchanged. battery@4, which used three of them, is retired, and its frozen schema still embeds them. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the shared shapes are unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the shared shapes are unchanged.",
-      "sourceDigest": "aff33b253ac4f719bfc2e67771373d05b73f31f2ab9f2efa9e6baff9c15629bb"
+      "sourceDigest": "952df4ab6d1f035bfd932fe255f36126e3820a5b4833a9f803d36090c2128faa"
     },
     {
       "id": "PROF-4-frozen-unchanged",
@@ -4686,10 +4768,15 @@
       "applicability": "when the EPCIS lifecycle claim is selected",
       "profileId": "dpp-epcis-lifecycle@1",
       "implementationRefs": [
-        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#verifyEpcisLifecycleClaim"
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#verifyEpcisLifecycleClaim",
+        "packages/create-dpp-app/template/apps/api/src/lifecycle-authority.ts",
+        "packages/create-dpp-app/template/apps/api/src/claims.ts",
+        "packages/dpp-credentials/src/epcis-lifecycle/claim.ts#signEpcisLifecycleClaim"
       ],
       "testRefs": [
-        "packages/dpp-credentials/test/epcis-lifecycle.test.ts"
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/lifecycle-claims.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/portability.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#valid-signature-unsupported-authority",
@@ -4698,9 +4785,9 @@
         "fixtures/vectors/dpp/epcis-lifecycle/v1.json#possession-without-ownership"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-21",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §4, §5, §7, §8 and §9 were tightened for the verifier: the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-16 after §11 named packages/dpp-credentials/src/epcis-lifecycle/claim.ts, exported from @bsv/dpp-credentials/epcis-lifecycle, as the reference implementation in place of the protocol package: the format, its bytes, its findings and its reason codes are unchanged, and the published vectors are byte for byte the same. Re-read 2026-11-21 after §4, §5, §7, §8 and §9 were tightened for the verifier: the rule this row assesses is unchanged. Qualified signing now checks the prospective claim and asks for evidence before calling the wallet. The starter checks its operator file for the issuer, public signing identity, purpose, role, each bound passport and EPCIS event time. An absent, out-of-period or partial grant stops issuance. Stored claims retain their original signed scope and their verification findings remain separate."
     },
     {
       "id": "ELC-7-corrections",
@@ -4815,9 +4902,9 @@
       "testRefs": [],
       "evidenceRefs": [],
       "status": "gap",
-      "reviewedAt": "2026-11-22",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "notes": "The contract states the envelope, the claim schema and the enumerations; the reference registry does not yet accept the representation, so a registry claim for it cannot be made. Re-read 2026-11-22 after the contract, still version 0.6.0, dropped its own Capabilities document and asked a registry for the capability document of spec/conformance.md §4 (contracts/capabilities.schema.json) at GET /capabilities; intake is unchanged. Re-read 2026-11-22 after tokenRecordId was patterned as a native claim's recordId in either form it is signed in, the outpoint or the transaction identifier alone, still version 0.6.0; the envelope, the claim schema and the enumerations are unchanged, and the reference registry does not yet accept the representation."
+      "notes": "The contract states the envelope, the claim schema and the enumerations; the reference registry does not yet accept the representation, so a registry claim for it cannot be made. Re-read 2026-11-22 after the contract, still version 0.6.0, dropped its own Capabilities document and asked a registry for the capability document of spec/conformance.md §4 (contracts/capabilities.schema.json) at GET /capabilities; intake is unchanged. Re-read 2026-11-22 after tokenRecordId was patterned as a native claim's recordId in either form it is signed in, the outpoint or the transaction identifier alone, still version 0.6.0; the envelope, the claim schema and the enumerations are unchanged, and the reference registry does not yet accept the representation. A locally composed registry candidate exercised intake, retained bytes and multi-passport anchor construction on 24 November 2026. The gap here tracks the merged reference service. Optional registry rollout remains outside the starter issuance claim."
     }
   ],
   "claims": [
@@ -5058,6 +5145,9 @@
         "RULES-6-verification",
         "STATUS-validate-algorithm",
         "REG-contract-routes",
+        "CONF-4-capability-schema",
+        "CONF-4-registry-capabilities",
+        "REG-validate-report-version",
         "VER-2-report"
       ],
       "minimumStatus": "tested"

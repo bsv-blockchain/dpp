@@ -261,4 +261,4 @@ Stop and restore from the backups if a kept passport no longer answers or a coun
 
 ## Next
 
-Write new battery and textile passports under `eu-battery@1` and `eu-textile@1` ([EU battery and textile bindings](../profiles/eu-sector-bindings.md)), and finish the upgrade with [move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles).
+Write new battery and textile passports under `eu-battery@2` and `eu-textile@2` ([EU battery and textile bindings](../profiles/eu-sector-bindings.md)), and finish the upgrade with [move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles).

@@ -93,7 +93,7 @@ npm run starter:check -- --directory ../my-app
 
 The candidate check installs the packed generator, creates the app at the chosen directory, installs local runtime archives, then builds, typechecks and tests it. The application starter pins `dpp-release-2026-11`, including `@bsv/dpp-protocol`; keep those versions together. Local archives test unpublished source independently of the public npm command.
 
-The candidate application also writes and reads product documents under `eu-battery@1`, `eu-textile@1` and a bound profile of your own, with the document split into a public and a restricted part ([product documents under a binding](create-dpp-app.md#product-documents-under-a-binding)).
+The candidate application also writes and reads product documents under `eu-battery@2`, `eu-textile@2` and a bound profile of your own, with the document split into a public and a restricted part ([product documents under a binding](create-dpp-app.md#product-documents-under-a-binding)).
 
 It also imports EPCIS 2.0 documents, pulls events from a source you configure and exports what it received, byte for byte ([EPCIS exchange](create-dpp-app.md#epcis-exchange)). It does this by calling `@bsv/dpp-credentials/epcis-exchange` and supplies only the storage, the routes and the pages. Keep that boundary when you build on it:
 
@@ -364,7 +364,7 @@ A lifecycle claim is a signed statement about a passport, such as a repair or a 
 
 `examples/lifecycle-v2.mjs` ends with this claim and anchor, `examples/verify-attestation-anchor.mjs` checks one, and the [registry guide](../implement/roles/registry.md) covers running a registry. An anchor does not name its registry, so a reader on another stack learns which registry holds a claim out of band.
 
-These steps sign the native claim, `dpp-lifecycle-v1`, whose signer `signLifecycleClaim` is deprecated and kept for reading historical claims. The generated application issues the EPCIS lifecycle claim, `dpp-epcis-lifecycle@1`, instead: one EPCIS event bound to every passport whose product it names, signed with `signEpcisLifecycleClaim` and anchored once per bound passport with `buildEpcisLifecycleAnchors` ([the EPCIS lifecycle claim](add-a-claim.md#the-epcis-lifecycle-claim), [the starter's lifecycle claims](create-dpp-app.md#lifecycle-claims)). It keeps reading the native claims it issued before. A reader verifies each format by its `claimFormat`.
+These steps use `signLifecycleClaim` for the native attestation-issuer role. The generated application issues an EPCIS lifecycle claim, `dpp-epcis-lifecycle@1`. It carries one EPCIS event bound to every passport whose product it names, signed with `signEpcisLifecycleClaim` and anchored once per bound passport with `buildEpcisLifecycleAnchors` ([the EPCIS lifecycle claim](add-a-claim.md#the-epcis-lifecycle-claim), [the starter's lifecycle claims](create-dpp-app.md#lifecycle-claims)). It keeps reading the native claims it issued before. A reader verifies each format by its `claimFormat`.
 
 ## 5. Keep what you wrote
 

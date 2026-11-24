@@ -14,13 +14,16 @@
  */
 import canonicalize from 'canonicalize'
 import { assembleProduct, isPublicProperty, joinKeyProperties } from './access-tiers.js'
+import { valueAt } from './binding-pointer.js'
 import type { BindingStepOutcome, BindingValidationCause, BindingValidationDetail, BindingValidationView, EngineContext, EngineFile, EngineFinding, JsonLdEngine, JsonLdExpansion, ShaclValidation, ValidationEngines, WithheldCheck } from './binding-validator.js'
 import { describeSchemaProblems, profilePayloadValidator, retiredProfileValidation, type CompiledSchema, type PayloadToValidate, type PayloadValidation, type SchemaCompiler, type SchemaProblem } from './payload-validator.js'
 import { checkProductIdentity } from './product-identity.js'
+import { readSemanticIdentity, semanticRules } from './semantic-identity.js'
 import type { BindingAccess, BindingArtefact, BindingStep, EngineCapability, ProfileBinding } from './profile-binding.js'
 import type { BindingProfile, ProfileRegistry } from './profile-registry.js'
 import { isRetiredProfile } from './retired-profiles.js'
 import { parseStrictJson } from './strict-json.js'
+import { checkSubjectClass } from './subject-class.js'
 
 /** How each cause reads in the report's shared vocabulary: a check that ran and did not hold, or one that could not be completed. */
 const REASON_CODE: Record<BindingValidationCause, NonNullable<PayloadValidation['reasonCode']>> = {
@@ -112,8 +115,9 @@ const filesOf = (profile: BindingProfile, role: BindingArtefact['role']): Engine
 
 /** The product's own identifier, where it states one as text: the node a shape reports a top-level finding against. */
 function subjectOf(binding: ProfileBinding, product: Json): string | undefined {
-  for (const name of joinKeyProperties(binding)) if (typeof product[name] === 'string') return product[name]
-  return undefined
+  const values = binding.identity.subject.pointers.map((pointer) => valueAt({ product }, pointer)).filter((value) => value !== undefined)
+  const subject = values[0]
+  return typeof subject === 'string' && values.every((value) => value === subject) ? subject : undefined
 }
 
 /** A schema problem that says no more than "a top-level property is missing", for a property outside the public payload. */
@@ -268,6 +272,15 @@ export function createValidationPipeline(options: { registry: ProfileRegistry; e
     // What json-ld-expand produced, for shacl: the data, or the reason there is none.
     let rdf: { nquads: string } | { missing: string } = { missing: 'the binding lists no json-ld-expand step before it' }
 
+    const subject = subjectOf(binding, product)
+    let identityRules: ReturnType<typeof semanticRules> | undefined = { pointers: [], typeNames: [] }
+    let semanticValues: Map<string, unknown[]> | undefined
+    let identityPosition: number | undefined
+    if (subject != null && binding.validation.steps.includes('json-ld-expand') && binding.validation.steps.includes('passport-identity')) {
+      try { identityRules = semanticRules(binding.identity, contexts) }
+      catch { identityRules = undefined }
+    }
+
     for (const step of binding.validation.steps) {
       if (step === 'json-schema') {
         if (engines.jsonSchema == null) { unavailable(step, 'No JSON Schema compiler was supplied.'); continue }
@@ -308,6 +321,10 @@ export function createValidationPipeline(options: { registry: ProfileRegistry; e
         if (expansion.ok) {
           steps.push({ step, status: 'pass' })
           rdf = { nquads: expansion.nquads }
+          if (subject != null && identityRules != null && identityRules.pointers.length > 0) {
+            try { semanticValues = await readSemanticIdentity(identityRules, binding.identity, product, subject, expansion.nquads, engines.jsonLd, contexts) }
+            catch { /* The identity step reports unreadable assertions. */ }
+          }
         } else if (expansion.reason === 'context-not-listed' || expansion.reason === 'document-invalid') {
           steps.push({ step, status: 'fail', cause: 'profile-rule-violation', messages: [`The product document could not be read with the binding's contexts: ${expansion.detail}.`] })
           rdf = { missing: 'the product document did not expand' }
@@ -330,23 +347,49 @@ export function createValidationPipeline(options: { registry: ProfileRegistry; e
         }
         if (!validation.ok) { unavailable(step, `The SHACL engine did not finish (${validation.reason}): ${validation.detail}.`); continue }
         const blocking = validation.findings.filter((f) => binding.validation.blockingSeverities.includes(f.severity))
-        const findings = validation.findings.length > 0 ? { findings: validation.findings } : {}
         // A public payload lacks the restricted properties by design. A rule that only misses one of them was not broken: it was not decided.
-        const subject = subjectOf(binding, product)
         const candidates = projection != null ? blocking.filter((f) => reportsAbsence(f, subject)) : []
         const open = candidates.length > 0 && projection != null && engines.jsonLd != null ? await publicPredicates(engines.jsonLd, binding, projection, product, contexts) : new Set<string>()
         const absent = candidates.filter((f) => !open.has(f.path!))
         const broken = blocking.filter((f) => !absent.includes(f))
         const checks = absent.map((f): WithheldCheck => ({ step, property: f.path!, constraint: f.constraint, ...(f.message == null ? {} : { message: f.message }) }))
+        const reported = [...validation.findings]
+        let rootUnavailable: string | undefined
+        if (binding.validation.subjectClass != null) {
+          try {
+            const root = await checkSubjectClass(engines.shacl, subject, binding.validation.subjectClass, rdf.nquads, [...filesOf(profile, 'shapes'), ...filesOf(profile, 'background')])
+            if (!root.ok) rootUnavailable = root.detail
+            else for (const finding of root.findings) {
+              if (projection == null) { reported.push(finding); broken.push(finding) }
+              else checks.push({ step, property: RDF_TYPE, constraint: finding.constraint, message: 'The public product does not establish its required class.' })
+            }
+          } catch (cause) {
+            rootUnavailable = reasonOf(cause)
+          }
+        }
+        const findings = reported.length > 0 ? { findings: reported } : {}
         withheld.push(...checks)
         if (broken.length > 0) steps.push({ step, status: 'fail', cause: 'profile-rule-violation', messages: broken.map(describeFinding), ...findings, ...(checks.length > 0 ? { withheld: checks } : {}) })
+        else if (rootUnavailable != null) unavailable(step, `The product subject class could not be checked: ${rootUnavailable}.`)
         else if (checks.length > 0) steps.push({ step, status: 'unknown', cause: 'restricted-tier-withheld', messages: checks.map(describeWithheld), ...findings, withheld: checks })
         else steps.push({ step, status: 'pass', ...findings })
       } else {
-        const identity = checkProductIdentity({ payload: pointed, identity: binding.identity, passportId: payload.passportId })
-        if (identity.status === 'pass') steps.push({ step, status: 'pass' })
-        else steps.push({ step, status: identity.status, cause: identity.status === 'fail' ? 'product-identity-mismatch' : 'product-identity-unavailable', messages: identity.findings.map((f) => f.detail) })
+        // Identity can precede expansion in a registered binding. Keep its declared reporting position.
+        identityPosition = steps.length
       }
+    }
+    if (identityPosition != null) {
+      const step = 'passport-identity'
+      const identity = checkProductIdentity({ payload: pointed, identity: binding.identity, passportId: payload.passportId, semanticValues })
+      let outcome: BindingStepOutcome
+      if (identity.status !== 'fail' && semanticValues == null && (identityRules == null || identityRules.pointers.length > 0)) {
+        outcome = { step, status: 'unknown', cause: 'product-identity-unavailable', messages: ['The identity assertions could not be read under the selected contexts.'] }
+      } else if (identity.status === 'pass') {
+        outcome = { step, status: 'pass' }
+      } else {
+        outcome = { step, status: identity.status, cause: identity.status === 'fail' ? 'product-identity-mismatch' : 'product-identity-unavailable', messages: identity.findings.map((f) => f.detail) }
+      }
+      steps.splice(identityPosition, 0, outcome)
     }
     return answer(detail)
   }

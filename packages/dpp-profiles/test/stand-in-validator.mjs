@@ -83,18 +83,29 @@ async function validate(request) {
   if (typeof request.nquads !== 'string' || !Array.isArray(request.shapes) || !Array.isArray(request.background)) throw new Refusal(400, 'request-invalid', 'a validation carries nquads, shapes and background')
   const lacking = (request.requires ?? []).filter((c) => !capabilities.includes(c))
   if (lacking.length > 0) throw new Refusal(422, 'capability-unavailable', `this engine lacks ${lacking.join(', ')}`)
+  const parser = (format, scope) => {
+    let anonymous = 0
+    return new n3.Parser({
+      format,
+      blankNodePrefix: scope + '_label_',
+      factory: { ...n3.DataFactory, blankNode: (name) => n3.DataFactory.blankNode(name ?? scope + '_anon_' + anonymous++) },
+    })
+  }
   const quadsOf = (list, name) => list.flatMap((entry, index) => {
     const bytes = fileBytes(entry, `${name}[${index}]`)
     const format = FORMATS[entry.mediaType]
     if (format == null) throw new Error(`${entry.path} has media type ${entry.mediaType}, which is not read`)
-    return new n3.Parser({ format }).parse(bytes.toString('utf8'))
+    return parser(format, name + index).parse(bytes.toString('utf8'))
   })
   const shapes = new n3.Store()
   const data = new n3.Store()
   try {
     for (const quad of quadsOf(request.shapes, 'shapes')) shapes.addQuad(quad)
-    for (const quad of quadsOf(request.background, 'background')) data.addQuad(quad)
-    for (const quad of new n3.Parser({ format: 'N-Quads' }).parse(request.nquads)) data.addQuad(quad)
+    for (const quad of quadsOf(request.background, 'background')) {
+      data.addQuad(quad)
+      if (quad.predicate.value === 'http://www.w3.org/2000/01/rdf-schema#subClassOf') shapes.addQuad(quad)
+    }
+    for (const quad of parser('N-Quads', 'product').parse(request.nquads)) data.addQuad(quad)
     const factory = { ...n3.DataFactory, dataset: (quads) => new n3.Store(quads) }
     const validator = new Validator(shapes, coreOnly ? { factory } : { factory, validations, targetResolvers })
     const report = await validator.validate({ dataset: data })

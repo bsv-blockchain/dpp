@@ -29,7 +29,7 @@ The first ends with a recycler's claim about a retired passport and its anchor, 
 
 ## 1. Fill in the claim
 
-These steps sign the native claim, `dpp-lifecycle-v1`. Its signer, `signLifecycleClaim`, is deprecated and kept for reading historical claims; new lifecycle claims use [the EPCIS lifecycle claim](#the-epcis-lifecycle-claim), and that section says where each format is accepted today.
+These steps sign the native claim, `dpp-lifecycle-v1`. The native baseline issuer uses `signLifecycleClaim`. The starter signs new events as [EPCIS lifecycle claims](#the-epcis-lifecycle-claim). Check each registry’s capability document for the representations it accepts.
 
 Use exactly these fields. `signLifecycleClaim` refuses any other with `unsupported claim field <name>` ([rules](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md) section 3).
 
@@ -211,6 +211,8 @@ Origin did:key:zQ3shueJ69UR claim held by this registry
 For your claim, select your passport, submission index and registry. Run [the full reader](dpp-protocol.md#gather-a-passports-evidence) with your DID in `claimIssuers` and anchoring key in `anchoringServices`. Expect `nativeAttestationSignature`, all three anchor checks and `issuerAuthority` to pass. An anchor without claim bytes leaves six checks `unknown`, listed on that page.
 
 ## The EPCIS lifecycle claim
+
+Before attempting qualified issuance, obtain the issuer's evidence for its role, purpose, product scope and event time. The starter requires an operator-configured grant for every bound passport. An explicit declaration correcting another issuer's claim also requires permission to make that correction. The reader can verify the signature of an existing claim even when it lacks the evidence to confirm the role. [Configure lifecycle issuance grants](../migration.md#configure-lifecycle-issuance-grants).
 
 A second claim format, `dpp-epcis-lifecycle@1`, is for a party that records what happened as EPCIS data. It is not in `@bsv/dpp-protocol`, which holds no EPCIS code: import it from `@bsv/dpp-credentials/epcis-lifecycle`. Instead of one of the four event types, the claim carries one EPCIS 2.0.1 event exactly as it was captured, with `eventID`, objects, business step, locations and party roles, and binds it to each passport whose product the event names. It states the role you sign in (`observer`, `owner`, `custodian` or `authorised-reporter`) and the passports you claim it for, and it is signed over its RFC 8785 bytes under `[1, 'dpp epcis lifecycle v1']` with key identifier `event`. `buildEpcisLifecycleClaim` refuses an event that names no object, so a business step, a sale or a token transfer alone is never issued as an event, and `signEpcisLifecycleClaim` signs through the same wallet call as the native claim. `verifyEpcisLifecycleClaim` reports structure, semantics, product binding, signature, authority, possession, ownership, anchor, inclusion and correction state each on its own, and the anchor is one output per bound passport. A passport's verification report takes the claim through its `credentialVerifier`, which `epcisLifecycleCredentialVerifierFor` returns. The rules are in `spec/epcis-lifecycle-claim.md` in the repository, and `fixtures/vectors/dpp/epcis-lifecycle/v1.json` holds worked examples.
 

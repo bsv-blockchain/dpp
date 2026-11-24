@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/contracts/capabilities.schema.json",
   "title": "DPP capability document, version 1",
-  "description": "What one implementation declares it supports (spec/conformance.md section 4): roles, protocol versions, exact profiles with artefact digests, representations, proof suites, anchor formats, topics and services, limits, and what it explicitly does not support. An index and a registry serve it at GET /capabilities (contracts/overlay.yaml, contracts/registry.yaml). A claim of support, checkable against the ledger; never proof of authority or conformance.",
+  "description": "What one implementation declares it supports (spec/conformance.md section 4): roles, protocol versions, exact profiles with artefact digests, representations, proof suites, anchor formats, topics and services, limits, and what it explicitly does not support. A registry serves it at GET /capabilities. An index may serve it there under the optional overlay extension. A claim of support, checkable against the ledger; never proof of authority or conformance.",
   "type": "object",
   "additionalProperties": false,
   "required": ["capabilitiesVersion", "implementation", "roles", "protocols", "profiles", "representations", "proofSuites", "anchorFormats", "unsupported"],

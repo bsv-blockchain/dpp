@@ -3,8 +3,9 @@ import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { MAX_PAYLOAD_PUBLIC_BYTES_V2 } from '@bsv/dpp-protocol'
 import {
-  BUNDLED_BINDINGS,
+  HISTORICAL_SECTOR_BINDINGS,
   BUNDLED_BINDING_DIGESTS,
+  CURRENT_SECTOR_BINDINGS,
   PUBLIC_PAYLOAD_MAX_BYTES,
   assembleProduct,
   authorisedPayloadValidator,
@@ -45,13 +46,13 @@ const withoutNotes = (node: unknown): unknown => {
   return Object.fromEntries(Object.entries(node).filter(([name]) => !name.startsWith('_comment')).map(([name, value]) => [name, withoutNotes(value)]))
 }
 
-const sectors = BUNDLED_BINDINGS.map(({ profile, bindingDigest }) => {
+const sectors = HISTORICAL_SECTOR_BINDINGS.map(({ profile, bindingDigest }) => {
   const folder = join(packageRoot, 'bindings', profile)
   const binding = JSON.parse(readFileSync(join(folder, 'binding.json'), 'utf8')) as ProfileBinding
   const documents = binding.vectors.positive.map((path) => ({ path, product: withoutNotes(JSON.parse(readFileSync(join(packageRoot, 'test', 'fixtures', 'sector-bindings', profile, path), 'utf8'))) as Json }))
   return { profile, bindingDigest, folder, binding, documents }
 })
-type Sector = (typeof sectors)[number]
+type Sector = Omit<(typeof sectors)[number], 'profile' | 'bindingDigest'> & { profile: string; bindingDigest: string }
 const each = sectors.map((s) => [s.profile, s] as const)
 const positives = sectors.flatMap((s) => s.documents.map((d) => [`${s.profile} ${d.path}`, s, d.product] as const))
 /** The larger document of each sector, which carries restricted properties. */
@@ -118,6 +119,52 @@ const order = (result: PayloadValidation) => detailOf(result).steps.map((s) => [
 
 /** The public-view answers these tests collect, to be read for restricted values at the end. */
 const publicAnswers: Array<{ sector: Sector; product: Json; result: PayloadValidation }> = []
+
+describe('the explicitly selected sector bindings with a required product class', () => {
+  const selected = createProfileRegistry({ trustedBindingDigests: CURRENT_SECTOR_BINDINGS.map((entry) => entry.bindingDigest) })
+  beforeAll(async () => {
+    for (const result of await registerBundledBindings(selected, { profiles: CURRENT_SECTOR_BINDINGS.map((entry) => entry.profile) })) expect(result.ok).toBe(true)
+  })
+
+  it.each(each)('%s retains its read rules while its successor validates the same disclosure in all three views', async (_profile, original) => {
+    const next = selected.resolve(original.binding.id, 2)
+    if (next?.format !== 'binding') throw new Error('expected the successor binding')
+    const sector = { ...original, profile: next.profile, binding: next.binding, bindingDigest: next.bindingDigest }
+    const id = sector.binding.id
+    for (const { product } of sector.documents) {
+      const old = await prepared(original, product)
+      const result = await prepare(sector, product, { registry: selected })
+      if (!result.ok) throw new Error(JSON.stringify(result))
+      expect([result.validation.status, result.publicView.status]).toEqual(['pass', 'pass'])
+      expect(result.restrictedProduct).toEqual(old.restrictedProduct)
+      expect(JSON.parse(result.payloadPublic)).toEqual({ ...JSON.parse(old.payloadPublic), profile_version: 2, profile_binding_sha256: next.bindingDigest })
+      expect(result.byteLength).toBe(old.byteLength)
+      expect(result.byteLength).toBeLessThanOrEqual(PUBLIC_PAYLOAD_MAX_BYTES)
+      const authorised = await authorisedPayloadValidator({ registry: selected, engines })({ profile: id, profileVersion: 2, passportId: passportIdOf(product), payloadPublic: result.payloadPublic, restrictedProduct: result.restrictedProduct })
+      expect(authorised.status).toBe('pass')
+      expect((await publicView(original, old.payloadPublic, passportIdOf(product))).status).toBe('pass')
+    }
+    const product = other(original)
+    const passportId = passportIdOf(product)
+    const { type: _type, ...untyped } = product
+    const classFailure = { status: 'fail', detail: { cause: 'profile-rule-violation', steps: expect.arrayContaining([
+      expect.objectContaining({ step: 'shacl', findings: expect.arrayContaining([expect.objectContaining({ focusNode: product.id, constraint: 'ClassConstraintComponent' })]) }),
+    ]) } }
+    for (const changed of [
+      untyped,
+      { ...untyped, type: 'gs1:Product' },
+      { ...untyped, type: 'gs1:Product', '@included': [rich(original)] },
+    ]) {
+      expect((await prepare(sector, changed, { registry: selected }))).toMatchObject({ ok: false, validation: classFailure })
+      const { publicProduct, restrictedProduct } = splitProductByAccess({ binding: sector.binding, product: changed })
+      const input = { profile: id, profileVersion: 2, passportId, payloadPublic: envelope(sector, publicProduct) }
+      expect(await bindingPayloadValidator({ registry: selected, engines })(input)).toMatchObject({ status: 'unknown', detail: { cause: 'restricted-tier-withheld' } })
+      expect(await authorisedPayloadValidator({ registry: selected, engines })({ ...input, restrictedProduct })).toMatchObject(classFailure)
+    }
+    const direct = { ...product, type: next.binding.validation.subjectClass }
+    expect(await prepare(sector, direct, { registry: selected })).toMatchObject({ ok: true, validation: { status: 'pass' }, publicView: { status: 'pass' } })
+  })
+})
 
 describe('a writer prepares the public payload and the restricted part', () => {
   it.each(positives)('%s: the whole document validates, and the public payload validates as any reader checks it', async (_name, sector, product) => {

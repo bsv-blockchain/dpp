@@ -15,7 +15,7 @@ vi.mock('node:fs', async (importOriginal) => {
 describe('importing the package loads no bundled binding', () => {
   it('reads no file at import, and reads the binding folders only when asked to register them', async () => {
     const { BUNDLED_BINDINGS, BUNDLED_BINDING_DIGESTS, createProfileRegistry, registerBundledBindings } = await import('../src/index.js')
-    expect(BUNDLED_BINDINGS.length).toBe(2)
+    expect(BUNDLED_BINDINGS.map((entry) => entry.profile)).toEqual(['eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2'])
     expect(reads.paths).toEqual([])
 
     const registry = createProfileRegistry({ trustedBindingDigests: BUNDLED_BINDING_DIGESTS })

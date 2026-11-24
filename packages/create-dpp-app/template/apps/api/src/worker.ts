@@ -7,7 +7,7 @@
 // library.
 import { Utils } from '@bsv/sdk'
 import type { IndexClient } from './index-client.js'
-import type { PassportRecord, Store } from './store.js'
+import { isInterrupted, type PassportRecord, type Store } from './store.js'
 import type { Writer } from './writer.js'
 
 export interface Duty {
@@ -30,12 +30,12 @@ export async function pendingDuties(store: Store): Promise<Duty[]> {
   const duties: Duty[] = []
   for (const passport of await store.listPassports()) {
     for (const state of passport.states) {
-      if (state.network === 'pending') {
+      if (isInterrupted(state)) {
         duties.push({ passportId: passport.passportId, txid: state.txid, op: state.op, duty: 'resolve-interrupted', since: state.timestamp })
         continue
       }
       if (state.network !== 'accepted' && state.network !== 'dry-run') continue
-      if (state.index === 'unreachable' || state.index === 'pending') duties.push({ passportId: passport.passportId, txid: state.txid, op: state.op, duty: 'announce', since: state.timestamp })
+      if (state.index !== 'admitted' && state.index !== 'duplicate') duties.push({ passportId: passport.passportId, txid: state.txid, op: state.op, duty: 'announce', since: state.timestamp })
       if (state.proof == null) duties.push({ passportId: passport.passportId, txid: state.txid, op: state.op, duty: 'prove', since: state.timestamp })
       else if (state.proofPushed !== true) duties.push({ passportId: passport.passportId, txid: state.txid, op: state.op, duty: 'push-proof', since: state.timestamp })
     }
@@ -52,24 +52,26 @@ export async function runDuties(options: WorkerOptions): Promise<string[]> {
     done.push(line)
     log(line)
   }
+  const waitingForPredecessor = new Set<string>()
   for (const duty of await pendingDuties(store)) {
     const passport = await store.getPassport(duty.passportId)
     const state = passport?.states.find((s) => s.txid === duty.txid)
     if (passport == null || state == null) continue
     // Only the operator can say what became of an interrupted write; it is listed, never guessed.
-    if (duty.duty === 'resolve-interrupted') continue
+    if (duty.duty === 'resolve-interrupted' || isInterrupted(state)) continue
     try {
       if (duty.duty === 'announce') {
-        const announced = await index.announce(Utils.toArray(state.beef, 'base64') as number[])
-        state.index = announced
-        state.refusal = index.lastRefusal
-        await store.savePassport(passport)
+        if (waitingForPredecessor.has(passport.passportId)) continue
+        const announced = await index.announce(Utils.toArray(state.sentBeef ?? state.beef, 'base64') as number[])
+        await writer.recordAnnouncement(passport.passportId, duty.txid, announced, index.lastRefusal)
+        if (announced !== 'admitted' && announced !== 'duplicate') waitingForPredecessor.add(passport.passportId)
         say(`${duty.op} ${duty.txid.slice(0, 12)}... announced again: ${announced}${index.lastRefusal == null ? '' : ` (${index.lastRefusal})`}`)
       } else {
         const proven = await writer.prove(passport, duty.txid)
         say(`${duty.op} ${duty.txid.slice(0, 12)}... ${proven ? 'proof held' : 'no proof yet'}`)
       }
     } catch (cause) {
+      if (duty.duty === 'announce') waitingForPredecessor.add(passport.passportId)
       say(`${duty.op} ${duty.txid.slice(0, 12)}... ${duty.duty} failed: ${cause instanceof Error ? cause.message : String(cause)}`)
     }
   }
@@ -102,5 +104,5 @@ export function startWorker(options: WorkerOptions & { intervalMs?: number }): {
 
 export function summariseJournal(passport: PassportRecord): { states: number; proven: number; pending: number; status: string } {
   const proven = passport.states.filter((s) => s.proof != null && s.proofPushed === true).length
-  return { states: passport.states.length, proven, pending: passport.states.length - proven, status: passport.status }
+  return { states: passport.states.length, proven, pending: passport.states.length - proven, status: passport.states.some((s) => !isInterrupted(s)) ? passport.status : passport.states.length === 0 ? 'not-issued' : 'awaiting-send' }
 }

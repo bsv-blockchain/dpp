@@ -245,11 +245,11 @@ export async function readAuthorised(args: { record: PassportRecord; holder: Par
   }
   let restricted: unknown
   try {
-    const { plaintext } = await holder.wallet.decrypt({ ciphertext, protocolID: OWNER_DATA_PROTOCOL, keyID: passportId, counterparty: 'self' })
+    const { plaintext } = await holder.wallet.decrypt({ ciphertext, protocolID: OWNER_DATA_PROTOCOL, keyID: passportId, counterparty: entry.ownerTier.senderIdentityKey ?? 'self' })
     restricted = JSON.parse(Utils.toUTF8(plaintext))
   } catch {
     // The reason is not repeated: a decryption error can quote the bytes it failed on.
-    return { ...base, ownerTier, authorisedView: notChecked(`The restricted part was sealed to another key than ${holder.name}'s. After a hand-on it stays sealed to the holder who wrote it until the new holder writes an update.`) }
+    return { ...base, ownerTier, authorisedView: notChecked(`The wallet for ${holder.name} could not open the committed restricted part with the recorded counterparty.`) }
   }
   // A state with no restricted property seals an empty object, which is no restricted part at all.
   const restrictedProduct = isObject(restricted) && Object.keys(restricted).length === 0 ? undefined : restricted

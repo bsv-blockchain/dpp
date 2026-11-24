@@ -255,8 +255,9 @@ try {
     const carriesBindings = candidate.name === '@bsv/dpp-profiles'
     const result = hold(candidate.name, files, { own: () => true, profiles: carriesBindings ? 'bundled' : 'none' })
     if (carriesBindings) {
-      const bindings = [...new Set(files.filter((f) => f.path.startsWith('package/bindings/')).map((f) => f.path.split('/')[2]))]
-      const noticed = bindings.filter((name) => files.some((f) => f.path === `package/bindings/${name}/NOTICE.md`))
+      const manifests = files.filter((file) => /^package\/bindings\/[^/]+\/binding(?:\.v[0-9]+)?\.json$/.test(file.path))
+      const bindings = manifests.map((file) => JSON.parse(readFileSync(join(dir, file.path), 'utf8')).profile).sort()
+      const noticed = manifests.filter((file) => files.some((f) => f.path === `${dirname(file.path)}/NOTICE.md`))
       const strays = files.filter((f) => profileFiles.has(f.sha256) && !f.path.startsWith('package/bindings/')).map((f) => f.path)
       say(bindings.length > 0 && noticed.length === bindings.length && strays.length === 0, `${candidate.name}: it publishes ${bindings.length} bundled bindings, ${bindings.join(' and ')}, each with the notice that names its source and licence, and no example profile or vector outside them.`)
       result.bundledBindings = bindings

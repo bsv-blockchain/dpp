@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Hash, Utils } from '@bsv/sdk'
 import { CanonicalError, canonicalBytes, canonicalString } from '../src/index.js'
+import { parseCanonicalClaimBytes } from '../src/nativeAnchorBinding.js'
 
 const claim = (overrides: Record<string, unknown> = {}) => ({
   passportId: 'https://id.gs1.org/01/09506000134352/21/JERSEY-001',
@@ -15,6 +16,19 @@ const claim = (overrides: Record<string, unknown> = {}) => ({
 })
 
 describe('canonical bytes', () => {
+  it('reads a flat canonical object with UTF-8 text and integer values', () => {
+    const value = { label: 'café', version: 1 }
+    expect(parseCanonicalClaimBytes(canonicalBytes(value))).toEqual(value)
+  })
+
+  it.each([
+    '{"version":1,"version":1}',
+    '{ "version": 1 }',
+    '{"version":1,"label":"café"}',
+  ])('requires a unique canonical encoding for %s', (document) => {
+    expect(() => parseCanonicalClaimBytes(Utils.toArray(document, 'utf8'))).toThrow(CanonicalError)
+  })
+
   it('sorts keys, so two writers of the same claim produce one string', () => {
     const forward = canonicalString(claim())
     const shuffled = canonicalString(Object.fromEntries(Object.entries(claim()).reverse()))

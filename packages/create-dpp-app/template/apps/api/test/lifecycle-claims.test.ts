@@ -7,19 +7,23 @@
 // The old way, a native claim with one of four event types picked for a
 // passport, is not reachable from the claim route. A historical native claim
 // a deployment still holds reads as before, labelled as historical.
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { Hash, Utils } from '@bsv/sdk'
 import { signLifecycleClaim, type LifecycleClaim } from '@bsv/dpp-protocol'
 import { verifyEpcisLifecycleClaim } from '@bsv/dpp-credentials/epcis-lifecycle'
 import * as claimsModule from '../src/claims.js'
-import { compareLifecycleProduct } from '../src/lifecycle.js'
+import { compareLifecycleProduct, readPassportClaims } from '../src/lifecycle.js'
+import { openLifecycleAuthority } from '../src/lifecycle-authority.js'
+import { managedParties } from '../src/parties.js'
 import { mintPassportId } from '../src/identifiers.js'
+import { boundedJson } from '../src/index-client.js'
 import { samplePayload } from '../src/profiles.js'
-import { MemoryStore, type EpcisLifecycleClaimRecord } from '../src/store.js'
+import { MemoryStore, MongoStore, type EpcisLifecycleClaimRecord } from '../src/store.js'
 import { HISTORICAL_LABEL, LIFECYCLE_NOTICE, correctionLabel, emptyEventForm, eventFromForm, findingRows, participationLabel, type LifecycleClaimView, type PassportClaimsReading } from '../../web/src/lib/lifecycle'
-import { epcisDocument, startApp, testConfig, utf8, type Answer, type TestApp } from './epcis-fixtures.js'
+import { epcisDocument, startApp, startMongo, testConfig, utf8, type Answer, type TestApp } from './epcis-fixtures.js'
 import { PALLET, PARTY, PLACE, base, classOf, sgtinOf, startTestRegistry, type Json, type TestRegistry } from './lifecycle-fixtures.js'
 
 const policy = { host: 'passports.example.com', prefix: '952' }
@@ -30,8 +34,10 @@ const P = {
   moduleB: mintPassportId(policy, '100000002', 'MOD-B'),
   pack: mintPassportId(policy, '100000003', 'PACK-01'),
   bystander: mintPassportId(policy, '100000004', 'OTHER-01'),
+  paged: mintPassportId(policy, '100000005', 'PAGED-01'),
 }
 
+const grantsDir = mkdtempSync(join(tmpdir(), 'dpp-claim-grants-'))
 let api: TestApp
 let registry: TestRegistry
 const ref = (passportId: string): string => encodeURIComponent(passportId)
@@ -46,7 +52,16 @@ const findOn = async (passportId: string, attestationId: string): Promise<Lifecy
 
 beforeAll(async () => {
   registry = await startTestRegistry(() => ({ url: api.platform.devIndex!.url, submitToken: api.platform.devIndex!.submitToken }))
-  api = await startApp({ config: testConfig({ REGISTRY_URL: registry.url }) })
+  const file = join(grantsDir, 'authority.json')
+  const config = testConfig({ REGISTRY_URL: registry.url, LIFECYCLE_AUTHORITY_GRANTS_FILE: file })
+  const member = managedParties(config).member('developer')
+  const grants = Object.values(P).flatMap((passportId) => ['observer', 'custodian', 'owner', 'authorised-reporter'].map((role) => ({
+    issuer: member.did, issuerKey: member.identityKey, passportId, role, purpose: 'claim', validFrom: '2026-03-01T00:00:00Z', validUntil: '2026-04-01T00:00:00Z',
+  })))
+  const deputy = managedParties(config).member('inspection-deputy')
+  grants.push(...['claim', 'error-declaration'].map((purpose) => ({ issuer: deputy.did, issuerKey: deputy.identityKey, passportId: P.battery, role: 'observer', purpose, validFrom: '2026-03-01T00:00:00Z', validUntil: '2026-04-01T00:00:00Z' })))
+  writeFileSync(file, JSON.stringify({ grants }))
+  api = await startApp({ config })
   const brand = api.platform.parties.brand('dev-brand')
   await api.platform.store.saveBrand({ id: 'dev-brand', name: 'Development brand', identityKey: brand.identityKey, did: brand.did, createdAt: new Date().toISOString() })
   for (const passportId of Object.values(P)) await api.platform.writer.issue({ brandId: 'dev-brand', brand, passportId, profile: 'general@2', payload: samplePayload('general@2', true), ownerFields: {} })
@@ -54,6 +69,95 @@ beforeAll(async () => {
 afterAll(async () => {
   await api?.close()
   await registry?.close()
+  rmSync(grantsDir, { recursive: true, force: true })
+})
+
+describe('operator grants for qualified lifecycle issuance', () => {
+  it('L05/L07: passport control, a member account and a caller-supplied grant confer no physical role', async () => {
+    const controller = api.platform.parties.brand('dev-brand')
+    const member = vi.spyOn(api.platform.parties, 'member').mockReturnValue(controller)
+    const sign = vi.spyOn(controller.wallet, 'createSignature')
+    const save = vi.spyOn(api.platform.store, 'saveClaim')
+    const submit = vi.spyOn(api.platform.claims, 'submit')
+    onTestFinished(() => { member.mockRestore(); sign.mockRestore(); save.mockRestore(); submit.mockRestore() })
+    const event = { type: 'ObjectEvent', ...base(2), epcList: [P.battery], action: 'OBSERVE', bizStep: 'inspecting' }
+    const records = await api.platform.store.listClaims()
+    for (const role of ['owner', 'custodian', 'observer', 'authorised-reporter']) {
+      const result = await issue(P.battery, { event, assertedRole: role, submit: true, authorityResolver: { status: 'supported' }, grants: [{ issuer: controller.did, issuerKey: controller.identityKey, role, passportId: P.battery }] })
+      expect([result.status, result.body.error, result.body.finding.status]).toEqual([409, 'authority-unconfirmed', 'refused'])
+    }
+    expect(sign).not.toHaveBeenCalled()
+    expect(save).not.toHaveBeenCalled()
+    expect(submit).not.toHaveBeenCalled()
+    expect(await api.platform.store.listClaims()).toEqual(records)
+  })
+
+  it('L06: qualified multi-product issuance needs the role grant for each signed binding', async () => {
+    const event = { type: 'ObjectEvent', ...base(23), epcList: [P.battery, P.moduleA, 'urn:epc:id:sgtin:9521234.012345.NOT-HERE'], action: 'OBSERVE' }
+    const signed = await issued(P.battery, { event, assertedRole: 'observer' })
+    expect([...(signed.authorityScope ?? [])].sort()).toEqual([P.battery, P.moduleA].sort())
+    expect(signed.findings!.authority.status).toBe('supported')
+    const deputy = api.platform.parties.member('inspection-deputy')
+    const member = vi.spyOn(api.platform.parties, 'member').mockReturnValue(deputy)
+    const sign = vi.spyOn(deputy.wallet, 'createSignature')
+    const save = vi.spyOn(api.platform.store, 'saveClaim')
+    const submit = vi.spyOn(api.platform.claims, 'submit')
+    onTestFinished(() => { member.mockRestore(); sign.mockRestore(); save.mockRestore(); submit.mockRestore() })
+    for (const [scope, code] of [[undefined, 'authority-unconfirmed'], [[P.battery], 'authority-scope-incomplete']] as const) {
+      const result = await issue(P.battery, { event, authorityScope: scope, assertedRole: 'observer', submit: true })
+      expect([result.status, result.body.error]).toEqual([409, code])
+    }
+    expect(sign).not.toHaveBeenCalled()
+    expect(save).not.toHaveBeenCalled()
+    expect(submit).not.toHaveBeenCalled()
+  })
+
+  it('requires the additional grant to correct a different issuer, separately from the role grant to claim', async () => {
+    const event = { type: 'ObjectEvent', ...base(24), epcList: [P.battery], action: 'OBSERVE' }
+    const original = await issued(P.battery, { event, assertedRole: 'observer' })
+    const deputy = api.platform.parties.member('inspection-deputy')
+    const member = vi.spyOn(api.platform.parties, 'member').mockReturnValue(deputy)
+    onTestFinished(() => member.mockRestore())
+    expect((await issued(P.battery, { correctionOf: original.attestationId })).findings!.authority.status).toBe('supported')
+    const own = await issued(P.battery, { event: { ...event, ...base(25) }, assertedRole: 'observer' })
+    member.mockRestore()
+    const actor = api.platform.parties.member('developer')
+    const actorLookup = vi.spyOn(api.platform.parties, 'member').mockReturnValue(actor)
+    const sign = vi.spyOn(actor.wallet, 'createSignature')
+    onTestFinished(() => { actorLookup.mockRestore(); sign.mockRestore() })
+    const refusal = await issue(P.battery, { correctionOf: own.attestationId, submit: true })
+    expect([refusal.status, refusal.body.error]).toEqual([409, 'authority-unconfirmed'])
+    expect(sign).not.toHaveBeenCalled()
+  })
+
+  it('L06: local grants require an exact issuer, key, product, purpose and role within their validity interval', () => {
+    const signer = api.platform.parties.member('developer')
+    const other = api.platform.parties.member('other')
+    const grant = { issuer: 'did:web:factory.example', issuerKey: signer.identityKey, passportId: P.battery, role: 'owner' as const, purpose: 'claim' as const, validFrom: '2026-03-01T00:00:00Z', validUntil: '2026-04-01T00:00:00Z' }
+    const path = join(grantsDir, 'scope.json')
+    writeFileSync(path, JSON.stringify({ grants: [grant] }))
+    const resolve = openLifecycleAuthority(path)
+    const q = { ...grant, eventId: 'urn:uuid:30824161-6804-4335-a200-000000001110', eventType: 'ObjectEvent' as const, eventTime: grant.validFrom, issuedAt: '2026-11-24T00:00:00Z' }
+    expect(resolve(q)).toMatchObject({ status: 'supported' })
+    expect(resolve({ ...q, eventTime: '2026-04-01T00:59:59.999+01:00' })).toMatchObject({ status: 'supported' })
+    for (const change of [{ issuer: other.did }, { issuerKey: other.identityKey }, { passportId: P.battery2 }, { role: 'custodian' as const }, { purpose: 'error-declaration' as const }, { eventTime: '2026-02-28T23:59:59.999Z' }, { eventTime: grant.validUntil }]) {
+      expect(resolve({ ...q, ...change })).toMatchObject({ status: 'unsupported' })
+    }
+    for (const change of [{ issuer: signer.did, issuerKey: other.identityKey }, { passportId: '*' }, { issuerKey: 'invalid' }, { role: 'anything' }, { purpose: 'other' }, { validFrom: '2026-02-30T00:00:00Z' }, { validFrom: grant.validUntil }, { validUntil: undefined }, { wildcard: true }]) {
+      writeFileSync(path, JSON.stringify({ grants: [{ ...grant, ...change }] }))
+      expect(() => openLifecycleAuthority(path)).toThrow()
+    }
+  })
+
+  it('L08: the same historical bytes remain readable with absent, refusing and supported evidence', async () => {
+    const view = await issued(P.battery, { event: { type: 'ObjectEvent', ...base(21), epcList: [P.battery], action: 'OBSERVE' }, assertedRole: 'observer' })
+    const options = { store: api.platform.store, index: api.platform.index }
+    for (const [authorityResolver, status] of [[undefined, 'unavailable'], [() => ({ status: 'unsupported' as const }), 'refused'], [api.platform.lifecyclePolicy.authorityResolver, 'supported']] as const) {
+      const reading = await readPassportClaims(P.battery, { ...options, authorityResolver })
+      const claim = reading.lifecycle.find((entry) => entry.attestationId === view.attestationId)!
+      expect(claim.findings).toMatchObject({ signature: { status: 'pass' }, authority: { status }, ownership: { status: 'not-asserted' }, possession: { status: 'not-asserted' } })
+    }
+  })
 })
 
 describe('issuing from EPCIS event data, all five types', () => {
@@ -64,12 +168,13 @@ describe('issuing from EPCIS event data, all five types', () => {
     expect(view.event).toEqual(event)
     const f = view.findings!
     expect([f.eventStructure.status, f.eventSemantics.status, f.productBinding.status, f.signature.status]).toEqual(['pass', 'pass', 'pass', 'pass'])
-    // Nothing here holds authority evidence, and a valid signature is not that evidence.
-    expect(f.authority).toMatchObject({ status: 'unavailable', reasonCode: 'authority-unavailable' })
+    // The configured grant independently supports this member for the product and role at the event time.
+    expect(f.authority).toMatchObject({ status: 'supported' })
     expect([f.possession.status, f.ownership.status]).toEqual(['not-asserted', 'not-asserted'])
     // Not sent to a registry: no anchor and no inclusion, and they say so.
     expect([f.anchorCommitment.status, f.inclusion.status]).toEqual(['unknown', 'unknown'])
-    expect(f.correction.status).toBe('none')
+    expect(f.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-related-incomplete' })
+    expect((await findOn(P.battery, view.attestationId))?.findings?.correction.status).toBe('none')
     // The bytes are retrievable exactly, and verify without this application.
     const bytes = await api.get(`/api/lifecycle-claims/${ref(view.attestationId)}`)
     expect(bytes.headers.get('content-type')).toMatch(/^application\/json/)
@@ -130,8 +235,8 @@ describe('the representative cases', () => {
     const view = await issued(P.battery, { event, assertedRole: 'custodian', issuerParty: PARTY.carrier })
     expect(view.findings!.possession).toMatchObject({ status: 'asserted', from: [PARTY.maker], to: [PARTY.carrier] })
     expect(view.findings!.ownership).toMatchObject({ status: 'asserted', from: [PARTY.maker], to: [PARTY.retailer] })
-    // The carrier's role is stated by the event, and nothing here supports it: unavailable, never supported.
-    expect(view.findings!.authority.status).toBe('unavailable')
+    // The configured custodian grant supports the issuer independently of the event's two party assertions.
+    expect(view.findings!.authority.status).toBe('supported')
     // A custodian whose party the event does not name as possessing is refused before anything is signed.
     const contradicted = await issue(P.battery, { event: { ...event, ...base(7) }, assertedRole: 'custodian', issuerParty: PARTY.repairer })
     expect([contradicted.status, contradicted.body.error]).toEqual([409, 'claim-refused'])
@@ -228,6 +333,105 @@ describe('discovery from verified claims', () => {
     expect(participationLabel(found!).sentence).toContain("An anchor's subject alone never makes a passport part of an event")
   })
 
+  it('finds a correction from registry bytes with a cold or partially populated store and reports incomplete retrieval', async () => {
+    const original = await issued(P.pack, { event: { type: 'ObjectEvent', ...base(15), epcList: [P.pack], action: 'OBSERVE', bizStep: 'inspecting' }, assertedRole: 'observer', submit: true })
+    const replacement = await issued(P.pack, { event: { type: 'ObjectEvent', ...base(15), epcList: [P.pack], action: 'OBSERVE', bizStep: 'inspecting', disposition: 'conformant' }, assertedRole: 'observer', submit: true })
+    const correction = await issued(P.pack, { correctionOf: original.attestationId, reason: 'incorrect_data', correctiveEventIDs: [replacement.eventId], submit: true })
+    const mongo = await startMongo()
+    onTestFinished(() => mongo.stop())
+    const store = new MongoStore(mongo.database())
+    await store.init()
+    const read = async () => (await readPassportClaims(P.pack, { store, index: api.platform.index, registry })).lifecycle
+    const checkOriginal = async () => {
+      const views = await read()
+      const view = views.find((v) => v.attestationId === original.attestationId)
+      expect(view?.findings?.correction).toMatchObject({ status: 'declared-in-error', detail: { correctiveClaims: [replacement.attestationId] } })
+      expect(view?.relations.filter((r) => r.relation === 'error-declaration')).toHaveLength(1)
+    }
+    await checkOriginal()
+    const local = (await api.platform.store.listClaims({ passportId: P.pack })).find((record) => record.id === original.record!.id)!
+    await store.saveClaim(local)
+    await checkOriginal()
+    // A cached record can refer to the bytes of another valid claim. Recover the exact bytes by identifier.
+    const declarationRecord = (await api.platform.store.listClaims({ passportId: P.pack })).find((record) => record.id === correction.record!.id) as EpcisLifecycleClaimRecord
+    await store.saveClaim({ ...declarationRecord, bytes: registry.held.get(replacement.attestationId)! })
+    await checkOriginal()
+    const bytes = registry.held.get(correction.attestationId)!
+    try {
+      registry.held.delete(correction.attestationId)
+      const view = (await read()).find((v) => v.attestationId === original.attestationId)
+      expect(view?.findings?.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-related-incomplete' })
+    } finally {
+      registry.held.set(correction.attestationId, bytes)
+    }
+  })
+
+  it('reports a bounded local read as incomplete and keeps one copy of repeated secured bytes', async () => {
+    const view = await issued(P.moduleA, { event: { type: 'ObjectEvent', ...base(16), epcList: [P.moduleA], action: 'OBSERVE' }, assertedRole: 'observer' })
+    const record = (await api.platform.store.listClaims({ attestationIds: [view.attestationId] }))[0]!
+    const store = new MemoryStore()
+    for (let i = 0; i < 501; i += 1) await store.saveClaim({ ...record, id: `receipt-${i}` })
+    const reading = await readPassportClaims(P.moduleA, { store, index: api.platform.index, registry })
+    expect(reading.discovery.relatedClaims).toBe('incomplete')
+    const matches = reading.lifecycle.filter((v) => v.attestationId === view.attestationId)
+    expect(matches).toHaveLength(1)
+    expect(matches[0]?.findings?.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-related-incomplete' })
+  })
+
+  it('reads an exact-size proof response and stops an over-budget response without a content length', async () => {
+    const json = JSON.stringify({ securedBytes: 'example' })
+    await expect(boundedJson(new Response(json), Buffer.byteLength(json))).resolves.toEqual({ securedBytes: 'example' })
+    await expect(boundedJson(new Response(json), Buffer.byteLength(json) - 1)).rejects.toThrow(/reader limit/)
+  })
+
+  it('reads successive anchor pages and keeps the first page when a later lookup is unavailable', async () => {
+    const create = async (passportId = P.paged) => await issued(passportId, { event: { type: 'ObjectEvent', ...base(16), epcList: [passportId], action: 'OBSERVE', bizStep: 'inspecting' }, assertedRole: 'observer', submit: true })
+    const first = await create()
+    const second = await create()
+    await create(P.pack)
+    const store = new MemoryStore()
+    const read = () => readPassportClaims(P.paged, { store, index: api.platform.index, registry })
+    const fetchNormally = globalThis.fetch
+    let interrupt = false
+    let staleSelector = false
+    let continuations = 0
+    const fetchPage = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, init) => {
+      if (String(url) === api.platform.index.url + '/lookup' && typeof init?.body === 'string') {
+        const question = JSON.parse(init.body)
+        if (interrupt && question.query.attestationId != null) return new Response(null, { status: 503 })
+        if (question.query.subject === P.paged) {
+          if (staleSelector) question.query.subject = P.pack
+          if (question.query.after != null) {
+            continuations += 1
+            if (interrupt) return new Response(null, { status: 503 })
+          }
+          question.query.limit = 1
+          return fetchNormally(url, { ...init, body: JSON.stringify(question) })
+        }
+      }
+      return fetchNormally(url, init)
+    })
+    try {
+      const all = await read()
+      expect(all.discovery.index).toBe('asked')
+      expect(all.lifecycle.map((v) => v.attestationId)).toEqual(expect.arrayContaining([first.attestationId, second.attestationId]))
+      expect(continuations).toBeGreaterThanOrEqual(2)
+      interrupt = true
+      const partial = await read()
+      expect(partial.discovery).toMatchObject({ index: 'partial', indexDetail: expect.stringContaining('503') })
+      expect(partial.lifecycle).toHaveLength(1)
+      expect(partial.lifecycle[0]?.findings?.anchorCommitment.status).toBe('pass')
+      expect(partial.lifecycle[0]?.findings?.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-related-incomplete' })
+      staleSelector = true
+      interrupt = false
+      const stale = await read()
+      expect(stale.discovery).toMatchObject({ relatedClaims: 'incomplete', indexDetail: expect.stringContaining('selector') })
+      expect(stale.lifecycle).toHaveLength(0)
+    } finally {
+      fetchPage.mockRestore()
+    }
+  })
+
   it('a claim held only by the registry is found by its anchor and read from the registry\'s bytes', async () => {
     const view = await issued(P.moduleA, { event: { type: 'ObjectEvent', ...base(15), epcList: [P.moduleA], action: 'OBSERVE', bizStep: 'inspecting', disposition: 'conformant' }, assertedRole: 'observer', submit: true })
     // This application forgets it; the registry and the index still hold it.
@@ -319,7 +523,7 @@ describe('the words the page uses', () => {
     expect(rows.find((r) => r.key === 'anchorCommitment')!.sentence).toMatch(/not that the event happened, not who owns the product, and not compliance/)
     expect(rows.find((r) => r.key === 'inclusion')).toMatchObject({ status: 'unknown', tone: 'unknown' })
     expect(rows.find((r) => r.key === 'inclusion')!.sentence).toMatch(/^Unknown/)
-    expect(rows.find((r) => r.key === 'authority')).toMatchObject({ status: 'unavailable', tone: 'unknown' })
+    expect(rows.find((r) => r.key === 'authority')).toMatchObject({ status: 'supported', tone: 'pass' })
     expect(LIFECYCLE_NOTICE).toContain('Neither proves the event happened')
     for (const row of rows) expect(row.sentence).not.toMatch(/\bproves? (the event|ownership|compliance)\b/)
   })

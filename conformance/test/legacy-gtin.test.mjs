@@ -54,6 +54,7 @@ const ALLOWED = new Map([
   ['fixtures/anchor-v3.json', { reason: 'the frozen historical anchor fixture' }],
   ['fixtures/README.md', { reason: 'the fixture policy, which explains why the frozen fixtures keep the number' }],
   ['packages/dpp-protocol/test/helpers.ts', { reason: frozenTest, only: FROZEN_IDENTIFIERS }],
+  ['packages/dpp-protocol/test/fixtures/anchor-tampered-bytes-report.json', { reason: 'the preserved report of a superseded native anchor case', only: FROZEN_IDENTIFIERS }],
   ['packages/dpp-protocol/test/record-v1-fixture.ts', { reason: frozenTest, only: FROZEN_IDENTIFIERS }],
   ['packages/dpp-protocol/test/chain-v1-fixture.ts', { reason: frozenTest, only: FROZEN_IDENTIFIERS }],
   ['packages/dpp-protocol/test/evidence-v1-fixture.ts', { reason: frozenTest, only: FROZEN_IDENTIFIERS }],

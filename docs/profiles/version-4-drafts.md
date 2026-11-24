@@ -2,7 +2,7 @@
 
 `battery@3`, `battery@4`, `textile@3` and `textile@4` were drafts under manifest format 2, proposed as successors to `battery@2` and `textile@2`. All four are retired from 14 November 2026, together with the versions they were to succeed. Reviewers and application owners can use this page to see what became of the drafts and what still reads them.
 
-No draft is open today. For battery and textile data, use `eu-battery@1` and `eu-textile@1` on the [EU battery and textile bindings](eu-sector-bindings.md) page.
+No draft is open today. For battery and textile data, use `eu-battery@2` and `eu-textile@2` on the [EU battery and textile bindings](eu-sector-bindings.md) page.
 
 ## What happened
 

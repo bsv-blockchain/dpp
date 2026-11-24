@@ -16,6 +16,7 @@ import { HolderReading, boundPayload } from '@/components/bound/readings'
 import { RequireAccount } from '@/components/layout'
 import { PassportForm, type PassportFormValues } from '@/components/passport-form'
 import { passportSpellings } from '@/lib/epcis'
+import { RecordNotice } from '@/components/reading'
 import { ClaimDialog, DeclareErrorDialog } from '@/components/claim-dialog'
 import { LifecycleClaims } from '@/components/lifecycle-claims'
 import { api, type AuthorisedReading, type BoundProfile, type OfferView, type PassportView } from '@/lib/api'
@@ -51,7 +52,7 @@ function PassportPage() {
   const retired = view.status === 'retired'
   // A passport under a retired profile is shown as it was written. The API refuses every write for it, so none is offered.
   const profileRetired = view.profileRetired
-  const closed = retired || profileRetired != null
+  const closed = view.status !== 'active' || profileRetired != null || view.states.some((s) => s.network !== 'accepted' && s.network !== 'dry-run')
   const ident = parseIdentifier(view.passportId)
   const publicPath = publicPathOf(view.passportId)
   const close = () => setDialog(undefined)
@@ -130,9 +131,10 @@ function PassportPage() {
         {retired ? <span className="self-center text-sm text-muted-foreground">Retired: no further state can be written.</span> : null}
       </div>
 
+      <RecordNotice payload={view.payload} />
       {bound == null ? (
         <Section title="Public payload">
-          <DefinitionList entries={entriesOf(view.payload, new Set(), humanise)} />
+          <DefinitionList entries={entriesOf(view.payload, new Set(['notice']), humanise)} />
         </Section>
       ) : (
         <HolderReading passportId={view.passportId} payload={bound} needsClaimCode={needsClaimCode} />

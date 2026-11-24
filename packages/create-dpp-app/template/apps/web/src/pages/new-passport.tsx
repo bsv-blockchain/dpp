@@ -92,7 +92,7 @@ function NewPassportPage() {
                 <SelectValue placeholder="Choose a profile" />
               </SelectTrigger>
               <SelectContent>
-                {profiles.data.map((p) => (
+                {profiles.data.filter((p) => p.issueSuccessor == null).map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.title} ({p.id})
                   </SelectItem>

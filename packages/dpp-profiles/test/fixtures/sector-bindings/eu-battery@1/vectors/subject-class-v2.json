@@ -1,0 +1,114 @@
+{
+  "profile": "eu-battery@2",
+  "from": "vectors/amperia-staxwall-item.jsonld",
+  "description": "Remove _comment-prefixed members recursively from the source. For each independent case, retain only the named keys when keep is present, apply set at the root, then remove the named JSON Pointers. Where include is present, put the other complete source document, stripped of its notes, in an @included array. Split the result under the binding access rules and validate the indicated view under the item identifier of passportOf, or of the source when passportOf is absent.",
+  "cases": [
+    {
+      "name": "published product class",
+      "view": "authorised",
+      "expected": {
+        "status": "pass"
+      }
+    },
+    {
+      "name": "direct subject class",
+      "view": "authorised",
+      "set": {
+        "type": "eubat:Battery"
+      },
+      "expected": {
+        "status": "pass"
+      }
+    },
+    {
+      "name": "missing subject class",
+      "view": "authorised",
+      "keep": [
+        "@context",
+        "id",
+        "gs1:gtin"
+      ],
+      "expected": {
+        "status": "fail",
+        "cause": "profile-rule-violation",
+        "step": "shacl",
+        "constraint": "ClassConstraintComponent"
+      }
+    },
+    {
+      "name": "wrong sector class",
+      "view": "authorised",
+      "set": {
+        "type": "https://ref.openepcis.org/extensions/eu/textile/TextileProduct"
+      },
+      "expected": {
+        "status": "fail",
+        "cause": "profile-rule-violation",
+        "step": "shacl",
+        "constraint": "ClassConstraintComponent"
+      }
+    },
+    {
+      "name": "class declared on another item",
+      "view": "authorised",
+      "set": {
+        "type": "gs1:Product"
+      },
+      "expected": {
+        "status": "fail",
+        "cause": "profile-rule-violation",
+        "step": "shacl",
+        "constraint": "ClassConstraintComponent"
+      },
+      "include": "vectors/battery-product.jsonld"
+    },
+    {
+      "name": "public class withheld",
+      "view": "public",
+      "remove": [
+        "/type"
+      ],
+      "expected": {
+        "status": "unknown",
+        "cause": "restricted-tier-withheld"
+      }
+    },
+    {
+      "name": "required fields missing on a battery",
+      "view": "authorised",
+      "keep": [
+        "@context",
+        "id",
+        "gs1:gtin",
+        "type"
+      ],
+      "expected": {
+        "status": "fail",
+        "cause": "profile-rule-violation",
+        "step": "shacl"
+      }
+    },
+    {
+      "name": "conflicting product identifiers",
+      "view": "authorised",
+      "set": {
+        "@id": "https://id.gs1.org/01/09521234002000/21/ANOTHER-ITEM"
+      },
+      "expected": {
+        "status": "fail",
+        "cause": "profile-rule-violation",
+        "step": "json-ld-expand"
+      }
+    },
+    {
+      "name": "product under another passport",
+      "view": "authorised",
+      "passportOf": "vectors/battery-product.jsonld",
+      "expected": {
+        "status": "fail",
+        "cause": "product-identity-mismatch",
+        "step": "passport-identity"
+      }
+    }
+  ]
+}

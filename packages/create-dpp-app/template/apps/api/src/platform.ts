@@ -5,7 +5,8 @@
 import { MongoClient, type Db } from 'mongodb'
 import type { ChainTracker } from '@bsv/sdk'
 import { openBoundProfiles, type BoundProfiles } from './bound-profiles.js'
-import { Claims } from './claims.js'
+import { Claims, type ClaimsOptions } from './claims.js'
+import { openLifecycleAuthority } from './lifecycle-authority.js'
 import type { Config } from './config.js'
 import { Custody } from './custody.js'
 import { startDevIndex, type DevIndex } from './dev-index.js'
@@ -28,6 +29,7 @@ export interface Platform {
   writer: Writer
   custody: Custody
   claims: Claims
+  lifecyclePolicy: Pick<ClaimsOptions, 'authorityResolver' | 'extensionRules'>
   chainTracker: ChainTracker | 'scripts only'
   /** The profiles held by a binding, the validation engine and anything refused at start-up. */
   profiles: BoundProfiles
@@ -39,6 +41,7 @@ export interface Platform {
 
 export interface PlatformOptions {
   config: Config
+  lifecyclePolicy?: Pick<ClaimsOptions, 'authorityResolver' | 'extensionRules'>
   /** 'test' wires a memory store, a test wallet and an in-process index with nothing live. */
   mode: 'live' | 'test'
   log?: (line: string) => void
@@ -52,6 +55,11 @@ export const MONGO_SERVER_SELECTION_TIMEOUT_MS = 2_000
 export async function openPlatform(options: PlatformOptions): Promise<Platform> {
   const { config, mode } = options
   const log = options.log ?? ((line: string) => console.log(line))
+
+  const lifecyclePolicy = {
+    authorityResolver: options.lifecyclePolicy?.authorityResolver ?? (config.lifecycleAuthorityGrantsFile == null ? undefined : openLifecycleAuthority(config.lifecycleAuthorityGrantsFile)),
+    extensionRules: options.lifecyclePolicy?.extensionRules,
+  }
 
   let client: MongoClient | undefined
   let db: Db | undefined
@@ -131,7 +139,7 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     log,
   })
   const custody = new Custody({ store, wallet, parties, writer })
-  const claims = new Claims({ store, registry: config.registry.url == null ? undefined : { url: config.registry.url, token: config.registry.token } })
+  const claims = new Claims({ store, ...lifecyclePolicy, registry: config.registry.url == null ? undefined : { url: config.registry.url, token: config.registry.token } })
   // Inclusion can only be checked against a header source; the in-process index and the test wallet mine nothing.
   const chainTracker: ChainTracker | 'scripts only' = wallet.kind === 'toolbox' && config.index.joined ? headerSource(config.network, config.wallet.wocApiKey) : 'scripts only'
 
@@ -146,6 +154,7 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     writer,
     custody,
     claims,
+    lifecyclePolicy,
     chainTracker,
     profiles,
     async readAuthorised(record, holder) {

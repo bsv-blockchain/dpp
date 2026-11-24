@@ -111,10 +111,10 @@ Pass `observers` in the policy to ask sources whether the supplied tip remains u
 
 | `latestState` | Meaning |
 |---|---|
-| `observed` | Answering sources reported the tip unspent: latest to their knowledge, never proof that no later state exists. An unspent retired tip is `observed`: the passport has ended. |
-| `superseded` | The sources reported a later state spending the tip. Fetch the newer states and verify again. |
-| `conflicting` | Sources disagreed, or two valid next states spend the same state (a fork). `candidateOutpoints` lists every candidate; the report never picks one. |
-| `unknown` | No source asked or none answered; the result without `observers`. |
+| `observed` | At least one source was asked and every source asked reported the supplied tip unspent. This also applies to a retired tip. |
+| `superseded` | A source reported a spend of the tip and the available evidence agrees or gives no spend status. Fetch the newer states and verify again. |
+| `conflicting` | A source reported a conflict, the spend observations disagree, or there are competing tips. The report retains the candidates for inspection. |
+| `unknown` | The evidence leaves the supplied tip's status open. This includes an unspent answer accompanied by an outage or a lookup that could not find the tip. |
 
 `sources` lists each source, answer and time. `queryScope` states the question, or `no source asked`. Whenever `latestState` is not `unknown`, `limits` states that observation is not proof. [Gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) shows an observer asking the index for a later state.
 
@@ -173,7 +173,7 @@ JS
 | `issuerAuthority` | `unknown policy-missing` |
 | `evidenceAvailability` | `unknown referenced-artefact-unavailable`: the lineage has a managed `TRANSFER` without its acceptance record |
 
-The report ends with `latest state unknown | no source asked` and thirteen `limit:` lines.
+The report ends with `latest state unknown | no source asked` followed by its limits, including the freshness of a credential status observation.
 
 3. Run again with `CASE=v2-retired-tip-observed` in front. Expect `latest state observed`: one index reported the retired tip unspent.
 4. To produce reports with the implementation, run `node examples/verify-passport.mjs --fixture --version=2 --report` from the same checkout ([quick start](../quick-start.md#check-the-test-passports-offline)). Each case prints `ok:` followed by `this verifier's report is the pinned one`.

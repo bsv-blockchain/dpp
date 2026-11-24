@@ -89,11 +89,11 @@ Steps 2 to 5 make a passport reader. Start there whatever you build: every other
 7. **Report what you did**, as [reporting](reporting.md) describes.
 8. **Exchange fresh records** with the reference, as [implementing parties](../contribute/implementing-parties.md) describes. The interoperability trial that would record such an exchange is parked until an independent implementer appears ([parked material](../reference/parked/interoperability-trial/README.md)).
 
-Keep the harness in your own language. Record every case, its expected result and your result; stop on a mismatch and retain both values. [Run the fixtures](fixture-runner.md) says what each file gives as input, what must match, and the four rules whose texts do not yet agree ([source gaps](fixture-runner.md#source-gaps)).
+Keep the harness in your own language. Record every case, its expected result and your result; stop on a mismatch and retain both values. [Run the fixtures](fixture-runner.md) says what each file gives as input, what must match and how to record a difference. [Source gaps](fixture-runner.md#source-gaps)
 
 ## Parked: the Python reader
 
-The programme wrote a reader in standard-library Python from the specification text, to show rules becoming code. It was parked on 12 November 2026 with its last passing revision: [parked material](../reference/parked/python-reader/README.md). The same programme wrote it and the reference, so it was engineering evidence that the specification is complete enough, never the organisationally independent implementation version 1.0 needs.
+The programme wrote a reader in standard-library Python from the specification text, to show rules becoming code. It was parked on 12 November 2026 with its last passing revision: [parked material](../reference/parked/python-reader/README.md). Its [fixture guide at the last working revision](https://github.com/bsv-blockchain/dpp/blob/c678cf9281168179d16d599e5fdb3846ddbbaf61/fixtures/README.md) records the inputs it used. The same programme wrote it and the reference, so it was engineering evidence that the specification is complete enough, never the organisationally independent implementation version 1.0 needs.
 
 ## Pick your role
 
@@ -102,7 +102,7 @@ The [baseline](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64
 | Role | What it does | Fixtures and tests | Page |
 |---|---|---|---|
 | Passport reader | Rebuilds a passport's history from transaction bytes and reports what it establishes | `record-v1.json`, `chain-v1.json`, `evidence-v1.json`, `record-v2.json`, `chain-v2.json`, `managed-acceptance-v2.json`, historical `managed-acceptance-v1.json`, `evidence-v2.json` | [Passport reader](roles/passport-reader.md) |
-| Attestation verifier | Checks a signed claim and its on-chain anchor | `attestation-anchor-v1.json`, the anchor cases of `evidence-v1.json`, and the historical `anchor-v3.json` | [Attestation verifier](roles/attestation-verifier.md) |
+| Attestation verifier | Checks a signed claim and its on-chain anchor | `attestation-anchor-v1.json`, `fixtures/vectors/dpp/attestation-anchor/`, the active anchor cases of `evidence-v1.json` and the historical `anchor-v3.json` | [Attestation verifier](roles/attestation-verifier.md) |
 | Attestation issuer | Signs a claim about a product, such as a repair | `attestation-anchor-v1.json` | [Attestation issuer](roles/attestation-issuer.md) |
 | Passport writer | Builds each new state, checks it, announces it, sends it, proves it and keeps it | The record and chain files, with the test keys published beside them so your writer reproduces the pinned bytes ([run the fixtures](fixture-runner.md#the-vector-form)); then a self-report, one sentence per rule of [writing](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/writing.md) section 11 | [Passport writer](roles/passport-writer.md) |
 | Registry | Validates, stores and serves signed claims | `contracts/registry.yaml`, `attestation-anchor-v1.json` | [Registry](roles/registry.md) |
@@ -143,10 +143,11 @@ node scripts/implementer-bundle.mjs
 
 | Item | Location or contents |
 |---|---|
+| Guide links | Open a specification, contract, fixture or ledger from this guide to read the edition in the extracted archive. Historical citations and links to external tools retain their original destinations. |
 | Output | `release/implementer-bundle/`, with the archive beside it |
 | Entry point | No root README. Start with `bundle-manifest.json`: source revision, working-tree state, release selection and every file's digest. Then open `docs/implement/README.md`, this page. |
 | Rules and tests | Specifications, contracts, fixtures in every published form, baselines, ledger, schemas and selections |
-| Supporting material | Example capability document, frozen profile data, these docs and licence |
-| Excluded | Runtime code and examples, and the parked Python reader; keep the checkout to run the examples |
+| Supporting material | Example capability document, frozen profiles, sector bindings and vectors, guides and the credentials package README. The root carries `LICENSE`, `NOTICE`, `PATENTS`, `GOVERNANCE.md` and `SECURITY.md`. Each sector directory includes the upstream notice for the files it carries. |
+| Source checkout | Use the checkout for the reference runtime, fixture generators, conformance scripts and runnable applications. For a bundle with `sourceState: working-tree`, reproducing its bytes requires the corresponding local changes as well as the recorded source revision. |
 
 Next: [run the fixtures](fixture-runner.md).

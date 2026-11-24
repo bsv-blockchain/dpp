@@ -1,0 +1,212 @@
+{
+  "bindingVersion": "1",
+  "id": "eu-battery",
+  "version": 2,
+  "profile": "eu-battery@2",
+  "title": "Battery passport data, serialised item",
+  "scope": "The name states which data model the product document uses: a battery passport data model written for Regulation (EU) 2023/1542, Annex XIII. It makes no claim that a passport or its product complies with that regulation or with any other law.",
+  "publisher": {
+    "name": "BSV Association",
+    "registration": "bundled"
+  },
+  "source": {
+    "name": "OpenEPCIS DPP-Ready",
+    "repository": "https://github.com/openepcis/openepcis-dpp-ready",
+    "release": "0.13.1",
+    "revision": "7a3f28d8869d2e5dd1fb31ace39f538fa04def4e",
+    "licence": "Apache-2.0",
+    "notices": [
+      "NOTICE.md"
+    ]
+  },
+  "granularity": "item",
+  "payload": {
+    "root": "/product",
+    "mediaType": "application/ld+json",
+    "documents": "one-self-contained"
+  },
+  "artefacts": [
+    {
+      "role": "context",
+      "path": "dpp-core-context.jsonld",
+      "uri": "https://ref.openepcis.org/extensions/common/core/dpp-core-context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 15357,
+      "sha256": "96239fd7c8b867f3f15b64931889fa51104357d8edb29a1ac07ae03099673021",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "context",
+      "path": "assessment-context.jsonld",
+      "uri": "https://ref.openepcis.org/extensions/common/assessment/assessment-context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 4463,
+      "sha256": "29f093936b53d91561e5ae07822164b214213fa4833101244131763125f1f6af",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "context",
+      "path": "battery-context.jsonld",
+      "uri": "https://ref.openepcis.org/extensions/eu/battery/battery-context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 15493,
+      "sha256": "a055e3e18f835df430517282ad9f53812132eaea0918f1b38309ec095050f117",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "context",
+      "path": "gs1-shortcuts-context.jsonld",
+      "uri": "https://ref.openepcis.org/extensions/common/core/gs1-shortcuts-context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 51869,
+      "sha256": "d607f9ba803d5d760b9dbec78c531cfa77896963540dd3123c33be46be46da6b",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "shapes",
+      "path": "shapes.ttl",
+      "mediaType": "text/turtle",
+      "byteLength": 55431,
+      "sha256": "a66aa6a97436e8dce5c5791971d439445f10297883bf72fe012d17ac03508b97",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "background",
+      "path": "background.ttl",
+      "mediaType": "text/turtle",
+      "byteLength": 556183,
+      "sha256": "3d160830445c550716c5e94607692c34156b881f9a165b332eaf8a0c886991b5",
+      "licence": "Apache-2.0"
+    }
+  ],
+  "validation": {
+    "steps": [
+      "json-ld-expand",
+      "shacl",
+      "passport-identity"
+    ],
+    "engine": {
+      "requires": [
+        "shacl-core",
+        "shacl-sparql-constraints"
+      ]
+    },
+    "blockingSeverities": [
+      "Violation"
+    ],
+    "subjectClass": "https://ref.openepcis.org/extensions/eu/battery/Battery"
+  },
+  "identity": {
+    "scheme": "gs1-digital-link",
+    "comparison": "gs1-key-tuple",
+    "subject": {
+      "pointers": [
+        "/product/id",
+        "/product/@id"
+      ],
+      "keys": [
+        "01",
+        "21"
+      ]
+    },
+    "mustEqual": [
+      {
+        "pointer": "/product/gs1:gtin",
+        "part": "gtin"
+      },
+      {
+        "pointer": "/product/gs1:hasSerialNumber",
+        "part": "serial"
+      },
+      {
+        "pointer": "/product/schema:serialNumber",
+        "part": "serial"
+      }
+    ],
+    "mustNotContradict": [
+      {
+        "pointer": "/product/oec:passportIdentifier"
+      },
+      {
+        "pointer": "/product/gs1:productID"
+      }
+    ],
+    "granularityMember": {
+      "pointer": "/product/oec:granularityLevel",
+      "whenPresent": "item"
+    },
+    "related": [
+      {
+        "pointer": "/product/eubat:batteryModelIdentifier",
+        "relation": "model"
+      }
+    ]
+  },
+  "access": {
+    "policy": "eu-battery-access@1",
+    "tierSplit": "top-level-property",
+    "default": "restricted",
+    "public": [
+      "@context",
+      "id",
+      "@id",
+      "type",
+      "@type",
+      "oec:granularityLevel",
+      "oec:hasReportingGranularity",
+      "eubat:batteryModelIdentifier",
+      "gs1:hasSerialNumber",
+      "oec:lastUpdated",
+      "gs1:gtin",
+      "schema:serialNumber",
+      "oec:passportIdentifier",
+      "gs1:productID",
+      "oec:passportStatus",
+      "schema:schemaVersion",
+      "gs1:productName",
+      "gs1:productDescription",
+      "schema:category",
+      "gs1:additionalProductClassification",
+      "schema:model",
+      "eubat:hasCellType",
+      "eubat:numberOfCells",
+      "eubat:numberOfModules",
+      "gs1:manufacturer",
+      "gs1:countryOfOrigin",
+      "gs1:productionDate",
+      "gs1:netWeight",
+      "gs1:grossWeight",
+      "eubat:hasRecycledContent",
+      "eubat:hasCarbonFootprintDeclaration",
+      "gs1:manufacturersWarranty",
+      "eubat:warrantyConditions",
+      "eubat:extendedWarrantyAvailable",
+      "schema:contactPoint",
+      "eubat:transportationSafetyClass",
+      "eubat:dangerousGoodsPackingInstructions",
+      "eubat:shippingName",
+      "eubat:ceMarkingIndicator",
+      "gs1:certification",
+      "eubat:hasEuDeclarationOfConformity",
+      "eubat:hasComplianceStatus",
+      "eubat:separateCollectionSymbolUrl",
+      "eubat:cadmiumSymbolRequired",
+      "eubat:leadSymbolRequired",
+      "eubat:hasLabels"
+    ]
+  },
+  "vectors": {
+    "positive": [
+      "vectors/amperia-staxwall-item.jsonld",
+      "vectors/battery-product.jsonld"
+    ],
+    "negative": [
+      "vectors/negative-cases.json"
+    ]
+  },
+  "baseline": "native-baseline@2",
+  "roles": [
+    "passport-writer",
+    "passport-reader"
+  ]
+}

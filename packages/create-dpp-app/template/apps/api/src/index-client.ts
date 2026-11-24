@@ -4,7 +4,7 @@
 // same bytes again later. A 401 or 403 is this platform's own configuration
 // and stops a write while the state is still a draft.
 import { Beef, Transaction, type MerklePath } from '@bsv/sdk'
-import { chainFromBeef } from '@bsv/dpp-protocol'
+import { chainFromBeef, decodeAttestationAnchor } from '@bsv/dpp-protocol'
 
 export type Announcement = 'admitted' | 'duplicate' | 'refused' | 'unauthorised' | 'unreachable'
 
@@ -21,6 +21,27 @@ export interface IndexClientOptions {
   callbackToken?: string
   /** Silence the in-process index's logging during a call; tests use it. */
   quiet?: boolean
+}
+
+/** Read a discovery response up to its wire limit, including responses without Content-Length. */
+export async function boundedJson(response: Response, limit: number): Promise<unknown> {
+  const reader = response.body?.getReader()
+  if (reader == null) throw new Error('the response has no body')
+  const chunks: Uint8Array[] = []
+  let length = 0
+  try {
+    for (;;) {
+      const chunk = await reader.read()
+      if (chunk.done) break
+      length += chunk.value.length
+      if (length > limit) throw new Error(`the response exceeds the reader limit of ${limit} bytes`)
+      chunks.push(chunk.value)
+    }
+  } finally {
+    if (length > limit) await reader.cancel()
+    reader.releaseLock()
+  }
+  return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks)))
 }
 
 export class IndexClient {
@@ -79,15 +100,45 @@ export class IndexClient {
    * An anchor's metadata is unsigned by the claim's issuer: it says where to look, and the claim's own verification
    * decides what the claim is about. Throws when the index cannot be reached or refuses the question.
    */
+  async *scanAnchors(query: { subject: string } | { attestationId: string }, representation?: string, signal = AbortSignal.timeout(30_000)): AsyncGenerator<{ transaction: Transaction; outputIndex: number; attestationId: string }> {
+    let after: { txid: string; outputIndex: number } | undefined
+    let count = 0
+    // The lookup contract ends on an empty page. Preserve results already read if a later page fails.
+    const maxAnchors = 500
+    for (;;) {
+      const limit = Math.min(100, maxAnchors - count + 1)
+      const response = await this.request('/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal,
+        body: JSON.stringify({ service: 'ls_attestation', query: { ...query, ...(representation == null ? {} : { representation }), limit, after } }),
+      })
+      if (!response.ok) throw new Error(`the index answered HTTP ${response.status} to the anchor lookup`)
+      const { outputs } = (await boundedJson(response, 32 * 1024 * 1024)) as { outputs?: Array<{ beef: number[]; outputIndex: number }> }
+      if (!Array.isArray(outputs) || outputs.length > limit) throw new Error('the index returned an invalid anchor page')
+      if (outputs.length === 0) return
+      for (const output of outputs) {
+        if (count === maxAnchors) throw new Error(`the anchor lookup exceeded the reader limit of ${maxAnchors} outputs`)
+        const transaction = Transaction.fromBEEF(output.beef)
+        const txid = transaction.id('hex')
+        const outputIndex = output.outputIndex
+        if (!Number.isSafeInteger(outputIndex) || transaction.outputs[outputIndex] == null) throw new Error('the index returned an invalid anchor outpoint')
+        if (after != null && (txid < after.txid || (txid === after.txid && outputIndex <= after.outputIndex))) throw new Error('the anchor page did not advance in outpoint order')
+        const metadata = decodeAttestationAnchor(transaction.outputs[outputIndex]!.lockingScript)
+        if (metadata == null || ('subject' in query && metadata.subject !== query.subject) || ('attestationId' in query && metadata.attestationId !== query.attestationId) || (representation != null && metadata.representation !== representation)) {
+          throw new Error('the returned anchor does not match the lookup selector')
+        }
+        after = { txid, outputIndex }
+        count += 1
+        yield { transaction, outputIndex, attestationId: metadata.attestationId }
+      }
+    }
+  }
+
   async anchorsFor(query: { subject: string } | { attestationId: string }, representation?: string): Promise<Array<{ transaction: Transaction; outputIndex: number }>> {
-    const response = await this.request('/lookup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ service: 'ls_attestation', query: { ...query, ...(representation == null ? {} : { representation }) } }),
-    })
-    if (!response.ok) throw new Error(`the index answered HTTP ${response.status} to the anchor lookup`)
-    const { outputs } = (await response.json()) as { outputs?: Array<{ beef: number[]; outputIndex: number }> }
-    return (outputs ?? []).map((output) => ({ transaction: Transaction.fromBEEF(output.beef), outputIndex: output.outputIndex }))
+    const anchors = []
+    for await (const { transaction, outputIndex } of this.scanAnchors(query, representation)) anchors.push({ transaction, outputIndex })
+    return anchors
   }
 
   /** The identity key the index signs its evidence packages under, as its capability document names it, or nothing when it signs none. */
@@ -168,20 +219,20 @@ export class IndexClient {
   }
 
   /** Withdraw a state the network refused after the index admitted it. */
-  async retract(txid: string, reason: string): Promise<{ ok: boolean; detail: string }> {
+  async retract(txid: string, reason: string, outputIndex = 0): Promise<{ ok: boolean; detail: string; absent?: boolean }> {
     let response: Response
     try {
       response = await this.request('/retract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(this.submitToken != null ? { Authorization: `Bearer ${this.submitToken}` } : {}) },
-        body: JSON.stringify({ txid, outputIndex: 0, reason }),
+        body: JSON.stringify({ txid, outputIndex, reason }),
       })
     } catch (cause) {
       return { ok: false, detail: `the index could not be reached (${cause instanceof Error ? cause.message : String(cause)})` }
     }
     const body = (await response.json().catch(() => ({}))) as { status?: string; error?: string; description?: string }
     const ok = response.ok && body.status === 'retracted'
-    return { ok, detail: ok ? 'retracted' : `HTTP ${response.status}${body.error != null ? ` ${body.error}` : ''}${body.description != null ? `, ${body.description}` : ''}` }
+    return { ok, absent: response.status === 404 && body.error === 'output-unknown', detail: ok ? 'retracted' : `HTTP ${response.status}${body.error != null ? ` ${body.error}` : ''}${body.description != null ? `, ${body.description}` : ''}` }
   }
 
   /** Offer a merkle path to the index, in the shape a broadcaster's callback carries (section 7). */

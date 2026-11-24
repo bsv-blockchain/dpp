@@ -579,6 +579,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "inclusion was not established: proof-absent.",
           "nativeAttestationSignature was not established: no-evidence.",
@@ -1153,6 +1154,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "nativeAttestationSignature was not established: no-evidence.",
           "anchorSignature was not established: no-evidence.",
@@ -1677,6 +1679,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "inclusion was not established: header-source-unavailable.",
           "nativeAttestationSignature was not established: no-evidence.",
@@ -2049,6 +2052,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "recordEncoding was not established: not-inspected.",
           "actorSignatures was not established: not-inspected.",
@@ -2517,6 +2521,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "The latest-state observation is as fresh and as complete as the sources asked; it is not a proof that no later spend exists.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "inclusion was not established: proof-absent.",
@@ -2878,6 +2883,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "recordEncoding was not established: not-inspected.",
           "actorSignatures was not established: not-inspected.",
@@ -3044,6 +3050,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "actorSignatures was not established: decode-failed.",
           "linkage was not established: decode-failed.",
           "inclusion was not established: decode-failed.",
@@ -3307,6 +3314,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "recordEncoding was not established: not-inspected.",
           "actorSignatures was not established: not-inspected.",
@@ -3843,6 +3851,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "inclusion was not established: proof-absent.",
           "nativeAttestationSignature was not established: no-evidence.",
@@ -4343,6 +4352,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "The subject was taken from the evidence itself, so no check can establish that the evidence concerns the passport the reader asked about.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "inclusion was not established: proof-absent.",
@@ -4867,6 +4877,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "The latest-state observation is as fresh and as complete as the sources asked; it is not a proof that no later spend exists.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "inclusion was not established: proof-absent.",
@@ -5392,6 +5403,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "The latest-state observation is as fresh and as complete as the sources asked; it is not a proof that no later spend exists.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "inclusion was not established: proof-absent.",
@@ -5908,6 +5920,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
           "inclusion was not established: proof-absent.",
           "nativeAttestationSignature was not established: no-evidence.",
@@ -6090,6 +6103,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "recordEncoding was not established: no-evidence.",
           "actorSignatures was not established: no-evidence.",
           "linkage was not established: no-evidence.",
@@ -6282,6 +6296,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "recordEncoding was not established: no-evidence.",
           "actorSignatures was not established: no-evidence.",
           "linkage was not established: no-evidence.",
@@ -6445,7 +6460,9 @@
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
-      }
+      },
+      "skip": true,
+      "skip_reason": "Superseded by anchor-supplied-bytes-digest-mismatch, which records both digests."
     },
     {
       "id": "anchor-metadata-mismatch",
@@ -6628,6 +6645,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "recordEncoding was not established: no-evidence.",
           "actorSignatures was not established: no-evidence.",
           "linkage was not established: no-evidence.",
@@ -6790,6 +6808,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "recordEncoding was not established: no-evidence.",
           "actorSignatures was not established: no-evidence.",
           "linkage was not established: no-evidence.",
@@ -6946,6 +6965,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "recordEncoding was not established: no-evidence.",
           "actorSignatures was not established: no-evidence.",
           "linkage was not established: no-evidence.",
@@ -7088,6 +7108,7 @@
         "limits": [
           "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
           "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
           "recordEncoding was not established: no-evidence.",
           "actorSignatures was not established: no-evidence.",
           "linkage was not established: no-evidence.",
@@ -7102,6 +7123,165 @@
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence.",
           "evidenceAvailability was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "anchor-supplied-bytes-digest-mismatch",
+      "description": "The anchor commits to different bytes. Both binding and evidence availability fail. Their evidence references include the committed digest and the digest of the supplied bytes.",
+      "evidence": {
+        "anchors": [
+          {
+            "lockingScript": "2102fbb5a8834887259342eabdb6a4138484975d9e24c0ec507f884c8d6fda7f2099ac196273762d6174746573746174696f6e2d616e63686f722d763140643963336139393237393734373333663961626434306166323038653333323232386464356164343532363963626264336135353165326131616435616135334b75726e3a7368613235363a64396333613939323739373437333366396162643430616632303865333332323238646435616434353236396362626433613535316532613161643561613533396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a3268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d303031064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100d5ec02af7c7703c46237b93d08b645f4a01096b006093c14aff43069e45253f40220352b734c96a7b9e9e18988ad9a1e889df11afc6b47b122b4d8bb50995e60c0026d6d6d6d6d",
+            "securedBytes": "{\"claimFormat\":\"dpp-lifecycle-v1\",\"eventType\":\"Transfer\",\"issuer\":\"did:key:zQ3shNu2oFTbeqexYeunD36my3aQNqEWq8mWD2ACRqQLEipcz\",\"issuerKeyId\":\"fixture-issuer-key\",\"passportId\":\"https://id.gs1.org/01/09506000134352/21/JERSEY-001\",\"profile\":\"general\",\"profile_version\":2,\"recordId\":\"4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0\",\"signature\":\"3044022054e91a7ea4abc7e5e8418118873020170e90902a83aa730a540edd24381e44990220154c493203b6f57852894c236b20d1292005ad21b5613a7a9d5604e316c9105c\",\"timestamp\":\"2026-09-05T00:00:00.000Z\"}"
+          }
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
+        "source": "request-context"
+      },
+      "policy": {
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "2",
+        "checkedAt": "2026-09-05T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
+          "source": "request-context"
+        },
+        "suppliedTip": null,
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "actorSignatures",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "not-applicable",
+            "reasonCode": "publisher-not-selected",
+            "evidenceRefs": []
+          },
+          {
+            "name": "linkage",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "pass",
+            "evidenceRefs": [
+              "anchor:0"
+            ]
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "pass",
+            "evidenceRefs": [
+              "anchor:0"
+            ]
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "fail",
+            "reasonCode": "digest-mismatch",
+            "evidenceRefs": [
+              "anchor:0",
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53",
+              "sha256:1caef605c017bdafc488696830af1ec7c8a2991188556ee8d951ac42ab2d8657"
+            ]
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "anchor:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "fail",
+            "reasonCode": "referenced-artefact-mismatch",
+            "evidenceRefs": [
+              "anchor:0",
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53",
+              "sha256:1caef605c017bdafc488696830af1ec7c8a2991188556ee8d951ac42ab2d8657"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2026-09-05T12:00:00Z",
+          "candidateOutpoints": []
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "A credential status observation is only as fresh as its source.",
+          "recordEncoding was not established: no-evidence.",
+          "actorSignatures was not established: no-evidence.",
+          "linkage was not established: no-evidence.",
+          "inclusion was not established: no-evidence.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
         ]
       }
     }

@@ -16,6 +16,8 @@ import {
   EPCIS_LIFECYCLE_CLAIM_FORMAT,
   EPCIS_LIFECYCLE_REPRESENTATION,
   EPCIS_LIFECYCLE_ROLES,
+  EpcisLifecycleIssuanceRefused,
+  type EpcisLifecycleIssuanceOptions,
   buildEpcisLifecycleClaim,
   epcisLifecycleClaimBytes,
   epcisLifecycleClaimDigest,
@@ -24,13 +26,15 @@ import {
   type EpcisLifecycleRole,
   type EpcisLifecycleSource,
 } from '@bsv/dpp-credentials/epcis-lifecycle'
-import { bindingsFor, claimText, type EventSchemaCheck } from './lifecycle.js'
+import { bindingsFor, claimText, compareLifecycleProduct, type EventSchemaCheck } from './lifecycle.js'
 import type { Party } from './parties.js'
 import type { ClaimRecord, EpcisLifecycleClaimRecord, Store } from './store.js'
 import { WriteRefused, refuseRetiredProfile } from './writer.js'
 
 export interface ClaimsOptions {
   store: Store
+  authorityResolver?: EpcisLifecycleIssuanceOptions['authorityResolver']
+  extensionRules?: EpcisLifecycleIssuanceOptions['extensionRules']
   registry?: { url: string; token?: string }
 }
 
@@ -41,7 +45,7 @@ export interface IssueClaimInput {
   event: Record<string, unknown>
   issuer: Party
   assertedRole: EpcisLifecycleRole
-  /** The passports the issuer asserts the role for. By default the passport the claim is issued from. */
+  /** Qualified issuance covers every bound passport. An explicit scope must include them all. */
   authorityScope?: string[]
   /** The EPCIS party identifier the issuer is, needed to sign as owner or custodian of an event that names party roles. */
   issuerParty?: string
@@ -50,6 +54,8 @@ export interface IssueClaimInput {
   /** Where an imported event came from: the import's digest and the event's place in it. */
   source?: EpcisLifecycleSource
   importedFrom?: { importId: string; pointer: string }
+  /** The held signed original for an explicit correction. */
+  corrects?: EpcisLifecycleIssuanceOptions['corrects']
   /** Inline prefix declarations the event's extension members are read under. */
   extensionContexts?: Array<Record<string, string>>
   requiredExtensions?: string[]
@@ -106,7 +112,9 @@ export class Claims {
     if (schema.status === 'fail') throw new WriteRefused('event-schema-invalid', 'the pinned EPCIS 2.0.1 schema refuses the event. Nothing was signed.', { findings: schema.detail })
     if (schema.status !== 'pass') throw new WriteRefused('event-schema-unavailable', `the pinned EPCIS 2.0.1 schema could not be applied (${String(schema.detail ?? schema.reasonCode)}). Nothing was signed.`)
 
-    const authorityScope = input.authorityScope ?? (input.expectedPassport != null ? [input.expectedPassport] : bound)
+    const authorityScope = input.authorityScope ?? bound
+    const missing = bound.filter((passportId) => !authorityScope.includes(passportId))
+    if (missing.length > 0) throw new WriteRefused('authority-scope-incomplete', 'Qualified issuance requires the asserted role for every bound passport. Nothing was signed.', { missing })
     let signed
     try {
       const claim = buildEpcisLifecycleClaim({
@@ -121,8 +129,15 @@ export class Claims {
         ...(input.requiredExtensions == null || input.requiredExtensions.length === 0 ? {} : { requiredExtensions: input.requiredExtensions }),
         ...(input.source == null ? {} : { source: input.source }),
       })
-      signed = await signEpcisLifecycleClaim(claim, input.issuer.wallet)
+      signed = await signEpcisLifecycleClaim(claim, input.issuer.wallet, {
+        compareProduct: compareLifecycleProduct,
+        eventSchemaValidator: () => schema,
+        authorityResolver: this.options.authorityResolver,
+        extensionRules: this.options.extensionRules,
+        corrects: input.corrects,
+      })
     } catch (cause) {
+      if (cause instanceof EpcisLifecycleIssuanceRefused) throw new WriteRefused(cause.code, cause.message + '. Nothing was signed.', { finding: cause.finding })
       const detail = cause instanceof Error ? cause.message : String(cause)
       const prefix = 'the claim cannot be issued: '
       throw new WriteRefused('claim-refused', `${detail}. Nothing was signed.`, { reasons: detail.startsWith(prefix) ? detail.slice(prefix.length).split('; ') : [detail] })

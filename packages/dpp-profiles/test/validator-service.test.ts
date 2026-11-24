@@ -246,16 +246,23 @@ describe('startValidatorService: what it refuses before any engine is asked', ()
   it('refuses a body over the limit that declares no length, as soon as it has read that much', async () => {
     const service = await start({ maxRequestBytes: 2000 })
     const reply = await new Promise<{ status: number; body: string; sent: number }>((resolve, reject) => {
-      // Sent in pieces with no declared length and no end: only the limit stops the reading.
+      // Leave the request open after crossing the limit. The service must answer before the sender ends it.
       let sent = 0
       const request = httpRequest(`${service.url}/expand`, { method: 'POST', headers: { 'content-type': 'application/json' } }, (response) => {
         const chunks: Buffer[] = []
         response.on('data', (chunk: Buffer) => chunks.push(chunk))
-        response.on('end', () => { clearInterval(timer); resolve({ status: response.statusCode!, body: Buffer.concat(chunks).toString('utf8'), sent }) })
+        response.on('error', reject)
+        response.on('end', () => {
+          resolve({ status: response.statusCode!, body: Buffer.concat(chunks).toString('utf8'), sent })
+          request.destroy()
+        })
       })
-      // The service answers and then closes the connection, so a write can fail before the answer has been read. The answer is given a moment to arrive first.
-      request.on('error', (cause) => { clearInterval(timer); setTimeout(() => reject(cause), 1000) })
-      const timer = setInterval(() => { if (sent > 1_000_000) { clearInterval(timer); reject(new Error('the service kept reading')) } else { sent += 500; request.write('x'.repeat(500)) } }, 1)
+      request.on('error', reject)
+      request.setTimeout(3000, () => request.destroy(new Error('The service waited for the rest of the body.')))
+      for (const chunk of ['x'.repeat(2000), 'x']) {
+        request.write(chunk)
+        sent += Buffer.byteLength(chunk)
+      }
     })
     expect(reply.status).toBe(413)
     expect(JSON.parse(reply.body)).toMatchObject({ error: { code: 'request-too-large' } })

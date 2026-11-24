@@ -34,7 +34,11 @@ import {
   EPCIS_SOURCE_PROFILE,
   classifyEventArrival,
   contextReferences,
+  epcisErrorDeclaration,
   epcisEventBodyDigest,
+  eventIdentifiers,
+  preservedDocumentExtensions,
+  preservedEventExtensions,
   parseEpcisSource,
   resolveEpcisLimits,
   unresolvedCorrections,
@@ -65,6 +69,7 @@ import {
   epcisImportId,
   epcisImportKey,
   epcisRequestDigest,
+  epcisResolutionId,
   importJournalKey,
   importKeyOf,
   observationKey,
@@ -337,6 +342,12 @@ interface Prepared {
   record: EpcisImportRecord;
 }
 
+function receiptContextRefs(parsed: Extract<EpcisParseResult, { ok: true }>): EpcisContextRef[] {
+  const contextRefs: EpcisContextRef[] = contextReferences(parsed.context.document).map((ref) => ({ ...ref, scope: 'document' }));
+  for (const declared of parsed.context.events) for (const ref of contextReferences(declared.context)) contextRefs.push({ ...ref, scope: declared.pointer });
+  return contextRefs;
+}
+
 /** The context digests an event body is read under: the document's and its own declaration's. */
 function eventContextDigests(refs: readonly EpcisContextRef[], pointer: string): string[] {
   return [...new Set(refs.filter((ref) => ref.digest != null && (ref.scope === 'document' || ref.scope === pointer)).map((ref) => ref.digest as string))].sort();
@@ -382,8 +393,7 @@ function prepare(input: ImportEpcisSourceInput, clock: () => string): Refusal | 
   try {
     // Every digest and comparison below is taken over a canonical form. Taking it once over the whole document finds a value that has none before anything is written.
     canonicalizeJcs(parsed.document);
-    const contextRefs: EpcisContextRef[] = contextReferences(parsed.context.document).map((ref) => ({ ...ref, scope: 'document' }));
-    for (const declared of parsed.context.events) for (const ref of contextReferences(declared.context)) contextRefs.push({ ...ref, scope: declared.pointer });
+    const contextRefs = receiptContextRefs(parsed);
     // Nothing is fetched here, so a context document is counted as it is declared: each distinct one once, and an inline one by the bytes of its canonical form.
     const distinct = new Map(contextRefs.map((ref) => [ref.value, ref]));
     if (distinct.size > limits.maxContextDocuments) return refuse('too-many-contexts', `${distinct.size} context declarations exceeds the ${limits.maxContextDocuments} context document limit`, { limits });
@@ -646,10 +656,46 @@ async function retainedBytes(storage: EpcisExchangeStorage, record: EpcisImportR
   return bytes;
 }
 
+/** Compare source projections with a missing member distinct from an explicit JSON null. */
+function sameProjection(a: unknown, b: unknown): boolean {
+  return a === undefined || b === undefined ? a === b : canonicalizeJcs(a) === canonicalizeJcs(b);
+}
+
+function matchesSourceCorrection(receipt: EpcisImportEvent['errorDeclaration'], value: unknown, localIds: ReadonlySet<string>): boolean {
+  const declared = epcisErrorDeclaration(value);
+  if (receipt == null || declared == null) return receipt === declared;
+  const { resolution, missing, ...fields } = receipt;
+  if (!sameProjection(fields, declared)) return false;
+  const ids = declared.correctiveEventIDs;
+  if (resolution === 'resolved') return ids.length > 0 && missing === undefined;
+  if (ids.length === 0) return missing === undefined;
+  // Earlier imports may already have supplied some references. References in this document were always available.
+  if (missing == null || missing.length === 0 || missing.some(id => localIds.has(id))) return false;
+  const absent = new Set(missing);
+  return sameProjection(missing, ids.filter(id => absent.has(id)));
+}
+
 /** The retained document, parsed again under the limits the import was accepted under. */
 async function retainedDocument(storage: EpcisExchangeStorage, record: EpcisImportRecord): Promise<JsonObject> {
   const parsed = parseEpcisSource(await retainedBytes(storage, record), { mediaType: record.mediaType, limits: record.limits as Partial<EpcisLimits> });
   if (!parsed.ok) throw new EpcisExchangeError('record-unreadable', `the bytes of ${record.importId} no longer parse under the limits they were accepted under: ${parsed.reason}`);
+  if (canonicalizeJcs(receiptContextRefs(parsed)) !== canonicalizeJcs(record.contextRefs)) throw new EpcisExchangeError('record-unreadable', `the context references of ${record.importId} differ from its source`);
+  if (!sameProjection(record.envelope, parsed.envelope) || !sameProjection(record.preservedExtensions, preservedDocumentExtensions(parsed.document))) throw new EpcisExchangeError('record-unreadable', `the envelope or preserved extensions of ${record.importId} differ from its source`);
+  if (record.events.length !== parsed.events.length) throw new EpcisExchangeError('record-unreadable', `the number of events in ${record.importId} differs from its source`);
+  const localIds = new Set(parsed.events.flatMap(pointer => pointer.eventId == null ? [] : [pointer.eventId]));
+  for (const [index, pointer] of parsed.events.entries()) {
+    const event = record.events[index]!;
+    const body = atPointer(parsed.document, pointer.pointer) as JsonObject;
+    const matches = event.pointer === pointer.pointer && event.identityKind === pointer.identityKind && event.eventId === pointer.eventId
+      && event.identity === (pointer.eventId ?? pointer.localIdentity) && event.eventType === pointer.type
+      && event.bodyDigest === epcisEventBodyDigest(body, eventContextDigests(record.contextRefs, pointer.pointer))
+      && event.eventTime === (typeof body.eventTime === 'string' ? body.eventTime : undefined)
+      && event.recordTime === (typeof body.recordTime === 'string' ? body.recordTime : undefined)
+      && matchesSourceCorrection(event.errorDeclaration, body.errorDeclaration, localIds)
+      && sameProjection(event.identifiers, eventIdentifiers(body, pointer.pointer))
+      && sameProjection(event.preservedExtensions, preservedEventExtensions(body));
+    if (!matches) throw new EpcisExchangeError('record-unreadable', `event ${pointer.pointer} of ${record.importId} differs from its source`);
+  }
   return parsed.document;
 }
 
@@ -895,7 +941,7 @@ export function resolveEpcisConflict(storage: EpcisExchangeStorage, input: Resol
       const resolution: EpcisResolutionRecord = {
         recordType: 'epcis-conflict-resolution',
         recordVersion: EPCIS_RECORD_VERSION,
-        resolutionId: `urn:bsv:dpp:epcis:conflict-resolution:sha256:${sha256Hex(canonicalizeJcs(['resolution', scopeKey, sequence]))}`,
+        resolutionId: epcisResolutionId(scopeKey, sequence),
         conflictId: input.conflictId,
         sourceId: conflict.sourceId,
         identity: conflict.identity,
@@ -1058,6 +1104,7 @@ export async function checkEpcisExchangeInvariants(storage: EpcisExchangeStorage
   const breaches: string[] = [];
   for (const held of await listAll(storage, K.journal)) breaches.push(`journal ${held.key}: unfinished ${(held.value as unknown as EpcisJournalRecord).entry}`);
   const imports = new Map<string, EpcisImportRecord>();
+  const resolvedReferences = new Set<string>();
   const expected = new Map<string, JsonObject>();
   for (const held of await listAll(storage, K.import)) {
     const record = asRecord(held);
@@ -1069,12 +1116,27 @@ export async function checkEpcisExchangeInvariants(storage: EpcisExchangeStorage
     try { document = await retainedDocument(storage, record); } catch (error) { breaches.push(`import ${record.importId}: ${(error as Error).message}`); }
     for (const event of record.events) {
       if (record.state === 'received') continue;
+      if (event.errorDeclaration?.resolution === 'resolved') {
+        for (const id of event.errorDeclaration.correctiveEventIDs) resolvedReferences.add(epcisEventScopeKey(record.sourceId, 'event-id', id));
+      }
       if (event.arrival == null || event.observation == null) { breaches.push(`import ${record.importId} ${event.pointer}: no arrival recorded`); continue; }
       const observation = await storage.get(K.observation, observationKey(epcisEventScopeKey(record.sourceId, event.identityKind, event.identity), event.observation.sequence));
       if (observation == null) { breaches.push(`import ${record.importId} ${event.pointer}: its observation is not held`); continue; }
       const value = asObservation(observation);
       if (value.bodyDigest !== event.bodyDigest) breaches.push(`import ${record.importId} ${event.pointer}: its observation holds another body`);
-      if (event.arrival !== 'duplicate' && (value.importId !== record.importId || value.pointer !== event.pointer)) breaches.push(`import ${record.importId} ${event.pointer}: its observation names another arrival`);
+      if (value.importId !== event.observation.importId || value.pointer !== event.observation.pointer || value.sequence !== event.observation.sequence
+        || (event.arrival === 'duplicate' && value.sourceId !== record.sourceId) || value.identityKind !== event.identityKind || value.identity !== event.identity
+        || value.eventId !== event.eventId || value.eventType !== event.eventType) breaches.push(`import ${record.importId} ${event.pointer}: its observation names another event`);
+      if (document == null) continue;
+      const source = atPointer(document, event.pointer) as JsonObject;
+      if (event.arrival === 'duplicate') {
+        // Historic duplicate detection treats a missing repository value and JSON null as equal.
+        if (!sameProjection(value.recordTime ?? null, source.recordTime ?? null) || !sameProjection(value.errorDeclaration ?? null, source.errorDeclaration ?? null)) breaches.push(`import ${record.importId} ${event.pointer}: its observation has different repository fields`);
+      } else if (value.importId !== record.importId || value.pointer !== event.pointer || value.arrival !== event.arrival
+        || value.sourceSha256 !== record.sha256 || value.observedAt !== record.receivedAt
+        || !sameProjection(value.recordTime, source.recordTime) || !sameProjection(value.errorDeclaration, source.errorDeclaration)) {
+        breaches.push(`import ${record.importId} ${event.pointer}: its observation differs from its retained arrival`);
+      }
     }
     if (options.associations === true && document != null) for (const write of associationWrites(record, held.key, document)) if (write.op === 'put') expected.set(write.key, write.value);
   }
@@ -1088,10 +1150,12 @@ export async function checkEpcisExchangeInvariants(storage: EpcisExchangeStorage
     else if (owner.sourceId !== value.sourceId) breaches.push(`observation ${held.key}: it names the source scope ${JSON.stringify(value.sourceId)}, and its import belongs to ${JSON.stringify(owner.sourceId)}`);
     else if (!owner.events.some((event) => event.pointer === value.pointer && event.identity === value.identity && event.observation?.sequence === value.sequence && event.arrival !== 'duplicate')) breaches.push(`observation ${held.key}: its import does not name it`);
     const [scopeKey] = held.key.split('.');
+    resolvedReferences.delete(epcisEventScopeKey(value.sourceId, value.identityKind, value.identity));
     sequence = scopeKey === scope ? sequence + 1 : 1;
     scope = scopeKey!;
     if (value.sequence !== sequence) breaches.push(`observation ${held.key}: sequence ${value.sequence} where ${sequence} was expected`);
   }
+  for (const reference of resolvedReferences) breaches.push(`resolved correction ${reference}: no referenced event is held under that source`);
   for (const held of await listAll(storage, K.retention)) {
     const value = held.value as unknown as EpcisRetentionRecord;
     if (imports.get(value.importId)?.sha256 !== value.sha256) breaches.push(`retention ${held.key}: no import holds those bytes under that identity`);
