@@ -885,7 +885,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -898,7 +898,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -911,7 +911,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -924,7 +924,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -937,7 +937,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -950,7 +950,33 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/test/fixtures/sector-bindings/eu-battery@1/vectors/amperia-staxwall-item.jsonld",
+      "sha256": "19333ad80b3399f8896bdf0940ad327cca7409fcfd2b9ea7ee15c0af7dbcef88",
+      "bytes": 7549,
+      "role": "example-product",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": null,
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
+      "distribution": "In the implementer bundle.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/test/fixtures/sector-bindings/eu-battery@1/vectors/battery-product.jsonld",
+      "sha256": "f65b4a4adf71114b3b5df51ced30ba3ef3c8fe2d443006a6d8db13b07355ed06",
+      "bytes": 37333,
+      "role": "example-product",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": null,
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
+      "distribution": "In the implementer bundle.",
       "disposition": "bundled-bindings"
     },
     {
@@ -963,7 +989,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -976,7 +1002,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -989,7 +1015,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -1002,7 +1028,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -1015,7 +1041,7 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
       "disposition": "bundled-bindings"
     },
     {
@@ -1028,7 +1054,33 @@
       "licence": "Apache-2.0",
       "modified": false,
       "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
-      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "distribution": "In the @bsv/dpp-profiles archive and the implementer bundle. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/test/fixtures/sector-bindings/eu-textile@1/vectors/fjordline-aurora-item.jsonld",
+      "sha256": "10d30e7cc9babdf9ae0ebb48d1a4fcf76135948bbbfd7627db779548d4450b54",
+      "bytes": 1124,
+      "role": "example-product",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": null,
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
+      "distribution": "In the implementer bundle.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/test/fixtures/sector-bindings/eu-textile@1/vectors/garment-product.jsonld",
+      "sha256": "78adde90a05c8cb2ddc7dcf4964e757cf2b162f758d7a548af0576c354d9f29b",
+      "bytes": 36389,
+      "role": "example-product",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": null,
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
+      "distribution": "In the implementer bundle.",
       "disposition": "bundled-bindings"
     },
     {
@@ -1241,9 +1293,9 @@
     },
     {
       "id": "bundled-bindings",
-      "subject": "The contexts, shapes and ontology files of the bundled bindings",
+      "subject": "The contexts, shapes, ontology files and example product documents of the bundled bindings",
       "status": "held",
-      "basis": "Apache-2.0, unmodified, each held to its SHA-256 by its binding. The NOTICE.md beside each binding names the source, its revision and every file, and reproduces the one notice a file carries."
+      "basis": "Apache-2.0, unmodified, each held to the SHA-256 in its binding or upstream notice. The NOTICE.md beside each binding names the source, its revision and every file, and reproduces the one notice a file carries."
     },
     {
       "id": "w3c-context",

@@ -396,7 +396,7 @@ for (const dir of readdirSync(join(root, 'packages'))) {
 
 // 5. The capability document: one schema for every role, an index's and a registry's.
 validateWith('contracts/capabilities.schema.json', read('conformance/examples/capabilities-reference-node.json'), 'conformance/examples/capabilities-reference-node.json')
-validateWith('contracts/capabilities.schema.json', read('conformance/examples/capabilities-registry.json'), 'conformance/examples/capabilities-registry.json')
+validateWith('contracts/registry-capabilities.schema.json', read('conformance/examples/capabilities-registry.json'), 'conformance/examples/capabilities-registry.json')
 
 // 6. Licences, as recorded against what is installed.
 if (existsSync(join(root, 'conformance/licences.json'))) {

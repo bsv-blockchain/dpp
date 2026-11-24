@@ -33,7 +33,7 @@ Each field states a JSON pointer into the public or restricted payload, a semant
 
 Constraints are resolved, never implied: a percentage carries its bounds, a country carries its pattern, a closed list says it is closed. A list the source has not closed is `open`, and a value outside it is valid. A value whose permitted form waits on an act not yet adopted says so under `awaitingAct` and states no list or pattern; a consumer does not reject a value for such a field. A field marked `prose` is one a person writes for a person to read, by decision.
 
-The access tiers are `public`, `owner`, `legitimate` and `authority`. `public` fields go on chain in `payload_public`. The other three form one restricted object, committed once as the owner tier of [`record-model.md`](record-model.md) §7 and disclosed per tier by re-encryption to the entitled reader. A field's tier says who is entitled to its disclosure: an `owner` field reaches the owner alone; a `legitimate` field reaches the owner and the parties with a legitimate interest the manifest's `accessTiers` describes; an `authority` field reaches the owner, those parties and the authorities it describes. A disclosure to an authority may therefore carry the `legitimate` fields as well, and a disclosure to a party with a legitimate interest never carries an `authority` or `owner` field. The restricted schema the package generates covers the three tiers together, which is the object the owner encrypts; a disclosure is a subset of it and is checked against the same schema with the withheld fields absent.
+The access tiers are `public`, `owner`, `legitimate` and `authority`. `public` fields go on chain in `payload_public`. The other three form one restricted object, committed once as the owner tier of [`record-model.md`](record-model.md) §7 and disclosed per tier by re-encryption to the entitled reader. An `owner` field reaches the owner alone. A `legitimate` field may also reach the parties with a legitimate interest and the authorities the manifest's `accessTiers` describes. An `authority` field reaches only the owner and those authorities. A disclosure to an authority may therefore carry the `legitimate` fields as well, and a disclosure to a party with a legitimate interest never carries an `authority` or `owner` field. The restricted schema the package generates covers the three tiers together, which is the object the owner encrypts; a disclosure is a subset of it and is checked against the same schema with the withheld fields absent.
 
 JSON Schema validity is one check. Unit conversion, role evidence, provenance and legal applicability are separate checks and a report names them separately ([`verification.md`](verification.md) §4, `schema`). A payload that carries a field the manifest does not declare is preserved in the archived original and excluded from a public projection unless the selected profile permits unknown fields; it is never silently deleted from what was signed.
 
@@ -70,10 +70,12 @@ These rules bind writers, readers and profile registries. An index does not judg
 
 The sector profiles first published as manifests are retired from 14 November 2026. Each is replaced by a profile held by a binding (§7), which is another data model under its own identifier and not a later version of the retired one. Nothing converts a payload from one to the other, and no reader applies a retired profile's rules.
 
-| Retired | Replaced by |
-|---|---|
-| `battery@2`, `battery@3`, `battery@4` | `eu-battery@1` |
-| `textile@1`, `textile@2`, `textile@3`, `textile@4` | `eu-textile@1` |
+| Retired manifest | Binding named at retirement | Binding for new sector issuance |
+|---|---|---|
+| `battery@2`, `battery@3`, `battery@4` | `eu-battery@1` | `eu-battery@2` |
+| `textile@1`, `textile@2`, `textile@3`, `textile@4` | `eu-textile@1` | `eu-textile@2` |
+
+A writer using these sector bindings MUST use version 2 for new issuance. A reader MUST resolve each existing state against its declared edition and digest. A maintenance operation on an existing version 1 passport retains its original binding. Each successor adds a required class for the identified product under §7.
 
 `general@1` and `general@2` are not sector profiles and are not retired.
 
@@ -103,6 +105,8 @@ An industry profile whose data model is defined outside a manifest, by a JSON Sc
 
 **Validation.** A validator checks the envelope and the binding digest, then runs the steps the binding lists, in the binding's order. `json-schema` validates `product` against the binding's schema. `json-ld-expand` reads `product` as RDF using only the binding's contexts. `shacl` validates that RDF against the binding's shapes with its background data. `passport-identity` applies the identity rules below, and every binding lists it. A product document MUST name its contexts only by the URIs the binding lists: any other context, one written into the document included, is refused, and a validator MUST NOT fetch a context. A finding fails the check only when the binding lists its severity as blocking, and every finding is reported.
 
+A binding MAY declare `validation.subjectClass` as an absolute class IRI when it lists the `shacl` step. A complete product MUST assert that class, or a subclass established by the binding’s shapes or background, on the unique subject named by `identity.subject.pointers`. The validator reads that subject’s `rdf:type` statements after expansion with the pinned contexts. Only the registered artefacts establish the subclass hierarchy. A missing or unrelated type on the complete subject fails. A public projection that cannot establish the required class reports the check as withheld. Introducing this field into a published binding requires a new profile version.
+
 **A check that could not run is never a pass.** If any step fails, the result is `fail`. Otherwise, if any step could not run, the result is `unknown`. Only when every step ran and held is the result `pass`. A step could not run when the profile is not registered, when a validation engine is absent or lacks a capability the binding requires, when the engine did not finish in time, or when no passport identifier was supplied. A verifier reports the result under the `schema` check of [`verification.md`](verification.md) §4.
 
 **Product-to-passport identity.** A product document can satisfy every rule of its own profile and still describe another product. The expected identity is the `passport_id` of the state being written or read, supplied by the writer or the verifier and never taken from the payload. The identifiers are read as GS1 Digital Links (§5).
@@ -112,7 +116,7 @@ An industry profile whose data model is defined outside a manifest, by a JSON Sc
 3. The host is not compared.
 4. A GTIN of 8, 12, 13 or 14 digits is compared at fourteen digits. A wrong check digit fails.
 5. A serial read from a link is percent-decoded once and compared code point for code point, with no trimming, case folding or normalisation.
-6. Every GTIN and serial the document states, at a member the binding names, MUST equal the subject's.
+6. Every GTIN and serial the document states, at a member the binding names, MUST equal the subject's. For a JSON-LD binding, compare every value of the corresponding predicate asserted on the selected product subject. The binding's pinned contexts identify the predicate at its declared JSON Pointer, including property-scoped and type-scoped contexts along a nested path. A full IRI, compact name, allowed alias or second description of the same subject can express the same assertion. A conflicting assertion fails the comparison. An assertion whose value the verifier cannot interpret leaves the comparison unknown unless another assertion establishes a mismatch.
 7. A passport or product identifier, at a member the binding names, MAY be coarser than the item. It MUST carry the same GTIN, and the same serial if it carries one.
 8. A subject that is a model or a batch fails. A granularity the document declares MUST be `item`.
 9. A related model or batch identifier is never compared as the subject.

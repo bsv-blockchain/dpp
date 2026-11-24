@@ -43,13 +43,14 @@ This example refuses nothing; use [the cases to run](#the-cases-to-run) for refu
 2. **Dispatch on the representation** using the table below. Each format has different proof rules. Report an unimplemented representation as `unknown` with `representation-unsupported`, never a pass.
 3. **Verify a native claim** (rules section 3). Accept exactly the allowed properties. Serialise all except `signature` as restricted canonical JSON, hash with SHA-256, and verify the DER signature under the issuer key's BRC-42 child: protocol `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. A `did:key` issuer names the key; otherwise `issuerKeyDid` names it, and its relationship to the issuer needs separate evidence.
 4. **Decode the anchor** (rules section 5). Check every layout and derivation rule in the anchor table below.
-5. **Bind the anchor to the claim** (rules section 6). Field 2 must equal the complete secured bytes' SHA-256; for native claims, hash restricted canonical JSON including `signature`. The anchor's issuer, subject, type, representation and media type must equal the verified claim's.
+5. **Bind the anchor to the claim** (rules section 6). Field 2 must equal the complete secured bytes' SHA-256; for native claims, hash restricted canonical JSON including `signature`. For the native representation, field 3 must be `urn:sha256:` followed by that digest in lower-case hexadecimal. Compare the anchor's issuer, subject, type, representation and media type with the verified claim.
 6. **Compare the subject** ([verification](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/verification.md) section 3) with the identifier your caller expects.
 7. **Report each check separately** (verification section 4): `nativeAttestationSignature`, `anchorSignature`, `anchorKeyDerivation`, `anchorDigestAndMetadataBinding`, `subjectBinding`, `issuerAuthority` and `evidenceAvailability`, among the sixteen. A valid claim without an anchor is not a completed anchor check; a valid anchor without the claim cannot establish what the claim says.
 
 | Representation | Format and proof rules |
 |---|---|
 | `dpp-lifecycle-json-v1` | Native claim, rules section 3 |
+| `dpp-epcis-lifecycle-json@1` | Optional secured EPCIS event. Verify the exact bytes, event and product bindings, and report role authority and corrections under the [EPCIS lifecycle rules](../../interoperability/epcis.md). |
 | `vsc-seal-json-v1` | SEAL, the event credential of the parked Verifiable Supply Chain (VSC) profile; a verifier need not implement it |
 | `vc-di-ecdsa-rdfc-2019@1` | [External W3C credential](../../interoperability/external-credentials.md) |
 | `epcis-event-vc@1` | Directly signed EPCIS event, parked while its representation is reconsidered; a verifier need not implement it. `spec/epcis-event-profile.md` sections 3 to 7 give the rules as they stood: recompute the CBV 2.0 Event Hash ID from the subject, verify the ES256K compact JWS against the key its `kid` names, and bind the anchor to the exact JWS bytes ([parked: sign an event](../../interoperability/epcis.md#parked-sign-an-event)) |
@@ -68,6 +69,8 @@ Present the [individual findings](../../learn/evidence-and-freshness.md), includ
 
 ## The cases to run
 
+Run the three records in `fixtures/vectors/dpp/attestation-anchor/native-binding-v1.json`. Supply each locking script and the exact secured bytes, then compare the named signature, binding and availability findings. A valid anchoring signature can coexist with a failed native identifier or encoding check.
+
 | File | Case | Your verifier must |
 |---|---|---|
 | `fixtures/attestation-anchor-v1.json` | The whole file | Reproduce `canonicalUnsignedClaim`, verify `claim.signature`, get `digest` from `representationBytes`, decode `lockingScript` to the nine `fields`, verify `signature` over `signingPreimage`, and derive `lockingKey` |
@@ -79,7 +82,7 @@ Present the [individual findings](../../learn/evidence-and-freshness.md), includ
 | The same file | `refuse-uncompressed-key` | Refuse: the locking key pushed as 65 bytes |
 | The same file | `refuse-invalid-utf8` | Refuse: the subject as invalid UTF-8 |
 | `fixtures/evidence-v1.json` | `anchor-and-claim`, `anchor-and-claim-authorised` | Pass every claim and anchor check; `issuerAuthority` reads `unknown` `policy-missing` without a policy and `pass` with one |
-| The same file | `anchor-tampered-bytes` | Report `anchorDigestAndMetadataBinding` `fail` `digest-mismatch` |
+| The same file | `anchor-supplied-bytes-digest-mismatch` | Report `anchorDigestAndMetadataBinding` as `fail` with `digest-mismatch` and `evidenceAvailability` as `fail` with `referenced-artefact-mismatch`. The catalogue records the superseded case as skipped. |
 | The same file | `anchor-metadata-mismatch` | Report `anchorDigestAndMetadataBinding` `fail` `metadata-mismatch` and `subjectBinding` `fail` `subject-mismatch` |
 | The same file | `anchor-unsupported-representation` | Report `anchorDigestAndMetadataBinding` `unknown` `representation-unsupported` |
 | The same file | `anchor-bytes-absent` | Report `anchorDigestAndMetadataBinding` `unknown` `secured-bytes-absent` and `evidenceAvailability` `unknown` `referenced-artefact-unavailable` |

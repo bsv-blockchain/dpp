@@ -1275,7 +1275,7 @@ describe('boundaries', () => {
       if (files.has(file)) return;
       files.add(file);
       const text = readFileSync(file, 'utf8');
-      for (const match of text.matchAll(/(?:^|\n)\s*(?:import|export)\s[^;]*?from\s+['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|(?:^|\n)\s*import\s+['"]([^'"]+)['"]/g)) {
+      for (const match of text.matchAll(/(?:^|\n)\s*(?:import|export)\s[^;]*?from\s+['"]([^'"]+)['"]|(?:import|schemaRequire)\(\s*['"]([^'"]+)['"]\s*\)|(?:^|\n)\s*import\s+['"]([^'"]+)['"]/g)) {
         const specifier = (match[1] ?? match[2] ?? match[3])!;
         if (specifier.startsWith('.')) visit(resolve(dirname(file), specifier.replace(/\.js$/, '.ts')));
         else external.add(specifier);
@@ -1287,7 +1287,10 @@ describe('boundaries', () => {
 
   it('reaches no signing, wallet or chain code', () => {
     const graph = importGraph(join(src, 'epcis-exchange.ts'));
-    expect(graph.external).toEqual(['ajv', 'ajv-formats', 'node:assert/strict', 'node:crypto', 'node:fs', 'node:fs/promises', 'node:os', 'node:path']);
+    expect(graph.external).toEqual([
+      '@bsv/dpp-protocol/schemas/epcis-exchange-records.schema.json', '@bsv/dpp-protocol/schemas/epcis-import.schema.json', '@bsv/dpp-protocol/schemas/epcis-recovery.schema.json',
+      'ajv', 'ajv-formats', 'ajv/dist/2020.js', 'node:assert/strict', 'node:crypto', 'node:fs', 'node:fs/promises', 'node:module', 'node:os', 'node:path',
+    ]);
     expect(graph.files).toEqual([
       'epcis-exchange.ts',
       'epcis-exchange/adapter-suite.ts',
@@ -1311,7 +1314,7 @@ describe('boundaries', () => {
       const text = readFileSync(join(src, file), 'utf8');
       // node:crypto is used for digests and random names only.
       expect(text, file).not.toMatch(/createSign|createVerify|createPrivateKey|createPublicKey|generateKeyPair|createHmac|createCipher|\.sign\(|subtle\b/);
-      expect(text, file).not.toMatch(/['"]@bsv\/|wallet|broadcast|createAction|new Transaction|Transaction\.from|PrivateKey|jsonld-signatures|digitalbazaar/i);
+      expect(text, file).not.toMatch(/['"]@bsv\/(?!dpp-protocol\/schemas\/epcis-(?:exchange-records|import|recovery)\.schema\.json['"])|wallet|broadcast|createAction|new Transaction|Transaction\.from|PrivateKey|jsonld-signatures|digitalbazaar/i);
       // The pull requests through the transport it is handed. No module here opens a connection, names the global transport or resolves a host itself.
       if (file.startsWith('epcis-exchange')) expect(text, file).not.toMatch(/\bfetch\(|globalThis|node:https?|node:net|node:dns|node:tls|node:child_process/);
     }

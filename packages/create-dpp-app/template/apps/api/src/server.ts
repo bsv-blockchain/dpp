@@ -21,10 +21,10 @@ import { sectorExamples } from './sector-examples.js'
 import type { Party } from './parties.js'
 import type { Platform } from './platform.js'
 import { resolverRoutes } from './resolver.js'
-import { currentProfiles, isProfileId, manifestFor, sampleWithProblems } from './profiles.js'
+import { currentProfiles, isProfileId, manifestFor, sampleWithProblems, sectorIssueSuccessor } from './profiles.js'
 import { isEpcisLifecycleRecord, type PassportRecord, type StateEntry } from './store.js'
 import { pendingDuties, runDuties, summariseJournal } from './worker.js'
-import { WriteRefused, refuseRetiredProfile } from './writer.js'
+import { WriteRefused, refuseRetiredProfile, requireIssuableProfile } from './writer.js'
 
 export interface ServerOptions {
   platform: Platform
@@ -69,7 +69,8 @@ const param = (req: Request, name: string): string => {
 
 /** What a passport looks like over the API: the journal without the owner-tier ciphertext. */
 function publicView(record: PassportRecord, policyIsDemo: boolean) {
-  const tip = record.states.at(-1)
+  const tip = record.states.filter((state) => state.network === 'accepted' || state.network === 'dry-run').at(-1)
+  const journal = summariseJournal(record)
   let payload: unknown = tip?.payloadPublic
   try {
     payload = tip == null ? undefined : JSON.parse(tip.payloadPublic)
@@ -82,12 +83,12 @@ function publicView(record: PassportRecord, policyIsDemo: boolean) {
     profile: record.profile,
     // Present only for a passport journalled under a retired profile: the page then offers no write and names the replacement.
     ...(isRetiredProfile(record.profile) ? { profileRetired: { replacedBy: RETIRED_PROFILE_REPLACEMENTS[record.profile] } } : {}),
-    status: record.status,
+    status: journal.status,
     demonstration: policyIsDemo,
     holder: record.holder,
     createdAt: record.createdAt,
     payload,
-    journal: summariseJournal(record),
+    journal,
     states: record.states.map((s: StateEntry) => ({
       op: s.op,
       txid: s.txid,
@@ -112,6 +113,7 @@ export function createServer(options: ServerOptions): express.Express {
   // How lifecycle claims are read: by the index's anchors and this application's records, each verified with the pinned schema the EPCIS exchange provisioned.
   const schemaCheck = options.exchange == null ? undefined : eventSchemaCheck(options.exchange.artefactsDir)
   const claimsReader: ClaimsReaderOptions = {
+    ...platform.lifecyclePolicy,
     store,
     index: platform.index,
     ...(config.registry.url == null ? {} : { registry: { url: config.registry.url } }),
@@ -162,6 +164,11 @@ export function createServer(options: ServerOptions): express.Express {
       await requireMember(req, record.brandId)
       return parties.brand(id)
     }
+    if (scope === 'member') {
+      const member = parties.member((await requireSession(req)).userId)
+      if (member.name !== record.holder.party) throw new HttpError(403, 'recipient-wrong', 'only the named member holds this passport')
+      return member
+    }
     if (scope === 'recipient') {
       const claimCode = typeof req.body?.claimCode === 'string' ? req.body.claimCode : undefined
       const offer = await store.getOffer(id)
@@ -200,7 +207,7 @@ export function createServer(options: ServerOptions): express.Express {
     '/api/profiles',
     wrap(async () => [
       ...currentProfiles().map((profile) => ({ ...profile, format: 'manifest' })),
-      ...platform.profiles.list().map((profile) => ({ id: profile.profile, title: profile.binding.title, description: profile.binding.scope, format: 'binding' })),
+      ...platform.profiles.list().map((profile) => ({ id: profile.profile, title: profile.binding.title, description: profile.binding.scope, format: 'binding', issueSuccessor: sectorIssueSuccessor(profile.profile) })),
     ])
   )
   app.get(
@@ -273,8 +280,14 @@ export function createServer(options: ServerOptions): express.Express {
   )
 
   app.get('/api/offers/:requestId', wrap(async (req) => await custody.preview(param(req, 'requestId'))))
-  app.post('/api/offers/:requestId/accept', wrap(async (req) => await custody.accept({ requestId: param(req, 'requestId'), claimCode: req.body?.claimCode })))
-  app.post('/api/offers/:requestId/decline', wrap(async (req) => await custody.decline(param(req, 'requestId'), req.body?.claimCode)))
+  app.post('/api/offers/:requestId/accept', wrap(async req => {
+    const member = await session(req)
+    return await custody.accept({ requestId: param(req, 'requestId'), claimCode: req.body?.claimCode, recipient: member == null ? undefined : parties.member(member.userId) })
+  }))
+  app.post('/api/offers/:requestId/decline', wrap(async req => {
+    const member = await session(req)
+    return await custody.decline(param(req, 'requestId'), req.body?.claimCode, member == null ? undefined : parties.member(member.userId).identityKey)
+  }))
 
   // ------------------------------------------------------------------ signed in
 
@@ -328,7 +341,7 @@ export function createServer(options: ServerOptions): express.Express {
       if (brandRecord == null) throw new HttpError(404, 'brand-unknown', `no brand ${brandId}`)
       const { profile, itemReference, serial, payload, ownerFields } = req.body ?? {}
       const bound = typeof profile === 'string' ? platform.profiles.get(profile) : undefined
-      if (typeof profile === 'string' && isRetiredProfile(profile)) throw new HttpError(409, PROFILE_RETIRED, `${describeRetiredProfile(profile)} Nothing was signed.`)
+      if (typeof profile === 'string') requireIssuableProfile(profile)
       if (bound == null && !isProfileId(profile)) throw new HttpError(400, 'profile-unknown', `${String(profile)} is not a profile this platform knows`)
       if (typeof itemReference !== 'string' || typeof serial !== 'string') throw new HttpError(400, 'identifier-required', 'give itemReference (digits) and serial')
       let passportId: string
@@ -446,6 +459,8 @@ export function createServer(options: ServerOptions): express.Express {
       const role = typeof body.correctionOf === 'string' && body.assertedRole === undefined ? 'authorised-reporter' : body.assertedRole
       if (typeof role !== 'string' || !(EPCIS_LIFECYCLE_ROLES as readonly string[]).includes(role)) throw new HttpError(400, 'asserted-role-required', `assertedRole must be one of ${EPCIS_LIFECYCLE_ROLES.join(', ')}`)
       const strings = (value: unknown): string[] | undefined => (Array.isArray(value) && value.every((v) => typeof v === 'string') ? (value as string[]) : undefined)
+      if (body.authorityScope !== undefined && strings(body.authorityScope) == null) throw new HttpError(400, 'authority-scope-invalid', 'authorityScope must be an array of passport identifiers')
+      if (body.requiredExtensions !== undefined && strings(body.requiredExtensions) == null) throw new HttpError(400, 'required-extensions-invalid', 'requiredExtensions must be an array of rule identifiers')
       const issue: Omit<IssueClaimInput, 'event'> = {
         issuer: parties.member(s.userId),
         assertedRole: role as EpcisLifecycleRole,
@@ -481,8 +496,8 @@ export function createServer(options: ServerOptions): express.Express {
         const corrective = strings(body.correctiveEventIDs)
         event = { ...claim.event, errorDeclaration: { declarationTime: new Date().toISOString(), ...(reason == null ? {} : { reason }), ...(corrective == null || corrective.length === 0 ? {} : { correctiveEventIDs: corrective }) } }
         Object.assign(issue, {
+          corrects: claim,
           assertedRole: claim.assertedRole,
-          authorityScope: claim.authorityScope,
           ...(claim.issuerParty == null ? {} : { issuerParty: claim.issuerParty }),
           ...(claim.source == null ? {} : { source: claim.source }),
           ...(original.importedFrom == null ? {} : { importedFrom: original.importedFrom }),
@@ -507,7 +522,10 @@ export function createServer(options: ServerOptions): express.Express {
       await platform.profiles.checkEngine()
       return {
         duties: await pendingDuties(store),
-        passports: (await store.listPassports()).map((p) => ({ passportId: p.passportId, brandId: p.brandId, status: p.status, journal: summariseJournal(p) })),
+        passports: (await store.listPassports()).map((p) => {
+          const journal = summariseJournal(p)
+          return { passportId: p.passportId, brandId: p.brandId, status: journal.status, journal }
+        }),
         // The engine's problem as it is now, where bound profiles are read from, and each profile folder or bundle that was refused.
         profiles: { engine: { available: platform.profiles.engineProblem == null, kind: platform.profiles.engineKind, problem: platform.profiles.engineProblem }, source: platform.profiles.source, refused: platform.profiles.refusals },
       }

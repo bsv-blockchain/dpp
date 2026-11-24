@@ -57,6 +57,11 @@
       "additionalProperties": false,
       "required": ["steps", "blockingSeverities"],
       "properties": {
+        "subjectClass": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9+.-]*:[^\\s]+$",
+          "description": "The required class IRI of the product subject. The shacl step checks the subject's expanded RDF types against this class and its subclasses in the trusted binding."
+        },
         "steps": {
           "type": "array",
           "description": "The checks a product document goes through, in this order, after the envelope and the binding digest.",

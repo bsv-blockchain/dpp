@@ -98,7 +98,7 @@ describe('no retired profile is offered', () => {
   it('lists none: not among the manifest profiles, not over HTTP, and not as a form', async () => {
     expect(currentProfiles().map((p) => p.id)).toEqual(['general@2'])
     const listed = ((await get('/api/profiles')).body as Array<{ id: string; format: string }>).map((p) => p.id)
-    expect(listed).toEqual(['general@2', 'eu-battery@1', 'eu-textile@1'])
+    expect(listed).toEqual(['general@2', 'eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2'])
     for (const profile of RETIRED) {
       expect(listed, profile).not.toContain(profile)
       expect(isProfileId(profile), profile).toBe(false)
@@ -137,7 +137,7 @@ describe('nothing is written under a retired profile', () => {
       const refused = await refusal(platform.writer.issue({ brandId, brand, passportId, profile, ...data }))
       expect(refused.code).toBe('profile-retired')
       expect(refused.message).toContain('Nothing was signed')
-      expect(refused.data).toEqual({ replacedBy: RETIRED_PROFILE_REPLACEMENTS[profile as keyof typeof RETIRED_PROFILE_REPLACEMENTS] })
+      expect(refused.data).toEqual({ replacedBy: profile.startsWith('battery@') ? 'eu-battery@2' : 'eu-textile@2' })
     }
     expect(await platform.store.getPassport(passportId)).toBeUndefined()
     expect(await platform.index.lineage(passportId).catch(() => [])).toEqual([])
@@ -146,7 +146,7 @@ describe('nothing is written under a retired profile', () => {
   it.each(RETIRED)('%s: the issue route answers 409 with profile-retired', async (profile) => {
     const { status, body } = await post(`/api/brands/${brandId}/passports`, { profile, itemReference: '100000043', serial: `HTTP-${profile.replace('@', '-')}`, payload: {}, ownerFields: {} })
     expect(status).toBe(409)
-    expect(body.error).toBe('profile-retired')
+    expect(body).toMatchObject({ error: 'profile-retired', replacedBy: profile.startsWith('battery@') ? 'eu-battery@2' : 'eu-textile@2' })
     expect((await platform.store.listPassports({ brandId })).every((p) => !p.passportId.includes('/21/HTTP-'))).toBe(true)
   })
 

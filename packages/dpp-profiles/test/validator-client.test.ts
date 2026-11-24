@@ -238,8 +238,8 @@ describe('createValidatorClient: a service that cannot be used is never a pass',
     const result = await validateWith(client)
     expect(result).toMatchObject({ status: 'unknown', detail: { cause: 'validator-unavailable' } })
     expect(stepsOf(result).find((s) => s.step === 'shacl')?.messages?.[0]).toContain('shacl-sparql-constraints')
-    // The validator decided that from what the expansion's answer said, and never asked for the validation.
-    expect(service.requests.map((r) => r.url)).toEqual(['/expand'])
+    // The product and its identity predicates were expanded. The missing capability prevents validation.
+    expect(service.requests.map((r) => r.url)).toEqual(['/expand', '/expand'])
   })
 
   it('a service that named a capability when it expanded and answers the validation without it', async () => {
@@ -249,7 +249,7 @@ describe('createValidatorClient: a service that cannot be used is never a pass',
     const result = await validateWith(client)
     expect(result, JSON.stringify(result.detail)).toMatchObject({ status: 'unknown', detail: { cause: 'validator-unavailable' } })
     expect(stepsOf(result).find((s) => s.step === 'shacl')?.messages?.[0]).toMatch(/answered for an engine without shacl-sparql-constraints/)
-    expect(JSON.parse(service.requests[1]!.body)).toMatchObject({ requires: CAPABILITIES })
+    expect(JSON.parse(service.requests.find((request) => request.url === '/validate')!.body)).toMatchObject({ requires: CAPABILITIES })
     // And it now reports what that engine said, so the next payload is not sent for a validation it cannot have.
     expect(client.shacl.capabilities).toEqual(['shacl-core'])
   })

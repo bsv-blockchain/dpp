@@ -1,6 +1,6 @@
 # EU battery and textile bindings
 
-Passport writers and readers can use this page to write and check a payload under `eu-battery@1` or `eu-textile@1`. Each is a data model defined outside `@bsv/dpp-profiles`, as JSON-LD contexts and SHACL shapes, and held by a [binding](../packages/dpp-profiles.md#validate-a-profile-defined-outside-the-package) that the package ships.
+Passport writers and readers can use this page to write and check a payload under the EU battery or textile sector binding. Each is a data model defined outside `@bsv/dpp-profiles`, as JSON-LD contexts and SHACL shapes, and held by a [binding](../packages/dpp-profiles.md#validate-a-profile-defined-outside-the-package) that the package ships.
 
 The name of each profile states which data model the product document uses. It makes no claim that a passport or its product complies with Regulation (EU) 2023/1542, Regulation (EU) 2024/1781, Regulation (EU) No 1007/2011 or any other law. A `pass` says the document has the profile's shape and describes the passport's item, and nothing more.
 
@@ -17,17 +17,23 @@ The contexts and shapes of both profiles are unmodified files published by the O
 | Write a payload | A complete product document in the profile's data model, and the identifier of the passport that will carry it |
 | Try both profiles in an application | The application starter's source candidate, which has a form for each and reads them back ([product documents under a binding](../packages/create-dpp-app.md#product-documents-under-a-binding)) |
 
-## The two profiles
+## Sector bindings
 
 | Profile | Product document | Binding digest |
 |---|---|---|
 | `eu-battery@1` | Battery passport data for one serialised item | `89c5687f441926e8af37696a8f703342364e060f71d817badf3e1366043010b4` |
 | `eu-textile@1` | Textile passport data for one serialised item | `8bccb7952d24180327a318772a2462141c4b84a37f1b16f0b9eee131e362d994` |
+| `eu-battery@2` | Battery passport with `eubat:Battery` on the identified item | `084cd32380744fcb767488440a88a7f0eef674b036038a33ecdc02cd85a22c67` |
+| `eu-textile@2` | Textile passport with `eutex:TextileProduct` or a trusted subclass on the identified item | `6f6b3a477d8718fa9e857387e3a11d1bf34a101708c2fb3ed911eb8cd2f7bc35` |
+
+Version 2 checks the class on the item whose identifier the passport declares. For example, the textile ontology establishes `eutex:TextileApparel` as a subclass of `eutex:TextileProduct`. A different typed item elsewhere in the document cannot supply the class. A complete document without the required item type fails. A reader whose public projection cannot establish the class reports `unknown` with `restricted-tier-withheld`. Both versions use the same pinned upstream files, identity comparisons and public property lists.
+
+The starter registers both editions. New battery and textile passports use version 2. An existing passport resolves through the version and binding digest in its original envelope, including version 1.
 
 | Both bindings | Value |
 |---|---|
 | Granularity | `item` only. A document about a model or a batch is refused |
-| Files | Four contexts, one shapes file and one background file, in `bindings/<profile>/` inside the package, each held to the byte length and SHA-256 its `binding.json` records |
+| Files | Four contexts, one shapes file and one background file, in each sector directory under `bindings/`. The version 1 file is `binding.json` and version 2 is `binding.v2.json`. Both record the byte length and SHA-256 of every artefact |
 | Checks, in order | `json-ld-expand`, `shacl`, `passport-identity` |
 | Tiers | Public and restricted, split by top-level property. A property the binding does not list as public is restricted |
 | Engines required | `shacl-core` and `shacl-sparql-constraints`. An engine without SPARQL constraints answers `unknown`, never `pass` |
@@ -43,8 +49,8 @@ A state's `payload_public` under either profile is the [binding envelope](../pac
 ```json
 {
   "profile": "eu-battery",
-  "profile_version": 1,
-  "profile_binding_sha256": "89c5687f441926e8af37696a8f703342364e060f71d817badf3e1366043010b4",
+  "profile_version": 2,
+  "profile_binding_sha256": "084cd32380744fcb767488440a88a7f0eef674b036038a33ecdc02cd85a22c67",
   "product": {
     "@context": ["<core context URI>", "<battery context URI>"],
     "id": "https://id.example/01/09521234002000/21/STAX10-2026-000001",
@@ -66,7 +72,7 @@ A state's `payload_public` under either profile is the [binding envelope](../pac
 | `notice` | Optional, first, and only on a demonstration record |
 | Size | A version 2 state holds at most 65,535 bytes of `payload_public`. The public payloads of the four documents the tests use are 727 to 19,632 bytes minified, with the notice. The whole documents would be 727 to 28,157 |
 
-This example is abbreviated: the shapes require more members than it shows. Do not build the payload by hand. `prepareBoundPayload` validates the whole document, splits it and returns the exact text, as the next section shows. Print the context URIs of a registered binding with `registry.resolve('eu-battery', 1).binding.artefacts.filter((a) => a.role === 'context').map((a) => a.uri)`.
+This example is abbreviated: the shapes require more members than it shows. Do not build the payload by hand. `prepareBoundPayload` validates the whole document, splits it and returns the exact text, as the next section shows. Print the context URIs of a registered binding with `registry.resolve('eu-battery', 2).binding.artefacts.filter((a) => a.role === 'context').map((a) => a.uri)`.
 
 ## Register the bindings, prepare a payload and validate
 
@@ -95,7 +101,7 @@ const { gtin, serial } = parseGs1DigitalLink(product.id)
 const passportId = buildGs1DigitalLink('passports.example', gtin, serial)
 
 // The writer validates the whole document, splits it and builds the public payload.
-const prepared = await prepareBoundPayload({ registry, engines, profile: 'eu-battery', profileVersion: 1, product, passportId })
+const prepared = await prepareBoundPayload({ registry, engines, profile: 'eu-battery', profileVersion: 2, product, passportId })
 if (!prepared.ok) throw new Error(`${prepared.code}: ${prepared.detail}`)
 console.log('whole document', prepared.validation.status)
 console.log('public payload', prepared.byteLength, 'bytes:', Object.keys(JSON.parse(prepared.payloadPublic).product).join(', '))
@@ -105,7 +111,7 @@ const show = (label, result) => {
   console.log([label, '=>', result.status, result.reasonCode, result.detail.cause].filter(Boolean).join(' '))
   for (const step of result.detail.steps) console.log(['  ' + step.step, step.status, ...(step.messages ?? [])].join(' '))
 }
-const payload = { profile: 'eu-battery', profileVersion: 1, payloadPublic: prepared.payloadPublic }
+const payload = { profile: 'eu-battery', profileVersion: 2, payloadPublic: prepared.payloadPublic }
 
 // Any reader has the public payload alone. Checked under this passport, then under another item's.
 const validate = bindingPayloadValidator({ registry, engines })
@@ -121,6 +127,8 @@ show('authorised view', await authorisedPayloadValidator({ registry, engines })(
 ```
 registered eu-battery@1 with 6 artefacts
 registered eu-textile@1 with 6 artefacts
+registered eu-battery@2 with 6 artefacts
+registered eu-textile@2 with 6 artefacts
 whole document pass
 public payload 756 bytes: @context, id, type, oec:granularityLevel, schema:schemaVersion, oec:hasReportingGranularity, eubat:batteryModelIdentifier, gs1:hasSerialNumber, oec:lastUpdated, gs1:gtin, schema:serialNumber, oec:passportStatus
 restricted part: id, schema:status, eubat:puttingIntoService, eubat:hasBatteryState
@@ -162,15 +170,15 @@ authorised view => pass
 
 | `registerBundledBindings` option | Effect |
 |---|---|
-| `profiles` | Registers only the named profiles, such as `['eu-textile@1']`. Default: both |
+| `profiles` | Registers only the named editions. The default registers both editions for each sector under the registry’s configured trust list. |
 | `directory` | A `file:` URL of the folder that holds the binding folders. Default: the package's own `bindings/`. Name it when a bundler moved the data files |
 
 It returns one result per profile and does not throw for a refusal. A refused profile stays unknown to the registry, so a payload under it answers `unknown`.
 
 | `code` | Cause |
 |---|---|
-| `bundled-binding-unavailable` | `binding.json` could not be read from the folder |
-| `bundled-binding-altered` | `binding.json` is not the file the package pins. It is refused even by a registry that trusts the changed file |
+| `bundled-binding-unavailable` | The selected binding file could not be read from the folder |
+| `bundled-binding-altered` | The digest of the selected file differs from its package pin. It is refused even by a registry that trusts the changed file |
 | `binding-untrusted` | The registry was not given the binding's digest |
 | `artefact-unavailable`, `artefact-length-mismatch`, `artefact-digest-mismatch` | A context, shapes or background file is missing or is not the file the binding records. `artefact` names it |
 
@@ -178,7 +186,7 @@ With a bundler, keep the package external and include `bindings/**` with the oth
 
 ## Which properties are public
 
-The split is by top-level property of the product document. A property is wholly public or wholly restricted, and nothing is split inside a nested object or a list. The list is part of each binding, so the binding digest a payload declares also commits to which properties were public.
+Both editions use the access lists below. The split is by top-level property of the product document. A property is wholly public or wholly restricted, and nothing is split inside a nested object or a list. The list is part of each binding, so the binding digest a payload declares also commits to which properties were public.
 
 | Profile | Public properties | Restricted properties the test documents carry |
 |---|---|---|
@@ -342,7 +350,7 @@ The shapes check granularity as well, with a SPARQL constraint: the declared lev
 |---|---|
 | Bindings, artefacts and notices | `packages/dpp-profiles/bindings/eu-battery@1/` and `packages/dpp-profiles/bindings/eu-textile@1/` in the repository; `bindings/` in the package |
 | Licence and third-party terms | [Licence and reuse](../contribute/licence.md) |
-| Test documents and the cases the tests refuse | `packages/dpp-profiles/test/fixtures/sector-bindings/` in the repository. They are not part of the package |
+| Test documents and the cases the tests refuse | `packages/dpp-profiles/test/fixtures/sector-bindings/` in the repository. The implementer bundle carries these files under `profiles/bindings/<sector>@1/vectors/`. The version 2 replay cases are in `subject-class-v2.json` |
 | Binding format, registry and validator | [Validate a profile defined outside the package](../packages/dpp-profiles.md#validate-a-profile-defined-outside-the-package) |
 | Taking the bindings to another deployment | [Carry a profile to another deployment](../packages/dpp-profiles.md#carry-a-profile-to-another-deployment): the bindings, their files, each `NOTICE.md` and the licence text travel in an evidence package |
 

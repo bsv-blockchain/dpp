@@ -53,7 +53,7 @@ describe('the identifier the form writes', () => {
       const identity = minted(itemReference, serial)
       expect(identity.passportId).toBe(mintPassportId(policy, itemReference, serial))
       expect(identity.gtin).toBe(mintGtin(policy.prefix, itemReference))
-      for (const profile of ['eu-battery@1', 'eu-textile@1']) {
+      for (const profile of ['eu-battery@2', 'eu-textile@2']) {
         const form = formFor(profile)
         const { product } = buildDocument(form, emptyState(), identity, contextsFor(form))
         // One serial and one GTIN go in, and every member that states either is written from them.
@@ -84,19 +84,19 @@ describe('the identifier the form writes', () => {
 describe('an empty form', () => {
   it('writes the identity and nothing else: no identifier, classification, date or unit is made up', () => {
     const identity = minted('100200300', 'EMPTY-0001')
-    const battery = formFor('eu-battery@1')
+    const battery = formFor('eu-battery@2')
     expect(buildDocument(battery, emptyState(), identity, contextsFor(battery))).toMatchObject({
       problems: [],
       product: { '@context': contextsFor(battery), id: identity.passportId, type: ['gs1:Product', 'eubat:Battery'], 'oec:granularityLevel': 'item', 'gs1:gtin': identity.gtin, 'gs1:hasSerialNumber': 'EMPTY-0001' },
     })
     expect(Object.keys(buildDocument(battery, emptyState(), identity, contextsFor(battery)).product)).toEqual(['@context', 'id', 'type', 'oec:granularityLevel', 'gs1:gtin', 'gs1:hasSerialNumber'])
-    const textile = formFor('eu-textile@1')
+    const textile = formFor('eu-textile@2')
     expect(Object.keys(buildDocument(textile, emptyState(), identity, contextsFor(textile)).product)).toEqual(['@context', 'id', 'type', 'oec:granularityLevel', 'gs1:gtin', 'schema:serialNumber'])
   })
 
   it('writes nothing for fields that were touched and left empty, and no node for a group with only its fixed members', () => {
     const identity = minted('100200300', 'EMPTY-0002')
-    const form = formFor('eu-battery@1')
+    const form = formFor('eu-battery@2')
     const state: FormState = {
       ...emptyState(),
       values: {
@@ -118,7 +118,7 @@ describe('an empty form', () => {
 describe('what a field writes', () => {
   const identity = () => minted('100200300', 'FIELD-0001')
   const build = (values: FormState['values']) => {
-    const form = formFor('eu-battery@1')
+    const form = formFor('eu-battery@2')
     return buildDocument(form, { ...emptyState(), values }, identity(), contextsFor(form))
   }
 
@@ -178,18 +178,18 @@ describe('what a field writes', () => {
   })
 
   it('keeps the manufacturer\'s identifiers apart from display names', () => {
-    const fields = topLevelFields(formFor('eu-battery@1'))
+    const fields = topLevelFields(formFor('eu-battery@2'))
     const keys = fields.map((field) => field.key)
     for (const key of ['eubat:batteryModelIdentifier', 'gs1:productName', 'schema:model', 'eubat:manufacturerIdentifier', 'eubat:operatorIdentifier', 'eubat:facilityIdentifier', 'gs1:manufacturer', 'eubat:hasOperatorInformation', 'eubat:hasManufacturingPlace']) expect(keys).toContain(key)
     // No field writes the serial or the GTIN: they come from the passport identifier alone.
-    for (const profile of ['eu-battery@1', 'eu-textile@1']) {
+    for (const profile of ['eu-battery@2', 'eu-textile@2']) {
       const all = JSON.stringify(formFor(profile).sections)
       for (const member of ['gs1:gtin', 'gs1:hasSerialNumber', 'schema:serialNumber', 'gs1:productID']) expect(all).not.toContain(`"key":"${member}"`)
     }
   })
 
   it('writes a fibre share as a typed number and the five care symbols as codes', () => {
-    const form = formFor('eu-textile@1')
+    const form = formFor('eu-textile@2')
     const { product, problems } = buildDocument(
       form,
       {
@@ -221,7 +221,7 @@ describe('what a field writes', () => {
   })
 })
 
-describe.each(['eu-battery@1', 'eu-textile@1'])('the %s form and its example', (profile) => {
+describe.each(['eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2'])('the %s form and its example', (profile) => {
   it('holds every property of the example in a field, and builds the same document back', () => {
     const form = formFor(profile)
     const example = sectorExamples(platform.profiles.get(profile)!, policy)[0]
@@ -238,14 +238,19 @@ describe.each(['eu-battery@1', 'eu-textile@1'])('the %s form and its example', (
     const form = formFor(profile)
     const bound = platform.profiles.get(profile)!
     const example = sectorExamples(bound, policy)[0]
-    const identity = minted(example.itemReference, `FORM-${profile.slice(3, 6).toUpperCase()}-1`)
+    const identity = minted(example.itemReference, `FORM-${profile.slice(3, 6).toUpperCase()}-${bound.version}`)
     const { product } = buildDocument(form, parseDocument(form, example.product).state, identity, contextsFor(form))
-    const outcome = await platform.writer.issue({ brandId, brand: platform.parties.brand(brandId), passportId: identity.passportId, profile, product })
-    expect(outcome.entry.index).toBe('admitted')
+    const prepared = await platform.profiles.prepare({ profile: bound, product, passportId: identity.passportId })
+    if (!prepared.ok) throw new Error(prepared.detail)
+    if (bound.version === 2) {
+      const issued = await platform.writer.issue({ brandId, brand: platform.parties.brand(brandId), passportId: identity.passportId, profile, product })
+      expect(issued.entry.index).toBe('admitted')
+      expect(JSON.parse(issued.state.payloadPublic)).toEqual({ notice: 'This demonstration record describes no real product.', ...JSON.parse(prepared.payloadPublic) })
+    }
 
     const access = platform.profiles.describe(bound).access
     const preview = splitPreview(product, access)
-    const written = JSON.parse(outcome.state.payloadPublic) as { product: Json }
+    const written = JSON.parse(prepared.payloadPublic) as { product: Json }
     // What the page says is public is exactly what went on chain.
     expect(preview.public).toEqual(Object.keys(written.product))
     expect(preview.restricted.length).toBeGreaterThan(0)
@@ -263,8 +268,8 @@ describe.each(['eu-battery@1', 'eu-textile@1'])('the %s form and its example', (
 
 describe('a loaded document', () => {
   it('loses nothing: what the form cannot hold exactly is kept as it came', () => {
-    const form = formFor('eu-battery@1')
-    const example = sectorExamples(platform.profiles.get('eu-battery@1')!, policy)[0]
+    const form = formFor('eu-battery@2')
+    const example = sectorExamples(platform.profiles.get('eu-battery@2')!, policy)[0]
     const loaded = stripComments({
       _comment_architecture: ['a note'],
       ...example.product,
@@ -289,8 +294,8 @@ describe('a loaded document', () => {
   })
 
   it('keeps a node\'s own identifier and the spelling of a reference, in their fields', () => {
-    const form = formFor('eu-battery@1')
-    const example = sectorExamples(platform.profiles.get('eu-battery@1')!, policy)[0]
+    const form = formFor('eu-battery@2')
+    const example = sectorExamples(platform.profiles.get('eu-battery@2')!, policy)[0]
     const loaded: Json = {
       ...example.product,
       // A reference spelled with id, and nodes that carry identifiers of their own: both are as the document wrote them.
@@ -311,14 +316,14 @@ describe('a loaded document', () => {
   })
 
   it('says so when the JSON area repeats a property a field writes', () => {
-    const form = formFor('eu-textile@1')
+    const form = formFor('eu-textile@2')
     const built = buildDocument(form, { ...emptyState(), values: { 'eutex:garmentType': 'Jacket' }, others: { 'eutex:garmentType': 'Coat' } }, minted('100200400', 'DUP-0001'), contextsFor(form))
     expect(built.problems).toEqual([{ pointer: '/~others', message: expect.stringContaining('eutex:garmentType') }])
     expect(built.product['eutex:garmentType']).toBe('Jacket')
   })
 
   it('does not let the JSON area state a second serial, GTIN or identifier', () => {
-    for (const profile of ['eu-battery@1', 'eu-textile@1']) {
+    for (const profile of ['eu-battery@2', 'eu-textile@2']) {
       const form = formFor(profile)
       const identity = minted('100200400', 'ONE-SERIAL-1')
       for (const member of ['schema:serialNumber', 'gs1:hasSerialNumber', 'gs1:gtin', 'id', '@id']) {
@@ -332,8 +337,8 @@ describe('a loaded document', () => {
 
 describe('where a finding is shown', () => {
   it('is the field it concerns, by the row the entry was typed in', async () => {
-    const form = formFor('eu-battery@1')
-    const example = sectorExamples(platform.profiles.get('eu-battery@1')!, policy)[0]
+    const form = formFor('eu-battery@2')
+    const example = sectorExamples(platform.profiles.get('eu-battery@2')!, policy)[0]
     const state = parseDocument(form, example.product).state
     // An empty row before the materials, so the second written material is the third row of the form.
     state.values['eubat:hasMaterialComposition'] = [{}, ...(state.values['eubat:hasMaterialComposition'] as Array<Record<string, unknown>>)] as FormState['values'][string]
@@ -348,7 +353,7 @@ describe('where a finding is shown', () => {
 
     let refused: WriteRefused | undefined
     try {
-      await platform.writer.issue({ brandId, brand: platform.parties.brand(brandId), passportId: identity.passportId, profile: 'eu-battery@1', product: built.product })
+      await platform.writer.issue({ brandId, brand: platform.parties.brand(brandId), passportId: identity.passportId, profile: 'eu-battery@2', product: built.product })
     } catch (cause) {
       refused = cause as WriteRefused
     }
@@ -392,7 +397,7 @@ describe('what a reader is shown', () => {
   })
 
   it('lists every top-level property with its tier, including ones the page has no label for', () => {
-    const form = formFor('eu-textile@1')
+    const form = formFor('eu-textile@2')
     const shown = describeProduct(
       {
         publicProduct: { '@context': ['x'], id: 'https://passports.example.com/01/09521002004007/21/A1', 'eutex:garmentType': 'Jacket', 'eutex:hasWaterUsage': { type: 'gs1:QuantitativeValue', 'gs1:value': '5', 'gs1:unitCode': 'LTR' }, 'x:brandNew': 1 },

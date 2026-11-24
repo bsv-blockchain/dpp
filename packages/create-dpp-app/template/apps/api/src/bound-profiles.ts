@@ -6,7 +6,7 @@
 // configuration names, and then answers for the writer, the reader and the
 // forms.
 //
-// Where the profiles come from is a setting. By default the two sector
+// Where the profiles come from is a setting. By default both editions of each sector
 // bindings are read from the folder the profiles package ships. With
 // PROFILE_BUNDLE_DIR they are read from a profile bundle in that folder, as a
 // restore installs it, and the package's folder is not read. The bundle is a
@@ -33,6 +33,7 @@ import {
   prepareBoundPayload,
   profileBindingDigest,
   profileBundleDirectory,
+  readProfileBinding,
   registerBundledBindings,
   registerProfileBundle,
   type AuthorisedPayloadToValidate,
@@ -373,6 +374,14 @@ export async function openBoundProfiles(options: BoundProfilesOptions = {}): Pro
       } catch (cause) {
         refuse(folder, 'binding-unavailable', `binding.json could not be read from the folder (${reasonOf(cause)}).`)
         continue
+      }
+      const read = readProfileBinding(bindingBytes)
+      if (read.ok) {
+        const packaged = BUNDLED_BINDINGS.find(entry => entry.profile === read.binding.profile)
+        if (packaged != null && packaged.bindingDigest !== read.digest) {
+          refuse(folder, 'binding-conflict', `${packaged.profile} is pinned to ${packaged.bindingDigest}, and this folder holds ${read.digest}.`)
+          continue
+        }
       }
       const result = await registry.register({ bindingBytes, resolveArtefact: (artefact) => new Uint8Array(readFileSync(join(folder, artefact.path))) })
       if (result.ok) {

@@ -48,9 +48,11 @@ describe('the vectors, with the engine in this process', () => {
     const names = vectors.map((v) => v.name)
     expect(new Set(names).size).toBe(names.length)
     // Two documents and fourteen payload cases for each sector, each document also as a public payload alone, one battery
-    // payload with a required public property left out, and the example profiles' payload vectors.
-    expect(names.filter((n) => n.startsWith('eu-battery@1 ')).length).toBe(19)
-    expect(names.filter((n) => n.startsWith('eu-textile@1 ')).length).toBe(18)
+    // payload with a required public property left out, textile parent and subclass controls, and the example profiles' payload vectors.
+    expect(names.filter((n) => n.startsWith('eu-battery@1 ')).length).toBe(21)
+    expect(names.filter((n) => n.startsWith('eu-textile@1 ')).length).toBe(25)
+    expect(names.filter((n) => n.startsWith('eu-battery@2 ')).length).toBe(9)
+    expect(names.filter((n) => n.startsWith('eu-textile@2 ')).length).toBe(9)
     expect(names.filter((n) => n.startsWith('example-bottle@1 ')).length).toBe(12)
     expect(names.filter((n) => n.startsWith('example-notebook@1 ')).length).toBe(4)
   })

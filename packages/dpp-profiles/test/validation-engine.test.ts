@@ -82,6 +82,52 @@ describe('createValidationEngine: JSON-LD expansion', () => {
 })
 
 describe('createValidationEngine: SHACL validation', () => {
+  it('reports the same care-note warning for valid bottles at each level of a trusted class hierarchy', async () => {
+    const terms = 'https://profiles.example/bottle/v1#'
+    const hierarchy = { path: 'bottle-types.ttl', mediaType: 'text/turtle', bytes: utf8(`
+      @prefix bottle: <${terms}> .
+      @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+      bottle:TravelBottle rdfs:subClassOf bottle:Bottle .
+      bottle:InsulatedTravelBottle rdfs:subClassOf bottle:TravelBottle .
+    `) }
+    refuseNetwork()
+    for (const name of ['Bottle', 'TravelBottle', 'InsulatedTravelBottle']) {
+      const nquads = await expand(product({ type: terms + name }))
+      const result = await shacl.validate({ nquads, shapes, background: [...background, hierarchy] })
+      if (!result.ok) throw new Error(result.detail)
+      expect(result.findings, name).toEqual([
+        expect.objectContaining({ severity: 'Warning', constraint: 'MinCountConstraintComponent', path: terms + 'careNote' }),
+      ])
+    }
+    // The product can describe a classification. Only the binding can use it to select a shape.
+    const data = await expand(product({ type: terms + 'TravelBottle' }))
+    const classification = `<${terms}TravelBottle> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <${terms}Bottle> .\n`
+    const withoutHierarchy = await shacl.validate({ nquads: data + classification, shapes, background })
+    expect(withoutHierarchy).toEqual({ ok: true, findings: [] })
+    expect(fetched).toBe(0)
+  })
+
+  it('returns repeatable findings for distinct blank nodes in each input document', async () => {
+    const shape = { path: 'seen.ttl', mediaType: 'text/turtle', bytes: utf8(`
+      @prefix sh: <http://www.w3.org/ns/shacl#> .
+      <urn:shape> a sh:NodeShape ; sh:targetSubjectsOf <urn:seen> ;
+        sh:property [ sh:path <urn:seen> ; sh:maxCount 0 ] .
+    `) }
+    const file = (path: string, ttl: string) => ({ path, mediaType: 'text/turtle', bytes: utf8(ttl) })
+    const input = {
+      nquads: '_:same <urn:seen> "product" .',
+      shapes: [shape],
+      background: [
+        file('first.ttl', '_:same <urn:seen> "first" . [] <urn:seen> "anonymous" .'),
+        file('second.ttl', '_:same <urn:seen> "second" .'),
+      ],
+    }
+    const first = await shacl.validate(input)
+    if (!first.ok) throw new Error(first.detail)
+    expect(new Set(first.findings.map((finding) => finding.focusNode)).size).toBe(4)
+    expect(await shacl.validate(input)).toEqual(first)
+  })
+
   it('declares the core and the SPARQL constraints', () => {
     expect([...shacl.capabilities].sort()).toEqual(['shacl-core', 'shacl-sparql-constraints'])
   })

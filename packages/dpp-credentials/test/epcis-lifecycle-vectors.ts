@@ -20,6 +20,7 @@ import {
   type BuildEpcisLifecycleClaimInput,
   type EpcisLifecycleAuthorityAnswer,
   type EpcisLifecycleClaim,
+  type EpcisLifecycleIssuanceOptions,
   type EpcisLifecycleComparisonInput,
   type EpcisLifecycleVerification,
   type EpcisLifecycleVerificationOptions,
@@ -169,8 +170,18 @@ export function input(who: Signer, e: Ev, bindings: BuildEpcisLifecycleClaimInpu
 }
 export const bind = (passportId: string, field: BuildEpcisLifecycleClaimInput['bindings'][number]['field'], identifier: string, level: 'instance' | 'class' = 'instance'): BuildEpcisLifecycleClaimInput['bindings'][number] => ({ passportId, field, identifier, level })
 
+/** The synthetic issuing authority and pinned checks for independently reproducible signed vectors. */
+export function fixtureIssuancePolicy(who: Signer): EpcisLifecycleIssuanceOptions {
+  return {
+    eventSchemaValidator: pinnedSchemaValidator,
+    compareProduct: gs1Comparison,
+    extensionRules: { [SHREDDING_RULE]: () => ({ status: 'pass' }) },
+    authorityResolver: (q) => ({ status: q.issuerKey === who.identityKey && Object.values(P).includes(q.passportId) ? 'supported' : 'unsupported' }),
+  }
+}
+
 export async function issue(who: Signer, i: BuildEpcisLifecycleClaimInput): Promise<SignedEpcisLifecycleClaim> {
-  return signEpcisLifecycleClaim(buildEpcisLifecycleClaim(i), who.wallet)
+  return signEpcisLifecycleClaim(buildEpcisLifecycleClaim(i), who.wallet, fixtureIssuancePolicy(who))
 }
 
 /** Sign without the issuance rules, as a careless or hostile issuer could: how the refusals a verifier must make are reached. */
@@ -313,7 +324,7 @@ export async function lifecycleClaims() {
   const importedSource = { relation: 'imported' as const, sourceDigest: 'c1'.repeat(32), mediaType: 'application/json' as const, eventPointer: '/epcisBody/eventList/0', localEventIdentity: `urn:bsv:dpp:epcis:local-event:sha256:${'c2'.repeat(32)}`, sourceParty: PARTY.maker }
   const n = {
     // Product binding.
-    wrongPassport: await issue(S.maker, input(S.maker, EVENTS.shipping, [bind(P.battery2, 'epcList', ID.battery)])),
+    wrongPassport: await signUnchecked(S.maker, unchecked(input(S.maker, EVENTS.shipping, [bind(P.battery2, 'epcList', ID.battery)]))),
     identifierAbsent: await signUnchecked(S.maker, unchecked(input(S.maker, EVENTS.shipping, [bind(P.battery2, 'epcList', ID.battery2)]))),
     classAsItem: await signUnchecked(S.maker, unchecked(input(S.maker, EVENTS.manufacturing, [bind(P.cell, 'inputQuantityList', ID.cellLot, 'instance')]))),
     lotInEpcList: await signUnchecked(S.maker, unchecked(input(S.maker, { ...EVENTS.receiving, epcList: [ID.cellLot] }, [bind(P.cell, 'epcList', ID.cellLot)]))),
@@ -338,7 +349,7 @@ export async function lifecycleClaims() {
     declarationByAnother: await issue(S.carrier, input(S.carrier, { ...EVENTS.inspection, errorDeclaration: { declarationTime: at(12, 9), reason: 'did_not_occur' } }, [bind(P.battery, 'epcList', ID.battery)], { issuedAt: at(12, 10) })),
     malformedDeclaration: await signUnchecked(S.repairer, unchecked(input(S.repairer, { ...EVENTS.inspection, errorDeclaration: { reason: 'incorrect_data' } }, [bind(P.battery, 'epcList', ID.battery)], { issuedAt: at(12, 10) }))),
     // Extensions.
-    shreddingWithoutRule: await issue(S.recycler, input(S.recycler, EVENTS.shredding, [bind(P.moduleA, 'inputEPCList', ID.moduleA), bind(P.moduleC, 'inputEPCList', ID.moduleC)])),
+    shreddingWithoutRule: await signUnchecked(S.recycler, unchecked(input(S.recycler, EVENTS.shredding, [bind(P.moduleA, 'inputEPCList', ID.moduleA), bind(P.moduleC, 'inputEPCList', ID.moduleC)]))),
   }
   return { c, n }
 }

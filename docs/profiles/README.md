@@ -31,11 +31,11 @@ Passport writers and readers can use this page to choose an industry profile and
 
 | Your product | Profile | Page | How it is defined |
 |---|---|---|---|
-| A battery, as one serialised item | `eu-battery@1` | [EU battery and textile bindings](eu-sector-bindings.md) | A binding the package ships: a JSON-LD product document checked by SHACL shapes, split into a public and a restricted part |
-| Clothing, footwear, home textiles and textile accessories, as one serialised item | `eu-textile@1` | [EU battery and textile bindings](eu-sector-bindings.md) | The same |
+| A battery, as one serialised item | `eu-battery@2` | [EU battery and textile bindings](eu-sector-bindings.md) | A binding the package ships: a JSON-LD product document checked by SHACL shapes, split into a public and a restricted part |
+| Clothing, footwear, home textiles and textile accessories, as one serialised item | `eu-textile@2` | [EU battery and textile bindings](eu-sector-bindings.md) | The same |
 | Anything else, such as a bicycle, watch, musical instrument, piece of furniture, luggage, jewellery, appliance, tool, sports equipment or artwork | `general@2` | [General](general.md) | A manifest, with generated JSON Schemas. `category` is an open list. The superseded `general@1` is read and never written |
 
-1. **Write under the profile's current version.** A superseded version remains readable, but `checkSelection` refuses new writes under it.
+1. **Use the current edition for a new passport.** For batteries and textiles, the starter offers version 2 and reads or maintains an existing passport under the edition it declares. For manifest profiles, `checkSelection` enforces the version for new writes.
 2. **Under `general@2`, set `category`.** The list is open: any non-empty text is accepted, but other readers can label only listed values.
 3. **Read the profile's assessment status.** A profile is a data model, not an assessment. `general@2` claims no regulation, and neither binding claims that a product complies with any law ([what the names claim](eu-sector-bindings.md)).
 
@@ -47,8 +47,8 @@ The sector profiles first published as manifests are retired from 14 November 20
 
 | Retired | Use instead | Page |
 |---|---|---|
-| `battery@2`, `battery@3`, `battery@4` | `eu-battery@1` | [Battery, retired](battery.md) |
-| `textile@1`, `textile@2`, `textile@3`, `textile@4` | `eu-textile@1` | [Textile, retired](textile.md) |
+| `battery@2`, `battery@3`, `battery@4` | `eu-battery@2` | [Battery, retired](battery.md) |
+| `textile@1`, `textile@2`, `textile@3`, `textile@4` | `eu-textile@2` | [Textile, retired](textile.md) |
 
 There is no converter: a replacement is another data model under its own identifier, and a product moves to it as a newly issued passport. [Move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles) gives the steps, and [the specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md) states the rule in its section on versions, freezing, retirement and migration.
 

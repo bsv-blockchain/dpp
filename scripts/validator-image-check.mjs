@@ -32,6 +32,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isDeepStrictEqual } from 'node:util'
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
@@ -57,8 +58,9 @@ if (!existsSync(join(repo, 'packages', 'dpp-profiles', 'dist', 'validator-client
 const inspected = JSON.parse(docker(['image', 'inspect', image]).stdout)[0]
 const config = inspected.Config
 say(config.User === 'node', `the image runs as ${JSON.stringify(config.User)} unless told otherwise.`)
-// The base image's entry point hands over to the command with exec, so the command becomes process 1. That is read from the running container below.
-say(JSON.stringify(config.Cmd) === JSON.stringify(['node', 'packages/dpp-profiles/dist/validator-cli.js']), `its command is ${JSON.stringify(config.Cmd)}: node itself, not npm.`)
+const validatorScript = 'packages/dpp-profiles/dist/validator-cli.js'
+const directEntry = config.Entrypoint == null || isDeepStrictEqual(config.Entrypoint, []) || isDeepStrictEqual(config.Entrypoint, ['docker-entrypoint.sh'])
+say(directEntry && isDeepStrictEqual(config.Cmd, ['node', validatorScript]), `its configured entry point ${JSON.stringify(config.Entrypoint)} launches ${JSON.stringify(config.Cmd)} directly.`)
 say(config.Healthcheck?.Test?.join(' ') === 'CMD node packages/dpp-profiles/dist/validator-cli.js health', 'its health check is the command\'s own.')
 
 /** The files this image must not hold: every rule file of every profile in this checkout, and every file GS1 publishes that the packages pin. */
@@ -91,8 +93,17 @@ try {
   if (run.status !== 0) throw new Error('the container did not start')
   say(await waitHealthy(isolated), 'its health command answers from inside the container.')
 
-  const pid1 = docker(['exec', isolated, 'cat', '/proc/1/cmdline']).stdout.split('\0').filter((part) => part !== '')
-  say(pid1[0] === 'node' && pid1[1] === 'packages/dpp-profiles/dist/validator-cli.js', `process 1 is ${pid1.join(' ')}, so a stop signal reaches the service itself.`)
+  // Some container runtimes add Node arguments. Measure its exact launch prefix using a second Node
+  // process in this container, then check all of PID 1's arguments against that prefix and the script.
+  const argvOf = (result) => result.status === 0 && result.stdout.endsWith('\0') ? result.stdout.slice(0, -1).split('\0') : []
+  const probe = "process.stdout.write(require('node:fs').readFileSync('/proc/self/cmdline'))"
+  const probeArgv = argvOf(docker(['exec', isolated, 'node', '-e', probe]))
+  const nodePrefix = probeArgv.slice(0, -2)
+  const pid1 = argvOf(docker(['exec', isolated, 'cat', '/proc/1/cmdline']))
+  const measuredNode = nodePrefix[0] === 'node' && isDeepStrictEqual(probeArgv.slice(-2), ['-e', probe])
+  const directService = measuredNode && isDeepStrictEqual(pid1, [...nodePrefix, validatorScript])
+  say(directService, `process 1 matches the measured Node launch and the validator script. Observed ${JSON.stringify(pid1)}.`)
+  measured.process = { entrypoint: config.Entrypoint, command: config.Cmd, nodePrefix, pid1, directService }
   const uid = docker(['exec', isolated, 'id', '-u']).stdout.trim()
   say(uid === '1000', `it runs as user ${uid}, which is not root.`)
   say(docker(['exec', isolated, 'sh', '-c', 'touch /app/written 2>/dev/null || touch /home/node/written 2>/dev/null']).status !== 0, 'it cannot write to its own file system.')

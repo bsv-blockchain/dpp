@@ -48,7 +48,7 @@ interface Fixture {
   identifiers: { gtin14: string; serial: string; passportId: string }
   keys: { publisher: string }
   states: RecordedState[]
-  report: { checkedAt: string; checks: RecordedCheck[]; expectedSubject: { passportId: string } }
+  report: { checkedAt: string; checks: RecordedCheck[]; expectedSubject: { passportId: string }; limits: string[] }
 }
 
 const bytes = readFileSync(FIXTURE_PATH)
@@ -129,7 +129,10 @@ describe('the industrial-battery demonstration lifecycle (P09), a historical fix
 
   it('still verifies as a chain with a signed native claim per state: every check but schema answers exactly as recorded', async () => {
     const today = await readToday()
-    expect(without(today, 'schema')).toEqual(without(fixture.report, 'schema'))
+    const statusLimit = 'A credential status observation is only as fresh as its source.'
+    expect(today.limits).toContain(statusLimit)
+    const originalLimits = today.limits.filter((limit) => limit !== statusLimit)
+    expect(without({ ...today, limits: originalLimits }, 'schema')).toEqual(without(fixture.report, 'schema'))
     const byName = Object.fromEntries(today.checks.map((c) => [c.name, c]))
     expect(today.expectedSubject.passportId).toBe(fixture.identifiers.passportId)
     for (const name of ['recordEncoding', 'actorSignatures', 'publisherSignatures', 'linkage', 'nativeAttestationSignature', 'subjectBinding']) {

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join, relative } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
-import { BUNDLED_BINDINGS, BUNDLED_BINDING_DIGESTS, createProfileRegistry, describeArtefact, profileBindingDigest, profileBindingInconsistencies, readProfileBinding, registerBundledBindings, type ProfileBinding } from '../src/index.js'
+import { BUNDLED_BINDINGS, HISTORICAL_SECTOR_BINDINGS, BUNDLED_BINDING_DIGESTS, CURRENT_SECTOR_BINDINGS, bundledBindingNotices, createProfileRegistry, describeArtefact, profileBindingDigest, profileBindingInconsistencies, readProfileBinding, registerBundledBindings, type ProfileBinding } from '../src/index.js'
 
 // The package ships bindings of its own under bindings/. Two things make
 // them safe to use: the list of their digests is written into the source, so
@@ -19,7 +19,7 @@ const fixturesDir = join(packageRoot, 'test', 'fixtures', 'sector-bindings')
 const bytesOf = (path: string): Uint8Array => new Uint8Array(readFileSync(path))
 const walk = (dir: string): string[] => readdirSync(dir).flatMap((entry) => { const path = join(dir, entry); return statSync(path).isDirectory() ? walk(path) : [path] })
 
-const bundled = BUNDLED_BINDINGS.map((entry) => {
+const bundled = HISTORICAL_SECTOR_BINDINGS.map((entry) => {
   const folder = join(bindingsDir, entry.profile)
   return { ...entry, folder, bindingBytes: bytesOf(join(folder, 'binding.json')), binding: JSON.parse(readFileSync(join(folder, 'binding.json'), 'utf8')) as ProfileBinding }
 })
@@ -32,8 +32,8 @@ afterAll(() => { for (const dir of temporary) rmSync(dir, { recursive: true, for
 
 describe('the bundled bindings are the files the package pins', () => {
   it('lists a digest for every binding folder the package ships, and for no other', () => {
-    expect(BUNDLED_BINDINGS.map((b) => b.profile)).toEqual(['eu-battery@1', 'eu-textile@1'])
-    expect(readdirSync(bindingsDir).sort()).toEqual(BUNDLED_BINDINGS.map((b) => b.profile).sort())
+    expect(BUNDLED_BINDINGS.map((b) => b.profile)).toEqual(['eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2'])
+    expect(readdirSync(bindingsDir).sort()).toEqual(HISTORICAL_SECTOR_BINDINGS.map((b) => b.profile).sort())
     expect(BUNDLED_BINDING_DIGESTS).toEqual(BUNDLED_BINDINGS.map((b) => b.bindingDigest))
     expect(new Set(BUNDLED_BINDING_DIGESTS).size).toBe(BUNDLED_BINDINGS.length)
   })
@@ -48,7 +48,7 @@ describe('the bundled bindings are the files the package pins', () => {
 
   it.each(each)('%s: the folder holds the binding, its notice and the listed artefacts, each as the binding records it', (_profile, b) => {
     const onDisk = walk(b.folder).map((path) => relative(b.folder, path)).sort()
-    expect(onDisk).toEqual(['NOTICE.md', 'binding.json', ...b.binding.artefacts.map((a) => a.path)].sort())
+    expect(onDisk).toEqual(['NOTICE.md', 'binding.json', 'binding.v2.json', ...b.binding.artefacts.map((a) => a.path)].sort())
     for (const artefact of b.binding.artefacts) expect({ path: artefact.path, ...describeArtefact(bytesOf(join(b.folder, artefact.path))) }).toEqual({ path: artefact.path, byteLength: artefact.byteLength, sha256: artefact.sha256 })
     expect(b.binding.source.notices).toEqual(['NOTICE.md'])
   })
@@ -181,9 +181,9 @@ describe('what npm would pack', () => {
     const paths = packed!.files.map((f) => f.path)
     expect(paths).toContain('LICENSE')
     for (const b of bundled) {
-      for (const name of ['binding.json', 'NOTICE.md', ...b.binding.artefacts.map((a) => a.path)]) expect(paths).toContain(`bindings/${b.profile}/${name}`)
+      for (const name of ['binding.json', 'binding.v2.json', 'NOTICE.md', ...b.binding.artefacts.map((a) => a.path)]) expect(paths).toContain(`bindings/${b.profile}/${name}`)
     }
-    expect(paths.filter((path) => path.startsWith('bindings/')).length).toBe(bundled.reduce((count, b) => count + 2 + b.binding.artefacts.length, 0))
+    expect(paths.filter((path) => path.startsWith('bindings/')).length).toBe(bundled.reduce((count, b) => count + 3 + b.binding.artefacts.length, 0))
     expect(paths.filter((path) => path.startsWith('test/') || path.includes('vectors/'))).toEqual([])
   })
 })
@@ -219,7 +219,27 @@ describe('registerBundledBindings', () => {
       expect(resolved.artefacts.map((a) => [a.artefact.path, describeArtefact(a.bytes).sha256])).toEqual(b.binding.artefacts.map((a) => [a.path, a.sha256]))
     }
     // A second call finds them there and changes nothing.
-    expect((await registerBundledBindings(registry)).map((r) => r.ok && r.alreadyRegistered)).toEqual([true, true])
+    expect((await registerBundledBindings(registry)).map((r) => r.ok && r.alreadyRegistered)).toEqual([true, true, true, true])
+  })
+
+  it('registers the current sector editions with their original artefacts and respects a restricted historical trust list', async () => {
+    expect(CURRENT_SECTOR_BINDINGS.map((entry) => entry.profile)).toEqual(['eu-battery@2', 'eu-textile@2'])
+    const registry = trusting(...BUNDLED_BINDING_DIGESTS)
+    await registerBundledBindings(registry)
+    for (const [index, entry] of CURRENT_SECTOR_BINDINGS.entries()) {
+      const original = bundled[index]!
+      expect(registry.resolve(original.binding.id, 2)?.profile).toBe(entry.profile)
+      expect(await registerBundledBindings(trusting(...HISTORICAL_SECTOR_BINDINGS.map((binding) => binding.bindingDigest)), { profiles: [entry.profile] })).toMatchObject([{ ok: false, code: 'binding-untrusted' }])
+      const [result] = await registerBundledBindings(registry, { profiles: [entry.profile] })
+      if (!result?.ok) throw new Error(JSON.stringify(result))
+      const successor = result.profile
+      const subjectClass = index === 0 ? 'https://ref.openepcis.org/extensions/eu/battery/Battery' : 'https://ref.openepcis.org/extensions/eu/textile/TextileProduct'
+      expect(successor.bindingDigest).toBe(entry.bindingDigest)
+      expect(successor.binding).toEqual({ ...original.binding, version: 2, profile: entry.profile, validation: { ...original.binding.validation, subjectClass } })
+      expect(successor.artefacts.map((item) => describeArtefact(item.bytes))).toEqual(original.binding.artefacts.map(({ sha256, byteLength }) => ({ sha256, byteLength })))
+      expect(bundledBindingNotices()(successor, 'NOTICE.md')).toEqual(bytesOf(join(original.folder, 'NOTICE.md')))
+      expect(registry.resolve(original.binding.id, 1)).toMatchObject({ bindingDigest: original.bindingDigest })
+    }
   })
 
   it('registers only the profiles it is asked for', async () => {
@@ -239,8 +259,8 @@ describe('registerBundledBindings', () => {
     await expect(registerBundledBindings(registry, { directory: bindingsDir as never })).rejects.toThrow(TypeError)
     await expect(registerBundledBindings(registry, { directory: new URL('https://bindings.example/') })).rejects.toThrow(TypeError)
     // With or without the trailing slash, the same folder.
-    expect((await registerBundledBindings(registry, { directory: pathToFileURL(`${bindingsDir}/`) })).map((r) => r.ok)).toEqual([true, true])
-    expect((await registerBundledBindings(registry, { directory: pathToFileURL(bindingsDir) })).map((r) => r.ok && r.alreadyRegistered)).toEqual([true, true])
+    expect((await registerBundledBindings(registry, { directory: pathToFileURL(`${bindingsDir}/`) })).map((r) => r.ok)).toEqual([true, true, true, true])
+    expect((await registerBundledBindings(registry, { directory: pathToFileURL(bindingsDir) })).map((r) => r.ok && r.alreadyRegistered)).toEqual([true, true, true, true])
   })
 
   it('leaves trust with the registry: one that does not trust a bundled digest does not get that binding', async () => {
@@ -288,6 +308,6 @@ describe('registerBundledBindings', () => {
     const dir = mkdtempSync(join(tmpdir(), 'dpp-bundled-bindings-'))
     temporary.push(dir)
     const results = await registerBundledBindings(trusting(...BUNDLED_BINDING_DIGESTS), { directory: pathToFileURL(dir) })
-    expect(results).toEqual(BUNDLED_BINDINGS.map((b) => ({ ok: false, code: 'bundled-binding-unavailable', profile: b.profile, detail: expect.stringContaining('binding.json') })))
+    expect(results).toEqual(BUNDLED_BINDINGS.map((b) => ({ ok: false, code: 'bundled-binding-unavailable', profile: b.profile, detail: expect.stringContaining(b.profile.endsWith('@2') ? 'binding.v2.json' : 'binding.json') })))
   })
 })

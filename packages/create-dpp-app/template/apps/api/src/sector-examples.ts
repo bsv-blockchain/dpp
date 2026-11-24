@@ -1,5 +1,5 @@
-// Example product documents for the two sector profiles the profiles
-// package ships, eu-battery@1 and eu-textile@1. They were written for this
+// Example product documents for the battery and textile sector bindings.
+// Both versions use the same product vocabulary. They were written for this
 // starter: every organisation, product and number in them is invented, and
 // every identifier is under GS1's demonstration prefix 952, which is
 // licensed to nobody. They exist so a form can start from a document that
@@ -349,7 +349,12 @@ const TEXTILE: SectorExample = {
   },
 }
 
-const EXAMPLES: Record<string, SectorExample[]> = { 'eu-battery@1': [BATTERY], 'eu-textile@1': [TEXTILE] }
+const EXAMPLES: Record<string, SectorExample[]> = {
+  'eu-battery@1': [BATTERY],
+  'eu-battery@2': [BATTERY],
+  'eu-textile@1': [TEXTILE],
+  'eu-textile@2': [TEXTILE],
+}
 
 /**
  * The examples for a registered profile, each a complete product document

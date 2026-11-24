@@ -56,11 +56,11 @@ GS1_PREFIX=952
 # Product documents under a binding). Folders are comma-separated, and a relative one is read from this
 # file's directory. A folder is registered at start only when the SHA-256 of its binding.json is listed in
 # TRUSTED_BINDING_DIGESTS: that is how you say you reviewed that exact file. A folder that is not trusted,
-# or that changed since, is refused by name at start and the app runs without it. The two sector profiles
-# the DPP packages ship, eu-battery@1 and eu-textile@1, need neither setting.
+# or that changed since, is refused by name at start and the app runs without it. The four packaged sector editions need
+# neither setting. New sector passports use eu-battery@2 or eu-textile@2.
 CUSTOM_PROFILE_DIRS=
 TRUSTED_BINDING_DIGESTS=
-# Where the bound profiles are read from. Empty reads the two sector profiles from the folder the profiles
+# Where the bound profiles are read from. Empty reads the packaged sector editions from the folder the profiles
 # package ships. A folder here is read as a profile bundle instead, and the package's folder is not read:
 # `npm run restore` installs the bundle of the package it restores into it. A relative folder is read from
 # this file's directory. Trust is the same either way (README, Where the profiles are read from).
@@ -108,6 +108,10 @@ EPCIS_SOURCES=
 # A registry that validates and stores lifecycle claims (POST /validate is open on the hosted reference)
 REGISTRY_URL=https://dpp-resolver.bsvb.net
 REGISTRY_TOKEN=
+
+# Absolute path to the operator's role grants for qualified lifecycle signing.
+# See "Configure signing authority" in the generated README.
+# LIFECYCLE_AUTHORITY_GRANTS_FILE=/path/to/lifecycle-authority-grants.json
 
 # Writing to the chain spends real satoshis. `npm run go-live` sets this to true once every check passes.
 LIVE_PUBLISHING=false

@@ -81,6 +81,8 @@ export interface ProfileBinding {
   artefacts: BindingArtefact[]
   validation: {
     steps: BindingStep[]
+    /** Required RDF class of the product subject, including subclasses declared by the binding. */
+    subjectClass?: string
     engine?: { requires: EngineCapability[] }
     blockingSeverities: FindingSeverity[]
   }
@@ -219,10 +221,11 @@ export function profileBindingProblems(value: unknown): string[] {
   })
 
   if (has(binding, 'validation')) {
-    const validation = members(binding.validation, 'validation', ['steps', 'blockingSeverities'], ['engine'])
+    const validation = members(binding.validation, 'validation', ['steps', 'blockingSeverities'], ['engine', 'subjectClass'])
     if (validation != null) {
       const steps = list(validation, 'steps', 'validation', { min: 1, unique: true }, enumItem(STEPS))
       if (steps != null && !steps.includes('passport-identity')) say('`validation.steps` must include passport-identity.')
+      text(validation, 'subjectClass', 'validation', URI, 'an absolute class IRI')
       list(validation, 'blockingSeverities', 'validation', { min: 1, unique: true }, enumItem(SEVERITIES))
       if (has(validation, 'engine')) {
         const engine = members(validation.engine, 'validation.engine', ['requires'])
@@ -326,6 +329,7 @@ export function profileBindingInconsistencies(binding: ProfileBinding): string[]
   }
 
   const steps = binding.validation.steps
+  if (binding.validation.subjectClass != null && !steps.includes('shacl')) problems.push('validation.subjectClass requires the shacl step.')
   const count = (role: BindingArtefactRole): number => binding.artefacts.filter((a) => a.role === role).length
   if (steps.includes('json-schema') && count('schema') !== 1) problems.push(`the json-schema step needs exactly one schema artefact; the binding lists ${count('schema')}.`)
   if (steps.includes('json-ld-expand') && count('context') === 0) problems.push('the json-ld-expand step needs at least one context artefact.')

@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { PrivateKey, ProtoWallet, Transaction, Utils } from '@bsv/sdk'
@@ -26,7 +26,7 @@ import { buildAttestationAnchor, decodeAttestationAnchor, verifyLifecycleClaim, 
 import { attachProof, mockTracker } from '../../dpp-protocol/test/helpers.js'
 import {
   ANCHOR_SERVICE, EVENTS, ID, P, PARTY, S, SECOND_ANCHOR_SERVICE, SHREDDING_RULE, SHREDDING_STEP,
-  bind, gs1Comparison, input, issue, lifecycleClaims, lifecycleEventVectors, optionsOf, pinnedSchemaValidator, runVector, expectedOf, signUnchecked, text, unchecked, type VectorOptions,
+  bind, gs1Comparison, fixtureIssuancePolicy, input, issue, lifecycleClaims, lifecycleEventVectors, optionsOf, pinnedSchemaValidator, runVector, expectedOf, signUnchecked, text, unchecked, type VectorOptions,
 } from './epcis-lifecycle-vectors.js'
 
 const ROOT = join(import.meta.dirname, '..', '..', '..')
@@ -218,16 +218,58 @@ describe('refusals', () => {
 })
 
 describe('signing, bytes and identity', () => {
+  it('L05: an account and a signing key alone cannot issue a scoped observation', async () => {
+    const claim = buildEpcisLifecycleClaim(input(S.maker, EVENTS.receiving, [bind(P.battery, 'epcList', ID.battery)]))
+    const signer = { createSignature: vi.fn(S.maker.wallet.createSignature.bind(S.maker.wallet)) }
+    await expect(signEpcisLifecycleClaim(claim, signer, { eventSchemaValidator: pinnedSchemaValidator, compareProduct: gs1Comparison })).rejects.toMatchObject({ code: 'authority-unavailable' })
+    expect(signer.createSignature).not.toHaveBeenCalled()
+  })
+
+  it('L06: every declared passport needs affirmative event-time evidence, and a resolver failure never reaches the wallet', async () => {
+    const claim = buildEpcisLifecycleClaim(input(S.maker, EVENTS.moduleInstalled, [
+      bind(P.battery2, 'parentID', ID.battery2), bind(P.moduleC, 'childEPCs', ID.moduleC),
+    ]))
+    const policy = fixtureIssuancePolicy(S.maker)
+    const signer = { createSignature: vi.fn(S.maker.wallet.createSignature.bind(S.maker.wallet)) }
+    for (const failure of ['unsupported', 'unavailable', 'exception'] as const) {
+      const authorityResolver = vi.fn((q: lifecycle.EpcisLifecycleAuthorityQuestion): lifecycle.EpcisLifecycleAuthorityAnswer => {
+        expect(q).toMatchObject({ purpose: 'claim', issuer: S.maker.issuer, issuerKey: S.maker.identityKey, role: 'observer', eventId: claim.event.eventID, eventType: claim.event.type, eventTime: claim.event.eventTime, issuedAt: claim.issuedAt })
+        if (q.passportId === P.battery2) return { status: 'supported' }
+        if (failure === 'exception') throw new Error('the evidence provider is unavailable')
+        return { status: failure }
+      })
+      await expect(signEpcisLifecycleClaim(claim, signer, { ...policy, authorityResolver })).rejects.toMatchObject({ code: failure === 'unsupported' ? 'authority-unconfirmed' : 'authority-unavailable' })
+      expect(authorityResolver.mock.calls.map(([q]) => q.passportId)).toEqual([P.battery2, P.moduleC])
+    }
+    expect(signer.createSignature).not.toHaveBeenCalled()
+    const signed = await signEpcisLifecycleClaim(claim, signer, policy)
+    expect(signer.createSignature).toHaveBeenCalledTimes(1)
+    expect((await verifyEpcisLifecycleClaim(text(signed), policy)).findings).toMatchObject({ signature: { status: 'pass' }, authority: { status: 'supported' } })
+  })
+
+  it('refuses deficient structure, product bindings and required semantics before asking the authority or wallet', async () => {
+    const plain = buildEpcisLifecycleClaim(input(S.maker, EVENTS.receiving, [bind(P.battery, 'epcList', ID.battery)]))
+    const extension = buildEpcisLifecycleClaim(input(S.recycler, EVENTS.shredding, [bind(P.moduleA, 'inputEPCList', ID.moduleA)], { requiredExtensions: [SHREDDING_RULE] }))
+    const signer = { createSignature: vi.fn(S.maker.wallet.createSignature.bind(S.maker.wallet)) }
+    const authorityResolver = vi.fn(() => ({ status: 'supported' as const }))
+    const policy = { ...fixtureIssuancePolicy(S.maker), authorityResolver }
+    await expect(signEpcisLifecycleClaim(plain, signer, { ...policy, eventSchemaValidator: undefined })).rejects.toMatchObject({ code: 'schema-unavailable' })
+    await expect(signEpcisLifecycleClaim(plain, signer, { ...policy, compareProduct: () => ({ status: 'fail', reasonCode: 'subject-mismatch' }) })).rejects.toMatchObject({ code: 'subject-mismatch' })
+    await expect(signEpcisLifecycleClaim(extension, signer, { ...policy, extensionRules: {} })).rejects.toMatchObject({ code: 'x-extension-rule-unavailable' })
+    expect(authorityResolver).not.toHaveBeenCalled()
+    expect(signer.createSignature).not.toHaveBeenCalled()
+  })
+
   it('signs through the wallet under the lifecycle protocol and refuses a wallet that is not the issuer', async () => {
     const claim = buildEpcisLifecycleClaim(input(S.maker, EVENTS.receiving, [bind(P.battery, 'epcList', ID.battery)]))
-    const signed = await signEpcisLifecycleClaim(claim, S.maker.wallet)
+    const signed = await signEpcisLifecycleClaim(claim, S.maker.wallet, fixtureIssuancePolicy(S.maker))
     expect(epcisLifecycleClaimId(signed)).toBe(`urn:sha256:${epcisLifecycleClaimDigest(signed)}`)
     expect(Utils.toUTF8(epcisLifecycleClaimBytes(signed))).toBe(text(signed))
-    await expect(signEpcisLifecycleClaim(claim, S.carrier.wallet)).rejects.toThrow('signer does not match')
+    await expect(signEpcisLifecycleClaim(claim, S.carrier.wallet, fixtureIssuancePolicy(S.maker))).rejects.toThrow('signer does not match')
   })
 
   it('names the signing key by issuerKeyDid when the issuer is resolvable, and reports that its binding needs resolution', async () => {
-    const signed = await signEpcisLifecycleClaim(buildEpcisLifecycleClaim(input(S.maker, EVENTS.receiving, [bind(P.battery, 'epcList', ID.battery)], { issuer: 'did:web:maker.example.org', issuerKeyDid: S.maker.issuer })), S.maker.wallet)
+    const signed = await signEpcisLifecycleClaim(buildEpcisLifecycleClaim(input(S.maker, EVENTS.receiving, [bind(P.battery, 'epcList', ID.battery)], { issuer: 'did:web:maker.example.org', issuerKeyDid: S.maker.issuer })), S.maker.wallet, fixtureIssuancePolicy(S.maker))
     const v = await verifyEpcisLifecycleClaim(text(signed))
     expect(v.findings.signature.status).toBe('pass')
     expect(v.identityBinding).toBe('requires-resolution')
@@ -305,6 +347,19 @@ describe('anchoring and inclusion', () => {
 })
 
 describe('the verification report', () => {
+  it('compares the verified EPCIS lifecycle issuer with the independent subject expectation', async () => {
+    const { c } = await lifecycleClaims()
+    const evidence = { externalCredentials: [{ representation: EPCIS_LIFECYCLE_REPRESENTATION, mediaType: 'application/json', bytes: text(c.manufacturing) }] }
+    const policy = { checkedAt: '2026-11-16T00:00:00Z', credentialVerifier: epcisLifecycleCredentialVerifierFor(optionsOf({ schema: true, comparison: 'gs1-digital-link' })) }
+    for (const expectedIssuer of [S.maker.issuer, 'did:web:another-issuer.example']) {
+      const report = await verifyPassportEvidence(evidence, { passportId: P.battery2, source: 'request-context', expectedIssuer }, policy)
+      expect(report.checks.find(c => c.name === 'externalCredentialProof')?.status).toBe('pass')
+      expect(report.checks.find(c => c.name === 'subjectBinding')).toMatchObject(
+        expectedIssuer === S.maker.issuer ? { status: 'pass' } : { status: 'fail', reasonCode: 'issuer-mismatch' },
+      )
+    }
+  })
+
   it('carries the findings under the frozen checks with their precise cause, and the report validates against its schema', async () => {
     const { c } = await lifecycleClaims()
     const scripts = await buildEpcisLifecycleAnchors(c.manufacturing, ANCHOR_SERVICE.identityKey, ANCHOR_SERVICE.wallet)
@@ -451,6 +506,7 @@ describe('an error declaration by a claim that is not sound', () => {
     const options = optionsOf({ schema: true, comparison: 'gs1-digital-link', authority: [S.repairer, S.carrier].map((s) => ({ issuer: s.issuer, role: 'observer', passport_id: P.battery, answer: 'supported' as const })) })
     const declaring = await verifyEpcisLifecycleClaim(text(n.malformedDeclaration), options)
     expect(declaring.findings).toMatchObject({ signature: { status: 'pass' }, eventStructure: { status: 'fail', reasonCode: 'schema-invalid' } })
+    expect(declaring.findings.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-declaration-unsound' })
     const v = await verifyEpcisLifecycleClaim(text(c.inspection), { ...options, related: { claims: [text(n.malformedDeclaration)], complete: true } })
     expect(v.relations).toEqual([{ digest: declaring.digest, relation: 'error-declaration' }])
     expect(v.findings.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-declaration-unsound' })
@@ -459,6 +515,10 @@ describe('an error declaration by a claim that is not sound', () => {
     // Another issuer's unsound declaration counts no more, even when the resolver supports that issuer.
     const other = await signUnchecked(S.carrier, unchecked(input(S.carrier, { ...EVENTS.inspection, errorDeclaration: { declarationTime: '2026-11-12T09:00:00.000Z', reason: 'never_happened' } }, [bind(P.battery, 'epcList', ID.battery)], { issuedAt: '2026-11-12T10:00:00.000Z' })))
     expect((await verifyEpcisLifecycleClaim(text(c.inspection), { ...options, related: { claims: [text(other)], complete: true } })).findings.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-declaration-unsound' })
+    const mismatchedSignature = text({ ...n.inspectionDeclaredInError, signature: c.inspection.signature })
+    const unverified = await verifyEpcisLifecycleClaim(text(c.inspection), { ...options, related: { claims: [mismatchedSignature], complete: true } })
+    expect(unverified.relations[0].relation).toBe('unverified')
+    expect(unverified.findings.correction).toMatchObject({ status: 'unknown', reasonCode: 'x-declaration-unsound' })
     // A sound declaration beside it still counts.
     const both = await verifyEpcisLifecycleClaim(text(c.inspection), { ...options, related: { claims: [text(n.malformedDeclaration), text(n.inspectionDeclaredInError)], complete: true } })
     expect(both.findings.correction).toMatchObject({ status: 'declared-in-error', detail: { declaredBy: epcisLifecycleClaimId(n.inspectionDeclaredInError) } })
@@ -515,7 +575,7 @@ describe('a second signer in another wallet', () => {
   it('produces the same bytes from the same scalar, because signatures are deterministic', async () => {
     const again = new ProtoWallet(PrivateKey.fromHex(S.recycler.scalar))
     const claim = buildEpcisLifecycleClaim(input(S.recycler, EVENTS.shredding, [bind(P.moduleA, 'inputEPCList', ID.moduleA), bind(P.moduleC, 'inputEPCList', ID.moduleC)], { requiredExtensions: [SHREDDING_RULE] }))
-    const a = await signEpcisLifecycleClaim(claim, again)
+    const a = await signEpcisLifecycleClaim(claim, again, fixtureIssuancePolicy(S.recycler))
     const b = await issue(S.recycler, input(S.recycler, EVENTS.shredding, [bind(P.moduleA, 'inputEPCList', ID.moduleA), bind(P.moduleC, 'inputEPCList', ID.moduleC)], { requiredExtensions: [SHREDDING_RULE] }))
     expect(text(a)).toBe(text(b))
     expect(gs1Comparison({ passportId: P.moduleA, identifier: ID.moduleA, field: 'inputEPCList', level: 'instance', eventType: 'TransformationEvent' }).status).toBe('pass')

@@ -62,9 +62,10 @@ export async function validatorVectors({ api, repo, compiler }) {
   const add = (name, expected, run) => vectors.push({ name, expected, sparqlOnly: expected.constraint === 'SPARQLConstraintComponent', run })
 
   // The two bundled sector bindings.
-  const registry = api.createProfileRegistry({ trustedBindingDigests: api.BUNDLED_BINDING_DIGESTS })
-  for (const result of await api.registerBundledBindings(registry)) if (!result.ok) throw new Error(`a bundled binding did not register: ${result.code}`)
-  const sectors = api.BUNDLED_BINDINGS.map(({ profile, bindingDigest }) => {
+  const sectorBindings = api.BUNDLED_BINDINGS
+  const registry = api.createProfileRegistry({ trustedBindingDigests: sectorBindings.map((entry) => entry.bindingDigest) })
+  for (const result of await api.registerBundledBindings(registry, { profiles: sectorBindings.map((entry) => entry.profile) })) if (!result.ok) throw new Error(`a bundled binding did not register: ${result.code}`)
+  const sectors = api.HISTORICAL_SECTOR_BINDINGS.map(({ profile, bindingDigest }) => {
     const binding = json(join(packageRoot, 'bindings', profile, 'binding.json'))
     const fixtures = join(packageRoot, 'test', 'fixtures', 'sector-bindings', profile)
     const documents = new Map(binding.vectors.positive.map((path) => [path, json(join(fixtures, path))]))
@@ -79,9 +80,9 @@ export async function validatorVectors({ api, repo, compiler }) {
   }
   const envelope = (sector, product, bindingDigest = sector.bindingDigest) => ({ notice: NOTICE, profile: sector.binding.id, profile_version: sector.binding.version, profile_binding_sha256: bindingDigest, product })
   /** The envelope's product cut in two, and both parts checked together: what a reader who holds both parts of a state does. */
-  const authorised = (sector, payload, passportId) => (engines) => {
+  const authorised = (sector, payload, passportId, selectedRegistry = registry) => (engines) => {
     const { publicProduct, restrictedProduct } = api.splitProductByAccess({ binding: sector.binding, product: payload.product })
-    return api.authorisedPayloadValidator({ registry, engines })({
+    return api.authorisedPayloadValidator({ registry: selectedRegistry, engines })({
       profile: sector.binding.id,
       profileVersion: sector.binding.version,
       payloadPublic: JSON.stringify({ ...payload, product: publicProduct }),
@@ -128,6 +129,39 @@ export async function validatorVectors({ api, repo, compiler }) {
     // check the validator asks the engine to expand again, so this is the case that makes several calls for one answer.
     const required = sector.binding.access.public.find((name) => name === 'oec:passportStatus')
     const first = positive(sector, sector.binding.vectors.positive[0])
+    const successor = registry.resolve(sector.binding.id, 2)
+    if (successor?.format !== 'binding') throw new Error(`the successor for ${sector.profile} did not register`)
+    const roots = json(join(packageRoot, 'test', 'fixtures', 'sector-bindings', sector.profile, 'vectors', 'subject-class-v2.json'))
+    if (roots.profile !== successor.profile) throw new Error(`the root cases name ${roots.profile}, expected ${successor.profile}`)
+    for (const c of roots.cases) {
+      const source = positive(sector, roots.from)
+      const kept = c.keep == null ? source : Object.fromEntries(c.keep.map((key) => [key, source[key]]))
+      const product = changed(kept, c)
+      if (c.include != null) product['@included'] = [positive(sector, c.include)]
+      const validate = c.view === 'public' ? publicOnly : authorised
+      add(`${successor.profile} ${c.name}`, c.expected, validate(successor, envelope(successor, product), passportIdOf(c.passportOf == null ? source : positive(sector, c.passportOf))))
+    }
+    const { 'gs1:gtin': gtin, ...withoutGtin } = first
+    for (const [label, value, expected] of [
+      ['equivalent expanded GTIN', gtin, { status: 'pass' }],
+      ['contradictory expanded GTIN', '09521000001428', { status: 'fail', cause: 'product-identity-mismatch', step: 'passport-identity' }],
+    ]) {
+      const product = { ...withoutGtin, 'https://ref.gs1.org/voc/gtin': { '@value': value } }
+      add(`${sector.profile} ${label}`, expected, authorised(sector, envelope(sector, product), passportIdOf(first)))
+    }
+    if (sector.profile === 'eu-textile@1') {
+      const { 'schema:serialNumber': serial, ...withoutSerial } = first
+      const product = { ...withoutSerial, 'https://schema.org/serialNumber': serial + '-OTHER' }
+      add(`${sector.profile} contradictory expanded serial`, { status: 'fail', cause: 'product-identity-mismatch', step: 'passport-identity' }, authorised(sector, envelope(sector, product), passportIdOf(first)))
+    }
+    if (sector.profile === 'eu-textile@1') {
+      for (const textileType of ['eutex:TextileProduct', 'eutex:TextileApparel']) {
+        const product = { ...first, type: ['gs1:Clothing', textileType] }
+        add(`${sector.profile} ${textileType} garment type`, { status: 'pass' }, authorised(sector, envelope(sector, product), passportIdOf(product)))
+        const twoTypes = { ...product, 'eutex:garmentType': ['shirt', 'jacket'] }
+        add(`${sector.profile} ${textileType} garment type cardinality`, { status: 'fail', cause: 'profile-rule-violation', step: 'shacl', constraint: 'MaxCountConstraintComponent' }, authorised(sector, envelope(sector, twoTypes), passportIdOf(product)))
+      }
+    }
     if (sector.profile === 'eu-battery@1' && required != null && Object.hasOwn(first, required)) {
       add(`${sector.profile} ${sector.binding.vectors.positive[0]} (public payload alone, without ${required})`, { status: 'fail', cause: 'profile-rule-violation', step: 'shacl', constraint: 'MinCountConstraintComponent' }, publicOnly(sector, envelope(sector, first), passportIdOf(first), [required]))
     }

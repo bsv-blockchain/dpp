@@ -98,7 +98,7 @@ export interface PassportClaimsReading {
   passportId: string
   historical: HistoricalClaimView[]
   lifecycle: LifecycleClaimView[]
-  discovery: { index: 'asked' | 'unreachable'; indexDetail?: string; registry: 'configured' | 'not-configured' }
+  discovery: { index: 'asked' | 'partial' | 'unreachable'; indexDetail?: string; relatedClaims?: 'complete' | 'incomplete'; registry: 'configured' | 'not-configured' }
 }
 
 /* ------------------------------------------------------------------ words */

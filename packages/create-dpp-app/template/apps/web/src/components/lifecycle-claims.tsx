@@ -22,7 +22,7 @@ function Registry({ answer }: { answer?: RegistryAnswer }) {
 
 const text = (value: unknown): string | undefined => (typeof value === 'string' ? value : undefined)
 
-function LifecycleClaimItem({ claim, onDeclareError }: { claim: LifecycleClaimView; onDeclareError?: (claim: LifecycleClaimView) => void }) {
+function LifecycleClaimItem({ claim, passportId, onDeclareError }: { claim: LifecycleClaimView; passportId: string; onDeclareError?: (claim: LifecycleClaimView) => void }) {
   const participation = participationLabel(claim)
   const correction = correctionLabel(claim)
   const event = claim.event ?? {}
@@ -72,6 +72,15 @@ function LifecycleClaimItem({ claim, onDeclareError }: { claim: LifecycleClaimVi
             </dd>
             <dt className="text-muted-foreground">Other passports</dt>
             <dd>{others.length === 0 ? 'None' : `${others.length} passport${others.length === 1 ? '' : 's'} bound by the same event`}</dd>
+            {claim.authorityScope == null ? null : (
+              <>
+                <dt className="text-muted-foreground">Declared role scope</dt>
+                <dd className="min-w-0">
+                  <p>{claim.authorityScope.includes(passportId) ? 'The issuer declares this role for this passport.' : 'This passport is outside the issuer’s declared role scope.'}</p>
+                  <ul>{claim.authorityScope.map((id) => <li key={id}><Mono>{id}</Mono></li>)}</ul>
+                </dd>
+              </>
+            )}
             <dt className="text-muted-foreground">Found</dt>
             <dd>{claim.foundBy.map((how) => (how === 'anchor' ? 'by an anchor naming this passport' : "among this application's claims")).join(' and ')}</dd>
             {claim.source == null ? null : (
@@ -97,7 +106,7 @@ function LifecycleClaimItem({ claim, onDeclareError }: { claim: LifecycleClaimVi
               <ul className="mt-3 divide-y">
                 {findingRows(claim.findings).map((row) => (
                   <li key={row.key} className="grid gap-1 py-2 sm:grid-cols-[9rem_8rem_1fr] sm:gap-3">
-                    <span>{row.label}</span>
+                    <span>{row.key === 'authority' ? 'Authority for declared scope' : row.label}</span>
                     <span>
                       <ToneBadge tone={row.tone}>{humanise(row.status)}</ToneBadge>
                     </span>
@@ -133,23 +142,24 @@ function LifecycleClaimItem({ claim, onDeclareError }: { claim: LifecycleClaimVi
 }
 
 export function LifecycleClaims({ reading, onDeclareError, emptyText }: { reading: PassportClaimsReading; onDeclareError?: (claim: LifecycleClaimView) => void; emptyText?: string }) {
+  const incomplete = reading.discovery.index !== 'asked' || reading.discovery.relatedClaims === 'incomplete'
   if (reading.lifecycle.length === 0 && reading.historical.length === 0) {
     return (
       <div className="space-y-2 text-sm text-muted-foreground">
-        <p>{emptyText ?? 'No lifecycle claim concerns this passport.'}</p>
-        {reading.discovery.index === 'unreachable' ? <p>The index could not be asked for anchors, so a claim anchored for this passport may not be listed.</p> : null}
+        <p>{!incomplete ? (emptyText ?? 'No lifecycle claim was found for this passport.') : 'No lifecycle claim was found in the available records.'}</p>
+        {incomplete ? <p>Claim discovery was incomplete. Additional claims may exist.</p> : null}
       </div>
     )
   }
   return (
     <div className="space-y-6">
+      {incomplete ? <p className="text-sm text-muted-foreground">Claim discovery was incomplete. This list shows the claims found so far.</p> : null}
       {reading.lifecycle.length === 0 ? null : (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">{LIFECYCLE_NOTICE}</p>
-          {reading.discovery.index === 'unreachable' ? <p className="text-sm text-muted-foreground">The index could not be asked for anchors, so only the claims this application holds are listed.</p> : null}
           <ul className="divide-y rounded-lg border">
             {reading.lifecycle.map((claim) => (
-              <LifecycleClaimItem key={claim.attestationId} claim={claim} onDeclareError={onDeclareError} />
+              <LifecycleClaimItem key={claim.attestationId} claim={claim} passportId={reading.passportId} onDeclareError={onDeclareError} />
             ))}
           </ul>
         </div>

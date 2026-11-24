@@ -12,7 +12,7 @@ export interface IdentifierPolicy {
   prefix: string
 }
 
-export const isDemonstrationPolicy = (policy: IdentifierPolicy): boolean => policy.prefix === GS1_DEMONSTRATION_PREFIX
+export const isDemonstrationPolicy = (policy: IdentifierPolicy): boolean => policy.prefix.startsWith(GS1_DEMONSTRATION_PREFIX)
 
 /** The item reference digits that, with the prefix and the check digit, make a GTIN-13 for the host's prefix. */
 export function mintGtin(prefix: string, itemReference: string): string {

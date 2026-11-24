@@ -75,6 +75,8 @@ export interface Health {
 }
 
 export interface ProfileSummary {
+  /** The edition offered for new passports when this profile is historical. */
+  issueSuccessor?: string
   id: string
   title: string
   description?: string
@@ -248,7 +250,7 @@ export interface PassportView {
   profile: string
   /** Present when the passport's profile is retired: nothing further is written for it, and this names the profile that replaces it. */
   profileRetired?: { replacedBy: string }
-  status: 'active' | 'retired'
+  status: 'active' | 'retired' | 'awaiting-send' | 'not-issued'
   demonstration: boolean
   holder: { party: string; controllerKey: string }
   createdAt: string

@@ -2,7 +2,7 @@
 
 The manifest profiles `battery@2`, `battery@3` and `battery@4` are retired from 14 November 2026. Teams that wrote or read them can use this page to see what changed and what to use instead. Nothing here teaches how to write them: the application starter writes nothing under them, and `@bsv/dpp-profiles` prepares and validates nothing under them. An index does not judge profiles, so a state another writer issues under one is still indexed, and reads as unsupported.
 
-For battery passport data, use `eu-battery@1` on the [EU battery and textile bindings](eu-sector-bindings.md) page.
+For battery passport data, use `eu-battery@2` on the [EU battery and textile bindings](eu-sector-bindings.md) page.
 
 ## What is retired
 
@@ -18,11 +18,11 @@ Each identifier keeps its one meaning. It is never reused, and no other definiti
 
 | Need | Use |
 |---|---|
-| Battery passport data for one serialised item | `eu-battery@1`, a profile held by a binding the package ships: a JSON-LD product document, checked by SHACL shapes and split into a public and a restricted part ([EU battery and textile bindings](eu-sector-bindings.md)) |
+| Battery passport data for one serialised item | `eu-battery@2`, a profile held by a binding the package ships: a JSON-LD product document, checked by SHACL shapes and split into a public and a restricted part ([EU battery and textile bindings](eu-sector-bindings.md)) |
 | A product no sector profile covers | `general@2` ([general](general.md)) |
 | A data model of your own | A binding you write and trust by digest ([validate a profile defined outside the package](../packages/dpp-profiles.md#validate-a-profile-defined-outside-the-package)) |
 
-`eu-battery@1` is another data model under its own identifier. It is not a later version of `battery@2`, and nothing converts a payload from one to the other. A product moves by a newly issued passport, written from the product's own data ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)).
+`eu-battery@2` is another data model under its own identifier. It is not a later version of `battery@2`, and nothing converts a payload from one to the other. A product moves by a newly issued passport, written from the product's own data ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)).
 
 ## What the software does now
 
@@ -57,4 +57,4 @@ The [profile specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a6
 
 ## Next
 
-Write battery data under `eu-battery@1` with the [EU battery and textile bindings](eu-sector-bindings.md), and move an existing application with [move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles).
+Write battery data under `eu-battery@2` with the [EU battery and textile bindings](eu-sector-bindings.md), and move an existing application with [move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles).

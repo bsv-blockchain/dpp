@@ -426,7 +426,7 @@ describe('checkBindingUpdate: a bundled binding', () => {
     if (after?.format !== 'binding') throw new Error('expected the bundled binding')
     expect(after.bindingDigest).toBe(pinned.bindingDigest)
     expect(Buffer.from(after.bindingBytes).equals(readFileSync(join(folder, 'binding.json')))).toBe(true)
-    expect(registry.resolve('eu-battery', 2)).toBeUndefined()
+    expect(registry.resolve('eu-battery', 2)).toMatchObject({ bindingDigest: BUNDLED_BINDINGS.find((entry) => entry.profile === 'eu-battery@2')!.bindingDigest })
     // The package trusts the bindings it ships and nothing derived from them.
     expect(await registry.register({ bindingBytes: proposal!.bindingBytes, resolveArtefact: fromProposal(proposal!) })).toMatchObject({ ok: false, code: 'binding-untrusted' })
   })
@@ -464,11 +464,12 @@ describe('checkBindingUpdate: a bundled binding', () => {
   it('reports no change for the files the package ships', async () => {
     const registry = trusting(...BUNDLED_BINDING_DIGESTS)
     await registerBundledBindings(registry)
-    for (const { profile } of BUNDLED_BINDINGS) {
+    for (const entry of BUNDLED_BINDINGS) {
+      const profile = entry.profile
       const [id, version] = profile.split('@') as [string, string]
       const active = registry.resolve(id, Number(version))
       if (active?.format !== 'binding') throw new Error('expected the bundled binding')
-      const shipped = join(import.meta.dirname, '..', 'bindings', profile)
+      const shipped = join(import.meta.dirname, '..', 'bindings', 'artefactDirectory' in entry ? entry.artefactDirectory : profile)
       const { report, proposal } = checkBindingUpdate({ active, candidate: { artefacts: active.binding.artefacts.map((artefact) => ({ path: artefact.path, bytes: new Uint8Array(readFileSync(join(shipped, artefact.path))) })) } })
       expect(report.outcome).toBe('unchanged')
       expect(proposal).toBeUndefined()

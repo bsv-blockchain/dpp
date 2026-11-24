@@ -8,11 +8,11 @@
 // event. The only input is an EPCIS event a member entered or one the EPCIS
 // exchange retained, and an event that names none of this platform's
 // passports binds nothing.
+import { createHash } from 'node:crypto'
 import { Utils, type ChainTracker } from '@bsv/sdk'
 import { EPCIS_CONTEXT_IRI, classifyEpcisIdentifier, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
 import { gs1KeyOf, granularityOf, parseGs1DigitalLinkUri, sameGs1Key, type AiValue, type Gs1Key } from '@bsv/dpp-profiles'
 import {
-  decodeAttestationAnchor,
   verifyLifecycleClaim,
   type PartialCheck,
   type SignedLifecycleClaim,
@@ -20,6 +20,7 @@ import {
 import {
   EPCIS_LIFECYCLE_CLASS_FIELDS,
   EPCIS_LIFECYCLE_INSTANCE_FIELDS,
+  EPCIS_LIFECYCLE_MAX_BYTES,
   EPCIS_LIFECYCLE_REPRESENTATION,
   parseEpcisLifecycleClaim,
   verifyEpcisLifecycleClaim,
@@ -29,10 +30,11 @@ import {
   type EpcisLifecycleBindingResult,
   type EpcisLifecycleComparisonInput,
   type EpcisLifecycleFindings,
+  type EpcisLifecycleIssuanceOptions,
   type EpcisLifecycleRelation,
 } from '@bsv/dpp-credentials/epcis-lifecycle'
-import type { IndexClient } from './index-client.js'
-import { isEpcisLifecycleRecord, type ClaimRecord, type ClaimRegistryAnswer, type EpcisLifecycleClaimRecord, type Store } from './store.js'
+import { boundedJson, type IndexClient } from './index-client.js'
+import { isEpcisLifecycleRecord, type ClaimFilter, type ClaimRecord, type ClaimRegistryAnswer, type EpcisLifecycleClaimRecord, type Store } from './store.js'
 
 /* ------------------------------------------------------------ identity rules */
 
@@ -176,7 +178,7 @@ export interface HistoricalClaimView {
 export interface LifecycleClaimView {
   claimFormat: 'dpp-epcis-lifecycle@1'
   attestationId: string
-  /** `anchor`: an anchor on the index names this passport as its subject. `this-application`: this application holds the claim and it binds the passport. */
+  /** `anchor`: an anchor on the index names this passport as its subject. `this-application`: a local record indexes the claim for this passport. */
   foundBy: Array<'anchor' | 'this-application'>
   /** Whether the claim's bytes were available to verify. */
   held: boolean
@@ -208,10 +210,12 @@ export interface PassportClaimsReading {
   passportId: string
   historical: HistoricalClaimView[]
   lifecycle: LifecycleClaimView[]
-  discovery: { index: 'asked' | 'unreachable'; indexDetail?: string; registry: 'configured' | 'not-configured' }
+  discovery: { index: 'asked' | 'partial' | 'unreachable'; indexDetail?: string; relatedClaims: 'complete' | 'incomplete'; registry: 'configured' | 'not-configured' }
 }
 
 export interface ClaimsReaderOptions {
+  authorityResolver?: EpcisLifecycleIssuanceOptions['authorityResolver']
+  extensionRules?: EpcisLifecycleIssuanceOptions['extensionRules']
   store: Store
   index: IndexClient
   registry?: { url: string }
@@ -233,40 +237,139 @@ export const historicalView = (record: ClaimRecord & { claim: SignedLifecycleCla
 })
 
 /** The claim's bytes from the registry's proof route, when this application does not hold them. The registry contract carries a current record's exact bytes as `securedBytes`. */
-async function bytesFromRegistry(registry: { url: string } | undefined, attestationId: string): Promise<{ bytes: string } | { unavailable: string }> {
+async function bytesFromRegistry(registry: { url: string } | undefined, attestationId: string, signal: AbortSignal): Promise<{ bytes: string } | { unavailable: string }> {
   if (registry == null) return { unavailable: 'this application does not hold the claim, and no registry is configured to fetch its bytes from' }
   try {
-    const response = await fetch(`${registry.url}/attestations/${encodeURIComponent(attestationId)}/proof`)
+    const response = await fetch(`${registry.url}/attestations/${encodeURIComponent(attestationId)}/proof`, { signal })
     if (!response.ok) return { unavailable: `the registry answered HTTP ${response.status} for the claim's bytes` }
-    const body = (await response.json()) as { securedBytes?: unknown }
-    return typeof body.securedBytes === 'string' ? { bytes: body.securedBytes } : { unavailable: 'the registry returned no bytes for the claim' }
+    // The proof contract can carry the same claim as JSON, canonical text and secured text.
+    const body = (await boundedJson(response, EPCIS_LIFECYCLE_MAX_BYTES * 8)) as { securedBytes?: unknown }
+    if (typeof body.securedBytes !== 'string') return { unavailable: 'the registry returned no bytes for the claim' }
+    if (Buffer.byteLength(body.securedBytes) > EPCIS_LIFECYCLE_MAX_BYTES) return { unavailable: 'the registry returned a claim larger than the lifecycle claim limit' }
+    return { bytes: body.securedBytes }
   } catch (cause) {
     return { unavailable: `the registry could not be reached (${cause instanceof Error ? cause.message : String(cause)})` }
   }
 }
 
-/**
- * Verify one claim's bytes as they concern one passport. The anchors are
- * every anchor the index holds for the claim; the related claims are every
- * claim this application holds under the same event identifier, which is
- * the complete set it holds, so the correction state is `none` only when none
- * of them declares the event in error.
- */
-export async function readLifecycleClaim(bytes: string, passportId: string, options: ClaimsReaderOptions & { anchors?: EpcisLifecycleAnchorEvidence[]; foundBy: LifecycleClaimView['foundBy']; record?: EpcisLifecycleClaimRecord }): Promise<LifecycleClaimView> {
-  let eventId: unknown
+function claimEvent(bytes: string): Record<string, unknown> | undefined {
   try {
-    eventId = parseEpcisLifecycleClaim(bytes).event.eventID
+    return parseEpcisLifecycleClaim(bytes).event
   } catch {
-    eventId = undefined
+    return undefined
   }
-  const related = typeof eventId !== 'string' ? [] : (await options.store.listClaims({ eventId })).filter(isEpcisLifecycleRecord).filter((r) => r.bytes !== bytes).map((r) => r.bytes)
+}
+
+const MAX_CLAIMS = 500
+const MAX_CLAIM_BYTES = 32 * 1024 * 1024
+const claimId = (bytes: string): string => 'urn:sha256:' + createHash('sha256').update(bytes, 'utf8').digest('hex')
+
+/** One digest-checked, bounded set for the whole read. Event identifiers group related signed bodies. */
+class RelatedClaims {
+  readonly byEvent = new Map<string, Set<string>>()
+  readonly correctiveIds = new Map<string, Set<string>>()
+  private readonly bytesById = new Map<string, string>()
+  complete = true
+  private byteLength = 0
+
+  add(attestationId: string, bytes: string): boolean {
+    const known = this.bytesById.get(attestationId)
+    if (known != null) return known === bytes
+    const length = Buffer.byteLength(bytes)
+    if (length > EPCIS_LIFECYCLE_MAX_BYTES || this.bytesById.size >= MAX_CLAIMS || this.byteLength + length > MAX_CLAIM_BYTES || claimId(bytes) !== attestationId) {
+      this.complete = false
+      return false
+    }
+    this.bytesById.set(attestationId, bytes)
+    this.byteLength += length
+    const event = claimEvent(bytes)
+    if (typeof event?.eventID === 'string') {
+      const others = this.byEvent.get(event.eventID) ?? new Set<string>()
+      others.add(bytes)
+      this.byEvent.set(event.eventID, others)
+      const corrective = (event.errorDeclaration as { correctiveEventIDs?: unknown } | undefined)?.correctiveEventIDs
+      if (Array.isArray(corrective)) {
+        const ids = this.correctiveIds.get(event.eventID) ?? new Set<string>()
+        for (const id of corrective) {
+          if (typeof id !== 'string' || ids.has(id)) continue
+          if (ids.size >= MAX_CLAIMS) { this.complete = false; break }
+          ids.add(id)
+        }
+        this.correctiveIds.set(event.eventID, ids)
+      }
+    } else {
+      this.complete = false
+    }
+    return true
+  }
+
+  async list(store: Store, filter: ClaimFilter): Promise<ClaimRecord[]> {
+    try {
+      const records = await store.listClaims({ ...filter, limit: MAX_CLAIMS + 1 })
+      if (records.length > MAX_CLAIMS) this.complete = false
+      return records.slice(0, MAX_CLAIMS)
+    } catch {
+      this.complete = false
+      return []
+    }
+  }
+
+  async readLocalRelations(store: Store): Promise<void> {
+    const read = async (ids: Set<string>) => {
+      if (ids.size === 0) return
+      if (ids.size > MAX_CLAIMS) this.complete = false
+      for (const record of await this.list(store, { eventId: [...ids].slice(0, MAX_CLAIMS) })) {
+        if (isEpcisLifecycleRecord(record)) this.add(record.attestationId, record.bytes)
+      }
+    }
+    const original = new Set(this.byEvent.keys())
+    await read(original)
+    const corrective = new Set<string>()
+    for (const eventId of original) {
+      for (const id of this.correctiveIds.get(eventId) ?? []) {
+        if (original.has(id)) continue
+        corrective.add(id)
+        if (corrective.size > MAX_CLAIMS) break
+      }
+      if (corrective.size > MAX_CLAIMS) break
+    }
+    await read(corrective)
+  }
+
+  forClaim(bytes: string): string[] {
+    const eventId = claimEvent(bytes)?.eventID
+    if (typeof eventId !== 'string') return []
+    const matches = new Set(this.byEvent.get(eventId))
+    for (const id of this.correctiveIds.get(eventId) ?? []) {
+      for (const candidate of this.byEvent.get(id) ?? []) matches.add(candidate)
+    }
+    matches.delete(bytes)
+    return [...matches].sort()
+  }
+}
+
+/** Verify against the local event records and every matching remote claim obtained in this passport read. */
+export async function readLifecycleClaim(bytes: string, passportId: string, options: ClaimsReaderOptions & {
+  anchors?: EpcisLifecycleAnchorEvidence[]
+  foundBy: LifecycleClaimView['foundBy']
+  record?: EpcisLifecycleClaimRecord
+  related?: RelatedClaims
+}): Promise<LifecycleClaimView> {
+  const related = options.related ?? new RelatedClaims()
+  if (options.related == null) {
+    related.complete = false // The local-only read has not asked the index and registry.
+    related.add(options.record?.attestationId ?? claimId(bytes), bytes)
+    await related.readLocalRelations(options.store)
+  }
   const v = await verifyEpcisLifecycleClaim(bytes, {
     expected: { passportId },
     compareProduct: compareLifecycleProduct,
+    authorityResolver: options.authorityResolver,
+    extensionRules: options.extensionRules,
     ...(options.schemaCheck == null ? {} : { eventSchemaValidator: options.schemaCheck }),
     ...(options.anchors == null || options.anchors.length === 0 ? {} : { anchors: options.anchors }),
     ...(options.chainTracker == null ? {} : { chainTracker: options.chainTracker }),
-    related: { claims: related, complete: true },
+    related: { claims: related.forClaim(bytes), complete: related.complete },
   })
   const bindingsHere = v.bindings.filter((b) => b.passportId === passportId)
   const sound = v.findings.signature.status === 'pass' && v.findings.eventStructure.status !== 'fail'
@@ -295,11 +398,6 @@ export async function readLifecycleClaim(bytes: string, passportId: string, opti
   }
 }
 
-/** The anchors the index holds for one claim, as evidence a verifier takes. */
-async function anchorsOfClaim(index: IndexClient, attestationId: string): Promise<EpcisLifecycleAnchorEvidence[]> {
-  return (await index.anchorsFor({ attestationId }, EPCIS_LIFECYCLE_REPRESENTATION)).map((found) => ({ transaction: found.transaction, outputIndex: found.outputIndex }))
-}
-
 /**
  * Every claim that concerns one passport. Historical native claims are read
  * under their own rules. EPCIS lifecycle claims are found two ways: by the
@@ -310,57 +408,77 @@ async function anchorsOfClaim(index: IndexClient, attestationId: string): Promis
  * and not established.
  */
 export async function readPassportClaims(passportId: string, options: ClaimsReaderOptions): Promise<PassportClaimsReading> {
-  const held = await options.store.listClaims({ passportId })
+  const signal = AbortSignal.timeout(30_000)
+  const related = new RelatedClaims()
+  const held = await related.list(options.store, { passportId })
   const historical = held.filter((r): r is ClaimRecord & { claim: SignedLifecycleClaim } => !isEpcisLifecycleRecord(r)).map(historicalView)
-  const local = held.filter(isEpcisLifecycleRecord)
-
-  const found = new Map<string, { foundBy: Set<'anchor' | 'this-application'>; record?: EpcisLifecycleClaimRecord }>()
-  for (const record of local) found.set(record.attestationId, { foundBy: new Set(['this-application']), record })
+  type Candidate = {
+    foundBy: Set<'anchor' | 'this-application'>
+    record?: EpcisLifecycleClaimRecord
+    anchors: Map<string, EpcisLifecycleAnchorEvidence>
+  }
+  const found = new Map<string, Candidate>()
+  for (const record of held.filter(isEpcisLifecycleRecord)) {
+    found.set(record.attestationId, { foundBy: new Set(['this-application']), record, anchors: new Map() })
+  }
   let index: PassportClaimsReading['discovery']['index'] = 'asked'
   let indexDetail: string | undefined
-  let everyHeld: EpcisLifecycleClaimRecord[] | undefined
+  let anchorsRead = 0
   try {
-    for (const anchor of await options.index.anchorsFor({ subject: passportId }, EPCIS_LIFECYCLE_REPRESENTATION)) {
-      const decoded = decodeAttestationAnchor(anchor.transaction.outputs[anchor.outputIndex]!.lockingScript)
-      if (decoded == null) continue
-      const entry = found.get(decoded.attestationId) ?? { foundBy: new Set() }
+    for await (const anchor of options.index.scanAnchors({ subject: passportId }, EPCIS_LIFECYCLE_REPRESENTATION, signal)) {
+      anchorsRead += 1
+      let entry = found.get(anchor.attestationId)
+      if (entry == null) {
+        if (found.size >= MAX_CLAIMS) throw new Error(`the passport read exceeded its limit of ${MAX_CLAIMS} claims`)
+        entry = { foundBy: new Set(), anchors: new Map() }
+        found.set(anchor.attestationId, entry)
+      }
       entry.foundBy.add('anchor')
-      // A claim this application holds is found by its identifier, even when it does not bind this passport.
-      everyHeld ??= (await options.store.listClaims()).filter(isEpcisLifecycleRecord)
-      entry.record ??= everyHeld.find((r) => r.attestationId === decoded.attestationId)
-      found.set(decoded.attestationId, entry)
+      entry.anchors.set(`${anchor.transaction.id('hex')}:${anchor.outputIndex}`, anchor)
     }
   } catch (cause) {
-    index = 'unreachable'
+    index = anchorsRead > 0 ? 'partial' : 'unreachable'
     indexDetail = cause instanceof Error ? cause.message : String(cause)
+    related.complete = false
   }
 
-  const lifecycle: LifecycleClaimView[] = []
-  for (const [attestationId, entry] of found) {
-    const foundBy = [...entry.foundBy].sort()
-    const obtained = entry.record != null ? { bytes: entry.record.bytes } : await bytesFromRegistry(options.registry, attestationId)
-    if ('unavailable' in obtained) {
-      lifecycle.push({ claimFormat: 'dpp-epcis-lifecycle@1', attestationId, foundBy, held: false, unavailable: obtained.unavailable, participation: 'not-established', bindingsHere: [], boundPassports: [], itemParticipants: [], declaresError: false, relations: [], anchors: 0 })
-      continue
+  const missing = [...found.keys()].filter((id) => found.get(id)!.record == null)
+  if (missing.length > 0) {
+    for (const record of await related.list(options.store, { attestationIds: missing })) {
+      if (isEpcisLifecycleRecord(record)) found.get(record.attestationId)!.record = record
     }
-    const text = obtained.bytes
-    let anchors: EpcisLifecycleAnchorEvidence[] = []
-    if (index === 'asked') {
+  }
+  const lifecycle: LifecycleClaimView[] = []
+  const ready: Array<{ bytes: string; attestationId: string; entry: Candidate }> = []
+  for (const [attestationId, entry] of found) {
+    const local = entry.record?.bytes
+    const validLocal = local != null && Buffer.byteLength(local) <= EPCIS_LIFECYCLE_MAX_BYTES && claimId(local) === attestationId
+    const obtained = validLocal ? { bytes: local } : await bytesFromRegistry(options.registry, attestationId, signal)
+    if ('bytes' in obtained && related.add(attestationId, obtained.bytes)) {
+      // Record metadata describes the locally held bytes. Bind it only when those bytes matched.
+      if (!validLocal) entry.record = undefined
+      ready.push({ bytes: obtained.bytes, attestationId, entry })
+    } else {
+      related.complete = false
+      const unavailable = 'unavailable' in obtained ? obtained.unavailable : 'the claim bytes do not match the requested digest or exceed the read limits'
+      lifecycle.push({ claimFormat: 'dpp-epcis-lifecycle@1', attestationId, foundBy: [...entry.foundBy].sort(), held: false, unavailable, participation: 'not-established', bindingsHere: [], boundPassports: [], itemParticipants: [], declaresError: false, relations: [], anchors: entry.anchors.size })
+    }
+  }
+  await related.readLocalRelations(options.store)
+  for (const { bytes, attestationId, entry } of ready) {
+    if (index !== 'unreachable' && !signal.aborted) {
       try {
-        anchors = await anchorsOfClaim(options.index, attestationId)
+        for await (const anchor of options.index.scanAnchors({ attestationId }, EPCIS_LIFECYCLE_REPRESENTATION, signal)) {
+          entry.anchors.set(`${anchor.transaction.id('hex')}:${anchor.outputIndex}`, anchor)
+        }
       } catch {
-        anchors = []
+        // The original subject lookup and every completed page still provide evidence.
       }
     }
-    const view = await readLifecycleClaim(text, passportId, { ...options, anchors, foundBy, ...(entry.record == null ? {} : { record: entry.record }) })
-    if (view.attestationId !== attestationId) {
-      lifecycle.push({ claimFormat: 'dpp-epcis-lifecycle@1', attestationId, foundBy, held: false, unavailable: `the bytes obtained for the claim have the digest ${view.digest ?? 'unknown'}, not the one its identifier names, so they were not read`, participation: 'not-established', bindingsHere: [], boundPassports: [], itemParticipants: [], declaresError: false, relations: [], anchors: anchors.length })
-      continue
-    }
-    lifecycle.push(view)
+    lifecycle.push(await readLifecycleClaim(bytes, passportId, { ...options, anchors: [...entry.anchors.values()], foundBy: [...entry.foundBy].sort(), record: entry.record, related }))
   }
   lifecycle.sort((a, b) => String(b.issuedAt ?? '').localeCompare(String(a.issuedAt ?? '')) || a.attestationId.localeCompare(b.attestationId))
-  return { passportId, historical, lifecycle, discovery: { index, ...(indexDetail == null ? {} : { indexDetail }), registry: options.registry == null ? 'not-configured' : 'configured' } }
+  return { passportId, historical, lifecycle, discovery: { index, relatedClaims: related.complete ? 'complete' : 'incomplete', ...(indexDetail == null ? {} : { indexDetail }), registry: options.registry == null ? 'not-configured' : 'configured' } }
 }
 
 /** The UTF-8 text of claim bytes. */

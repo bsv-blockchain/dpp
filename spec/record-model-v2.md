@@ -1,6 +1,6 @@
 # The record model, version 2
 
-**DPP Token Standard, record version 2. Status: working draft, pre-1.0.** This document defines the second version of the on-chain record: a seventeen-field layout that keeps everything version 1 established and adds what the first year of running version 1 showed a passport needs on the wire rather than in a policy. It is read beside [`record-model.md`](record-model.md), which remains the definition of version 1 and of every rule this document says it inherits; where this document is silent, version 1's rule applies to a version 2 state unchanged. Until version 1.0 is declared, the reference implementation in this repository is the tiebreaker where this text is ambiguous.
+**DPP Token Standard, record version 2. Status: working draft, pre-1.0.** This document defines the second version of the on-chain record: a seventeen-field layout that keeps everything version 1 established and adds what the first year of running version 1 showed a passport needs on the wire rather than in a policy. It is read beside [`record-model.md`](record-model.md), which remains the definition of version 1 and of every rule this document says it inherits; where this document is silent, version 1's rule applies to a version 2 state unchanged. The [governance rules](../GOVERNANCE.md#what-is-normative) govern disagreements during the draft. The reference implementation breaks a tie unless the specification identifies its behaviour as a defect.
 
 ## 1. Overview
 

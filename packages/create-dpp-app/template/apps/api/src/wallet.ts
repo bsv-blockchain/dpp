@@ -51,6 +51,8 @@ export interface Built {
  * mined transaction's merkle path. Its shape is the same live and in tests,
  * so everything after the build is one code path.
  */
+export class ActionAlreadySeen extends Error {}
+
 export interface WriterAdapter {
   build(args: { lockingScript: LockingScript; tip?: Tip; passportId: string }): Promise<Built>
   send(built: Built): Promise<'accepted' | 'refused' | 'unanswered'>
@@ -140,7 +142,7 @@ export async function openToolboxWallet(options: ToolboxWalletOptions): Promise<
   const monitor = new Monitor(Monitor.createDefaultWalletMonitorOptions(chain, manager, services))
   const keyDeriver = new sdkCjs.CachedKeyDeriver(sdkCjs.PrivateKey.fromHex(options.rootKeyHex))
   const wallet = new Wallet({ chain, keyDeriver: keyDeriver as unknown as ConstructorParameters<typeof Wallet>[0]['keyDeriver'], storage: manager, services, monitor })
-  await storage.findOrInsertUser(identityKey)
+  const { user } = await storage.findOrInsertUser(identityKey)
   // The monitor asks a header source for proofs once a block is a minute old and attaches them to the wallet's transactions.
   void monitor.startTasks()
 
@@ -205,7 +207,11 @@ export async function openToolboxWallet(options: ToolboxWalletOptions): Promise<
     },
     async discard(built) {
       // An unsent action holds the wallet's inputs until it is sent or aborted; an issue without a reference is found by its txid.
-      await brc100.abortAction({ reference: built.reference ?? built.txid }).catch(() => undefined)
+      // A retry after a local abort or network rejection finds a terminal wallet row.
+      const [held] = await storage.findTransactions({ partial: { userId: user.userId, txid: built.txid }, noRawTx: true })
+      if (held?.status === 'failed' || held?.noSendExpiryState === 'cancelled') return
+      const result = await brc100.abortAction({ reference: built.reference ?? built.txid })
+      if (!result.aborted) throw new ActionAlreadySeen(`the wallet already sees ${built.txid} on the network`)
     },
     async merklePathFor(txid) {
       // The wallet attaches the proof as part of being a wallet, but can list a transaction only while its output is unspent.

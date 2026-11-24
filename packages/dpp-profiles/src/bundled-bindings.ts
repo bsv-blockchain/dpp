@@ -1,13 +1,11 @@
 /**
  * The bindings this package ships (`spec/profiles.md` §7), under `bindings/`
- * beside `dist/`: one folder per profile, holding `binding.json`, every
- * artefact the binding names and a `NOTICE.md` that accounts for each file.
+ * beside `dist/`. Each sector folder holds its binding files, the artefacts
+ * they name and the upstream notice that accounts for each file.
  *
- * Two things here, and they are kept apart on purpose. `BUNDLED_BINDINGS` is
- * the list of digests the package publishes for its own bindings: a registry
- * trusts the bundled bindings by being given that list, and only then.
- * `registerBundledBindings` reads the folders and registers them. Shipping a
- * binding does not make it trusted, and importing the package reads no file.
+ * Each sector keeps one copy of its upstream artefacts and notice. Both
+ * versions name those bytes. The original binding.json identifies historical
+ * records. New passports select binding.v2.json and its required subject class.
  *
  * The digests are written out here, not computed from the folder. A binding
  * file that has changed on disk is then not a bundled binding at all, and
@@ -18,13 +16,27 @@ import { readFileSync } from 'node:fs'
 import { profileBindingDigest } from './profile-binding.js'
 import type { BindingProfile, ProfileRegistry, RegistrationResult } from './profile-registry.js'
 
-/** Every binding the package ships, with the SHA-256 of its `binding.json`. */
-export const BUNDLED_BINDINGS = [
+/** Original editions retained for reads and maintenance of existing passports. */
+export const HISTORICAL_SECTOR_BINDINGS = [
   { profile: 'eu-battery@1', bindingDigest: '89c5687f441926e8af37696a8f703342364e060f71d817badf3e1366043010b4' },
   { profile: 'eu-textile@1', bindingDigest: '8bccb7952d24180327a318772a2462141c4b84a37f1b16f0b9eee131e362d994' },
 ] as const
 
-export type BundledBindingId = (typeof BUNDLED_BINDINGS)[number]['profile']
+/** Immutable editions selected for new sector passports. */
+export const CURRENT_SECTOR_BINDINGS = [
+  { profile: 'eu-battery@2', bindingDigest: '084cd32380744fcb767488440a88a7f0eef674b036038a33ecdc02cd85a22c67', artefactDirectory: 'eu-battery@1' },
+  { profile: 'eu-textile@2', bindingDigest: '6f6b3a477d8718fa9e857387e3a11d1bf34a101708c2fb3ed911eb8cd2f7bc35', artefactDirectory: 'eu-textile@1' },
+] as const
+
+/** All distributed editions, in registration order. Select CURRENT_SECTOR_BINDINGS for new issuance. */
+export const BUNDLED_BINDINGS = [...HISTORICAL_SECTOR_BINDINGS, ...CURRENT_SECTOR_BINDINGS] as const
+
+const packagedBindings = [
+  ...HISTORICAL_SECTOR_BINDINGS.map((entry) => ({ ...entry, artefactDirectory: entry.profile, file: 'binding.json' })),
+  ...CURRENT_SECTOR_BINDINGS.map((entry) => ({ ...entry, file: 'binding.v2.json' })),
+]
+
+export type BundledBindingId = (typeof packagedBindings)[number]['profile']
 
 /** The trusted digest list for the bundled bindings: what `createProfileRegistry` is given to trust them, alone or beside an operator's own. */
 export const BUNDLED_BINDING_DIGESTS: readonly string[] = BUNDLED_BINDINGS.map((entry) => entry.bindingDigest)
@@ -41,10 +53,10 @@ export interface BundledBindingRefusal {
 }
 
 export interface RegisterBundledBindingsOptions {
-  /** Which bundled profiles to register. Default: all of them, in the order of `BUNDLED_BINDINGS`. */
+  /** Which bundled profiles to register. The default selection is `BUNDLED_BINDINGS`. */
   profiles?: readonly BundledBindingId[]
   /**
-   * The folder that holds one folder per profile, as a `file:` URL. Default:
+   * The folder that holds one folder per sector, as a `file:` URL. Default:
    * the package's own `bindings/`. A deployment whose bundler moved the data
    * files names where they went. The files are held to the same digests
    * wherever they are read from.
@@ -54,7 +66,7 @@ export interface RegisterBundledBindingsOptions {
 
 const reasonOf = (cause: unknown): string => (cause instanceof Error ? cause.message : String(cause))
 
-/** The folder that holds one folder per bundled profile: the one given, or the package's own `bindings/`. */
+/** The folder that holds the bundled sector folders: the one given, or the package's own `bindings/`. */
 function bindingsDirectory(given: URL | undefined): URL {
   // A path given as text would be read as a relative URL and land somewhere else, so it is refused by name.
   if (given != null && !(given instanceof URL && given.protocol === 'file:')) throw new TypeError('directory must be a file: URL, such as pathToFileURL(folder)')
@@ -76,20 +88,20 @@ function bindingsDirectory(given: URL | undefined): URL {
 export async function registerBundledBindings(registry: ProfileRegistry, options: RegisterBundledBindingsOptions = {}): Promise<Array<RegistrationResult | BundledBindingRefusal>> {
   const selected = options.profiles ?? BUNDLED_BINDINGS.map((entry) => entry.profile)
   const entries = selected.map((profile) => {
-    const entry = BUNDLED_BINDINGS.find((candidate) => candidate.profile === profile)
-    if (entry == null) throw new TypeError(`${JSON.stringify(profile)} is not a bundled binding; expected one of ${BUNDLED_BINDINGS.map((candidate) => candidate.profile).join(', ')}`)
+    const entry = packagedBindings.find((candidate) => candidate.profile === profile)
+    if (entry == null) throw new TypeError(`${JSON.stringify(profile)} is not a bundled binding; expected one of ${packagedBindings.map((candidate) => candidate.profile).join(', ')}`)
     return entry
   })
   const directory = bindingsDirectory(options.directory)
 
   const results: Array<RegistrationResult | BundledBindingRefusal> = []
-  for (const { profile, bindingDigest } of entries) {
-    const folder = new URL(`${profile}/`, directory)
+  for (const { profile, bindingDigest, artefactDirectory, file } of entries) {
+    const folder = new URL(`${artefactDirectory}/`, directory)
     let bindingBytes: Uint8Array
     try {
-      bindingBytes = new Uint8Array(readFileSync(new URL('binding.json', folder)))
+      bindingBytes = new Uint8Array(readFileSync(new URL(file, folder)))
     } catch (cause) {
-      results.push({ ok: false, code: 'bundled-binding-unavailable', profile, detail: `The bundled binding ${profile} could not be read from ${new URL('binding.json', folder).href}: ${reasonOf(cause)}.` })
+      results.push({ ok: false, code: 'bundled-binding-unavailable', profile, detail: `The bundled binding ${profile} could not be read from ${new URL(file, folder).href}: ${reasonOf(cause)}.` })
       continue
     }
     const found = profileBindingDigest(bindingBytes)
@@ -120,11 +132,11 @@ export const BUNDLED_BINDING_LICENCE = 'Apache-2.0'
 export function bundledBindingNotices(options: { directory?: URL } = {}): (profile: Pick<BindingProfile, 'profile' | 'bindingDigest'>, path: string) => Uint8Array | undefined {
   const directory = bindingsDirectory(options.directory)
   return (profile, path) => {
-    const entry = BUNDLED_BINDINGS.find((candidate) => candidate.profile === profile.profile && candidate.bindingDigest === profile.bindingDigest)
+    const entry = packagedBindings.find((candidate) => candidate.profile === profile.profile && candidate.bindingDigest === profile.bindingDigest)
     // A notice path is a relative file name with no dot or dot-dot segment, as the binding format requires, and it is checked again here because it becomes part of a file name.
     if (entry == null || !/^[A-Za-z0-9_@-][A-Za-z0-9._@-]*(\/[A-Za-z0-9_@-][A-Za-z0-9._@-]*)*$/u.test(path)) return undefined
     try {
-      return new Uint8Array(readFileSync(new URL(path, new URL(`${entry.profile}/`, directory))))
+      return new Uint8Array(readFileSync(new URL(path, new URL(`${entry.artefactDirectory}/`, directory))))
     } catch {
       return undefined
     }

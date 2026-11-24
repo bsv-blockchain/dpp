@@ -5,6 +5,9 @@
 // application prints, lists, indexes and exports for it, the EPCIS exchange
 // included. The last does the same for the credential of an EPCIS source.
 import { once } from 'node:events'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type { AddressInfo } from 'node:net'
 import type { Server } from 'node:http'
 import { format } from 'node:util'
@@ -12,6 +15,8 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { ViewCheck } from '../src/bound-profiles.js'
 import { EPCIS_RECORD_KINDS } from '@bsv/dpp-credentials/epcis-exchange'
 import { loadConfig } from '../src/config.js'
+import { mintPassportId } from '../src/identifiers.js'
+import { managedParties } from '../src/parties.js'
 import { startEpcisExchange, type EpcisExchange } from '../src/epcis/exchange.js'
 import { openPlatform, type Platform } from '../src/platform.js'
 import type { AuthorisedReading, PassportReading } from '../src/reader.js'
@@ -23,7 +28,9 @@ type Json = Record<string, unknown>
 /** The credential of the EPCIS source below. It is in no fixture and no key: wherever it turns up, it was copied there. */
 const credential = 'EPCIS-CREDENTIAL-CANARY-4D1E88F0'
 
-const config = loadConfig({ NETWORK: 'main', PASSPORT_HOST: 'passports.example.com', GS1_PREFIX: '952', LIVE_PUBLISHING: 'false' })
+const grantsDir = mkdtempSync(join(tmpdir(), 'dpp-disclosure-grants-'))
+const grantsFile = join(grantsDir, 'grants.json')
+const config = loadConfig({ LIFECYCLE_AUTHORITY_GRANTS_FILE: grantsFile, NETWORK: 'main', PASSPORT_HOST: 'passports.example.com', GS1_PREFIX: '952', LIVE_PUBLISHING: 'false' })
 const brandId = 'dev-brand'
 const printed: string[] = []
 let platform: Platform
@@ -46,6 +53,13 @@ beforeAll(async () => {
       }) as typeof stream.write)
     )
   }
+  const member = managedParties(config).member('developer')
+  const grants = [['100200300', 'LEAK-BAT-0001'], ['100200400', 'LEAK-TEX-0001']].map(([itemReference, serial]) => ({
+    issuer: member.did, issuerKey: member.identityKey,
+    passportId: mintPassportId({ host: config.passportHost, prefix: config.gs1Prefix }, itemReference, serial),
+    role: 'observer', purpose: 'claim', validFrom: '2026-11-04T07:00:00Z', validUntil: '2026-11-04T08:00:00Z',
+  }))
+  writeFileSync(grantsFile, JSON.stringify({ grants }))
   platform = await openPlatform({ config, mode: 'test', log: (line) => printed.push(line) })
   const party = platform.parties.brand(brandId)
   await platform.store.saveBrand({ id: brandId, name: 'Development brand', identityKey: party.identityKey, did: party.did, createdAt: new Date().toISOString() })
@@ -84,6 +98,7 @@ afterAll(async () => {
   await echoingSource.close()
   await platform.close()
   for (const spy of spies) spy.mockRestore()
+  rmSync(grantsDir, { recursive: true, force: true })
 })
 
 const get = async (path: string): Promise<{ status: number; text: string; body: any }> => {
@@ -130,13 +145,13 @@ describe('profiles over HTTP', () => {
     const { body } = await get('/api/profiles')
     const formats = Object.fromEntries((body as Array<{ id: string; format: string }>).map((p) => [p.id, p.format]))
     // The retired sector profiles are not among them: the bound profiles replace them.
-    expect(formats).toEqual({ 'general@2': 'manifest', 'eu-battery@1': 'binding', 'eu-textile@1': 'binding' })
+    expect(formats).toEqual({ 'general@2': 'manifest', 'eu-battery@1': 'binding', 'eu-textile@1': 'binding', 'eu-battery@2': 'binding', 'eu-textile@2': 'binding' })
     expect((await get('/api/health')).body.validationEngine).toBe(true)
   })
 
   it('describes a bound profile: its split, its contexts and an example for this deployment', async () => {
-    const { body } = await get('/api/profiles/eu-battery%401')
-    expect(body).toMatchObject({ id: 'eu-battery@1', format: 'binding', engine: { available: true }, demonstration: true })
+    const { body } = await get('/api/profiles/eu-battery%402')
+    expect(body).toMatchObject({ id: 'eu-battery@2', format: 'binding', engine: { available: true }, demonstration: true })
     expect(body.access.public).toContain('gs1:gtin')
     expect(body.access.public).not.toContain('eubat:hasBatteryState')
     expect(body.contexts.map((c: { path: string }) => c.path)).toContain('battery-context.jsonld')
@@ -152,36 +167,49 @@ describe('profiles over HTTP', () => {
   })
 
   it('serves the code lists the profile\'s own vocabulary defines', async () => {
-    const { body } = await get('/api/profiles/eu-textile%401/codes?class=eutex:CareSymbolCode&class=eutex:FabricType&class=nothing:Here')
+    const { body } = await get('/api/profiles/eu-textile%402/codes?class=eutex:CareSymbolCode&class=eutex:FabricType&class=nothing:Here')
     expect(body['eutex:CareSymbolCode'].map((c: { value: string }) => c.value)).toContain('eutex:Wash30')
     expect(body['eutex:CareSymbolCode'].find((c: { value: string }) => c.value === 'eutex:Wash30').label).not.toBe('')
     expect(body['eutex:FabricType'].map((c: { value: string }) => c.value).sort()).toEqual(['eutex:Denim', 'eutex:Knitted', 'eutex:WovenNonDenim'])
     expect(body['nothing:Here']).toEqual([])
-    const battery = (await get('/api/profiles/eu-battery%401/codes?class=oec:OperatorRole&class=eubat:BatteryCategory')).body
+    const battery = (await get('/api/profiles/eu-battery%402/codes?class=oec:OperatorRole&class=eubat:BatteryCategory')).body
     expect(battery['oec:OperatorRole']).toHaveLength(11)
     expect(battery['eubat:BatteryCategory'].map((c: { value: string }) => c.value)).toContain('eubat:IndustrialBattery')
   })
 
   it('issues from a product document, and refuses one whose serial is not the passport\'s', async () => {
-    const example = await exampleFor('eu-battery@1', 'HTTP-BAT-0001')
-    const wrong = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: example.itemReference, serial: 'HTTP-BAT-0002', product: example.product })
+    const example = await exampleFor('eu-battery@2', 'HTTP-BAT-0001')
+    const wrong = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@2', itemReference: example.itemReference, serial: 'HTTP-BAT-0002', product: example.product })
     expect(wrong.status).toBe(409)
     expect(wrong.body).toMatchObject({ error: 'product-invalid', cause: 'product-identity-mismatch' })
     expect((wrong.body.validation as ViewCheck).steps.at(-1)).toMatchObject({ step: 'passport-identity', status: 'fail' })
     expect((await get(`/api/passports/${ref(example.passportId.replace('0001', '0002'))}`)).status).toBe(404)
 
-    const issued = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: example.itemReference, serial: example.serial, product: example.product })
+    const issued = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@2', itemReference: example.itemReference, serial: example.serial, product: example.product })
     expect(issued.status).toBe(200)
-    expect(issued.body).toMatchObject({ passportId: example.passportId, profile: 'eu-battery@1' })
+    expect(issued.body).toMatchObject({ passportId: example.passportId, profile: 'eu-battery@2' })
     expect(issued.body.payload.product['eubat:batteryModelIdentifier']).toBe('HC-LFP-48-100')
     expect(issued.body.payload.product['eubat:hasBatteryState']).toBeUndefined()
 
-    const missing = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: example.itemReference, serial: 'HTTP-BAT-0003', payload: {} })
+    const missing = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@2', itemReference: example.itemReference, serial: 'HTTP-BAT-0003', payload: {} })
     expect(missing.body.error).toBe('product-required')
   })
 
+  it.each(['eu-battery@2', 'eu-textile@2'] as const)('refuses a contradictory expanded GTIN before issuing under %s', async (profile) => {
+    const example = await exampleFor(profile, 'HTTP-IDENTITY-001')
+    const { 'gs1:gtin': gtin, ...product } = example.product
+    expect(gtin).not.toBe('09521000001428')
+    const refused = await post(`/api/brands/${brandId}/passports`, {
+      profile, itemReference: example.itemReference, serial: example.serial,
+      product: { ...product, 'https://ref.gs1.org/voc/gtin': '09521000001428' },
+    })
+    expect(refused.status).toBe(409)
+    expect(refused.body).toMatchObject({ error: 'product-invalid', cause: 'product-identity-mismatch' })
+    expect((await get(`/api/passports/${ref(example.passportId)}`)).status).toBe(404)
+  })
+
   it('reports the two views apart: the public one to anyone, the authorised one to the holder', async () => {
-    const example = await exampleFor('eu-battery@1', 'HTTP-BAT-0001')
+    const example = await exampleFor('eu-battery@2', 'HTTP-BAT-0001')
     const reading = (await get(`/api/verify?passportId=${ref(example.passportId)}`)).body as PassportReading
     expect(reading.payloadChecks[0].publicView).toMatchObject({ view: 'public', status: 'pass' })
     expect(reading.product?.publicProduct['eubat:hasBatteryState']).toBeUndefined()
@@ -199,8 +227,8 @@ describe('profiles over HTTP', () => {
     const other = await post(`/api/brands/${brandId}/passports`, { profile: 'general@2', itemReference: '100000055', serial: 'HTTP-GEN-0001', payload: general, ownerFields: {} })
     expect(other.status).toBe(200)
     expect((await post(`/api/passports/${ref(other.body.passportId)}/authorised-view`, {})).body.error).toBe('profile-not-bound')
-    const foreign = await exampleFor('eu-battery@1', 'HTTP-BAT-0009')
-    await platform.writer.issue({ brandId: 'someone-else', brand: platform.parties.brand('someone-else'), passportId: foreign.passportId, profile: 'eu-battery@1', product: foreign.product })
+    const foreign = await exampleFor('eu-battery@2', 'HTTP-BAT-0009')
+    await platform.writer.issue({ brandId: 'someone-else', brand: platform.parties.brand('someone-else'), passportId: foreign.passportId, profile: 'eu-battery@2', product: foreign.product })
     expect((await post(`/api/passports/${ref(foreign.passportId)}/authorised-view`, {})).status).toBe(403)
   })
 })
@@ -228,8 +256,8 @@ describe('the authorised view, asked by someone it does not belong to', () => {
   }
 
   it('answers 401 to a request with no session while the brand holds the passport, and opens nothing', async () => {
-    const example = await exampleFor('eu-battery@1', 'HTTP-ANON-0001')
-    expect((await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: example.itemReference, serial: example.serial, product: example.product })).status).toBe(200)
+    const example = await exampleFor('eu-battery@2', 'HTTP-ANON-0001')
+    expect((await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@2', itemReference: example.itemReference, serial: example.serial, product: example.product })).status).toBe(200)
     for (const body of [{}, { claimCode: 'anything' }]) {
       const answer = await ask(example.passportId, body)
       expect(answer.status).toBe(401)
@@ -244,8 +272,8 @@ describe('the authorised view, asked by someone it does not belong to', () => {
   })
 
   it('answers 403 to a request for a handed-on passport without the claim code it was accepted with, or with another one', async () => {
-    const example = await exampleFor('eu-textile@1', 'HTTP-RECIPIENT-0001')
-    expect((await post(`/api/brands/${brandId}/passports`, { profile: 'eu-textile@1', itemReference: example.itemReference, serial: example.serial, product: example.product })).status).toBe(200)
+    const example = await exampleFor('eu-textile@2', 'HTTP-RECIPIENT-0001')
+    expect((await post(`/api/brands/${brandId}/passports`, { profile: 'eu-textile@2', itemReference: example.itemReference, serial: example.serial, product: example.product })).status).toBe(200)
     const offered = await post(`/api/passports/${ref(example.passportId)}/offer`, { terms: { word: 'Sold' } })
     expect(offered.status).toBe(200)
     const { offer, claimCode } = offered.body as { offer: { requestId: string }; claimCode: string }
@@ -260,12 +288,12 @@ describe('the authorised view, asked by someone it does not belong to', () => {
     // The brand's session is no longer a way in either: the passport is the recipient's.
     expect((await post(`/api/passports/${ref(example.passportId)}/authorised-view`, {})).status).toBe(403)
 
-    // The control: with the claim code the recipient is answered. The restricted part is still sealed to the brand that wrote it, so the view is not checked.
+    // The recipient opens the restricted part sealed during the transfer using the accepted claim code.
     const holder = await ask(example.passportId, { claimCode })
     expect(holder.status).toBe(200)
     expect((holder.body as AuthorisedReading).ownerTier.status).toBe('pass')
-    expect((holder.body as AuthorisedReading).authorisedView.status).toBe('not-checked')
-    expect(holder.text).not.toContain('eutex:hasWaterUsage')
+    expect((holder.body as AuthorisedReading).authorisedView.status).toBe('pass')
+    expect((holder.body as AuthorisedReading).restrictedProduct).toHaveProperty('eutex:hasWaterUsage', example.product['eutex:hasWaterUsage'])
   })
 })
 
@@ -275,7 +303,7 @@ describe('a restricted value', () => {
 
   const withCanary = (profile: string, product: Json): Json => {
     const copy = structuredClone(product)
-    if (profile === 'eu-battery@1') {
+    if (profile === 'eu-battery@2') {
       copy['eubat:manufacturerIdentifier'] = canary
       ;(copy['eubat:hasSupplyChainDueDiligence'] as Json)['eubat:auditBody'] = `${canary} audit body`
       ;((copy['eubat:hasMaterialComposition'] as Json[])[0]['schema:name'] as Json)['@value'] = `${canary} material`
@@ -296,8 +324,8 @@ describe('a restricted value', () => {
     const passports: string[] = []
 
     for (const [profile, serial] of [
-      ['eu-battery@1', 'LEAK-BAT-0001'],
-      ['eu-textile@1', 'LEAK-TEX-0001'],
+      ['eu-battery@2', 'LEAK-BAT-0001'],
+      ['eu-textile@2', 'LEAK-TEX-0001'],
     ] as const) {
       const example = await exampleFor(profile, serial)
       const product = withCanary(profile, example.product)
@@ -328,8 +356,8 @@ describe('a restricted value', () => {
       // Everything another reader can ask for.
       keep(`journal view, ${profile}`, (await get(`/api/passports/${ref(example.passportId)}`)).text)
       keep(`verify, ${profile}`, (await get(`/api/verify?passportId=${ref(example.passportId)}`)).text)
-      const claim = await post(`/api/passports/${ref(example.passportId)}/claims`, { assertedRole: 'observer', event: { type: 'ObjectEvent', eventID: `urn:uuid:6c000000-0000-4000-8000-${profile === 'eu-battery@1' ? '0000000000b1' : '0000000000b2'}`, eventTime: '2026-11-04T07:00:00.000Z', eventTimeZoneOffset: '+00:00', epcList: [example.passportId], action: 'OBSERVE', bizStep: 'inspecting', disposition: 'conformant' } })
-      expect(claim.status).toBe(200)
+      const claim = await post(`/api/passports/${ref(example.passportId)}/claims`, { assertedRole: 'observer', event: { type: 'ObjectEvent', eventID: `urn:uuid:6c000000-0000-4000-8000-${profile === 'eu-battery@2' ? '0000000000b1' : '0000000000b2'}`, eventTime: '2026-11-04T07:00:00.000Z', eventTimeZoneOffset: '+00:00', epcList: [example.passportId], action: 'OBSERVE', bizStep: 'inspecting', disposition: 'conformant' } })
+      expect(claim.status, claim.text).toBe(200)
       keep(`claim, ${profile}`, claim.text)
       keep(`claim bytes, ${profile}`, (await get(`/api/lifecycle-claims/${ref(claim.body.attestationId)}`)).text)
       keep(`claims, ${profile}`, (await get(`/api/passports/${ref(example.passportId)}/claims`)).text)
@@ -388,7 +416,7 @@ describe('a restricted value', () => {
     const error = Object.assign(new Error('unexpected'), { body: `{"secret":"${canary}"}` })
     const spy = vi.spyOn(platform.store, 'getBrand').mockRejectedValueOnce(error)
     const before = printed.length
-    const answer = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: '100200300', serial: 'LEAK-ERR-0001', product: {} })
+    const answer = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@2', itemReference: '100200300', serial: 'LEAK-ERR-0001', product: {} })
     spy.mockRestore()
     expect(answer.status).toBe(500)
     const lines = printed.slice(before).join('\n')

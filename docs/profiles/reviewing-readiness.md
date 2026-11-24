@@ -27,7 +27,7 @@ The stage ends with a dated baseline naming the files, deployment and product sc
 
 ## Build a cross-reference in both directions
 
-**Stage 2: build the comparison record.** For a manifest profile, start from its generated mapping inventory, such as [general@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/general@2.md): one row per field, including semantic field, legal basis, applicability and access tier. For a profile held by a binding, such as `eu-battery@1`, start from the shapes and contexts its binding pins ([EU battery and textile bindings](eu-sector-bindings.md)).
+**Stage 2: build the comparison record.** For a manifest profile, start from its generated mapping inventory, such as [general@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/general@2.md): one row per field, including semantic field, legal basis, applicability and access tier. For a profile held by a binding, such as `eu-battery@2`, start from the shapes and contexts its binding pins ([EU battery and textile bindings](eu-sector-bindings.md)).
 
 For a changed manifest profile, also run the change report in the checkout to list every added, changed and removed field:
 

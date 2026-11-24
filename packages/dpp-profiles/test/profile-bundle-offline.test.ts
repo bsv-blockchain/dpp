@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import {
-  BUNDLED_BINDINGS,
+  HISTORICAL_SECTOR_BINDINGS,
   BUNDLED_BINDING_DIGESTS,
   authorisedPayloadValidator,
   bindingPayloadValidator,
@@ -73,7 +73,7 @@ const withoutNotes = (node: unknown): unknown => {
   return Object.fromEntries(Object.entries(node).filter(([name]) => !name.startsWith('_comment')).map(([name, value]) => [name, withoutNotes(value)]))
 }
 
-const sectors = BUNDLED_BINDINGS.map(({ profile, bindingDigest }) => {
+const sectors = HISTORICAL_SECTOR_BINDINGS.map(({ profile, bindingDigest }) => {
   const fixtures = join(packageRoot, 'test', 'fixtures', 'sector-bindings', profile)
   const binding = JSON.parse(readFileSync(join(BINDINGS_FOLDER, profile, 'binding.json'), 'utf8')) as ProfileBinding
   const documents = new Map(binding.vectors.positive.map((path) => [path, JSON.parse(readFileSync(join(fixtures, path), 'utf8')) as Json]))
@@ -144,7 +144,7 @@ let readsToRestore: string[] = []
 
 beforeAll(async () => {
   first = createProfileRegistry({ trustedBindingDigests: BUNDLED_BINDING_DIGESTS })
-  for (const result of await registerBundledBindings(first)) expect(result).toMatchObject({ ok: true, alreadyRegistered: false })
+  for (const result of await registerBundledBindings(first, { profiles: HISTORICAL_SECTOR_BINDINGS.map((entry) => entry.profile) })) expect(result).toMatchObject({ ok: true, alreadyRegistered: false })
   const exported = await exportProfileBundle({ registry: first, readNotice: bundledBindingNotices(), licenceTexts: bundledBindingLicenceTexts() })
   if (!exported.ok) throw new Error(`${exported.code}: ${exported.detail}`)
   bundle = exported
@@ -161,7 +161,7 @@ beforeAll(async () => {
   if (!opened.ok) throw new Error(`${opened.code}: ${opened.detail}`)
   // The destination's own configuration says which bindings it trusts. The bundle does not.
   second = createProfileRegistry({ trustedBindingDigests: BUNDLED_BINDING_DIGESTS })
-  expect(await registerProfileBundle(second, opened.bundle, { expected: BUNDLED_BINDINGS })).toMatchObject(BUNDLED_BINDINGS.map(({ profile, bindingDigest }) => ({ ok: true, alreadyRegistered: false, profile: { profile, bindingDigest } })))
+  expect(await registerProfileBundle(second, opened.bundle, { expected: HISTORICAL_SECTOR_BINDINGS })).toMatchObject(HISTORICAL_SECTOR_BINDINGS.map(({ profile, bindingDigest }) => ({ ok: true, alreadyRegistered: false, profile: { profile, bindingDigest } })))
   readsToRestore = reads.paths.slice(readsBeforeRestore)
 })
 afterAll(() => { guard?.restore() })
@@ -211,7 +211,7 @@ describe('the network guard refuses and records every way out', () => {
 
 describe('the second deployment is built from the bundle alone', () => {
   it('holds the same bindings and the same artefact bytes as the first', () => {
-    for (const { profile } of BUNDLED_BINDINGS) {
+    for (const { profile } of HISTORICAL_SECTOR_BINDINGS) {
       const [id, version] = profile.split('@') as [string, string]
       const [a, b] = [first.resolve(id, Number(version)), second.resolve(id, Number(version))]
       if (a?.format !== 'binding' || b?.format !== 'binding') throw new Error(`${profile} is not held by a binding in both registries`)
@@ -243,6 +243,18 @@ describe('the second deployment is built from the bundle alone', () => {
 })
 
 describe('issued documents validate the same from the bundle as from the package, finding for finding', () => {
+  it.each(sectors.map((sector) => [sector.profile, sector] as const))('%s checks the restored subject for contradictory expanded identifiers', async (_name, sector) => {
+    const base = positive(sector, sector.binding.vectors.positive[0]!)
+    const { 'gs1:gtin': _, ...rest } = base
+    const product = { ...rest, 'https://ref.gs1.org/voc/gtin': '09521000001428' }
+    const check = { payload: envelope(sector, product), passportId: passportIdOf(base) }
+    const recovered = await authorised(second, sector, check)
+    expect(recovered).toEqual(await authorised(first, sector, check))
+    expect(detailOf(recovered).steps.find((s) => s.step === 'passport-identity')).toMatchObject({ status: 'fail' })
+    const publicReport = await publicOnly(second, sector, check)
+    expect(JSON.stringify(publicReport)).not.toContain('09521000001428')
+  })
+
   const positives = sectors.flatMap((sector) => sector.binding.vectors.positive.map((path) => [`${sector.profile} ${path}`, sector, path] as const))
   const negatives = sectors.flatMap((sector) => sector.cases.map((c) => [`${sector.profile} ${c.name}`, sector, c] as const))
 

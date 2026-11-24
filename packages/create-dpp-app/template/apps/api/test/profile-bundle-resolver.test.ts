@@ -15,10 +15,10 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { EPCIS_GS1_ARTEFACTS } from '@bsv/dpp-credentials'
-import { BUNDLED_BINDINGS, exportProfileBundle } from '@bsv/dpp-profiles'
+import { BUNDLED_BINDINGS, CURRENT_SECTOR_BINDINGS, exportProfileBundle } from '@bsv/dpp-profiles'
 import { startApp, testConfig, type Json, type TestApp } from './epcis-fixtures.js'
 
-const SECTOR = ['eu-battery@1', 'eu-textile@1'] as const
+const SECTOR = ['eu-battery@2', 'eu-textile@2'] as const
 const folders: string[] = []
 const apps: TestApp[] = []
 
@@ -52,7 +52,7 @@ beforeAll(async () => {
   // The control: no bundle folder is configured, so both sector profiles are read from the installed package.
   const packaged = await app()
   expect(packaged.platform.profiles.source).toBe('package')
-  expect(packaged.platform.profiles.list().map((profile) => profile.profile).sort()).toEqual([...SECTOR])
+  expect(packaged.platform.profiles.list().map((profile) => profile.profile).sort()).toEqual(BUNDLED_BINDINGS.map(entry => entry.profile).sort())
   expect(packaged.platform.profiles.refusals).toEqual([])
   for (const profile of SECTOR) {
     const example = (await packaged.get(`/api/profiles/${encodeURIComponent(profile)}`)).body.examples[0] as { itemReference: string; serial: string; passportId: string; product: Json }
@@ -64,7 +64,7 @@ beforeAll(async () => {
     expect((await packaged.platform.profiles.validatePublic(payload)).status, profile).toBe('pass')
     made.set(profile, { ...example, payload })
   }
-  for (const [name, profiles] of [['both', [...SECTOR]], ['textile-only', ['eu-textile@1']]] as const) {
+  for (const [name, profiles] of [['both', [...SECTOR]], ['textile-only', ['eu-textile@2']]] as const) {
     const bundle = await exportProfileBundle({
       registry: packaged.platform.profiles.registry,
       profiles: [...profiles],
@@ -145,8 +145,24 @@ describe('a deployment told to read its profiles from a bundle folder', () => {
     const api = await app({ PROFILE_BUNDLE_DIR: dir })
     expect(api.platform.profiles.source).toBe('bundle')
     expect(api.platform.profiles.refusals).toEqual([])
-    expect(api.platform.profiles.list().map((profile) => [profile.profile, profile.bindingDigest]).sort()).toEqual(BUNDLED_BINDINGS.map((entry) => [entry.profile, entry.bindingDigest]).sort())
+    expect(api.platform.profiles.list().map((profile) => [profile.profile, profile.bindingDigest]).sort()).toEqual(CURRENT_SECTOR_BINDINGS.map((entry) => [entry.profile, entry.bindingDigest]).sort())
     for (const profile of SECTOR) expect((await api.platform.profiles.validatePublic(made.get(profile)!.payload)).status, profile).toBe('pass')
+  })
+
+  it('opens the exact packaged successor carried in a portable bundle under default trust', async () => {
+    const { profile } = CURRENT_SECTOR_BINDINGS[0]
+    const source = await app()
+    const bundle = await exportProfileBundle({
+      registry: source.platform.profiles.registry, profiles: [profile],
+      readNotice: (entry, path) => source.platform.profiles.readNotice(entry, path),
+      licenceTexts: await source.platform.profiles.licenceTexts(), provisioned: EPCIS_GS1_ARTEFACTS, root: 'profiles',
+    })
+    if (!bundle.ok) throw new Error(bundle.detail)
+    const dir = folder()
+    install(dir, bundle.files)
+    const selected = await app({ PROFILE_BUNDLE_DIR: dir })
+    expect(selected.platform.profiles.list().map(entry => entry.profile)).toEqual([profile])
+    expect((await selected.get(`/api/profiles/${profile}`)).status).toBe(200)
   })
 
   it('resolves only the profile a bundle carries: the other is not taken from the package', async () => {
@@ -154,16 +170,16 @@ describe('a deployment told to read its profiles from a bundle folder', () => {
     install(dir, bundleFiles.get('textile-only')!)
     const api = await app({ PROFILE_BUNDLE_DIR: dir })
     expect(api.platform.profiles.source).toBe('bundle')
-    expect(api.platform.profiles.list().map((profile) => profile.profile)).toEqual(['eu-textile@1'])
-    expect((await api.platform.profiles.validatePublic(made.get('eu-textile@1')!.payload)).status).toBe('pass')
-    await notResolved(api, 'eu-battery@1')
+    expect(api.platform.profiles.list().map((profile) => profile.profile)).toEqual(['eu-textile@2'])
+    expect((await api.platform.profiles.validatePublic(made.get('eu-textile@2')!.payload)).status).toBe('pass')
+    await notResolved(api, 'eu-battery@2')
   })
 
   it('refuses a bundle with a file gone, by name, and resolves nothing in its place', async () => {
     const dir = folder()
     const files = bundleFiles.get('both')!
     // One file of the battery profile that is not its binding: a rule file or a context the binding names.
-    const gone = [...files.keys()].find((path) => path.startsWith('profiles/eu-battery@1/') && !path.endsWith('binding.json'))!
+    const gone = [...files.keys()].find((path) => path.startsWith('profiles/eu-battery@2/') && !path.endsWith('binding.json'))!
     expect(gone).toBeDefined()
     install(dir, files, (path) => path === gone)
     const lines: string[] = []
@@ -176,7 +192,7 @@ describe('a deployment told to read its profiles from a bundle folder', () => {
     expect(started.platform.profiles.refusals.length).toBeGreaterThan(0)
     expect(lines.some((line) => /was not registered \(/.test(line))).toBe(true)
     // The incomplete profile is not resolved, from the bundle or from anywhere else.
-    await notResolved(started, 'eu-battery@1')
+    await notResolved(started, 'eu-battery@2')
     expect((await started.get('/api/operations')).body.profiles.refused.length).toBeGreaterThan(0)
   })
 })

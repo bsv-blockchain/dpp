@@ -1,7 +1,7 @@
 import { Hash, LockingScript, Transaction, Utils, type ChainTracker } from '@bsv/sdk'
 import { inspectAttestationAnchor, type AnchorMetadata } from './anchor.js'
+import { nativeAnchorMetadataMismatches, parseCanonicalClaimBytes } from './nativeAnchorBinding.js'
 import {
-  LIFECYCLE_MEDIA_TYPE,
   LIFECYCLE_REPRESENTATION,
   lifecycleClaimDigest,
   verifyLifecycleClaim,
@@ -500,7 +500,56 @@ function inspectAnchors(anchors: AnchorEvidence[] | undefined): AnchorFinding[] 
   })
 }
 
-function observe(policy: EvidencePolicy, passportId: string, tip: Outpoint | null, alternativeTips: Outpoint[], checkedAt: string): Promise<Observations> {
+/** Compare complete histories for the expected passport by the outpoints they actually spend. */
+function historyConflicts(histories: ChainInspection[]): { genesisRefs: Set<string>; hasFork: boolean } {
+  const genesisRefs = new Set<string>()
+  if (histories.length < 2) return { genesisRefs, hasFork: false }
+  const successors = new Map<string, string>()
+  let hasFork = false
+  for (const history of histories) {
+    let previous: string | undefined
+    for (const state of history.states) {
+      const current = outpointRef(state)
+      if (previous == null) {
+        genesisRefs.add(current)
+      } else {
+        const successor = successors.get(previous)
+        if (successor != null && successor !== current) hasFork = true
+        successors.set(previous, current)
+      }
+      previous = current
+    }
+  }
+  return { genesisRefs, hasFork }
+}
+
+/** Without a primary state, trusted coordinates must be satisfied by the same complete alternative. */
+function bindAlternativeHistories(histories: ChainInspection[], expected: ExpectedSubject) {
+  const refs = new Set(histories.map(history => outpointRef(history.states[0])))
+  let candidates = histories
+  if (expected.expectedGenesisOutpoint != null) {
+    const genesis = outpointRef(expected.expectedGenesisOutpoint)
+    candidates = candidates.filter(history => outpointRef(history.states[0]) === genesis)
+    if (candidates.length === 0) return { refs, problem: { reasonCode: 'genesis-mismatch', detail: `no supplied alternative starts at ${genesis}` } }
+  }
+  if (expected.expectedIssuer != null) {
+    const issuer = expected.expectedIssuer
+    candidates = candidates.filter(history => {
+      const key = history.states[0].state.actorIdentityKey
+      return issuer === key || issuer === didKeyFromIdentityKey(key)
+    })
+    if (candidates.length === 0) return { refs, problem: { reasonCode: 'issuer-mismatch', detail: `no selected alternative has genesis issuer ${issuer}` } }
+  }
+  if (expected.expectedStateOutpoint != null) {
+    const state = outpointRef(expected.expectedStateOutpoint)
+    const tips = candidates.map(history => outpointRef(history.states[history.states.length - 1]))
+    for (const tip of tips) refs.add(tip)
+    if (!tips.includes(state)) return { refs, problem: { reasonCode: 'state-mismatch', detail: `no selected alternative ends at ${state}` } }
+  }
+  return { refs }
+}
+
+function observe(policy: EvidencePolicy, passportId: string, tip: Outpoint | null, alternativeTips: Outpoint[], competingHistories: boolean, checkedAt: string): Promise<Observations> {
   const observers = policy.observers ?? []
   return Promise.all(
     observers.map(async (observer): Promise<ObservationSource & { candidateOutpoints: Outpoint[] }> => {
@@ -536,14 +585,21 @@ function observe(policy: EvidencePolicy, passportId: string, tip: Outpoint | nul
     if (tip != null) add(tip)
     alternativeTips.forEach(add)
     answers.forEach((a) => a.candidateOutpoints.forEach(add))
-    const answered = answers.filter((a) => a.result !== 'unavailable')
-    let latestState: Observations['latestState']
-    if (alternativeTips.length > 0 || answers.some((a) => a.result === 'conflicting')) latestState = 'conflicting'
-    else if (answered.length === 0) latestState = 'unknown'
-    else if (answered.some((a) => a.result === 'spent')) {
-      latestState = answered.every((a) => a.result === 'spent') ? 'superseded' : 'conflicting'
-    } else if (answered.every((a) => a.result === 'unspent')) latestState = 'observed'
-    else latestState = 'conflicting'
+    const results = new Set(answers.map((a) => a.result))
+    const spendingTxids = new Set(answers.filter((a) => a.result === 'spent' && a.spendingTxid != null).map((a) => a.spendingTxid))
+    const proposedTips = new Set(answers.flatMap((a) => a.candidateOutpoints.map(outpointRef)))
+    if (tip != null && results.has('unspent')) proposedTips.add(outpointRef(tip))
+
+    let latestState: Observations['latestState'] = 'unknown'
+    if (competingHistories || proposedTips.size > 1 || results.has('conflicting')) {
+      latestState = 'conflicting'
+    } else if (tip != null) {
+      if (results.has('spent')) {
+        latestState = results.has('unspent') || spendingTxids.size > 1 ? 'conflicting' : 'superseded'
+      } else if (results.size === 1 && results.has('unspent')) {
+        latestState = 'observed'
+      }
+    }
     return {
       latestState,
       sources: answers.map(({ candidateOutpoints: _c, ...source }) => source),
@@ -569,6 +625,7 @@ export async function verifyPassportEvidence(
   const limits: string[] = [
     'Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.',
     'An anchor establishes its anchoring service\'s commitment to bytes, not the truth of the claim those bytes carry.',
+    'A credential status observation is only as fresh as its source.',
   ]
 
   // The publisher policy is verified before any key in it is trusted. A chain
@@ -593,22 +650,18 @@ export async function verifyPassportEvidence(
     const at = token.checks.findIndex((c) => c.name === 'publisherSignatures')
     if (at >= 0) token.checks[at] = check('publisherSignatures', 'unknown', 'publisher-policy-invalid', [], { detail: `publisher policy version ${policyFailure.version}: ${policyFailure.reason}, ${policyFailure.detail}` })
   }
-  const alternatives: Array<{ inspection: ChainInspection; tip: Outpoint | null }> = []
+  const histories: ChainInspection[] = []
+  const alternativeTips: Outpoint[] = []
+  if (inspection?.complete && token.genesis?.state.passportId === expected.passportId) histories.push(inspection)
   for (const history of evidence.alternativeHistories ?? []) {
     if (history.length === 0) continue
     const alt = await inspectChain(history, chainOptions)
-    const last = alt.states.at(-1)
-    alternatives.push({ inspection: alt, tip: last == null ? null : { txid: last.txid, outputIndex: last.outputIndex } })
+    if (!alt.complete || alt.states[0]?.state.passportId !== expected.passportId) continue
+    histories.push(alt)
+    const tip = alt.states[alt.states.length - 1]
+    alternativeTips.push({ txid: tip.txid, outputIndex: tip.outputIndex })
   }
-  const validAlternatives = alternatives.filter((a) => a.inspection.complete && a.inspection.states[0]?.state.passportId === expected.passportId)
-  // A valid alternative that shares this history's genesis is a fork, two
-  // successors of one state, which accepted-chain spending decides and this
-  // report only names; one with another genesis is a rival claim to the
-  // identifier, which an authority policy decides. The two are told apart
-  // because they mean different things and get different words.
-  const genesisTxid = token.genesis?.txid
-  const forks = validAlternatives.filter((a) => genesisTxid != null && a.inspection.states[0]?.txid === genesisTxid)
-  const rivalGenesis = validAlternatives.filter((a) => !forks.includes(a))
+  const { genesisRefs, hasFork } = historyConflicts(histories)
 
   // The attestation and anchor rails.
   const native = inspectNativeClaims(evidence.nativeClaims)
@@ -689,35 +742,37 @@ export async function verifyPassportEvidence(
     const ref = anchor.ref
     const scopeRefs = [ref, digestRef(meta.digest)]
     if (meta.representation === LIFECYCLE_REPRESENTATION) {
-      const claim = native.claims.find((c) => c.digest === meta.digest)
-      const bytes = anchor.securedBytes
-      if (claim == null && bytes == null) {
-        unavailableRefs.push(digestRef(meta.digest))
-        bindingParts.push({ status: 'unknown', reasonCode: 'secured-bytes-absent', evidenceRefs: scopeRefs })
-        continue
-      }
-      if (claim == null && bytes != null) {
-        // Bytes supplied for a native anchor must themselves be a signed claim.
-        let parsed: unknown
-        try { parsed = JSON.parse(Utils.toUTF8(bytes)) } catch { parsed = undefined }
-        const result = parsed === undefined ? undefined : verifyLifecycleClaim(parsed)
-        if (result?.signature !== 'verified') {
-          bindingParts.push({ status: 'fail', reasonCode: 'digest-mismatch', evidenceRefs: scopeRefs, detail: 'supplied bytes are not a verified native claim with this digest' })
-          continue
-        }
-        const digest = lifecycleClaimDigest(parsed as SignedLifecycleClaim)
+      let bound = native.claims.find((c) => c.digest === meta.digest)
+      const bytes = anchor.securedBytes ?? bytesByDigest.get(meta.digest)?.bytes
+      if (bytes != null) {
+        const digest = Utils.toHex(Hash.sha256(bytes))
         if (digest !== meta.digest) {
           bindingParts.push({ status: 'fail', reasonCode: 'digest-mismatch', evidenceRefs: [...scopeRefs, digestRef(digest)] })
           continue
         }
-        native.claims.push({ claim: parsed as SignedLifecycleClaim, digest, issuerKey: result.issuerKey, ref: digestRef(digest) })
+        let parsed: object
+        try {
+          parsed = parseCanonicalClaimBytes(bytes)
+        } catch {
+          bindingParts.push({ status: 'fail', reasonCode: 'decode-failed', evidenceRefs: scopeRefs, detail: 'the supplied bytes must be restricted canonical JSON for a native claim' })
+          continue
+        }
+        if (bound == null) {
+          const result = verifyLifecycleClaim(parsed)
+          if (result.signature !== 'verified') {
+            bindingParts.push({ status: 'fail', reasonCode: 'signature-invalid', evidenceRefs: scopeRefs, detail: result.reason })
+            continue
+          }
+          bound = { claim: parsed as SignedLifecycleClaim, digest, issuerKey: result.issuerKey, ref: digestRef(digest) }
+          native.claims.push(bound)
+        }
       }
-      const bound = native.claims.find((c) => c.digest === meta.digest)!
-      const mismatches: string[] = []
-      if (meta.issuer !== bound.claim.issuer) mismatches.push('issuer')
-      if (meta.subject !== bound.claim.passportId) mismatches.push('subject')
-      if (meta.attestationType !== bound.claim.eventType) mismatches.push('attestationType')
-      if (meta.mediaType !== LIFECYCLE_MEDIA_TYPE) mismatches.push('mediaType')
+      if (bound == null) {
+        unavailableRefs.push(digestRef(meta.digest))
+        bindingParts.push({ status: 'unknown', reasonCode: 'secured-bytes-absent', evidenceRefs: scopeRefs })
+        continue
+      }
+      const mismatches = nativeAnchorMetadataMismatches(meta, bound.claim, bound.digest)
       bindingParts.push(
         mismatches.length === 0
           ? { status: 'pass', evidenceRefs: scopeRefs }
@@ -800,11 +855,31 @@ export async function verifyPassportEvidence(
     if (expected.expectedStateOutpoint != null && token.tip != null && !sameOutpoint(expected.expectedStateOutpoint, token.tip)) {
       problems.push({ reasonCode: 'state-mismatch', detail: `supplied tip is ${outpointRef(token.tip)}, expected ${outpointRef(expected.expectedStateOutpoint)}` })
     }
-    for (const c of native.claims) {
-      subjectRefs.push(c.ref)
-      if (c.claim.passportId !== expected.passportId) problems.push({ reasonCode: 'subject-mismatch', detail: `native claim ${c.ref} names ${c.claim.passportId}` })
-      if (expected.expectedIssuer != null && c.claim.issuer !== expected.expectedIssuer && c.claim.issuerKeyDid !== expected.expectedIssuer) {
-        problems.push({ reasonCode: 'issuer-mismatch', detail: `native claim ${c.ref} is issued by ${c.claim.issuer}` })
+    if (token.genesis == null && histories.length > 0) {
+      const alternative = bindAlternativeHistories(histories, expected)
+      subjectRefs.push(...alternative.refs)
+      if (alternative.problem != null) problems.push(alternative.problem)
+    }
+    const hasHistory = token.genesis != null || histories.length > 0
+    if (!hasHistory && expected.expectedGenesisOutpoint != null) {
+      problems.push({ reasonCode: 'no-evidence', detail: 'no eligible genesis was supplied for the expected outpoint' })
+    }
+    const state = expected.expectedStateOutpoint
+    if (state != null && !hasHistory && native.claims.length === 0) {
+      problems.push({ reasonCode: 'no-evidence', detail: 'no verified state reference was supplied for the expected outpoint' })
+    }
+    for (const { claim, ref } of native.claims) {
+      subjectRefs.push(ref)
+      if (claim.passportId !== expected.passportId) problems.push({ reasonCode: 'subject-mismatch', detail: `native claim ${ref} names ${claim.passportId}` })
+      if (expected.expectedIssuer != null && claim.issuer !== expected.expectedIssuer && claim.issuerKeyDid !== expected.expectedIssuer) {
+        problems.push({ reasonCode: 'issuer-mismatch', detail: `native claim ${ref} is issued by ${claim.issuer}` })
+      }
+      if (state != null) {
+        if (claim.recordId === state.txid) {
+          problems.push({ reasonCode: 'no-evidence', detail: `native claim ${ref} identifies the transaction without an output index` })
+        } else if (claim.recordId !== outpointRef(state)) {
+          problems.push({ reasonCode: 'state-mismatch', detail: `native claim ${ref} names state ${claim.recordId}, expected ${outpointRef(state)}` })
+        }
       }
     }
     // A credential that names several subjects may be anchored once for each,
@@ -823,19 +898,44 @@ export async function verifyPassportEvidence(
         if (!otherSubjects.includes(a.metadata.subject)) otherSubjects.push(a.metadata.subject)
       } else problems.push({ reasonCode: 'subject-mismatch', detail: `anchor ${a.ref} names ${a.metadata.subject}` })
     }
-    for (const [digest, v] of verifications) {
-      subjectRefs.push(digestRef(digest))
-      const accepted = [expected.passportId, ...(expected.productIdentifier == null ? [] : [expected.productIdentifier])]
-      if (v.subjects != null && !v.subjects.some((s) => accepted.includes(s))) problems.push({ reasonCode: 'subject-mismatch', detail: `credential ${digestRef(digest)} names ${v.subjects.join(', ')}` })
+    if (policy.credentialVerifier == null) {
+      for (const digest of new Set(externals.map(credential => credential.digest))) {
+        const ref = digestRef(digest)
+        subjectRefs.push(ref)
+        problems.push({ reasonCode: 'no-evidence', detail: `credential ${ref} has no verified subject or issuer` })
+      }
     }
-    if (rivalGenesis.length > 0 && expected.expectedGenesisOutpoint == null) {
-      problems.push({ reasonCode: 'genesis-ambiguous', detail: `${rivalGenesis.length + 1} valid genesis records carry this passport identifier` })
+    for (const [digest, v] of verifications) {
+      const ref = digestRef(digest)
+      subjectRefs.push(ref)
+      if (v.proof.status !== 'pass') {
+        problems.push({ reasonCode: 'no-evidence', detail: `credential ${ref} has no verified subject or issuer` })
+        continue
+      }
+      const accepted = [expected.passportId, ...(expected.productIdentifier == null ? [] : [expected.productIdentifier])]
+      if (v.subjects == null || v.subjects.length === 0) {
+        problems.push({ reasonCode: 'no-evidence', detail: `credential ${ref} supplies no verified subject identifier` })
+      } else if (!v.subjects.some((s) => accepted.includes(s))) {
+        problems.push({ reasonCode: 'subject-mismatch', detail: `credential ${ref} names ${v.subjects.join(', ')}` })
+      }
+      if (expected.expectedIssuer != null) {
+        if (!v.issuer) problems.push({ reasonCode: 'no-evidence', detail: `credential ${ref} supplies no verified issuer` })
+        else if (v.issuer !== expected.expectedIssuer) problems.push({ reasonCode: 'issuer-mismatch', detail: `credential ${ref} is issued by ${v.issuer}` })
+      }
+    }
+    if (expected.expectedIssuer != null && !hasHistory && native.claims.length === 0 && verifications.size === 0) {
+      problems.push({ reasonCode: 'no-evidence', detail: 'no verified issuer was supplied for the expected identity' })
+    }
+    if (genesisRefs.size > 1 && expected.expectedGenesisOutpoint == null) {
+      if (subjectRefs.length === 0) subjectRefs.push(...genesisRefs)
+      problems.push({ reasonCode: 'genesis-ambiguous', detail: `${genesisRefs.size} valid genesis records carry this passport identifier` })
     }
     if (subjectRefs.length === 0) subjectBinding = check('subjectBinding', 'unknown', 'no-evidence')
     else if (problems.length === 0) subjectBinding = check('subjectBinding', 'pass', undefined, subjectRefs, otherSubjects.length === 0 ? {} : { detail: { otherSubjects } })
     else {
-      const ambiguous = problems.every((p) => p.reasonCode === 'genesis-ambiguous')
-      subjectBinding = check('subjectBinding', ambiguous ? 'unknown' : 'fail', problems[0].reasonCode, subjectRefs, { detail: problems })
+      const mismatch = problems.find((p) => p.reasonCode !== 'genesis-ambiguous' && p.reasonCode !== 'no-evidence')
+      const decisive = mismatch ?? problems.find((p) => p.reasonCode === 'genesis-ambiguous') ?? problems[0]
+      subjectBinding = check('subjectBinding', mismatch == null ? 'unknown' : 'fail', decisive.reasonCode, subjectRefs, { detail: problems })
     }
   }
 
@@ -968,6 +1068,11 @@ export async function verifyPassportEvidence(
 
   // Availability of everything the evidence pointed at.
   const availabilityParts: PartialCheck[] = unavailableRefs.map((ref) => ({ status: 'unknown', reasonCode: 'referenced-artefact-unavailable', evidenceRefs: [ref] }))
+  for (const binding of bindingParts) {
+    if (binding.reasonCode === 'digest-mismatch') {
+      availabilityParts.push({ status: 'fail', reasonCode: 'referenced-artefact-mismatch', evidenceRefs: binding.evidenceRefs })
+    }
+  }
   availabilityParts.push(...acceptanceParts)
   for (const [digest, v] of verifications) if (v.availability != null) availabilityParts.push({ ...v.availability, evidenceRefs: [digestRef(digest), ...(v.availability.evidenceRefs ?? [])] })
   const referenced = [...(token.inspection?.states.map((s) => outpointRef({ txid: s.txid, outputIndex: s.outputIndex })) ?? []), ...anchorRefs, ...nativeRefs]
@@ -976,11 +1081,11 @@ export async function verifyPassportEvidence(
       ? check('evidenceAvailability', 'unknown', 'no-evidence')
       : combine('evidenceAvailability', availabilityParts.length === 0 ? [{ status: 'pass', evidenceRefs: referenced }] : availabilityParts, check('evidenceAvailability', 'pass', undefined, referenced))
 
-  const observations = await observe(policy, expected.passportId, token.tip, validAlternatives.map((a) => a.tip).filter((t): t is Outpoint => t != null), checkedAt)
+  const observations = await observe(policy, expected.passportId, token.tip, alternativeTips, hasFork || genesisRefs.size > 1, checkedAt)
   if (observations.latestState !== 'unknown') {
     limits.push('The latest-state observation is as fresh and as complete as the sources asked; it is not a proof that no later spend exists.')
   }
-  if (forks.length > 0) {
+  if (hasFork) {
     limits.push('Two valid successors of one state were supplied; which continuation is recognised is decided by accepted-chain spending evidence, never by this report or by counting sources.')
   }
   if ((token.inspection?.states ?? []).some((s) => s.version === '1')) {

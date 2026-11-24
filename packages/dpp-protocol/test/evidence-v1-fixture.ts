@@ -48,6 +48,8 @@ export interface DeclaredObserver {
 export interface EvidenceCase {
   id: string
   description: string
+  skip?: true
+  skip_reason?: string
   evidence: {
     tokenHistory?: string[]
     /** BUMP hex per state of `tokenHistory`, `null` for a state with no proof. */
@@ -292,7 +294,16 @@ export async function evidenceV1Fixture(): Promise<{ fixtureVersion: 1; descript
   ]
 
   const cases: EvidenceCase[] = []
+  const historicalId = 'anchor-tampered-bytes'
+  const currentId = 'anchor-supplied-bytes-digest-mismatch'
+  const previous = declared.find((c) => c.id === historicalId)!
+  declared.push({ ...previous, id: currentId, description: 'The anchor commits to different bytes. Both binding and evidence availability fail. Their evidence references include the committed digest and the digest of the supplied bytes.' })
   for (const c of declared) {
+    if (c.id === historicalId) {
+      const report = JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures', 'anchor-tampered-bytes-report.json'), 'utf8')) as EvidenceReport
+      cases.push({ ...c, report, skip: true, skip_reason: `Superseded by ${currentId}, which records both digests.` })
+      continue
+    }
     const { evidence, policy } = materialise(c)
     const report = await verifyPassportEvidence(evidence, c.expectedSubject, policy)
     cases.push({ ...c, report })

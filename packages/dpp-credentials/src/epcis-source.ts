@@ -272,6 +272,15 @@ const EVENT_LIST_POINTERS = {
   EPCISQueryDocument: '/epcisBody/queryResults/resultsBody/eventList',
 } as const;
 
+function hasStandaloneFacts(facts: EpcisParseOptions['singleEvent']): facts is NonNullable<EpcisParseOptions['singleEvent']> {
+  if (facts?.envelopeType !== 'EPCISDocument' && facts?.envelopeType !== 'EPCISQueryDocument') return false;
+  const entries = Array.isArray(facts.contextDeclarations) ? facts.contextDeclarations : [facts.contextDeclarations];
+  return entries.length > 0 && entries.every(entry => {
+    if (typeof entry === 'string') return /^[a-z][a-z0-9+.-]*:[^\s]+$/i.test(entry) && URL.canParse(entry);
+    return Object.prototype.toString.call(entry) === '[object Object]';
+  });
+}
+
 function readPointer(root: unknown, pointer: string): unknown {
   let value = root;
   for (const part of pointer.split('/').slice(1)) {
@@ -350,7 +359,7 @@ export function parseEpcisSource(bytes: Uint8Array, options: EpcisParseOptions):
         eventList = undefined;
       }
     }
-  } else if (options.singleEvent != null && typeof type === 'string' && (EPCIS_EVENT_TYPES as readonly string[]).includes(type)) {
+  } else if (hasStandaloneFacts(options.singleEvent) && typeof type === 'string' && (EPCIS_EVENT_TYPES as readonly string[]).includes(type)) {
     envelope = { type: options.singleEvent.envelopeType, hasHeader: false, hasMasterData: false };
     context.document = options.singleEvent.contextDeclarations;
     eventList = [document];
@@ -569,6 +578,22 @@ const EVENT_KEYS: Record<string, string[]> = {
 };
 const DOCUMENT_KEYS = ['@context', 'id', 'type', 'schemaVersion', 'creationDate', 'instanceIdentifier', 'sender', 'receiver', 'epcisHeader', 'epcisBody'];
 
+/** Document members carried outside the EPCIS envelope vocabulary. */
+export function preservedDocumentExtensions(document: JsonObject): string[] {
+  return document.type === 'EPCISDocument' || document.type === 'EPCISQueryDocument' ? Object.keys(document).filter(key => !DOCUMENT_KEYS.includes(key)) : [];
+}
+
+/** The typed correction fields a receipt can take from an event, before repository resolution. */
+export function epcisErrorDeclaration(value: unknown): EpcisEventValidation['errorDeclaration'] {
+  if (value == null || typeof value !== 'object') return undefined;
+  const declaration = value as JsonObject;
+  return {
+    ...(typeof declaration.declarationTime === 'string' ? { declarationTime: declaration.declarationTime } : {}),
+    ...(typeof declaration.reason === 'string' ? { reason: declaration.reason } : {}),
+    correctiveEventIDs: Array.isArray(declaration.correctiveEventIDs) ? declaration.correctiveEventIDs.filter((id): id is string => typeof id === 'string') : [],
+  };
+}
+
 /** The members of an event the schema does not name for its type: retained as given, never interpreted here. */
 export function preservedEventExtensions(event: JsonObject): string[] {
   const known = new Set([...COMMON_EVENT_KEYS, ...(EVENT_KEYS[String(event.type)] ?? [])]);
@@ -646,19 +671,11 @@ export function validateEpcisDocument(document: JsonObject, options: { events?: 
     for (const id of identifiers) {
       if (id.problem != null) findings.push({ code: 'identifier', path: id.path, message: `${id.value}: ${id.problem}`, severity: id.problem === 'not a URI' ? 'error' : 'warning' });
     }
-    const declaration = record.errorDeclaration;
-    const entry: EpcisEventValidation = { pointer, type: String(record.type ?? ''), identifiers, preservedExtensions: preservedEventExtensions(record) };
-    if (declaration != null && typeof declaration === 'object') {
-      const d = declaration as JsonObject;
-      entry.errorDeclaration = {
-        ...(typeof d.declarationTime === 'string' ? { declarationTime: d.declarationTime } : {}),
-        ...(typeof d.reason === 'string' ? { reason: d.reason } : {}),
-        correctiveEventIDs: Array.isArray(d.correctiveEventIDs) ? d.correctiveEventIDs.filter((v): v is string => typeof v === 'string') : [],
-      };
-    }
+    const declaration = epcisErrorDeclaration(record.errorDeclaration);
+    const entry: EpcisEventValidation = { pointer, type: String(record.type ?? ''), identifiers, preservedExtensions: preservedEventExtensions(record), ...(declaration == null ? {} : { errorDeclaration: declaration }) };
     events.push(entry);
   }
-  const preservedExtensions = type === 'EPCISDocument' || type === 'EPCISQueryDocument' ? Object.keys(document).filter((key) => !DOCUMENT_KEYS.includes(key)) : [];
+  const preservedExtensions = preservedDocumentExtensions(document);
   return { schema: passed ? 'pass' : 'fail', findings, events, preservedExtensions };
 }
 

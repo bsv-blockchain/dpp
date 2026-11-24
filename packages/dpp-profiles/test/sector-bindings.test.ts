@@ -2,13 +2,14 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
-  BUNDLED_BINDINGS,
+  HISTORICAL_SECTOR_BINDINGS,
   BUNDLED_BINDING_DIGESTS,
   authorisedPayloadValidator,
   buildGs1DigitalLink,
   createProfileRegistry,
   isDemonstrationGtin,
   parseGs1DigitalLink,
+  profileBindingDigest,
   registerBundledBindings,
   splitProductByAccess,
   type BindingArtefact,
@@ -44,7 +45,7 @@ interface RegistrationCase { name: string; description: string; expected: { refu
 type Case = PayloadCase | RegistrationCase
 const isRegistration = (c: Case): c is RegistrationCase => 'refusal' in c.expected
 
-const sectors = BUNDLED_BINDINGS.map(({ profile, bindingDigest }) => {
+const sectors = HISTORICAL_SECTOR_BINDINGS.map(({ profile, bindingDigest }) => {
   const folder = join(packageRoot, 'bindings', profile)
   const fixtures = join(packageRoot, 'test', 'fixtures', 'sector-bindings', profile)
   const binding = JSON.parse(readFileSync(join(folder, 'binding.json'), 'utf8')) as ProfileBinding
@@ -114,6 +115,74 @@ const validate = (sector: Sector, payload: Json, options: { passportId?: string;
 }
 const stepsOf = (result: PayloadValidation): BindingValidationDetail['steps'] => (result.detail as BindingValidationDetail).steps
 const violationsOf = (result: PayloadValidation): string[] => (stepsOf(result).find((s) => s.step === 'shacl')?.findings ?? []).filter((f) => f.severity === 'Violation').map((f) => f.constraint)
+
+describe.each(each)('%s identity under the selected contexts', (_name, sector) => {
+  const original = positive(sector, sector.binding.vectors.positive[0]!)
+  const passportId = passportIdOf(original)
+  const gtin = original['gs1:gtin'] as string
+  const check = async (key: string, changes: Json) => {
+    const product = { ...original }
+    delete product[key]
+    Object.assign(product, changes)
+    const result = await validate(sector, envelope(sector, product), { passportId })
+    return stepsOf(result).find((s) => s.step === 'passport-identity')
+  }
+  const gtinIri = 'https://ref.gs1.org/voc/gtin'
+  it('reads matching and contradictory assertions when the binding lists identity before expansion', async () => {
+    const binding = structuredClone(sector.binding)
+    binding.validation.steps = ['passport-identity', 'json-ld-expand', 'shacl']
+    const bytes = new TextEncoder().encode(JSON.stringify(binding))
+    const digest = profileBindingDigest(bytes)
+    const reordered = createProfileRegistry({ trustedBindingDigests: [digest] })
+    expect(await reordered.register({ bindingBytes: bytes, resolveArtefact: (a) => readFileSync(join(sector.folder, a.path)) })).toMatchObject({ ok: true })
+    for (const [value, status] of [[gtin, 'pass'], ['09521000001428', 'fail']]) {
+      const result = await validate(sector, envelope(sector, { ...original, [gtinIri]: value }, digest), { passportId, registry: reordered })
+      const steps = stepsOf(result).slice(-3)
+      expect(steps.map((step) => step.step)).toEqual(binding.validation.steps)
+      expect(steps[0]).toMatchObject({ step: 'passport-identity', status })
+      expect(result.status).toBe(status)
+    }
+  })
+  it('compares full IRIs and padded GTINs on the product subject', async () => {
+    expect(await check('gs1:gtin', { [gtinIri]: { '@value': gtin.slice(1) } })).toMatchObject({ status: 'pass' })
+    expect(await check('gs1:gtin', { [gtinIri]: '09521000001428' })).toMatchObject({ status: 'fail' })
+  })
+  it('checks every assertion across aliases, including a contradictory serial in a value object', async () => {
+    expect(await check('', { 'https://schema.org/serialNumber': [{ '@value': 'DIFFERENT-ITEM' }] })).toMatchObject({ status: 'fail' })
+    expect(await check('', { [gtinIri]: [gtin, '09521000001428'] })).toMatchObject({ status: 'fail' })
+  })
+  it('checks only assertions about this subject, including another description of it', async () => {
+    const assertions = { [gtinIri]: '09521000001428' }
+    expect(await check('', { '@included': [{ '@id': 'urn:example:related-model', ...assertions }] })).toMatchObject({ status: 'pass' })
+    expect(await check('', { '@included': [{ '@id': original.id, ...assertions }] })).toMatchObject({ status: 'fail' })
+  })
+  it('leaves a non-text identity assertion unknown', async () => {
+    expect(await check('gs1:gtin', { [gtinIri]: { '@id': 'urn:example:gtin' } })).toMatchObject({ status: 'unknown' })
+  })
+  it('compares literal text containing a Unicode line separator', async () => {
+    expect(await check('schema:serialNumber', { 'https://schema.org/serialNumber': 'A\u2028B' })).toMatchObject({ status: 'fail' })
+  })
+  it('compares equivalent N-Quads with explicit string datatypes and comments', async () => {
+    const product = { ...original, [gtinIri]: '09521000001428' }
+    const jsonLd = { toRdf: async (input: Parameters<NonNullable<ValidationEngines['jsonLd']>['toRdf']>[0]) => {
+      const result = await engines.jsonLd!.toRdf(input)
+      if (!result.ok) return result
+      const nquads = result.nquads.replace(/" \.$/gm, '"^^<http://www.w3.org/2001/XMLSchema#string> .').replace(/ \.$/gm, ' . # statement')
+      return { ...result, nquads }
+    } }
+    const result = await validate(sector, envelope(sector, product), { passportId, engines: { ...engines, jsonLd } })
+    expect(stepsOf(result).find((s) => s.step === 'passport-identity')).toMatchObject({ status: 'fail' })
+  })
+  it('reads a shortcut declared by a pinned context', async () => {
+    const shortcut = sector.binding.artefacts.find((a) => a.path === 'gs1-shortcuts-context.jsonld')!
+    expect(await check('gs1:gtin', { '@context': [...original['@context'] as string[], shortcut.uri], gtin: '09521000001428' })).toMatchObject({ status: 'fail' })
+  })
+  it('recognises the binding predicate even if the product uses only full IRIs', async () => {
+    const product = { '@id': original.id, '@context': [], [gtinIri]: '09521000001428' }
+    const result = await validate(sector, envelope(sector, product), { passportId })
+    expect(stepsOf(result).find((s) => s.step === 'passport-identity')).toMatchObject({ status: 'fail' })
+  })
+})
 
 /** What each case does beyond its `set` and `remove`: how the payload is built and what it is checked with. */
 const SPECIAL: Record<string, (sector: Sector, c: PayloadCase) => Promise<PayloadValidation>> = {
@@ -286,7 +355,7 @@ describe('the sector bindings refuse, or cannot decide, their negative cases', (
     const product = positive(sector, sector.binding.vectors.positive[0]!)
     const result = await validate(sector, envelope(sector, product), { passportId: passportIdOf(product), engines: {} })
     expect(result).toMatchObject({ status: 'unknown', reasonCode: 'schema-unavailable', detail: { cause: 'validator-unavailable' } })
-    expect(stepsOf(result).filter((s) => s.status === 'unknown').map((s) => s.step)).toEqual(['json-ld-expand', 'shacl'])
+    expect(stepsOf(result).filter((s) => s.status === 'unknown').map((s) => s.step)).toEqual(['json-ld-expand', 'shacl', 'passport-identity'])
   })
 
   it.each(each)('%s: a profile that was never registered is unknown', async (_profile, sector) => {

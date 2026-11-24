@@ -1,0 +1,138 @@
+{
+  "reportVersion": "2",
+  "checkedAt": "2026-09-05T12:00:00Z",
+  "expectedSubject": {
+    "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
+    "source": "request-context"
+  },
+  "suppliedTip": null,
+  "policyId": "none",
+  "checks": [
+    {
+      "name": "recordEncoding",
+      "status": "unknown",
+      "reasonCode": "no-evidence",
+      "evidenceRefs": []
+    },
+    {
+      "name": "actorSignatures",
+      "status": "unknown",
+      "reasonCode": "no-evidence",
+      "evidenceRefs": []
+    },
+    {
+      "name": "publisherSignatures",
+      "status": "not-applicable",
+      "reasonCode": "publisher-not-selected",
+      "evidenceRefs": []
+    },
+    {
+      "name": "linkage",
+      "status": "unknown",
+      "reasonCode": "no-evidence",
+      "evidenceRefs": []
+    },
+    {
+      "name": "inclusion",
+      "status": "unknown",
+      "reasonCode": "no-evidence",
+      "evidenceRefs": []
+    },
+    {
+      "name": "nativeAttestationSignature",
+      "status": "unknown",
+      "reasonCode": "no-evidence",
+      "evidenceRefs": []
+    },
+    {
+      "name": "anchorSignature",
+      "status": "pass",
+      "evidenceRefs": [
+        "anchor:0"
+      ]
+    },
+    {
+      "name": "anchorKeyDerivation",
+      "status": "pass",
+      "evidenceRefs": [
+        "anchor:0"
+      ]
+    },
+    {
+      "name": "anchorDigestAndMetadataBinding",
+      "status": "fail",
+      "reasonCode": "digest-mismatch",
+      "evidenceRefs": [
+        "anchor:0",
+        "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
+      ],
+      "detail": [
+        "supplied bytes are not a verified native claim with this digest"
+      ]
+    },
+    {
+      "name": "externalCredentialProof",
+      "status": "not-applicable",
+      "reasonCode": "no-external-credential",
+      "evidenceRefs": []
+    },
+    {
+      "name": "subjectBinding",
+      "status": "pass",
+      "evidenceRefs": [
+        "anchor:0"
+      ]
+    },
+    {
+      "name": "issuerAuthority",
+      "status": "unknown",
+      "reasonCode": "policy-missing",
+      "evidenceRefs": []
+    },
+    {
+      "name": "schema",
+      "status": "unknown",
+      "reasonCode": "no-evidence",
+      "evidenceRefs": []
+    },
+    {
+      "name": "credentialTime",
+      "status": "unknown",
+      "reasonCode": "no-evidence",
+      "evidenceRefs": []
+    },
+    {
+      "name": "credentialStatus",
+      "status": "unknown",
+      "reasonCode": "no-evidence",
+      "evidenceRefs": []
+    },
+    {
+      "name": "evidenceAvailability",
+      "status": "pass",
+      "evidenceRefs": [
+        "anchor:0"
+      ]
+    }
+  ],
+  "observations": {
+    "latestState": "unknown",
+    "sources": [],
+    "queryScope": "no source asked",
+    "observedAt": "2026-09-05T12:00:00Z",
+    "candidateOutpoints": []
+  },
+  "limits": [
+    "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+    "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+    "recordEncoding was not established: no-evidence.",
+    "actorSignatures was not established: no-evidence.",
+    "linkage was not established: no-evidence.",
+    "inclusion was not established: no-evidence.",
+    "nativeAttestationSignature was not established: no-evidence.",
+    "issuerAuthority was not established: policy-missing.",
+    "schema was not established: no-evidence.",
+    "credentialTime was not established: no-evidence.",
+    "credentialStatus was not established: no-evidence."
+  ]
+}

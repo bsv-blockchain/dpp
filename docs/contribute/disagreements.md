@@ -41,6 +41,6 @@ The [security policy](https://github.com/bsv-blockchain/dpp/security/policy) spe
 
 ## Which reading wins
 
-Before version 1.0, where the specification and the reference implementation disagree, the reference implementation breaks the tie, except for a defect the specification itself names as a defect ([governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#what-is-normative), and the [record model's status line](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md#L3)). How that rule applies to a particular disagreement is still open, so a report records both readings and does not assume either. The [fixture guide](../implement/fixture-runner.md#source-gaps) lists the source questions already known to be open.
+While the draft is pre-1.0, the reference implementation breaks a tie unless the specification names the behaviour as a defect. Once published, the normative specification, contracts and fixtures govern. Record the clause, fixture input and observed result so a maintainer can apply the rule to the reported case. [How to handle a source disagreement](../implement/fixture-runner.md#source-gaps)
 
 Next: if the disagreement comes from running the fixtures against your own implementation, keep the evidence as [reporting](../implement/reporting.md) describes.

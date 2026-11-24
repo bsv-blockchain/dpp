@@ -30,6 +30,18 @@ export function ReportChecks({ checks }: { checks: Check[] }) {
   )
 }
 
+export function RecordNotice({ payload }: { payload: unknown }) {
+  if (!isRecord(payload) || typeof payload.notice !== 'string') return null
+  return (
+    <Alert className="border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
+      <AlertTitle>Notice</AlertTitle>
+      <AlertDescription className="text-current">
+        <p className="text-base">{payload.notice}</p>
+      </AlertDescription>
+    </Alert>
+  )
+}
+
 interface ReadingProps {
   passportId: string
   verification?: Verification
@@ -45,7 +57,6 @@ interface ReadingProps {
 export function PassportReading({ passportId, verification, verifyError, journal, claims, manageLink, publicLink }: ReadingProps) {
   const latestPayload = journal?.payload ?? verification?.lineage.at(-1)?.payloadPublic
   const payload = isRecord(latestPayload) ? latestPayload : undefined
-  const notice = typeof payload?.notice === 'string' ? payload.notice : undefined
   const profile = journal?.profile ?? (payload?.profile == null ? undefined : `${String(payload.profile)}@${String(payload.profile_version ?? '')}`)
   const history = verification?.lineage.map((entry) => ({ op: entry.op, txid: entry.txid, timestamp: entry.timestamp })) ?? journal?.states.map((s) => ({ op: s.op, txid: s.txid, timestamp: s.timestamp })) ?? []
   const path = publicPathOf(passportId)
@@ -55,14 +66,7 @@ export function PassportReading({ passportId, verification, verifyError, journal
 
   return (
     <div className="space-y-10">
-      {notice == null ? null : (
-        <Alert className="border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
-          <AlertTitle>Notice</AlertTitle>
-          <AlertDescription className="text-current">
-            <p className="text-base">{notice}</p>
-          </AlertDescription>
-        </Alert>
-      )}
+      <RecordNotice payload={payload} />
 
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">

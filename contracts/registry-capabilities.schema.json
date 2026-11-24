@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/registry-capabilities.schema.json",
+  "title": "Attestation registry capability document",
+  "allOf": [
+    {
+      "$ref": "./capabilities.schema.json"
+    },
+    {
+      "type": "object",
+      "required": [
+        "topics",
+        "services",
+        "interoperability"
+      ],
+      "properties": {
+        "roles": {
+          "description": "Names `registry`, beside any other role the implementation claims.",
+          "contains": {
+            "const": "registry"
+          }
+        },
+        "protocols": {
+          "description": "Names this contract as `attestation-registry` at version `1`, the identifier `POST /validate` answers under. A registry should also name `registry-http` at this document's `info.version`, as an index names `overlay-http`, and each anchor protocol it writes.",
+          "contains": {
+            "type": "object",
+            "required": [
+              "id",
+              "version"
+            ],
+            "properties": {
+              "id": {
+                "const": "attestation-registry"
+              },
+              "version": {
+                "const": "1"
+              }
+            }
+          }
+        },
+        "topics": {
+          "contains": {
+            "const": "tm_attestation"
+          }
+        },
+        "services": {
+          "contains": {
+            "const": "ls_attestation"
+          }
+        },
+        "representations": {
+          "description": "The representations intake accepts, each verified before anything is stored. The parked `vsc-seal-json-v1` is not among them and is named under `unsupported`.",
+          "items": {
+            "properties": {
+              "id": {
+                "enum": [
+                  "dpp-lifecycle-json-v1",
+                  "dpp-epcis-lifecycle-json@1",
+                  "vc-di-ecdsa-rdfc-2019@1",
+                  "epcis-event-vc@1"
+                ]
+              },
+              "verification": {
+                "const": "content"
+              }
+            }
+          }
+        },
+        "proofSuites": {
+          "items": {
+            "enum": [
+              "ecdsa-rdfc-2019",
+              "ES256K"
+            ]
+          }
+        },
+        "publisherPolicy": {
+          "description": "A registry that anchors names, under `anchoringServices`, the compressed identity key that every anchor it writes names as anchoredBy, so a verifier can tell this registry's anchors from anyone else's without asking. Optional. Naming the key does not make the registry trusted, and which anchoring services to accept stays the verifier's policy."
+        },
+        "exporterIdentityKey": {
+          "description": "The identity key the registry's evidence packages name as exporter.id, its anchoring identity key, so a reader derives each package's signer. Absent when the registry signs no package."
+        },
+        "unsupported": {
+          "description": "What is explicitly not implemented, each with its reason, such as the parked `vsc-seal-json-v1` and, on a registry holding records stored under it, the historical `legacy-uora-json`: records of both stay readable, and neither is accepted as a new submission."
+        }
+      }
+    }
+  ]
+}

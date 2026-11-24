@@ -15,14 +15,26 @@ Registry implementers can use this guide to build validation, storage and retrie
 ## Start with validation
 
 1. Implement `POST /validate`. It accepts a supported secured representation as JSON. For the native exercise, the body is the signed claim and `subject` is the independently expected passport identifier.
-2. Call `verifyLifecycleClaim(claim, { passportId: subject })` from `@bsv/dpp-protocol` for signature and subject binding ([issuer quick start](../../quick-start.md#sign-a-claim)). Call `verifyPassportEvidence` for the shared report when the request carries token history or your registry holds evidence for that passport.
+2. Call `verifyLifecycleClaim(claim, { passportId: subject })` from `@bsv/dpp-protocol` for signature and subject binding ([issuer quick start](../../quick-start.md#sign-a-claim)). Call `verifyPassportEvidence` for the shared report whenever the evidence identifies one subject or the caller supplies one. Include any available token history and use the specified missing-evidence findings for the rest.
 3. Return the named outcome, checks and report under `attestation-registry/1`, as the [validate operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml#L267-L301) defines. Store nothing.
-4. Run this [validation request](../../quick-start.md#ask-a-registry-to-check-the-claim). It reads the fixture, avoiding manual transcription. Set `REGISTRY_URL` to your service; the shown hosted demonstration URL needs no credentials and stores nothing.
+4. Run this [validation request](../../quick-start.md#ask-a-registry-to-check-the-claim). It reads the fixture, avoiding manual transcription. From a repository checkout with dependencies installed, set `REGISTRY_URL` to your local service.
 
 ```sh
-REGISTRY_URL=https://dpp-resolver.bsvb.net node --input-type=module <<'JS'
+REGISTRY_URL=http://localhost:4000 node --input-type=module <<'JS'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { Ajv2020 } from 'ajv/dist/2020.js'
+import addFormats from 'ajv-formats'
+
+const readSchema = (name) => JSON.parse(readFileSync('contracts/' + name + '.schema.json', 'utf8'))
+const ajv = new Ajv2020({ strict: false })
+addFormats(ajv)
+ajv.addSchema(readSchema('capabilities'))
+const checkCapabilities = ajv.compile(readSchema('registry-capabilities'))
+const checkReport = ajv.compile(readSchema('verification-report'))
+const capabilities = await fetch(new URL('/capabilities', process.env.REGISTRY_URL))
+assert.equal(capabilities.status, 200)
+assert.ok(checkCapabilities(await capabilities.json()), ajv.errorsText(checkCapabilities.errors))
 
 const fixture = JSON.parse(readFileSync('fixtures/attestation-anchor-v1.json', 'utf8'))
 const url = new URL('/validate', process.env.REGISTRY_URL ?? 'http://localhost:4000')
@@ -34,7 +46,9 @@ const response = await fetch(url, {
 })
 assert.equal(response.status, 200)
 const result = await response.json()
-console.log(JSON.stringify(result.report ?? result, null, 2))
+assert.equal(result.contract, 'attestation-registry/1')
+assert.ok(checkReport(result.report), ajv.errorsText(checkReport.errors))
+console.log(JSON.stringify(result.report, null, 2))
 JS
 ```
 
@@ -57,7 +71,7 @@ The registry contract lists seven operations, and they are all it lists. Impleme
 
 | Operation | What it must do | Package support |
 |---|---|---|
-| `GET /capabilities` | Serve the capability document every role serves: declare the `registry` role, the contract, the representations, proof suites, topic and lookup service, interoperability profiles and explicit `unsupported` entries, and name your anchoring key under `publisherPolicy.anchoringServices`, so a verifier can tell your anchors from others'; never a certification claim | The [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json), with the members the contract asks of a registry (see below) |
+| `GET /capabilities` | Serve the common capability document and declare the `registry` role, the contract, the representations, proof suites, topic and lookup service, interoperability profiles and explicit `unsupported` entries, and name your anchoring key under `publisherPolicy.anchoringServices`, so a verifier can tell your anchors from others'; never a certification claim | The [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json), with the members the contract asks of a registry (see below) |
 | `POST /validate` | Verify without storing, as above | `verifyLifecycleClaim`, `verifyPassportEvidence` |
 | `POST /attestations` | Verify the explicit secured representation under the declared policy; store the exact bytes with their media type, representation, digest and scoped report; refuse an invalid or unsupported submission by name (a `vsc-seal-json-v1` SEAL, whose profile is parked, as `unsupported` with `representation-unsupported`, and a body naming no current representation, a historical UORA body among them, as `invalid`); store a duplicate once; report acceptance, anchoring and inclusion as separate fields | `verifyLifecycleClaim`, `lifecycleClaimBytes`, `lifecycleClaimDigest` |
 | `GET /attestations` | Page the held records over a stable snapshot | The contract's cursor and snapshot rules |
@@ -84,7 +98,7 @@ Given an anchor without its claim bytes, six checks remain `unknown` ([full comp
 | `anchorDigestAndMetadataBinding` | `unknown` | `secured-bytes-absent` |
 | `evidenceAvailability` | `unknown` | `referenced-artefact-unavailable` |
 
-A registry serves one capability document, the one [conformance](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) section 4 requires of every implementation and an index serves at the same route. The registry contract asks these members of it; `conformance/examples/capabilities-registry.json` in the repository is a complete example.
+A registry serves one capability document, the one [conformance](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) section 4 requires of every implementation. An index may expose it through its optional HTTP extension. The registry route uses `contracts/registry-capabilities.schema.json`, which extends the common schema. The repository contains a complete example in `conformance/examples/capabilities-registry.json`.
 
 | Member | What a registry declares | In the earlier registry document |
 |---|---|---|

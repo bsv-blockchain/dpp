@@ -6,6 +6,7 @@
 // example-notebook@1, with the vectors that say what each accepts.
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync, appendFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { CURRENT_SECTOR_BINDINGS } from '@bsv/dpp-profiles'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -42,10 +43,26 @@ afterAll(async () => {
 })
 
 describe('a custom profile from a folder', () => {
+  it('refuses other trusted custom bytes under a packaged successor name', async () => {
+    const folder = mkdtempSync(join(tmpdir(), 'dpp-reserved-sector-'))
+    try {
+      cpSync(bottle, folder, { recursive: true })
+      const file = join(folder, 'binding.json')
+      const definition = JSON.parse(readFileSync(file, 'utf8'))
+      Object.assign(definition, { id: 'eu-battery', version: 2, profile: 'eu-battery@2' })
+      writeFileSync(file, JSON.stringify(definition))
+      const { platform } = await start({ CUSTOM_PROFILE_DIRS: folder, TRUSTED_BINDING_DIGESTS: digestOf(folder) })
+      expect(platform.profiles.get('eu-battery@2')?.bindingDigest).toBe(CURRENT_SECTOR_BINDINGS.find(entry => entry.profile === 'eu-battery@2')!.bindingDigest)
+      expect(platform.profiles.refusals).toEqual([expect.objectContaining({ code: 'binding-conflict' })])
+    } finally {
+      rmSync(folder, { recursive: true, force: true })
+    }
+  })
+
   it('is registered when its digest is trusted, and writes and reads end to end', async () => {
     const { platform, lines } = await start({ CUSTOM_PROFILE_DIRS: `${bottle}, ${notebook}`, TRUSTED_BINDING_DIGESTS: `${digestOf(bottle)},${digestOf(notebook)}` })
     expect(platform.profiles.refusals).toEqual([])
-    expect(platform.profiles.list().map((p) => p.profile)).toEqual(['eu-battery@1', 'eu-textile@1', 'example-bottle@1', 'example-notebook@1'])
+    expect(platform.profiles.list().map((p) => p.profile)).toEqual(['eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2', 'example-bottle@1', 'example-notebook@1'])
     expect(lines.some((line) => line.includes('example-bottle@1 registered from') && line.includes(digestOf(bottle)))).toBe(true)
 
     const policy = { host: platform.config.passportHost, prefix: platform.config.gs1Prefix }
@@ -98,7 +115,7 @@ describe('a custom profile from a folder', () => {
     expect(platform.profiles.refusals[0].detail).toContain(digestOf(bottle))
     expect(platform.profiles.refusals[0].detail).toContain('TRUSTED_BINDING_DIGESTS')
     expect(lines.some((line) => line.includes('binding-untrusted') && line.includes('The API continues without it.'))).toBe(true)
-    expect(platform.profiles.list().map((p) => p.profile)).toEqual(['eu-battery@1', 'eu-textile@1'])
+    expect(platform.profiles.list().map((p) => p.profile)).toEqual(['eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2'])
 
     // Nothing is written under the refused profile, a reading of one says not checked, and every other profile works.
     const policy = { host: platform.config.passportHost, prefix: platform.config.gs1Prefix }
@@ -138,7 +155,7 @@ describe('a custom profile from a folder', () => {
     expect(platform.profiles.refusals[2].detail).toContain(digestOf(rebound))
     expect(lines.filter((line) => line.includes('The API continues without it.'))).toHaveLength(4)
     expect(platform.profiles.get('example-bottle@1')).toBeUndefined()
-    expect(platform.profiles.list().map((p) => p.profile)).toEqual(['eu-battery@1', 'eu-textile@1'])
+    expect(platform.profiles.list().map((p) => p.profile)).toEqual(['eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2'])
   })
 
   it('stops the start for a trusted digest that is not a digest, naming the setting', () => {
