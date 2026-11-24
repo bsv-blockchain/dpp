@@ -553,7 +553,12 @@ try {
     repeat(result.stdout ?? '')
     const parsed = resultOf(result.stdout ?? '')
     validatorResults[label] = parsed
-    return say(result.status === 0 && parsed != null && expectation(parsed), `${label}${result.status === 0 ? '' : `: ${`${result.stderr ?? ''}`.trim().split('\n').at(-1)}`}`)
+    if (result.status !== 0) {
+      const lines = (result.stderr ?? '').trim().split('\n')
+      const cause = lines.find(line => /^(?:[A-Za-z]*Error|Error \[)/.test(line)) ?? lines.find(line => line.trim() !== '')
+      return say(false, `${label}. Vector process exited with ${result.status}. ${cause ?? 'No diagnostic was reported.'}`)
+    }
+    return say(parsed != null && expectation(parsed), label)
   }
   const identical = (parsed) => parsed.identical === parsed.vectors && parsed.vectors > 0 && parsed.client === 'installed' && parsed.sparqlOnlyViolationsFound === parsed.sparqlOnlyViolations
   const validatorToken = randomBytes(24).toString('hex')
@@ -607,7 +612,12 @@ try {
   reportVectors('through the same client, against the dpp-validator command a consumer started from the packed package and the engine libraries, every profile vector gives the answer the engine gives in process', vectors(application, { base: npmValidator.base, internal: npmValidator.internal, network: npmNetwork }), identical)
   const fromImage = validatorResults[Object.keys(validatorResults)[0]]
   const fromNpm = validatorResults[Object.keys(validatorResults).at(-1)]
-  say(fromImage != null && fromNpm != null && isDeepStrictEqual(fromImage.answers, fromNpm.answers) && isDeepStrictEqual(fromImage.service.engine, fromNpm.service.engine) && isDeepStrictEqual(fromImage.service.capabilities, fromNpm.service.capabilities), `the preset's service and the npm command describe the same engine, ${fromImage?.service.engine.name} ${fromImage?.service.engine.version}, and gave the same answers: ${fromImage?.answers.pass} pass, ${fromImage?.answers.fail} fail and ${fromImage?.answers.unknown} unknown.`)
+  if (fromImage == null || fromNpm == null) {
+    say(false, 'The preset and npm validator comparison requires both vector results.')
+  } else {
+    const same = isDeepStrictEqual(fromImage.answers, fromNpm.answers) && isDeepStrictEqual(fromImage.service.engine, fromNpm.service.engine) && isDeepStrictEqual(fromImage.service.capabilities, fromNpm.service.capabilities)
+    say(same, `the preset's service and the npm command describe the same engine, ${fromImage.service.engine.name} ${fromImage.service.engine.version}, and gave the same answers: ${fromImage.answers.pass} pass, ${fromImage.answers.fail} fail and ${fromImage.answers.unknown} unknown.`)
+  }
   const validatorExit = await npmValidator.stop()
   npmValidator = undefined
   say(validatorExit === 0, `told to stop, the dpp-validator command closed with exit code ${validatorExit}.`)

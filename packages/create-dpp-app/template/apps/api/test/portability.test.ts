@@ -14,11 +14,12 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { PrivateKey } from '@bsv/sdk'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { acceptanceCommitment, acceptanceRecordsInPackage, evidencePackageSigner, evidencePackageSigningKey, inspectEvidencePackage, signEvidenceManifest, signLifecycleClaim, type EvidencePackageManifest } from '@bsv/dpp-protocol'
+import { PrivateKey, Utils } from '@bsv/sdk'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { acceptanceCommitment, acceptanceRecordsInPackage, findDppOutputs, verifyOwnerBlob, evidencePackageSigner, evidencePackageSigningKey, inspectEvidencePackage, signEvidenceManifest, signLifecycleClaim, type EvidencePackageManifest } from '@bsv/dpp-protocol'
 import { createMemoryEpcisStorage } from '@bsv/dpp-credentials/epcis-exchange'
 import { loadConfig } from '../src/config.js'
+import { managedParties } from '../src/parties.js'
 import { mintPassportId } from '../src/identifiers.js'
 import { eventSchemaCheck, readPassportClaims } from '../src/lifecycle.js'
 import { openPlatform, type Platform } from '../src/platform.js'
@@ -27,6 +28,7 @@ import { EXPORT_SCOPE_PREFIX, PortabilityRefused, asNumberArrays, exportScopeId,
 import { restoreApplication, verifyApplicationPackage, type RestoreReport } from '../src/portability/restore.js'
 import { samplePayload } from '../src/profiles.js'
 import type { EpcisLifecycleClaimRecord } from '../src/store.js'
+import { OWNER_DATA_PROTOCOL } from '../src/writer.js'
 import { gs1Dir } from './epcis-fixtures.js'
 
 const settings = { NETWORK: 'main', PASSPORT_HOST: 'passports.example.com', GS1_PREFIX: '952', LIVE_PUBLISHING: 'false' }
@@ -56,7 +58,10 @@ const refusal = async (attempt: Promise<unknown>): Promise<PortabilityRefused> =
 const trust = (platform: Platform) => ({ exporterKey: platform.wallet.identityKey, trustedBindingDigests: [] })
 
 beforeAll(async () => {
-  first = await openPlatform({ config, mode: 'test', log: () => {} })
+  const inspectorKey = managedParties(config).member('inspector-7')
+  first = await openPlatform({ config, mode: 'test', log: () => {}, lifecyclePolicy: { authorityResolver: (q) => ({
+    status: q.issuer === inspectorKey.did && q.issuerKey === inspectorKey.identityKey && [passportId, otherId].includes(q.passportId) && q.purpose === 'claim' && q.eventTime === '2026-03-02T08:00:00.000Z' && q.role === 'observer' ? 'supported' : 'unsupported',
+  }) } })
   second = await openPlatform({ config, mode: 'test', log: () => {} })
   const brand = first.parties.brand(brandId)
   await first.store.saveBrand({ id: brandId, name: 'Portable brand', identityKey: brand.identityKey, did: brand.did, createdAt: '2026-03-01T00:00:00.000Z' })
@@ -205,12 +210,39 @@ describe('the restore of an application', () => {
 
     // The restored deployment holds the claims as they were and verifies them itself: the EPCIS claim from its exact bytes, binding both passports, and the historical one under its own rules.
     for (const id of [passportId, otherId]) {
-      const reading = await readPassportClaims(id, { store: second.store, index: second.index, schemaCheck: eventSchemaCheck(gs1Dir()) })
+      const reading = await readPassportClaims(id, { store: second.store, index: second.index, schemaCheck: eventSchemaCheck(gs1Dir()), ...second.lifecyclePolicy })
+      expect(reading.lifecycle[0]?.findings).toMatchObject({ signature: { status: 'pass' }, authority: { status: 'unavailable' } })
       const [claim] = reading.lifecycle
       expect(claim, id).toMatchObject({ attestationId: lifecycleClaim.attestationId, held: true, participation: 'item', foundBy: ['this-application'] })
       expect([claim!.findings!.signature.status, claim!.findings!.eventStructure.status, claim!.findings!.productBinding.status]).toEqual(['pass', 'pass', 'pass'])
     }
     expect((await readPassportClaims(passportId, { store: second.store, index: second.index })).historical).toEqual([expect.objectContaining({ id: 'claim-historical-portable', historical: true, signature: 'verified' })])
+  })
+
+  it('L08: a restore without the original managed keys preserves signed claims and gives the replacement account no physical role', async () => {
+    const destination = await openPlatform({ config: { ...config, brandRootSecret: 'another-brand-secret-for-the-restore', managedIdentitySecret: 'another-member-secret-for-the-restore' }, mode: 'test', log: () => {} })
+    try {
+      const verified = await verifyApplicationPackage(readPackageFolder(folder), trust(first))
+      await restoreApplication({ verified, platform: destination, epcis: exchange(), rebuildIndex: false })
+      const otherInspector = destination.parties.member('inspector-7')
+      expect(otherInspector.did).not.toBe(lifecycleClaim.issuer)
+      expect(await destination.store.getBrand(brandId)).toMatchObject({ id: brandId })
+      const reading = await readPassportClaims(passportId, { store: destination.store, index: destination.index, ...destination.lifecyclePolicy, schemaCheck: eventSchemaCheck(gs1Dir()) })
+      expect(reading.lifecycle.find((v) => v.attestationId === lifecycleClaim.attestationId)?.findings).toMatchObject({ signature: { status: 'pass' }, authority: { status: 'unavailable' }, ownership: { status: 'not-asserted' }, possession: { status: 'not-asserted' } })
+      const sign = vi.spyOn(otherInspector.wallet, 'createSignature')
+      const save = vi.spyOn(destination.store, 'saveClaim')
+      try {
+        const { event } = JSON.parse(lifecycleClaim.bytes)
+        await expect(destination.claims.issue({ event, issuer: otherInspector, assertedRole: 'observer', expectedPassport: passportId, schemaCheck: eventSchemaCheck(gs1Dir()) })).rejects.toMatchObject({ code: 'authority-unavailable' })
+        expect(sign).not.toHaveBeenCalled()
+        expect(save).not.toHaveBeenCalled()
+      } finally {
+        sign.mockRestore()
+        save.mockRestore()
+      }
+    } finally {
+      await destination.close()
+    }
   })
 
   it('changes nothing the second time, and lets the recipient carry on with the claim code they accepted with', async () => {
@@ -222,9 +254,35 @@ describe('the restore of an application', () => {
     expect(offer.claimCodeHash).toBe(createHash('sha256').update(claimCode).digest('hex'))
     // The recipient's key is derived from a secret this deployment was given by its operator, not from the package. With it the holder retires the passport here.
     const record = (await second.store.getPassport(passportId))!
-    const retired = await second.writer.retire({ record, actor: second.custody.holderOf(record), reason: 'recycled' })
-    expect(retired.entry).toMatchObject({ op: 'RETIRE', index: 'admitted' })
-    expect((await second.read(passportId)).lineage.map((state) => state.op)).toEqual(['ISSUE', 'UPDATE', 'TRANSFER', 'RETIRE'])
+    const holder = second.custody.holderOf(record)
+    const transferTier = record.states.at(-1)!.ownerTier!
+    const transfer = (await second.index.lineage(passportId)).at(-1)!
+    const ciphertext = Utils.toArray(transferTier.ciphertext, 'base64')
+    expect(verifyOwnerBlob(ciphertext, findDppOutputs(transfer)[0].state.payloadOwnerHash)).toBe(true)
+    expect(transferTier.senderIdentityKey).toBe(second.parties.brand(brandId).identityKey)
+    const { plaintext } = await holder.wallet.decrypt({ ciphertext, protocolID: OWNER_DATA_PROTOCOL, keyID: passportId, counterparty: transferTier.senderIdentityKey! })
+    expect(JSON.parse(Utils.toUTF8(plaintext))).toEqual({ serviceNotes: 'second revision' })
+    const updated = await second.writer.update({ record, actor: holder, payload: JSON.parse(record.states.at(-1)!.payloadPublic) })
+    expect(updated.entry.ownerTier).toEqual(transferTier)
+    const retired = await second.writer.retire({ record: updated.record, actor: holder, reason: 'recycled' })
+    expect(retired.entry).toMatchObject({ op: 'RETIRE', index: 'admitted', ownerTier: transferTier })
+    expect((await second.read(passportId)).lineage.map((state) => state.op)).toEqual(['ISSUE', 'UPDATE', 'TRANSFER', 'UPDATE', 'RETIRE'])
+  })
+
+  it('refuses a recovery export that retained an incomplete ciphertext for its signed state', async () => {
+    const original = (await first.store.getPassport(passportId))!
+    const damaged = structuredClone(original)
+    damaged.states.at(-1)!.ownerTier!.ciphertext = Buffer.from('truncated by the source store').toString('base64')
+    await first.store.savePassport(damaged)
+    try {
+      const recovery = await exportApplication({ platform: first, epcis: exchange(), access: 'authorised-recovery', passportIds: [passportId] })
+      const folder = join(scratch, 'incomplete-ciphertext')
+      writePackageFolder(folder, recovery.manifest, recovery.files)
+      const problem = await refusal(verifyApplicationPackage(readPackageFolder(folder), trust(first)))
+      expect(problem).toMatchObject({ code: 'records-inconsistent', data: { passportId, txid: original.states.at(-1)!.txid } })
+    } finally {
+      await first.store.savePassport(original)
+    }
   })
 
   it('never overwrites: a deployment that now holds another journal under the same identifier is left as it is', async () => {

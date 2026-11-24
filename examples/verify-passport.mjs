@@ -283,6 +283,10 @@ if (reportFlag && fixtureMode) {
   FIXTURE_CHECKED_AT = cases.checkedAt
   console.log(`Report cases in the fixture: ${cases.cases.length}, checked at ${cases.checkedAt}.`)
   for (const c of cases.cases) {
+    if (c.skip) {
+      console.log(`Skipped ${c.id}. ${c.skip_reason}`)
+      continue
+    }
     const { evidence, policy } = materialise(c)
     const report = await verifyPassportEvidence(evidence, c.expectedSubject, policy)
     const same = JSON.stringify(report) === JSON.stringify(c.report)

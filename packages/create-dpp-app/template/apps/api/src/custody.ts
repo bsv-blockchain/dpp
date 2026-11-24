@@ -5,8 +5,8 @@
 // signs and keeps the acceptance record; the TRANSFER commits to it in
 // field 15 and moves control to the recipient's managed key. Only the third
 // step touches the chain. A declined or expired offer writes nothing.
-import { Hash, PrivateKey, Utils } from '@bsv/sdk'
-import { bindAcceptanceToState, canonicalJson, inspectManagedAcceptance, signManagedAcceptance, type ManagedAcceptanceClaim, type ManagedAcceptanceRecord } from '@bsv/dpp-protocol'
+import { Hash, PrivateKey, Transaction, Utils } from '@bsv/sdk'
+import { bindAcceptanceToState, canonicalJson, findDppOutputs, inspectManagedAcceptance, signManagedAcceptance, type ManagedAcceptanceClaim, type ManagedAcceptanceRecord } from '@bsv/dpp-protocol'
 import type { Parties, Party } from './parties.js'
 import type { OfferRecord, PassportRecord, Store } from './store.js'
 import type { PlatformWallet } from './wallet.js'
@@ -24,8 +24,23 @@ export interface CustodyOptions {
   offerLifetimeSeconds?: number
 }
 
+interface AcceptOfferInput {
+  requestId: string
+  claimCode?: string
+  recipientIdentityKey?: string
+  /** The authenticated member accepting a named offer. */
+  recipient?: Party
+}
+
+interface AcceptedTransfer {
+  offer: OfferRecord
+  record: ManagedAcceptanceRecord
+  transferTxid: string
+}
+
 export class Custody {
   private readonly lifetime: number
+  private readonly accepting = new Map<string, Promise<AcceptedTransfer>>()
 
   constructor(private readonly options: CustodyOptions) {
     this.lifetime = options.offerLifetimeSeconds ?? 7 * 24 * 3600
@@ -43,8 +58,6 @@ export class Custody {
     if (record.holder.party !== holder.name) throw new WriteRefused('not-the-holder', `${holder.name} does not hold ${record.passportId}`)
     const tip = record.states.at(-1)
     if (tip == null) throw new WriteRefused('not-issued', `${record.passportId} has no state`)
-    const open = await this.options.store.listOffers({ passportId: record.passportId, status: 'open' })
-    if (open.length > 0) throw new WriteRefused('offer-open', `${record.passportId} already has an open offer ${open[0].requestId}; withdraw it first`)
     const mechanism = args.mechanism ?? 'claim-code'
     if (mechanism === 'named-recipient' && args.recipientIdentityKey == null) throw new WriteRefused('recipient-missing', 'a named-recipient offer needs the recipient identity key')
     const claimCode = mechanism === 'claim-code' ? Utils.toHex(PrivateKey.fromRandom().toArray().slice(0, 8)) : undefined
@@ -63,7 +76,7 @@ export class Custody {
       expiresAt: instant(this.lifetime),
       status: 'open',
     }
-    await this.options.store.saveOffer(offer)
+    if (!await this.options.store.createOpenOffer(offer)) throw new WriteRefused('offer-open', `${record.passportId} already has an open offer. Withdraw it before creating another.`)
     return { offer, claimCode }
   }
 
@@ -72,9 +85,7 @@ export class Custody {
     if (offer == null) throw new WriteRefused('offer-unknown', `no offer ${requestId}`)
     if (offer.holderIdentityKey !== holder.identityKey) throw new WriteRefused('not-the-holder', 'only the holder withdraws an offer')
     if (offer.status !== 'open') throw new WriteRefused('offer-closed', `offer ${requestId} is ${offer.status}`)
-    offer.status = 'withdrawn'
-    await this.options.store.saveOffer(offer)
-    return offer
+    return await this.closeOpenOffer(offer, 'withdrawn')
   }
 
   /** What a recipient sees before deciding: the terms the digest covers, and when the offer closes. */
@@ -84,11 +95,29 @@ export class Custody {
     return { requestId, passportId: offer.passportId, terms: offer.terms, expiresAt: offer.expiresAt, status: offer.status }
   }
 
-  async decline(requestId: string, claimCode?: string): Promise<OfferRecord> {
-    const offer = await this.openOffer(requestId, claimCode)
-    offer.status = 'declined'
-    await this.options.store.saveOffer(offer)
-    return offer
+  async decline(requestId: string, claimCode?: string, recipientIdentityKey?: string): Promise<OfferRecord> {
+    const offer = await this.openOffer(requestId, claimCode, recipientIdentityKey)
+    return await this.closeOpenOffer(offer, 'declined')
+  }
+
+  private async closeOpenOffer(offer: OfferRecord, status: 'withdrawn' | 'declined' | 'expired'): Promise<OfferRecord> {
+    const closed = { ...offer, status }
+    if (!await this.options.store.changeOfferStatus(closed, 'open')) throw new WriteRefused('offer-closed', `offer ${offer.requestId} is no longer open`)
+    return closed
+  }
+
+  private checkRecipient(offer: OfferRecord, claimCode?: string, recipientIdentityKey?: string): void {
+    if (offer.mechanism === 'claim-code' && (typeof claimCode !== 'string' || sha256hex(claimCode) !== offer.claimCodeHash)) throw new WriteRefused('claim-code-wrong', 'the claim code does not match this offer')
+    if (offer.mechanism === 'named-recipient' && (recipientIdentityKey == null || recipientIdentityKey !== offer.recipientIdentityKey)) throw new WriteRefused('recipient-wrong', 'this offer is addressed to another identity')
+  }
+
+  private recipientFor(offer: OfferRecord, args: AcceptOfferInput): Party {
+    const managed = this.options.parties.recipient(offer.requestId)
+    this.checkRecipient(offer, args.claimCode, args.recipient?.identityKey ?? args.recipientIdentityKey)
+    if (offer.mechanism === 'claim-code') return managed
+    const recipient = args.recipient ?? managed
+    if (recipient.identityKey !== offer.recipientIdentityKey) throw new WriteRefused('recipient-wrong', 'the accepting party must control the named identity')
+    return recipient
   }
 
   private async openOffer(requestId: string, claimCode?: string, recipientIdentityKey?: string): Promise<OfferRecord> {
@@ -96,12 +125,10 @@ export class Custody {
     if (offer == null) throw new WriteRefused('offer-unknown', `no offer ${requestId}`)
     if (offer.status !== 'open') throw new WriteRefused('offer-closed', `offer ${requestId} is ${offer.status}`)
     if (offer.expiresAt <= instant()) {
-      offer.status = 'expired'
-      await this.options.store.saveOffer(offer)
+      await this.closeOpenOffer(offer, 'expired')
       throw new WriteRefused('offer-expired', `offer ${requestId} expired at ${offer.expiresAt}`)
     }
-    if (offer.mechanism === 'claim-code' && (claimCode == null || sha256hex(claimCode) !== offer.claimCodeHash)) throw new WriteRefused('claim-code-wrong', 'the claim code does not match this offer')
-    if (offer.mechanism === 'named-recipient' && recipientIdentityKey !== offer.recipientIdentityKey) throw new WriteRefused('recipient-wrong', 'this offer is addressed to another identity')
+    this.checkRecipient(offer, claimCode, recipientIdentityKey)
     return offer
   }
 
@@ -110,29 +137,38 @@ export class Custody {
    * identity, records and signs the acceptance, keeps it, then writes the
    * TRANSFER that commits to it. The tip must still be the one the offer named.
    */
-  async accept(args: { requestId: string; claimCode?: string; recipientIdentityKey?: string }): Promise<{ offer: OfferRecord; record: ManagedAcceptanceRecord; transferTxid: string }> {
-    const { store, wallet, parties, writer } = this.options
-    // An acceptance whose TRANSFER did not get written is retried with the same record, never signed twice.
-    const earlier = await store.getOffer(args.requestId)
-    const retrying = earlier?.status === 'accepted' && earlier.record != null && earlier.transferTxid == null
-    const offer = retrying ? earlier : await this.openOffer(args.requestId, args.claimCode, args.recipientIdentityKey)
-    if (retrying && offer.mechanism === 'claim-code' && (args.claimCode == null || sha256hex(args.claimCode) !== offer.claimCodeHash)) throw new WriteRefused('claim-code-wrong', 'the claim code does not match this offer')
+  async accept(args: AcceptOfferInput): Promise<AcceptedTransfer> {
+    const offer = await this.options.store.getOffer(args.requestId)
+    if (offer == null) throw new WriteRefused('offer-unknown', `no offer ${args.requestId}`)
+    const recipient = this.recipientFor(offer, args)
+    const underway = this.accepting.get(offer.requestId)
+    if (underway != null) return await underway
+    const pending = this.acceptOffer(offer, args, recipient)
+    this.accepting.set(offer.requestId, pending)
+    try {
+      return await pending
+    } finally {
+      this.accepting.delete(offer.requestId)
+    }
+  }
+
+  private async acceptOffer(offer: OfferRecord, args: AcceptOfferInput, recipient: Party): Promise<AcceptedTransfer> {
+    const { store, wallet } = this.options
+    if (offer.status !== 'open' && offer.status !== 'accepted' && offer.status !== 'transferred') throw new WriteRefused('offer-closed', `offer ${offer.requestId} is ${offer.status}`)
     const passport = await store.getPassport(offer.passportId)
     if (passport == null) throw new WriteRefused('passport-unknown', `no passport ${offer.passportId}`)
-    // Before an acceptance record is signed: an offer made before the profile was retired cannot be completed either.
+    if (offer.status !== 'open') {
+      if (offer.record == null) throw new WriteRefused('acceptance-invalid', 'the accepted offer has no signed record')
+      await this.checkAcceptance(offer, offer.record, passport, recipient)
+      return await this.completeTransfer(offer, offer.record, passport, recipient)
+    }
+    if (offer.expiresAt <= instant()) {
+      await this.closeOpenOffer(offer, 'expired')
+      throw new WriteRefused('offer-expired', `offer ${offer.requestId} expired at ${offer.expiresAt}`)
+    }
     refuseRetiredProfile(passport.profile)
     const tip = passport.states.at(-1)
-    if (tip == null || tip.txid !== offer.expectedPredecessor.txid) throw new WriteRefused('tip-moved', 'the passport moved since the offer was made; ask for a new offer')
-    const holder = this.holderOf(passport)
-    const recipient = parties.recipient(offer.requestId)
-    if (retrying) {
-      const record = offer.record!
-      const outcome = await writer.transfer({ record: passport, holder, recipient, acceptance: record, eventData: { word: typeof offer.terms.word === 'string' ? offer.terms.word : 'Handed on' } })
-      offer.status = 'transferred'
-      offer.transferTxid = outcome.entry.txid
-      await store.saveOffer(offer)
-      return { offer, record, transferTxid: outcome.entry.txid }
-    }
+    if (tip?.txid !== offer.expectedPredecessor.txid || tip.outputIndex !== offer.expectedPredecessor.outputIndex) throw new WriteRefused('tip-moved', 'the passport moved since the offer was made; ask for a new offer')
 
     const claim: ManagedAcceptanceClaim = {
       acceptanceFormat: 'dpp-managed-acceptance@2',
@@ -157,31 +193,68 @@ export class Custody {
       custodian: wallet.identityKey,
     }
     const record = await signManagedAcceptance(claim, wallet.custodian)
-    const inspection = inspectManagedAcceptance(record, { custodians: [wallet.identityKey] })
-    if (!inspection.structureValid || !inspection.signatureValid || inspection.failures.length > 0) throw new WriteRefused('acceptance-invalid', `the acceptance record does not inspect clean: ${inspection.failures.map((f) => f.detail).join('; ')}`)
-    offer.status = 'accepted'
-    offer.record = record
-    await store.saveOffer(offer)
+    await this.checkAcceptance(offer, record, passport, recipient)
+    const accepted: OfferRecord = { ...offer, status: 'accepted', record }
+    if (!await store.changeOfferStatus(accepted, 'open')) {
+      const held = await store.getOffer(offer.requestId)
+      if (held == null || held.status === 'open') throw new WriteRefused('offer-changed', 'the offer changed while its acceptance was being recorded')
+      return await this.acceptOffer(held, args, this.recipientFor(held, args))
+    }
+    return await this.completeTransfer(accepted, record, passport, recipient)
+  }
 
-    const outcome = await writer.transfer({
-      record: passport,
-      holder,
-      recipient,
-      acceptance: record,
-      eventData: { word: typeof offer.terms.word === 'string' ? offer.terms.word : 'Handed on' },
-    })
-    const mismatches = bindAcceptanceToState(record, outcome.state)
-    if (mismatches.length > 0) throw new WriteRefused('acceptance-mismatch', `the record does not bind to the TRANSFER: ${mismatches.map((m) => m.detail).join('; ')}`)
-    offer.status = 'transferred'
-    offer.transferTxid = outcome.entry.txid
-    await store.saveOffer(offer)
-    return { offer, record, transferTxid: outcome.entry.txid }
+  private async checkAcceptance(offer: OfferRecord, record: ManagedAcceptanceRecord, passport: PassportRecord, recipient: Party): Promise<void> {
+    const inspection = inspectManagedAcceptance(record, { custodians: [this.options.wallet.identityKey] })
+    if (!inspection.structureValid || !inspection.signatureValid || inspection.failures.length > 0
+      || record.requestId !== offer.requestId || record.passportId !== offer.passportId || record.termsDigest !== offer.termsDigest || sha256hex(canonicalJson(offer.terms)) !== offer.termsDigest
+      || record.lineageGenesis.txid !== passport.states[0]?.txid || record.lineageGenesis.outputIndex !== passport.states[0]?.outputIndex
+      || canonicalJson(record.expectedPredecessor) !== canonicalJson(offer.expectedPredecessor)
+      || record.offer.mechanism !== offer.mechanism || record.offer.recipientRef !== (offer.mechanism === 'claim-code' ? offer.claimCodeHash : offer.recipientIdentityKey)
+      || record.offer.holderIdentityKey !== offer.holderIdentityKey || record.offer.createdAt !== offer.createdAt || record.offer.expiresAt !== offer.expiresAt
+      || record.acceptance.recipientIdentityKey !== recipient.identityKey || record.acceptance.destinationKey !== await recipient.controllerKey(offer.passportId)) {
+      throw new WriteRefused('acceptance-invalid', 'the signed acceptance must identify this offer, recipient and destination')
+    }
+  }
+
+  private async completeTransfer(offer: OfferRecord, record: ManagedAcceptanceRecord, passport: PassportRecord, recipient: Party): Promise<AcceptedTransfer> {
+    const { store, writer } = this.options
+    const predecessor = passport.states.findIndex(entry => entry.txid === offer.expectedPredecessor.txid && entry.outputIndex === offer.expectedPredecessor.outputIndex)
+    if (predecessor < 0) throw new WriteRefused('tip-moved', 'the passport no longer holds the predecessor of this offer')
+    let entry = passport.states[predecessor + 1]
+    if (entry == null) {
+      if (offer.status === 'transferred') throw new WriteRefused('acceptance-mismatch', 'the completed offer has no retained transfer')
+      refuseRetiredProfile(passport.profile)
+      try {
+        const outcome = await writer.transfer({ record: passport, holder: this.holderOf(passport), recipient, acceptance: record, eventData: { word: typeof offer.terms.word === 'string' ? offer.terms.word : 'Handed on' } })
+        entry = outcome.entry
+      } catch (cause) {
+        // Another process may have completed the transfer, or a successful journal write may have lost its response.
+        const retained = (await store.getPassport(offer.passportId))?.states[predecessor + 1]
+        if (retained == null || (retained.network !== 'accepted' && retained.network !== 'dry-run')) throw cause
+        entry = retained
+      }
+    }
+    if (entry.op !== 'TRANSFER') throw new WriteRefused('tip-moved', 'another operation followed the predecessor of this offer')
+    const tx = Transaction.fromHex(entry.rawTx)
+    const outputs = findDppOutputs(tx)
+    const output = outputs[0]
+    if (entry.txid !== tx.id('hex') || outputs.length !== 1 || output?.outputIndex !== entry.outputIndex || output.state.version !== '2'
+      || !tx.inputs.some(input => input.sourceTXID === offer.expectedPredecessor.txid && input.sourceOutputIndex === offer.expectedPredecessor.outputIndex)
+      || bindAcceptanceToState(record, output.state).length > 0) throw new WriteRefused('acceptance-mismatch', 'the retained transfer does not bind this signed acceptance')
+    if (entry.network !== 'accepted' && entry.network !== 'dry-run') throw new WriteRefused('operation-interrupted', `the send of transfer ${entry.txid} has no successful answer`)
+    const completed: OfferRecord = { ...offer, status: 'transferred', transferTxid: entry.txid }
+    if (offer.status !== 'transferred' && await store.changeOfferStatus(completed, 'accepted')) return { offer: completed, record, transferTxid: entry.txid }
+    const held = await store.getOffer(offer.requestId)
+    if (held?.status !== 'transferred' || held.transferTxid !== entry.txid || held.record == null || canonicalJson(held.record) !== canonicalJson(record)) throw new WriteRefused('acceptance-mismatch', 'the offer does not record this completed transfer')
+    return { offer: held, record, transferTxid: entry.txid }
   }
 
   /** The party that controls the passport now, resolved from the journal's holder name. */
   holderOf(passport: PassportRecord): Party {
     const { parties } = this.options
-    const [scope, id] = passport.holder.party.split(':', 2)
+    const split = passport.holder.party.indexOf(':')
+    const scope = passport.holder.party.slice(0, split)
+    const id = passport.holder.party.slice(split + 1)
     if (scope === 'brand') return parties.brand(id)
     if (scope === 'recipient') return parties.recipient(id)
     if (scope === 'member') return parties.member(id)

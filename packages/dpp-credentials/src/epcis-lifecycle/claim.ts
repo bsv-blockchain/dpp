@@ -851,8 +851,27 @@ function signatureHolds(claim: SignedEpcisLifecycleClaim): boolean {
  * `anyone`. Every issuance rule is applied first, and the signature is
  * checked against the declared key before the claim is returned.
  */
-export async function signEpcisLifecycleClaim(claim: EpcisLifecycleClaim, signer: DataSigner): Promise<SignedEpcisLifecycleClaim> {
+export async function signEpcisLifecycleClaim(input: EpcisLifecycleClaim, signer: DataSigner, options: EpcisLifecycleIssuanceOptions = {}): Promise<SignedEpcisLifecycleClaim> {
+  // Keep the exact prospective envelope across asynchronous schema, product and authority checks.
+  const claim = parseCanonicalJcs(jcsBytes(input), { maxBytes: EPCIS_LIFECYCLE_MAX_BYTES, maxDepth: 64 })
   assertEpcisLifecycleClaim(claim)
+  const { eventStructure, eventSemantics, productBinding } = await checkEventAndProducts(claim, options)
+  for (const finding of [eventStructure, eventSemantics, productBinding]) {
+    if (finding.status !== 'pass') throw new EpcisLifecycleIssuanceRefused(finding.reasonCode ?? 'claim-unverified', finding)
+  }
+  const issuerKey = verificationKey(claim)
+  const authority = await checkAuthority(claim, issuerKey, options.authorityResolver)
+  if (authority.status !== 'supported') throw new EpcisLifecycleIssuanceRefused(authority.reasonCode ?? 'authority-unavailable', authority)
+  const original = options.corrects
+  if (original != null) {
+    if (claim.event.errorDeclaration === undefined || original.event.errorDeclaration !== undefined || !signatureHolds(original) || bodyDigest(claim.event) !== bodyDigest(original.event)) {
+      throw new EpcisLifecycleIssuanceRefused('x-declaration-original-mismatch', { status: 'refused' })
+    }
+    if (original.issuer !== claim.issuer || verificationKey(original) !== issuerKey) {
+      const permission = await scopedAuthority(claim, issuerKey, 'error-declaration', boundPassportsOf(original), options.authorityResolver)
+      if (permission.status !== 'supported') throw new EpcisLifecycleIssuanceRefused(permission.reasonCode ?? 'authority-unavailable', permission)
+    }
+  }
   const { signature } = await signer.createSignature({
     data: epcisLifecycleSigningBytes(claim), protocolID: EPCIS_LIFECYCLE_PROTOCOL, keyID: EPCIS_LIFECYCLE_KEY_ID, counterparty: 'anyone',
   })
@@ -952,39 +971,26 @@ function refusedVerification(digest: string, reasonCode: string, cause: unknown)
   }
 }
 
-/**
- * Verify exported bytes and report every finding on its own. Nothing is
- * fetched: the schema check, the extension rules, the product comparison, the
- * authority resolver, the anchors, the header source and the related claims
- * all come from the caller, and each one not supplied leaves its finding
- * `unknown` or `unavailable` with a reason.
- */
-export async function verifyEpcisLifecycleClaim(input: number[] | string, options: EpcisLifecycleVerificationOptions = {}): Promise<EpcisLifecycleVerification> {
-  const bytes = typeof input === 'string' ? Utils.toArray(input, 'utf8') : input
-  const digest = sha256Hex(bytes)
-  let claim: SignedEpcisLifecycleClaim
-  try {
-    claim = parseEpcisLifecycleClaim(bytes, options.maxBytes ?? EPCIS_LIFECYCLE_MAX_BYTES)
-  } catch (cause) {
-    return refusedVerification(digest, /canonical form/.test(message(cause)) ? 'x-not-canonical' : 'decode-failed', cause)
+type ClaimChecks<C extends EpcisLifecycleClaim> = Pick<EpcisLifecycleVerificationOptions, 'expected' | 'compareProduct' | 'eventSchemaValidator' | 'authorityResolver'> & {
+  extensionRules?: Record<string, (event: Record<string, unknown>, claim: C) => PartialCheck | Promise<PartialCheck>>
+}
+
+export type EpcisLifecycleIssuanceOptions = ClaimChecks<EpcisLifecycleClaim> & {
+  /** A particular signed original the issuer intends to declare in error under §7. */
+  corrects?: SignedEpcisLifecycleClaim
+}
+
+export class EpcisLifecycleIssuanceRefused extends Error {
+  constructor(readonly code: string, readonly finding: EpcisLifecycleFinding<string>) {
+    super('the claim cannot be issued: ' + code)
   }
+}
+
+async function checkEventAndProducts<C extends EpcisLifecycleClaim>(claim: C, options: ClaimChecks<C>) {
   const event = claim.event
   const type = (EPCIS_EVENT_TYPES as readonly string[]).includes(event.type as string) ? (event.type as EpcisEventType) : undefined
   const eventId = typeof event.eventID === 'string' ? event.eventID : undefined
   const boundPassports = boundPassportsOf(claim)
-
-  // Signature.
-  let issuerKey: string | undefined
-  let signature: EpcisLifecycleFinding<EpcisLifecycleCheckStatus>
-  try {
-    issuerKey = verificationKey(claim)
-    signature = signatureHolds(claim)
-      ? { status: 'pass' }
-      : { status: 'fail', reasonCode: 'signature-invalid', detail: `the signature does not verify under the key ${claim.issuerKeyDid ?? claim.issuer} derives for [1, 'dpp epcis lifecycle v1'] and the key identifier event` }
-  } catch (cause) {
-    signature = { status: 'fail', reasonCode: 'signature-invalid', detail: message(cause) }
-  }
-
   // Event structure: the protocol's structural rules, then the caller's pinned schema check.
   const reading = readEvent(claim)
   if (options.expected?.eventId !== undefined && options.expected.eventId !== eventId) reading.problems.push({ reasonCode: 'x-event-id-mismatch', detail: `the event is ${String(eventId)}, not the expected ${options.expected.eventId}` })
@@ -1023,6 +1029,76 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
   const bindingParts: Array<EpcisLifecycleFinding<EpcisLifecycleCheckStatus>> = bindings.map((b) => ({ status: b.status, ...(b.reasonCode == null ? {} : { reasonCode: b.reasonCode }), detail: { passportId: b.passportId, field: b.field, identifier: b.identifier, level: b.level, ...(b.detail === undefined ? {} : { detail: b.detail }) } }))
   if (options.expected?.passportId !== undefined && !boundPassports.includes(options.expected.passportId)) bindingParts.push({ status: 'fail', reasonCode: 'subject-mismatch', detail: `the claim binds ${boundPassports.join(', ')}, not the expected ${options.expected.passportId}` })
   const productBinding = worst(bindingParts, { status: 'unknown', reasonCode: 'no-evidence' })
+  return { reading, eventStructure, eventSemantics, bindings, productBinding }
+}
+
+async function scopedAuthority(claim: EpcisLifecycleClaim, issuerKey: string, purpose: EpcisLifecycleAuthorityQuestion['purpose'], passports: string[], resolver: EpcisLifecycleVerificationOptions['authorityResolver']): Promise<EpcisLifecycleFinding<EpcisLifecycleAuthorityStatus>> {
+  if (resolver == null) return { status: 'unavailable', reasonCode: 'authority-unavailable', detail: 'no authority resolver was supplied; a valid signature alone cannot establish the asserted role' }
+  const parts: Array<EpcisLifecycleFinding<EpcisLifecycleAuthorityStatus>> = []
+  for (const passportId of passports) {
+    let answer: EpcisLifecycleAuthorityAnswer
+    try {
+      answer = await resolver({ purpose, role: claim.assertedRole, passportId, issuer: claim.issuer, issuerKey, ...(claim.issuerParty == null ? {} : { issuerParty: claim.issuerParty }), eventId: claim.event.eventID as string, eventType: claim.event.type as EpcisEventType, eventTime: claim.event.eventTime as string, issuedAt: claim.issuedAt })
+    } catch (cause) {
+      answer = { status: 'unavailable', detail: message(cause) }
+    }
+    if (answer == null || typeof answer !== 'object') answer = { status: 'unavailable' }
+    const detail = { passportId, role: claim.assertedRole, ...(answer.detail === undefined ? {} : { detail: answer.detail }) }
+    parts.push(answer.status === 'supported' ? { status: 'supported', detail } : answer.status === 'unsupported' ? { status: 'refused', reasonCode: 'authority-unconfirmed', detail } : { status: 'unavailable', reasonCode: 'authority-unavailable', detail })
+  }
+  return worst(parts, { status: 'unavailable', reasonCode: 'authority-unavailable' })
+}
+
+async function checkAuthority(claim: EpcisLifecycleClaim, issuerKey: string | undefined, resolver: EpcisLifecycleVerificationOptions['authorityResolver']): Promise<EpcisLifecycleFinding<EpcisLifecycleAuthorityStatus>> {
+  const event = claim.event
+  const eventId = typeof event.eventID === 'string' ? event.eventID : undefined
+  const type = (EPCIS_EVENT_TYPES as readonly string[]).includes(event.type as string) ? (event.type as EpcisEventType) : undefined
+  let authority: EpcisLifecycleFinding<EpcisLifecycleAuthorityStatus>
+  const refused = contradictions(claim)
+  if (refused.length > 0) authority = { status: 'refused', reasonCode: refused[0].reasonCode, detail: refused }
+  else if (issuerKey == null || eventId == null || type == null) authority = { status: 'unavailable', reasonCode: 'authority-unavailable', detail: 'authority is not assessed for a claim whose signature or event identity did not hold' }
+  else if ((claim.assertedRole === 'owner' || claim.assertedRole === 'custodian') && claim.issuerParty == null && partyFinding(event, claim.assertedRole === 'owner' ? 'owning_party' : 'possessing_party').status === 'asserted') {
+    authority = { status: 'unavailable', reasonCode: 'x-issuer-party-undeclared', detail: `the issuer asserts ${claim.assertedRole} but declares no issuerParty, so the event's party roles cannot be compared with it` }
+  } else {
+    authority = await scopedAuthority(claim, issuerKey, 'claim', claim.authorityScope, resolver)
+  }
+  return authority
+}
+
+/**
+ * Verify exported bytes and report every finding on its own. Nothing is
+ * fetched: the schema check, the extension rules, the product comparison, the
+ * authority resolver, the anchors, the header source and the related claims
+ * all come from the caller, and each one not supplied leaves its finding
+ * `unknown` or `unavailable` with a reason.
+ */
+export async function verifyEpcisLifecycleClaim(input: number[] | string, options: EpcisLifecycleVerificationOptions = {}): Promise<EpcisLifecycleVerification> {
+  const bytes = typeof input === 'string' ? Utils.toArray(input, 'utf8') : input
+  const digest = sha256Hex(bytes)
+  let claim: SignedEpcisLifecycleClaim
+  try {
+    claim = parseEpcisLifecycleClaim(bytes, options.maxBytes ?? EPCIS_LIFECYCLE_MAX_BYTES)
+  } catch (cause) {
+    return refusedVerification(digest, /canonical form/.test(message(cause)) ? 'x-not-canonical' : 'decode-failed', cause)
+  }
+  const event = claim.event
+  const type = (EPCIS_EVENT_TYPES as readonly string[]).includes(event.type as string) ? (event.type as EpcisEventType) : undefined
+  const eventId = typeof event.eventID === 'string' ? event.eventID : undefined
+  const boundPassports = boundPassportsOf(claim)
+
+  // Signature.
+  let issuerKey: string | undefined
+  let signature: EpcisLifecycleFinding<EpcisLifecycleCheckStatus>
+  try {
+    issuerKey = verificationKey(claim)
+    signature = signatureHolds(claim)
+      ? { status: 'pass' }
+      : { status: 'fail', reasonCode: 'signature-invalid', detail: `the signature does not verify under the key ${claim.issuerKeyDid ?? claim.issuer} derives for [1, 'dpp epcis lifecycle v1'] and the key identifier event` }
+  } catch (cause) {
+    signature = { status: 'fail', reasonCode: 'signature-invalid', detail: message(cause) }
+  }
+
+  const { reading, eventStructure, eventSemantics, bindings, productBinding } = await checkEventAndProducts(claim, options)
   // Only a verified claim names an item (spec §5): one whose signature holds and whose structure did not fail.
   const itemParticipants = signature.status === 'pass' && eventStructure.status !== 'fail'
     ? boundPassports.filter((p) => bindings.some((b) => b.passportId === p && b.level === 'instance' && b.status === 'pass'))
@@ -1032,29 +1108,7 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
   const possession = partyFinding(event, 'possessing_party')
   const ownership = partyFinding(event, 'owning_party')
 
-  // Authority: contradictions refuse; otherwise only the resolver can support it.
-  let authority: EpcisLifecycleFinding<EpcisLifecycleAuthorityStatus>
-  const refused = contradictions(claim)
-  if (refused.length > 0) authority = { status: 'refused', reasonCode: refused[0].reasonCode, detail: refused }
-  else if (signature.status !== 'pass' || issuerKey == null || eventId == null || type == null) authority = { status: 'unavailable', reasonCode: 'authority-unavailable', detail: 'authority is not assessed for a claim whose signature or event identity did not hold' }
-  else if ((claim.assertedRole === 'owner' || claim.assertedRole === 'custodian') && claim.issuerParty == null && (claim.assertedRole === 'owner' ? ownership : possession).status === 'asserted') {
-    authority = { status: 'unavailable', reasonCode: 'x-issuer-party-undeclared', detail: `the issuer asserts ${claim.assertedRole} but declares no issuerParty, so the event's party roles cannot be compared with it` }
-  } else if (options.authorityResolver == null) {
-    authority = { status: 'unavailable', reasonCode: 'authority-unavailable', detail: 'no authority resolver was supplied; a valid signature establishes which key signed, not that its holder held the asserted role' }
-  } else {
-    const parts: Array<EpcisLifecycleFinding<EpcisLifecycleAuthorityStatus>> = []
-    for (const passportId of claim.authorityScope) {
-      let answer: EpcisLifecycleAuthorityAnswer
-      try {
-        answer = await options.authorityResolver({ purpose: 'claim', role: claim.assertedRole, passportId, issuer: claim.issuer, issuerKey, ...(claim.issuerParty == null ? {} : { issuerParty: claim.issuerParty }), eventId, eventType: type, eventTime: event.eventTime as string, issuedAt: claim.issuedAt })
-      } catch (cause) {
-        answer = { status: 'unavailable', detail: message(cause) }
-      }
-      const detail = { passportId, role: claim.assertedRole, ...(answer.detail === undefined ? {} : { detail: answer.detail }) }
-      parts.push(answer.status === 'supported' ? { status: 'supported', detail } : answer.status === 'unsupported' ? { status: 'refused', reasonCode: 'authority-unconfirmed', detail } : { status: 'unavailable', reasonCode: 'authority-unavailable', detail })
-    }
-    authority = worst(parts, { status: 'unavailable', reasonCode: 'authority-unavailable' })
-  }
+  const authority = await checkAuthority(claim, signature.status === 'pass' ? issuerKey : undefined, options.authorityResolver)
 
   // Anchor commitment and inclusion, when the caller supplies anchors.
   let anchorCommitment: EpcisLifecycleFinding<EpcisLifecycleCheckStatus> = { status: 'unknown', reasonCode: 'no-evidence', detail: 'no anchor was supplied' }
@@ -1119,28 +1173,26 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
 
   // Correction state (spec §7), from the related claims the caller holds.
   if (event.errorDeclaration !== undefined) {
-    verification.findings.correction = { status: 'declared-in-error', reasonCode: 'x-self-declared', detail: { declaredBy: verification.attestationId, errorDeclaration: event.errorDeclaration } }
+    verification.findings.correction = signature.status === 'pass' && eventStructure.status !== 'fail' && verification.findings.eventSemantics.status !== 'fail'
+      ? { status: 'declared-in-error', reasonCode: 'x-self-declared', detail: { declaredBy: verification.attestationId, errorDeclaration: event.errorDeclaration } }
+      : { status: 'unknown', reasonCode: 'x-declaration-unsound', detail: { declaredBy: verification.attestationId } }
   }
   if (options.related != null) {
     const { related: _related, anchors: _anchors, ...inner } = options
     const others: EpcisLifecycleVerification[] = []
     for (const other of options.related.claims) others.push(await verifyEpcisLifecycleClaim(other, inner))
     verification.relations = others.map((o) => ({ digest: o.digest, relation: epcisLifecycleClaimRelation(verification, o) }))
-    if (event.errorDeclaration === undefined) {
-      const declarations = others.filter((o) => epcisLifecycleClaimRelation(verification, o) === 'error-declaration' || (epcisLifecycleClaimRelation(verification, o) === 'other-issuer' && o.claim?.event.errorDeclaration !== undefined && bodyDigest(o.claim.event) === bodyDigest(event)))
-      // A declaration counts only from a claim that is itself sound (spec §7): one whose event structure or semantics fails declares nothing, and is not passed over as if it were absent.
-      const sound = declarations.filter((d) => d.findings.eventStructure.status !== 'fail' && d.findings.eventSemantics.status !== 'fail')
+    if (event.errorDeclaration === undefined && signature.status !== 'pass') {
+      verification.findings.correction = { status: 'unknown', reasonCode: 'signature-invalid', detail: 'the signature on the original claim could not be verified' }
+    } else if (event.errorDeclaration === undefined) {
+      const declarations = others.filter((o) => eventId != null && o.eventId === eventId && o.claim?.event.errorDeclaration !== undefined && bodyDigest(o.claim.event) === bodyDigest(event))
+      const sound = declarations.filter((d) => d.findings.signature.status === 'pass' && d.findings.eventStructure.status !== 'fail' && d.findings.eventSemantics.status !== 'fail')
       const authorised: EpcisLifecycleVerification[] = []
       for (const d of sound) {
         if (d.claim!.issuer === claim.issuer && d.issuerKey === issuerKey) { authorised.push(d); continue }
         if (options.authorityResolver == null || d.issuerKey == null || type == null || eventId == null) continue
-        let all = boundPassports.length > 0
-        for (const passportId of boundPassports) {
-          let answer: EpcisLifecycleAuthorityAnswer
-          try { answer = await options.authorityResolver({ purpose: 'error-declaration', role: d.claim!.assertedRole, passportId, issuer: d.claim!.issuer, issuerKey: d.issuerKey, ...(d.claim!.issuerParty == null ? {} : { issuerParty: d.claim!.issuerParty }), eventId, eventType: type, eventTime: event.eventTime as string, issuedAt: d.claim!.issuedAt }) } catch { answer = { status: 'unavailable' } }
-          if (answer.status !== 'supported') all = false
-        }
-        if (all) authorised.push(d)
+        const permission = await scopedAuthority(d.claim!, d.issuerKey, 'error-declaration', boundPassports, options.authorityResolver)
+        if (permission.status === 'supported') authorised.push(d)
       }
       if (authorised.length > 0) {
         const d = authorised[0]
@@ -1153,7 +1205,7 @@ export async function verifyEpcisLifecycleClaim(input: number[] | string, option
       } else if (sound.length > 0) {
         verification.findings.correction = { status: 'unknown', reasonCode: 'x-declaration-unauthorised', detail: { declaredBy: sound.map((d) => d.attestationId), why: 'another issuer declared the event in error and no authority resolver supports that issuer for every bound passport' } }
       } else if (declarations.length > 0) {
-        verification.findings.correction = { status: 'unknown', reasonCode: 'x-declaration-unsound', detail: { declaredBy: declarations.map((d) => d.attestationId), why: 'each claim that declares the event in error fails its own event structure or semantics, so none of them counts as a declaration' } }
+        verification.findings.correction = { status: 'unknown', reasonCode: 'x-declaration-unsound', detail: { declaredBy: declarations.map((d) => d.attestationId), why: 'no declaration passes signature verification and the required event checks' } }
       } else if (options.related.complete) {
         verification.findings.correction = { status: 'none', detail: 'no verified claim among the complete set supplied declares this event in error' }
       } else {

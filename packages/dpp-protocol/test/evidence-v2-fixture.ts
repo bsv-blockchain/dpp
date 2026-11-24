@@ -3,7 +3,7 @@ import { verifyPassportEvidence, type ExpectedSubject } from '../src/index.js'
 import { CHAIN_V1_FIXTURE } from './chain-v1-fixture.js'
 import { chainV2Fixture } from './chain-v2-fixture.js'
 import { managedAcceptanceV2Fixture } from './managed-acceptance-v2-fixture.js'
-import { materialise, type EvidenceCase } from './evidence-v1-fixture.js'
+import { materialise, type DeclaredObserver, type EvidenceCase } from './evidence-v1-fixture.js'
 import { PASSPORT_ID_V2, custodianPriv, idKey, issuerPriv } from './helpers-v2.js'
 
 /**
@@ -47,6 +47,19 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
 
   const v1Raw = CHAIN_V1_FIXTURE.states.map((s) => s.rawTx)
   const v1Asked: ExpectedSubject = { passportId: CHAIN_V1_FIXTURE.states[0].data.passportId, source: 'request-context' }
+
+  function observationCase(
+    id: string, description: string, ...answers: Array<Pick<DeclaredObserver, 'result' | 'spendingTxid'>>
+  ): Omit<EvidenceCase, 'report'> {
+    return {
+      id, description,
+      evidence: { tokenHistory: raw.slice(0, 2) },
+      expectedSubject: asked,
+      policy: { publisherKeys: [custodian], chainTracker: 'scripts-only' },
+      observers: answers.map((answer, i) => ({ id: `index-${i + 1}`, kind: 'spend-status', ...answer })),
+    }
+  }
+  const reportedSpend = { result: 'spent' as const, spendingTxid: chain.states[2].txid }
 
   const declared: Array<Omit<EvidenceCase, 'report'>> = [
     {
@@ -140,6 +153,25 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
       evidence: { tokenHistory: [raw[0], unknownVersion] },
       expectedSubject: asked,
       policy: { publisherKeys: [custodian], chainTracker: 'scripts-only' },
+    },
+    observationCase('v2-tip-unspent-unavailable', 'One source reports the tip unspent and another is unavailable. The latest state is unknown.',
+      { result: 'unspent' }, { result: 'unavailable' }),
+    observationCase('v2-tip-not-found', 'The only source could not find the tip. The latest state is unknown.',
+      { result: 'not-found' }),
+    observationCase('v2-tip-unspent-not-found', 'One source reports the tip unspent and another could not find it. The latest state is unknown.',
+      { result: 'unspent' }, { result: 'not-found' }),
+    observationCase('v2-tip-spent-partial', 'One source reports the transaction that spent the tip. The other sources have no spend status. The supplied tip is superseded.',
+      reportedSpend, { result: 'unavailable' }, { result: 'not-found' }),
+    observationCase('v2-tip-spent-unspent', 'Two sources report the tip unspent and one reports a spend. The latest state is conflicting.',
+      { result: 'unspent' }, reportedSpend, { result: 'unspent' }),
+    observationCase('v2-tip-competing-spenders', 'Two sources name different transactions spending the supplied tip. The latest state is conflicting.',
+      reportedSpend, { result: 'spent', spendingTxid: Transaction.fromHex(chain.boundaryControl.rawTx).id('hex') }),
+    {
+      id: 'interrupted-history-with-complete-alternative',
+      description: 'The primary history omits its third state. Keep the supplied tip and the complete alternative tip. With only one valid history and no source observations, the latest state is unknown.',
+      evidence: { tokenHistory: v1Raw.filter((_, index) => index !== 2), alternativeHistories: [v1Raw] },
+      expectedSubject: v1Asked,
+      policy: { publisherKeys: [CHAIN_V1_FIXTURE.serverKey], chainTracker: 'scripts-only' },
     },
   ]
 

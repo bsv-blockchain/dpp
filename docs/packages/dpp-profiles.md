@@ -43,7 +43,7 @@ A manifest defines a profile's fields, labels, tiers, obligations and applicabil
 
 | Version | Where you see it | What it means |
 |---|---|---|
-| Profile version | The number after `@` in `general@2`, and a payload's `profile_version` | The edition of a profile's field list. Supported manifest profiles: `general@2`, current, and `general@1`, superseded. Held by bundled bindings: `eu-battery@1`, `eu-textile@1`. Retired: `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` ([retired profiles](#retired-profiles)) |
+| Profile version | The number after `@` in `general@2`, and a payload's `profile_version` | The edition of a profile's field list. Supported manifest profiles: `general@2`, current, and `general@1`, superseded. For new sector issuance use `eu-battery@2` and `eu-textile@2`. Both version 1 bindings remain readable. Retired: `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` ([retired profiles](#retired-profiles)) |
 | Manifest format | A manifest's `manifestVersion`, `"1"` or `"2"` | The manifest file's layout. `general@1` and `general@2` use format 1. Format 2 adds value types and rules, and the only manifests published in it are retired drafts |
 | Record version | A passport state's `version`, 1 or 2 | The passport record model, unrelated to profiles: a version 2 state can carry a `general@2` payload |
 
@@ -183,7 +183,7 @@ A profile does not have to be one of the manifests this package publishes. A dat
 | Engine adapter | `@bsv/dpp-profiles/validation-engine`: JSON-LD and SHACL engines over libraries you install |
 | Validator service | `dpp-validator` and `@bsv/dpp-profiles/validator-service`: the same engines in another process. `@bsv/dpp-profiles/validator-client` is what an application configures in their place ([run the engines as a service](#run-the-engines-as-a-service)) |
 | Example profiles | `examples/custom-profile/` in the repository: `example-bottle@1` uses every step, `example-notebook@1` uses a schema only |
-| Bundled bindings | `eu-battery@1` and `eu-textile@1`, shipped under `bindings/` with their artefacts and notices. `BUNDLED_BINDING_DIGESTS` is their trusted digest list and `registerBundledBindings(registry)` registers them from the package folder ([EU battery and textile bindings](../profiles/eu-sector-bindings.md)) |
+| Bundled bindings | `BUNDLED_BINDINGS` lists both editions for each sector. Give a registry their `BUNDLED_BINDING_DIGESTS` and call `registerBundledBindings(registry)` to read both. For new sector records, use the profile and digest from `CURRENT_SECTOR_BINDINGS`. |
 | Profile bundle | `exportProfileBundle`, `openProfileBundle` and `registerProfileBundle`: the files that carry a binding and everything it lists inside an evidence package, so another deployment validates from the package alone ([carry a profile](#carry-a-profile-to-another-deployment)) |
 
 ### The payload under a binding
@@ -422,7 +422,7 @@ Under a binding with an `access` member, `detail.access` carries the `policy`, t
 
 ### How the product must match the passport
 
-The expected identity is the `passportId` you supply, never anything in the payload. `checkProductIdentity({ payload, identity, passportId })` applies the rules on their own.
+Supply the containing state's `passportId` independently of the product. `checkProductIdentity({ payload, identity, passportId })` compares values at the binding's JSON Pointers. For JSON-LD products, the bound payload validators also resolve the identity predicates under the binding's pinned contexts. They compare every assertion about the selected subject, including full IRIs, compact names and recognised aliases. Access policy still uses the top-level property names listed in the binding.
 
 | The product document | Result |
 |---|---|
@@ -470,7 +470,7 @@ The two bundled bindings carry such a list ([which properties are public](../pro
 ```js
 import { prepareBoundPayload } from '@bsv/dpp-profiles'
 
-const prepared = await prepareBoundPayload({ registry, engines, profile: 'eu-battery', profileVersion: 1, product, passportId })
+const prepared = await prepareBoundPayload({ registry, engines, profile: 'eu-battery', profileVersion: 2, product, passportId })
 if (!prepared.ok) throw new Error(`${prepared.code}: ${prepared.detail}`)
 const { payloadPublic, restrictedProduct, validation, publicView } = prepared
 ```
@@ -569,7 +569,7 @@ import { bundledBindingLicenceTexts, bundledBindingNotices, exportProfileBundle 
 // `registry` already holds the profiles: everything exported is read back from it, as it was held to its digest.
 const bundle = await exportProfileBundle({
   registry,
-  profiles: ['eu-battery@1'],                 // default: every profile the registry holds by a binding
+  profiles: ['eu-battery@2'],                 // default: every profile the registry holds by a binding
   readNotice: bundledBindingNotices(),         // the notices of the bundled bindings; read your own profiles' notices from their folders
   licenceTexts: bundledBindingLicenceTexts(),  // the licence text those notices point to
 })
@@ -699,7 +699,7 @@ The sector profiles first published as manifests are retired from 14 November 20
 | Export | What it is |
 |---|---|
 | `RETIRED_PROFILE_IDS` | The one list: `battery@2`, `battery@3`, `battery@4`, `textile@1`, `textile@2`, `textile@3`, `textile@4` |
-| `RETIRED_PROFILE_REPLACEMENTS` | The replacement of each: `eu-battery@1` or `eu-textile@1` |
+| `RETIRED_PROFILE_REPLACEMENTS` | The binding recorded when each manifest retired, `eu-battery@1` or `eu-textile@1`. Use `CURRENT_SECTOR_BINDINGS` for new issuance |
 | `SUPPORTED_PROFILE_IDS` | The manifest profiles a payload is written and validated under: `general@2` and `general@1` |
 | `isRetiredProfile(profile)`, `assertProfileNotRetired(profile)` | The test, and the same test as a throw |
 | `ProfileRetiredError` | What a helper throws: `code` is `profile-retired`, with `profile` and `replacedBy` |

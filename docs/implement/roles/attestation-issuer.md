@@ -16,7 +16,14 @@ Live identity assurance is Ring 0: the platform vouches only for the account and
 
 ## Sign one claim with the packages
 
-`signLifecycleClaim(unsignedClaim, wallet)` from `@bsv/dpp-protocol` needs BRC-100 `createSignature`: use your application's wallet or, for tests, `ProtoWallet` from `@bsv/sdk`. It signs the native claim, `dpp-lifecycle-v1`, and is deprecated and kept for reading historical claims; new lifecycle claims use [the EPCIS lifecycle claim](../../packages/add-a-claim.md#the-epcis-lifecycle-claim). Sign the fixture claim:
+`signLifecycleClaim(unsignedClaim, wallet)` from `@bsv/dpp-protocol` needs BRC-100 `createSignature`: use your application's wallet or, for tests, `ProtoWallet` from `@bsv/sdk`. It signs the native claim, `dpp-lifecycle-v1`, selected by the issuer role in `native-baseline@2`. New native claims identify the state by outpoint. Readers also accept the historical transaction-ID form. The application starter issues [EPCIS lifecycle claims](../../packages/add-a-claim.md#the-epcis-lifecycle-claim) instead. Before submitting either format, check that the registry accepts its secured representation. The following example signs the native fixture claim.
+
+| Operation | Representation and rule |
+| --- | --- |
+| A native baseline issuer signs a claim | Use `dpp-lifecycle-v1` with the full outpoint in `recordId`. |
+| The starter signs an EPCIS event | Use `dpp-epcis-lifecycle@1`. A separate import retains the source event without signing it. |
+| A reader opens a historical native claim | Verify the original signed bytes under the native rules, including the older transaction-ID form of `recordId`. |
+| A registry receives a submission | Consult its declared representations. Native and EPCIS claims have distinct byte and verification rules. |
 
 ```sh
 node --input-type=module <<'JS'

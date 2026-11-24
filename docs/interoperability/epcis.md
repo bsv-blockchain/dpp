@@ -128,7 +128,7 @@ JS
 
 A document that parses safely and then fails the schema, an envelope check or an identifier check is retained as `invalid`, with its findings. It is evidence that was received. It is left out of the associations index and of anything described as valid. A refusal and a retained failure are different things: one leaves nothing, the other leaves the source and what was found in it. A record keeps at most 1000 findings. When a document produced more, validity was still decided on all of them, and the last finding kept says how many there were.
 
-Only a whole document is imported: an `EPCISDocument` or an `EPCISQueryDocument`. A bare event is not read as one. Handed to the import it parses safely, so its bytes are retained, as `invalid` with the finding `envelope-unrecognised`, and no event is observed or indexed from it. `parseEpcisSource` reads a bare event under its `singleEvent` option; `importEpcisSource` has no such option. Put the event in a document to import it.
+Only a whole document is imported: an `EPCISDocument` or an `EPCISQueryDocument`. A bare event is not read as one. Handed to the import it parses safely, so its bytes are retained, as `invalid` with the finding `envelope-unrecognised`, and no event is observed or indexed from it. `parseEpcisSource` reads a bare event under its `singleEvent` option; `importEpcisSource` has no such option. For durable event intake, supply the complete EPCIS document, including its original context. A retry of a standalone upload returns the same invalid receipt and original bytes. A restored import retains the same findings and produces no observations.
 
 An event whose `type` is none of the five is an extension event. The pinned schema admits one when the type is written as a URI, such as `example:InspectionEvent` under a declared prefix. It is retained in the exact bytes, observed under its `eventID` or a local identity, and named by the warning `event-type-unsupported`. Nothing is read into it: its identifiers are not indexed, whatever its members are called.
 
@@ -183,6 +183,8 @@ Storage is injected. `EpcisExchangeStorage` has six methods: `putBytes`, `getByt
 | `createMemoryEpcisStorage()` | Tests and trials. Everything is lost when the process ends. |
 | `openFileEpcisStorage(folder)` | One process, one folder. Atomic file writes and a journal that is replayed when the folder is reopened. A reference adapter, not a database. |
 | Your own | Any database that can keep the six promises. |
+
+The file adapter enables `fsync` by default. Its durable acknowledgement requires a filesystem that accepts file and directory synchronisation and honours those flushes. A write, rename, open or flush error refuses the operation. Close and reopen the store, run `recoverEpcisExchange`, and retry with the same request identity. The bytes or journal may already have reached disk. The explicitly weaker `{ fsync: false }` mode is for tests and offers no power-loss durability guarantee.
 
 Records are filed under a kind and a key. The query pull keeps its state under two further kinds, `pull` and `pull-page`, and needed no new method.
 
@@ -599,6 +601,8 @@ await restoreEpcisRecovery({ storage: destination, source, inventory, locate: ({
 ```
 
 The snapshot is never changed. The destination keeps one `epcis-restore` record per snapshot and one `epcis-relocation` record per original, with the reference it was exported under, the file that carried it and the reference the restored records carry. `listEpcisRestores` and `listEpcisRelocations` read them.
+
+Before a destination write, restore reads the original event at each receipt pointer. It checks event identifiers, declared times, correction values and preserved extension names. Each observation must identify its owning import and preserve the repository values exactly as received, including an absent or null field. The receipt keeps the validation findings and policy decision recorded at intake.
 
 ### What is refused
 

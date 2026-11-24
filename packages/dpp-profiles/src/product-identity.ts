@@ -29,6 +29,7 @@
  * comparison was made and did not hold, or a number that claims to be a GTIN
  * is not one. Anything that could not be read is `unknown`.
  */
+import { valueAt } from './binding-pointer.js'
 import { isValidGtin, gtin14 } from './identifiers.js'
 import { granularityOf, gs1KeyOf, parseGs1DigitalLinkUri, sameGs1Key, type Gs1Key } from './gs1-resolution.js'
 import type { BindingIdentity } from './profile-binding.js'
@@ -102,30 +103,19 @@ function readLink(value: unknown): LinkReading {
 /** The key the rules compare: the GTIN and the serial, and no other qualifier. A lot or a variant is a related identity, not part of the item's. */
 const itemKey = (gtin: string, serial: string): Gs1Key => gs1KeyOf({ gtin, qualifiers: [{ ai: '21', value: serial }] })
 
-/** The value at a JSON Pointer (RFC 6901), or `undefined` where the document has none. Arrays are indexed by their decimal position. */
-function valueAt(document: unknown, pointer: string): unknown {
-  let current: unknown = document
-  for (const token of pointer.split('/').slice(1)) {
-    const key = token.replace(/~1/g, '/').replace(/~0/g, '~')
-    if (Array.isArray(current)) {
-      if (!/^(0|[1-9]\d*)$/.test(key)) return undefined
-      current = current[Number(key)]
-    } else if (current !== null && typeof current === 'object' && Object.hasOwn(current, key)) {
-      current = (current as Record<string, unknown>)[key]
-    } else {
-      return undefined
-    }
-  }
-  return current
-}
-
 /**
  * Whether the product document in a payload describes the passport's item.
  * `payload` is the parsed envelope, so the binding's pointers resolve against
  * it. `passportId` is the identifier of the state being written or read,
  * supplied by the writer or the verifier, and never taken from the payload.
  */
-export function checkProductIdentity(input: { payload: unknown; identity: BindingIdentity; passportId?: string | null }): ProductIdentityResult {
+export function checkProductIdentity(input: {
+  payload: unknown
+  identity: BindingIdentity
+  passportId?: string | null
+  /** Values asserted on the selected subject after expansion, indexed by the binding's rule pointers. */
+  semanticValues?: ReadonlyMap<string, readonly unknown[]>
+}): ProductIdentityResult {
   const { payload, identity, passportId } = input
   const stop = (status: 'fail' | 'unknown', code: ProductIdentityCode, detail: string, pointer?: string): ProductIdentityResult => ({ status, code, detail, findings: [{ status, code, ...(pointer == null ? {} : { pointer }), detail }] })
 
@@ -154,12 +144,18 @@ export function checkProductIdentity(input: { payload: unknown; identity: Bindin
 
   const findings: ProductIdentityFinding[] = []
   const find = (status: 'fail' | 'unknown', code: ProductIdentityCode, pointer: string, detail: string): void => { findings.push({ status, code, pointer, detail }) }
+  const valuesFor = (pointer: string, list = false): readonly unknown[] => {
+    const value = valueAt(payload, pointer)
+    const written = value === undefined ? [] : list && Array.isArray(value) ? value : [value]
+    const expanded = input.semanticValues?.get(pointer)
+    if (expanded == null) return written
+    if (expanded.length === 0 && written.length > 0) return [...written, undefined]
+    return [...new Set([...expanded, ...written.filter((one) => typeof one === 'string')])]
+  }
 
   // Rule 6. Every stated GTIN and serial, each value of a member that lists several.
   for (const rule of identity.mustEqual) {
-    const value = valueAt(payload, rule.pointer)
-    if (value === undefined) continue
-    for (const one of Array.isArray(value) ? value : [value]) {
+    for (const one of valuesFor(rule.pointer, true)) {
       if (typeof one !== 'string') { find('unknown', 'stated-value-unsupported', rule.pointer, `The value at ${rule.pointer} is not text, so it cannot be compared with the subject.`); continue }
       if (rule.part === 'gtin') {
         if (!isValidGtin(one)) find('fail', 'stated-gtin-invalid', rule.pointer, `The value at ${rule.pointer} is not a GTIN of 8, 12, 13 or 14 digits with a correct check digit.`)
@@ -173,20 +169,23 @@ export function checkProductIdentity(input: { payload: unknown; identity: Bindin
 
   // Rule 7. A link that names the product more coarsely is welcome; one that names another product is not.
   for (const rule of identity.mustNotContradict) {
-    const value = valueAt(payload, rule.pointer)
-    if (value === undefined) continue
-    const node = value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined
-    const link = readLink(node == null ? value : (node.id ?? node['@id']))
-    if (link.kind === 'unsupported') find('unknown', 'product-identifier-unsupported', rule.pointer, `The identifier at ${rule.pointer} cannot be read as an uncompressed GS1 Digital Link under primary key 01: ${link.detail}.`)
-    else if (link.kind === 'invalid') find('fail', 'product-identifier-invalid', rule.pointer, `The identifier at ${rule.pointer} does not carry a valid GTIN: ${link.detail}.`)
-    else if (link.gtin !== subject.gtin || (link.serial != null && link.serial !== subject.serial)) find('fail', 'product-identifier-mismatch', rule.pointer, `The identifier at ${rule.pointer} names a different product from the product document's own identifier.`)
+    for (const value of valuesFor(rule.pointer)) {
+      const node = value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined
+      const link = readLink(node == null ? value : (node.id ?? node['@id']))
+      if (link.kind === 'unsupported') find('unknown', 'product-identifier-unsupported', rule.pointer, `The identifier at ${rule.pointer} cannot be read as an uncompressed GS1 Digital Link under primary key 01: ${link.detail}.`)
+      else if (link.kind === 'invalid') find('fail', 'product-identifier-invalid', rule.pointer, `The identifier at ${rule.pointer} does not carry a valid GTIN: ${link.detail}.`)
+      else if (link.gtin !== subject.gtin || (link.serial != null && link.serial !== subject.serial)) find('fail', 'product-identifier-mismatch', rule.pointer, `The identifier at ${rule.pointer} names a different product from the product document's own identifier.`)
+    }
   }
 
   // Rule 8, second half. A document that declares a granularity must declare this one.
   if (identity.granularityMember != null) {
-    const declared = valueAt(payload, identity.granularityMember.pointer)
-    if (declared !== undefined && declared !== identity.granularityMember.whenPresent) {
-      find('fail', 'granularity-mismatch', identity.granularityMember.pointer, `The product document declares a granularity other than ${identity.granularityMember.whenPresent} at ${identity.granularityMember.pointer}.`)
+    for (const declared of valuesFor(identity.granularityMember.pointer)) {
+      if (input.semanticValues?.has(identity.granularityMember.pointer) && typeof declared !== 'string') {
+        find('unknown', 'stated-value-unsupported', identity.granularityMember.pointer, 'The granularity assertion cannot be read as text.')
+      } else if (declared !== identity.granularityMember.whenPresent) {
+        find('fail', 'granularity-mismatch', identity.granularityMember.pointer, `The product document declares a granularity other than ${identity.granularityMember.whenPresent} at ${identity.granularityMember.pointer}.`)
+      }
     }
   }
 

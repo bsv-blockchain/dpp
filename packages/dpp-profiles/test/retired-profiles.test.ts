@@ -243,7 +243,7 @@ describe('the registry tells a retired profile from an unknown one', () => {
     const withBundled = createProfileRegistry({ trustedBindingDigests: BUNDLED_BINDING_DIGESTS })
     await registerBundledBindings(withBundled)
     expect(registry.list().map((p) => p.profile)).toEqual(['general@2', 'general@1'])
-    expect(withBundled.list().map((p) => p.profile)).toEqual(['general@2', 'general@1', 'eu-battery@1', 'eu-textile@1'])
+    expect(withBundled.list().map((p) => p.profile)).toEqual(['general@2', 'general@1', 'eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2'])
     for (const listed of withBundled.list()) expect(isRetiredProfile(listed.profile)).toBe(false)
   })
 
@@ -314,7 +314,7 @@ describe('what retirement leaves alone', () => {
   it('the bundled bindings, which replace the retired profiles, register and resolve', async () => {
     const registry = createProfileRegistry({ trustedBindingDigests: BUNDLED_BINDING_DIGESTS })
     const results = await registerBundledBindings(registry)
-    expect(results.map((r) => r.ok)).toEqual([true, true])
+    expect(results.map((r) => r.ok)).toEqual([true, true, true, true])
     for (const replacement of new Set(Object.values(RETIRED_PROFILE_REPLACEMENTS))) {
       const { id, version } = parts(replacement)
       expect(registry.status(id, version)).toMatchObject({ state: 'registered', profile: { format: 'binding', profile: replacement } })

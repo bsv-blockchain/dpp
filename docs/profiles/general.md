@@ -2,7 +2,7 @@
 
 Passport writers and readers can use `general@2` for products no sector profile covers, such as bicycles, watches or furniture. Start with a valid sample, choose a category and inspect the product fields before integrating them.
 
-The profile claims no regulation. Choosing it does not mean battery or textile rules stop applying to a product they cover; for those products use `eu-battery@1` or `eu-textile@1` ([EU battery and textile bindings](eu-sector-bindings.md)).
+The profile claims no regulation. Choosing it does not mean battery or textile rules stop applying to a product they cover; for those products use `eu-battery@2` or `eu-textile@2` ([EU battery and textile bindings](eu-sector-bindings.md)).
 
 ## Before you start
 

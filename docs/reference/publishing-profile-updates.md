@@ -71,13 +71,13 @@ node scripts/publish-candidates.mjs
 
 ### Check a bundled binding against new source files
 
-`eu-battery@1` and `eu-textile@1` are bindings, and a binding is never edited. When the source of a bundled binding publishes its files again, or during scheduled release maintenance, run the update check before deciding anything. It reads the files you obtained, fetches nothing and registers nothing.
+New sector passports use the immutable `eu-battery@2` and `eu-textile@2` bindings. Each shares its upstream files with its historical edition. Select the active manifest explicitly when checking for the next edition. When the source of a bundled binding publishes its files again, or during scheduled release maintenance, run the update check before deciding anything. It reads the files you obtained, fetches nothing and registers nothing.
 
 1. Put every file the next version would list in a folder, the unchanged ones too, under the names the binding lists them by. Leave out only a file the source no longer publishes: a listed file that is not in the folder is reported as removed.
 2. From the built checkout, with the release and the full commit the files come from:
 
 ```sh
-node examples/check-binding-update.mjs packages/dpp-profiles/bindings/eu-battery@1 <candidate folder> --release <release> --revision <commit> --out <review folder>
+node examples/check-binding-update.mjs packages/dpp-profiles/bindings/eu-battery@1/binding.v2.json <candidate folder> --release <release> --revision <commit> --out <review folder>
 ```
 
 | Report | Action |

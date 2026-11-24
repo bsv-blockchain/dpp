@@ -21,6 +21,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import { markdownHeadings as headings, markdownTargets } from './lib/markdown-links.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const docs = join(root, 'docs')
@@ -38,7 +39,7 @@ const pages = walk(docs).map((p) => relative(docs, p)).sort()
 // 1. Navigation.
 const summary = readFileSync(join(docs, 'SUMMARY.md'), 'utf8')
 // GitBook uses an optional link title as the sidebar label, separate from the path.
-const listed = [...summary.matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)].map((m) => m[1])
+const listed = markdownTargets(summary)
 for (const l of listed) say(existsSync(join(docs, l)), `SUMMARY.md names ${l}, which exists.`)
 const unlisted = pages.filter((p) => p !== 'SUMMARY.md' && !listed.includes(p))
 say(unlisted.length === 0, `every page under docs/ is in the navigation${unlisted.length ? `: unlisted ${unlisted.join(', ')}` : ''}.`)
@@ -46,7 +47,6 @@ const duplicates = listed.filter((l, i) => listed.indexOf(l) !== i)
 say(duplicates.length === 0, `no page is listed twice${duplicates.length ? `: ${duplicates.join(', ')}` : ''}.`)
 
 // 2. Links, fragments, pinned repository links, example commands, private paths.
-const headings = (text) => [...text.matchAll(/^#{1,6}\s+(.+)$/gm)].map((m) => m[1].trim().toLowerCase().replace(/[`*_]/g, '').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-'))
 const exampleFiles = readdirSync(join(root, 'examples'))
 // The current set under release/ and every superseded set under release/archive/.
 const releaseSets = ['release', 'release/archive'].flatMap((dir) => readdirSync(join(root, dir)).filter((f) => /^dpp-release-.*\.json$/.test(f)).map((f) => JSON.parse(readFileSync(join(root, dir, f), 'utf8'))))
@@ -102,8 +102,7 @@ let linkFailures = 0, links = 0, pinned = 0, commands = 0
 for (const page of pages) {
   const text = readFileSync(join(docs, page), 'utf8')
   const own = headings(text)
-  for (const m of text.matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
-    const target = m[1]
+  for (const target of markdownTargets(text)) {
     if (/^(https?:|mailto:)/.test(target)) {
       const source = REPO_SOURCE.exec(target)
       if (source) {

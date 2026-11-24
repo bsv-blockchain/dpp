@@ -64,6 +64,7 @@ export interface ValidationEngineOptions {
 
 const DEFAULT_TIMEOUT_MS = 10_000
 const SH = 'http://www.w3.org/ns/shacl#'
+const RDFS_SUBCLASS = 'http://www.w3.org/2000/01/rdf-schema#subClassOf'
 const SEVERITIES: readonly string[] = ['Violation', 'Warning', 'Info']
 /** The serialisations the RDF parser reads, by media type. */
 const RDF_FORMATS: Record<string, string> = { 'text/turtle': 'Turtle', 'application/n-triples': 'N-Triples', 'application/n-quads': 'N-Quads', 'application/trig': 'TriG' }
@@ -71,10 +72,11 @@ const RDF_FORMATS: Record<string, string> = { 'text/turtle': 'Turtle', 'applicat
 // The libraries ship no types this package could depend on, so the few
 // members used here are described by hand and everything else stays unknown.
 interface Term { termType: string; value: string }
+interface Quad { predicate: Term }
 interface N3 {
-  Parser: new (options?: { format?: string }) => { parse(text: string): unknown[] }
+  Parser: new (options: { format: string; blankNodePrefix: string; factory: Record<string, unknown> }) => { parse(text: string): Quad[] }
   Store: new (quads?: unknown[]) => unknown
-  DataFactory: Record<string, unknown>
+  DataFactory: Record<string, unknown> & { blankNode(name?: string): Term }
 }
 interface JsonLdProcessor {
   toRDF(document: unknown, options: { format: string; safe: boolean; documentLoader: (url: string) => Promise<{ contextUrl: null; documentUrl: string; document: unknown }> }): Promise<string>
@@ -164,11 +166,21 @@ export async function createValidationEngine(options: ValidationEngineOptions = 
 
   // The engine asks its factory for terms and for an empty dataset. The RDF library's own are enough.
   const factory = { ...n3.DataFactory, dataset: (quads?: unknown[]) => new n3.Store(quads) }
-  const parse = (file: EngineFile): unknown[] => {
+  // Blank nodes belong to one input document. Scope its labelled and anonymous nodes separately so
+  // repeated validations identify the same focus and value without joining nodes from different files.
+  const parser = (format: string, scope: string) => {
+    let anonymous = 0
+    return new n3.Parser({
+      format,
+      blankNodePrefix: scope + '_label_',
+      factory: { ...n3.DataFactory, blankNode: (name?: string) => n3.DataFactory.blankNode(name ?? scope + '_anon_' + anonymous++) },
+    })
+  }
+  const parse = (file: EngineFile, scope: string): Quad[] => {
     const format = RDF_FORMATS[file.mediaType]
     if (format == null) throw new Error(`${file.path} has media type ${file.mediaType}, which this engine does not read`)
     try {
-      return new n3.Parser({ format }).parse(new TextDecoder('utf-8', { fatal: true }).decode(file.bytes))
+      return parser(format, scope).parse(new TextDecoder('utf-8', { fatal: true }).decode(file.bytes))
     } catch (cause) {
       throw new Error(`${file.path} did not parse as ${format}: ${reasonOf(cause)}`)
     }
@@ -210,16 +222,21 @@ export async function createValidationEngine(options: ValidationEngineOptions = 
   const capabilities: EngineCapability[] = sparql ? ['shacl-core', 'shacl-sparql-constraints'] : ['shacl-core']
   const validate = async ({ nquads, shapes, background }: { nquads: string; shapes: readonly EngineFile[]; background: readonly EngineFile[] }): Promise<ShaclValidation> => {
     try {
-      const shapeQuads = shapes.flatMap(parse)
-      const backgroundQuads = background.flatMap(parse)
+      const shapeQuads = shapes.flatMap((file, index) => parse(file, 'shapes' + index))
+      const backgroundQuads = background.flatMap((file, index) => parse(file, 'background' + index))
       let dataQuads: unknown[]
       try {
-        dataQuads = new n3.Parser({ format: 'N-Quads' }).parse(nquads)
+        dataQuads = parser('N-Quads', 'product').parse(nquads)
       } catch (cause) {
         throw new Error(`the data did not parse as N-Quads: ${reasonOf(cause)}`)
       }
-      const validator = new Validator(new n3.Store(shapeQuads), plugin == null ? { factory } : { factory, validations: plugin.validations, targetResolvers: plugin.targetResolvers })
-      const report = await within(timeoutMs, () => validator.validate({ dataset: new n3.Store([...backgroundQuads, ...dataQuads]) }))
+      const report = await within(timeoutMs, () => {
+        // The engine resolves targetClass and class constraints against its shapes graph.
+        // Only the binding's background can extend the class hierarchy used here.
+        const hierarchy = backgroundQuads.filter((quad) => quad.predicate.value === RDFS_SUBCLASS)
+        const validator = new Validator(new n3.Store([...shapeQuads, ...hierarchy]), plugin == null ? { factory } : { factory, validations: plugin.validations, targetResolvers: plugin.targetResolvers })
+        return validator.validate({ dataset: new n3.Store([...backgroundQuads, ...dataQuads]) })
+      })
       if (report === TIMED_OUT) return { ok: false, reason: 'timeout', detail: `validation did not finish within ${timeoutMs} ms` }
       // The engine also records results that are not findings when asked to trace. Only the three SHACL severities are findings.
       return { ok: true, findings: report.results.filter((r) => r.severity.value.startsWith(SH) && SEVERITIES.includes(localName(r.severity.value))).map(findingOf) }

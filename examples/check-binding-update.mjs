@@ -5,8 +5,8 @@
  *
  *   node examples/check-binding-update.mjs
  *       the example profile under examples/custom-profile/example-bottle@1, against a changed context made here
- *   node examples/check-binding-update.mjs <binding folder> <candidate folder> [--release <text>] [--revision <commit>] [--out <folder>]
- *       a binding folder of your own against a folder of candidate files; prints the report as JSON
+ *   node examples/check-binding-update.mjs <manifest or binding folder> <candidate folder> [--release <text>] [--revision <commit>] [--out <folder>]
+ *       a binding manifest or folder against a folder of candidate files
  *
  * A binding is immutable. When the source of a profile publishes its files
  * again with changes, nothing is edited: `checkBindingUpdate` compares the
@@ -15,7 +15,7 @@
  * nothing. Whether the proposal is ever used is decided afterwards, by
  * whoever adds its digest to a registry's trusted list.
  *
- * With two folders, the candidate folder holds the next version's files
+ * The candidate folder holds the next version's files
  * under the names the binding lists them by. A listed file that is not
  * there is reported as removed. `--out` writes the proposed `binding.json`,
  * its files and `update-report.json` into a new binding folder to review.
@@ -25,7 +25,7 @@
  * Without arguments the script walks through the whole decision on the
  * example profile, and results print one sentence per check, never a score.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -39,8 +39,10 @@ const { values: options, positionals } = parseArgs({ allowPositionals: true, opt
 const utf8 = (text) => new TextEncoder().encode(text)
 
 /** The active version as a registry holds it: registered from its folder, with every file held to the binding's record. */
-async function registerFolder(folder, alsoTrusted = []) {
-  const bindingBytes = new Uint8Array(readFileSync(join(folder, 'binding.json')))
+async function registerBinding(path, alsoTrusted = []) {
+  const manifest = statSync(path).isDirectory() ? join(path, 'binding.json') : path
+  const folder = dirname(manifest)
+  const bindingBytes = new Uint8Array(readFileSync(manifest))
   const registry = createProfileRegistry({ trustedBindingDigests: [profileBindingDigest(bindingBytes), ...alsoTrusted] })
   const result = await registry.register({ bindingBytes, resolveArtefact: (artefact) => new Uint8Array(readFileSync(join(folder, artefact.path))) })
   if (!result.ok) { console.error(`${folder} was refused as ${result.code}: ${result.detail}`); process.exit(1) }
@@ -48,11 +50,11 @@ async function registerFolder(folder, alsoTrusted = []) {
 }
 const fromProposal = (proposal) => (artefact) => proposal.artefacts.find((entry) => entry.artefact.path === artefact.path)?.bytes
 
-// Two folders: the check alone, for a maintainer or an operator with new files in hand.
+// A maintainer can select a specific edition when several manifests share the same artefacts.
 if (positionals.length > 0) {
-  if (positionals.length !== 2) { console.error('Usage: node examples/check-binding-update.mjs <binding folder> <candidate folder> [--release <text>] [--revision <commit>] [--out <folder>]'); process.exit(1) }
-  const [bindingFolder, candidateFolder] = positionals.map((folder) => resolve(folder))
-  const { active } = await registerFolder(bindingFolder)
+  if (positionals.length !== 2) { console.error('Usage: node examples/check-binding-update.mjs <manifest or binding folder> <candidate folder> [--release <text>] [--revision <commit>] [--out <folder>]'); process.exit(1) }
+  const [bindingPath, candidateFolder] = positionals.map((folder) => resolve(folder))
+  const { active } = await registerBinding(bindingPath)
   const artefacts = active.binding.artefacts.filter((artefact) => existsSync(join(candidateFolder, artefact.path))).map((artefact) => ({ path: artefact.path, bytes: new Uint8Array(readFileSync(join(candidateFolder, artefact.path))) }))
   const source = { ...(options.release == null ? {} : { release: options.release }), ...(options.revision == null ? {} : { revision: options.revision }) }
   const { report, proposal } = checkBindingUpdate({ active, candidate: { artefacts, ...(Object.keys(source).length > 0 ? { source } : {}) } })
@@ -88,7 +90,7 @@ try {
 
 // 1. The active version: the example profile, registered from its folder as examples/custom-profile.mjs does.
 const folder = join(here, 'custom-profile', 'example-bottle@1')
-const { registry, active } = await registerFolder(folder)
+const { registry, active } = await registerBinding(folder)
 const activeBindingBytes = readFileSync(join(folder, 'binding.json'))
 say(true, `${active.profile} is the active version, under binding digest ${active.bindingDigest}.`)
 
@@ -128,7 +130,7 @@ say(!untrusted.ok && untrusted.code === 'binding-untrusted' && registry.resolve(
 
 // 5. The review. A registry made for the review trusts the proposal's digest, so the vectors can be run under it.
 // This is the part the check leaves to its caller, because it needs the validation engines.
-const review = await registerFolder(folder, [proposal.bindingDigest])
+const review = await registerBinding(folder, [proposal.bindingDigest])
 const accepted = await review.registry.register({ bindingBytes: proposal.bindingBytes, resolveArtefact: fromProposal(proposal) })
 say(accepted.ok, `a review registry that trusts the digest registers ${proposal.profile} beside ${active.profile}.`)
 const validate = bindingPayloadValidator({ registry: review.registry, engines })
@@ -154,7 +156,7 @@ say(nowFailing.length === active.binding.vectors.positive.length, `of ${ran} pay
 
 // 6. What the registry refuses, whoever asks.
 const overwrite = utf8(`${JSON.stringify({ ...proposal.binding, version: active.version, profile: active.profile }, null, 2)}\n`)
-const takeover = await registerFolder(folder, [profileBindingDigest(overwrite)])
+const takeover = await registerBinding(folder, [profileBindingDigest(overwrite)])
 const refused = await takeover.registry.register({ bindingBytes: overwrite, resolveArtefact: fromProposal(proposal) })
 say(!refused.ok && refused.code === 'binding-conflict' && takeover.registry.resolve('example-bottle', 1).bindingDigest === active.bindingDigest, `the proposed files written back as ${active.profile} are refused as ${refused.ok ? 'nothing' : refused.code}, even with that digest trusted: a changed binding is a new version.`)
 

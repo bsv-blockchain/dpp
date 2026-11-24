@@ -49,11 +49,15 @@
  * operator asks for it, and then only when its address carries nothing but
  * the standard query parameters.
  */
+import { createRequire } from 'node:module';
+import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js';
+import addFormats from 'ajv-formats';
 import { readFileSync } from 'node:fs';
 import { relative, resolve, sep } from 'node:path';
 import { canonicalJcsBytes, canonicalizeJcs } from '../jcs.js';
 import type { JsonObject } from '../types.js';
 import { EpcisExchangeError, checkEpcisExchangeInvariants, rebuildEpcisAssociations, type EpcisRebuildReport } from './exchange.js';
+import { EPCIS_PULL_REASON_OUTCOME, epcisQueryParameters, pullCompletion } from './pull.js';
 import { credentialGuard, credentialProblem, type EpcisCredentialGuard, type EpcisSourceCredential } from './pull-transport.js';
 import {
   EPCIS_IMPORT_VERSION,
@@ -66,9 +70,15 @@ import {
   epcisEventScopeKey,
   epcisImportId,
   epcisImportKey,
+  addEvents,
+  countEvents,
+  latestRecordTime,
+  noEvents,
+  epcisPullDefinitionDigest,
   epcisPullId,
   epcisPullKey,
   epcisRequestDigest,
+  epcisResolutionId,
   epcisRestoreId,
   importKeyOf,
   observationKey,
@@ -463,6 +473,46 @@ function recordProblem(kind: RecordKind, value: Json): Refused<'record-version-u
   return typed('epcis-pull-page', EPCIS_PULL_VERSION);
 }
 
+// The protocol package ships these contracts for offline consumers. Resolve
+// their references locally and compile each supported record version once.
+const schemaRequire = createRequire(import.meta.url);
+let recordValidators: Record<string, ValidateFunction> | undefined;
+function structuralProblem(kind: string, value: Json): string | undefined {
+  if (recordValidators == null) {
+    const ajv = new Ajv2020({ strict: true, strictRequired: false, allowUnionTypes: true });
+    (addFormats as unknown as (a: Ajv2020) => void)(ajv);
+    const imports = schemaRequire('@bsv/dpp-protocol/schemas/epcis-import.schema.json');
+    const records = schemaRequire('@bsv/dpp-protocol/schemas/epcis-exchange-records.schema.json');
+    const recovery = schemaRequire('@bsv/dpp-protocol/schemas/epcis-recovery.schema.json');
+    ajv.addSchema([imports, records, recovery]);
+    const validator = (id: string, definition: string): ValidateFunction => ajv.compile({ $ref: `${id}#/$defs/${definition}` });
+    recordValidators = {
+      import: validator(recovery.$id, 'operationalImport'), pull: validator(recovery.$id, 'operationalPull'),
+      observation: validator(records.$id, 'observation'), resolution: validator(records.$id, 'conflictResolution'),
+      'pull-page': validator(records.$id, 'pullPage'), restore: validator(records.$id, 'restore'),
+    };
+  }
+  const validate = recordValidators[kind]!;
+  if (validate(value)) return kind === 'pull' ? pullRecordProblem(value as unknown as EpcisPullRecord) : undefined;
+  const error = validate.errors?.[0];
+  return `${kind}${error?.instancePath ?? ''} ${error?.message ?? 'does not meet its record contract'}`;
+}
+
+/** Check the stored run before an export omits any private cursor, and again on receipt. */
+function pullRecordProblem({ pass, pending, cursor, status, lastRun }: EpcisPullRecord): string | undefined {
+  if (cursor != null && (cursor.afterPage !== pass.pagesAcknowledged || pass.exhausted)) return 'The active cursor does not follow the last acknowledged page of an unfinished pass.';
+  if (pending?.next != null && (pending.next.afterPage !== pending.page || pending.last)) return 'The pending cursor does not follow its page.';
+  if (status === 'running') {
+    if ([lastRun.endedAt, lastRun.reason, lastRun.outcome, lastRun.completion, lastRun.detail].some(field => field !== undefined)) return 'A running pull carries a completed run summary.';
+    // A crash can leave the final page acknowledged before the run ending was recorded.
+    return undefined;
+  }
+  if (lastRun.endedAt == null || lastRun.detail == null || lastRun.reason == null) return 'A completed pull lacks its run ending.';
+  if (lastRun.completion !== status || status !== pullCompletion(lastRun.reason) || lastRun.outcome !== EPCIS_PULL_REASON_OUTCOME[lastRun.reason]) return 'The run reason, outcome and completion disagree with the pull status.';
+  if (pass.exhausted !== (status === 'exhausted')) return 'The completed run disagrees with the last acknowledged page of its pass.';
+  return undefined;
+}
+
 /** The storage key a record's own content gives, or undefined when the content does not give one. A path never decides where a record goes. */
 function keyOf(kind: RecordKind, value: Json): string | undefined {
   const text = (member: string): string | undefined => (typeof value[member] === 'string' && (value[member] as string).length > 0 ? (value[member] as string) : undefined);
@@ -525,17 +575,35 @@ function omission(snapshot: Snapshot): Refused<'checkpoint-imports-omitted' | 'r
     const held = snapshot.imports.get(importKeyOf(page.importId) ?? '');
     if (held == null || held.importId !== page.importId || held.sha256 !== page.sha256) return { code: 'checkpoint-imports-omitted', detail: `the pull ${page.pullId} acknowledged page ${page.sequence} as the import ${page.importId}, and the snapshot does not hold that import with those bytes. A checkpoint is never restored ahead of the imports it stands on.` };
     if (held.sourceId !== page.sourceId) return { code: 'snapshot-inconsistent', detail: `the pull ${page.pullId} of the source scope ${JSON.stringify(page.sourceId)} names as its page ${page.sequence} the import ${page.importId}, which belongs to ${JSON.stringify(held.sourceId)}. Two source scopes are never joined because they hold the same bytes.` };
+    if (held.byteLength !== page.byteLength || held.mediaType !== page.mediaType || held.documentValidity !== page.documentValidity || !sameJson(countEvents(held, page.importReplayed), page.events)) return { code: 'snapshot-inconsistent', detail: `Page ${page.sequence} of ${page.pullId} contradicts its retained import.` };
   }
   for (const [key, pull] of snapshot.pulls) {
     const held = pagesOf.get(key) ?? 0;
     if (held !== pull.pagesAcknowledged) return { code: 'checkpoint-imports-omitted', detail: `the pull ${pull.pullId} acknowledged ${pull.pagesAcknowledged} pages and the snapshot holds ${held} of their page records. A checkpoint is never restored ahead of the pages and imports it stands on.` };
   }
+  const decisionsById = new Map<string, EpcisResolutionRecord>();
   for (const resolution of snapshot.resolutions.values()) {
     const scopeKey = conflictScopeKeyOf(resolution.conflictId) as string;
+    const previous = snapshot.resolutions.get(resolutionKey(scopeKey, resolution.sequence - 1));
+    if (resolution.resolutionId !== epcisResolutionId(scopeKey, resolution.sequence)) return { code: 'snapshot-inconsistent', detail: 'The conflict decision ID differs from its scope and sequence.' };
+    if ((resolution.sequence > 1 && previous == null) || resolution.supersedes !== previous?.resolutionId) return { code: 'snapshot-inconsistent', detail: `The decision ${resolution.resolutionId} does not follow its recorded predecessor.` };
+    decisionsById.set(resolution.resolutionId, resolution);
     if (!Array.isArray(resolution.observations) || resolution.observations.length === 0) return { code: 'resolution-observations-omitted', detail: `the decision ${resolution.resolutionId} names no competing observation.` };
+    const bodies = new Set(resolution.observations.map(reference => reference.bodyDigest));
+    if (resolution.observations.some((reference, index) => reference.sequence !== index + 1) || resolution.bodyDigests.length !== bodies.size || resolution.bodyDigests.some(digest => !bodies.has(digest)) || (resolution.selectedBodyDigest != null && !bodies.has(resolution.selectedBodyDigest))) return { code: 'resolution-observations-omitted', detail: `The decision ${resolution.resolutionId} does not account for each competing observation and body.` };
     for (const reference of resolution.observations) {
       const held = snapshot.observations.get(observationKey(scopeKey, reference.sequence));
-      if (held == null || held.bodyDigest !== reference.bodyDigest || held.importId !== reference.importId) return { code: 'resolution-observations-omitted', detail: `the decision ${resolution.resolutionId} names observation ${reference.sequence} of ${JSON.stringify(resolution.identity)}, and the snapshot does not hold it. A decision is never restored without every observation it decided between.` };
+      if (held == null || held.bodyDigest !== reference.bodyDigest || held.importId !== reference.importId || held.pointer !== reference.pointer || held.sourceSha256 !== reference.sourceSha256) return { code: 'resolution-observations-omitted', detail: `the decision ${resolution.resolutionId} names observation ${reference.sequence} of ${JSON.stringify(resolution.identity)}, and the snapshot does not hold it. A decision is never restored without every observation it decided between.` };
+    }
+  }
+  for (const record of snapshot.imports.values()) {
+    for (const event of record.events) {
+      const conflict = event.conflict;
+      if (conflict?.state !== 'resolved') continue;
+      const decision = decisionsById.get(conflict.resolutionId ?? '');
+      if (decision == null || decision.conflictId !== conflict.conflictId || decision.sourceId !== record.sourceId || decision.identityKind !== event.identityKind || decision.identity !== event.identity || decision.decision !== conflict.resolution || decision.decidedAt !== conflict.resolvedAt) {
+        return { code: 'snapshot-inconsistent', detail: `The resolved event at ${event.pointer} of ${record.importId} does not match a retained decision for that event.` };
+      }
     }
   }
   return undefined;
@@ -558,7 +626,48 @@ async function breachesOf(snapshot: Snapshot): Promise<string[]> {
   // An observation is filed under its own source scope, and it was made by an import of that scope. The store's check finds the import by its identity alone.
   for (const [key, observation] of snapshot.observations) {
     const owner = snapshot.imports.get(importKeyOf(observation.importId) ?? '');
+    if (owner != null && owner.sha256 !== observation.sourceSha256) breaches.push(`observation ${key}: its source digest differs from its retained import`);
     if (owner != null && owner.sourceId !== observation.sourceId) breaches.push(`observation ${key}: it is filed under the source scope ${JSON.stringify(observation.sourceId)} and names an import of ${JSON.stringify(owner.sourceId)}`);
+  }
+  const pagesByPull = new Map<string, EpcisPullPageRecord[]>();
+  for (const page of snapshot.pages.values()) {
+    const pages = pagesByPull.get(page.pullId) ?? [];
+    pages.push(page);
+    pagesByPull.set(page.pullId, pages);
+  }
+  for (const pull of snapshot.pulls.values()) {
+    const issue = (detail: string): void => { breaches.push(`pull ${pull.pullId}: ${detail}`); };
+    const { pass, pending, query, source, recordTimeOverlapSeconds } = pull;
+    const digest = epcisPullDefinitionDigest({ sourceId: pull.sourceId, baseUrl: source.baseUrl, query, recordTimeOverlapSeconds });
+    if (source.sourceId !== pull.sourceId || pull.definitionDigest !== digest) issue('its recorded definition differs from its source and query');
+    const pages = (pagesByPull.get(pull.pullId) ?? []).sort((a, b) => a.sequence - b.sequence);
+    const current = pages.filter(page => page.pass === pass.number && page.attempt === pass.attempt);
+    if (pass.pagesAcknowledged !== current.length || current.some((page, index) => page.page !== index + 1) || pass.exhausted !== (current.at(-1)?.last ?? false)) issue('its pass checkpoint differs from the durable pages');
+    if (pull.runs !== pull.lastRun.run || pages.filter(page => page.run === pull.runs).length !== pull.lastRun.pagesAcknowledged) issue('its run checkpoint differs from the durable pages');
+
+    const maximumByPass = new Map<number, string>();
+    let watermark: { recordTime: string; pass: number } | undefined;
+    let priorWatermark: string | undefined;
+    const totals = { bytes: 0, events: noEvents() };
+    for (const page of pages) {
+      const receipt = snapshot.imports.get(importKeyOf(page.importId)!)!;
+      const latest = latestRecordTime(receipt, maximumByPass.get(page.pass));
+      if (latest != null) maximumByPass.set(page.pass, latest);
+      if (page.last && query.eventIds == null && latest != null) {
+        watermark = { recordTime: watermark != null && Date.parse(watermark.recordTime) > Date.parse(latest) ? watermark.recordTime : latest, pass: page.pass };
+        if (page.pass < pass.number) priorWatermark = watermark.recordTime;
+      }
+      totals.bytes += page.byteLength;
+      addEvents(totals.events, page.events);
+    }
+    if (!sameJson(totals, pull.totals) || pass.maxRecordTime !== maximumByPass.get(pass.number) || pull.watermark?.pass !== watermark?.pass || pull.watermark?.recordTime !== watermark?.recordTime) issue('its totals or record-time watermark differ from the durable pages');
+    let from = query.recordTime?.from;
+    if (pass.window.basis === 'watermark') {
+      if (priorWatermark == null || pass.window.overlapSeconds !== recordTimeOverlapSeconds) issue('its record-time window has no matching prior watermark');
+      else from = new Date(Math.max(Date.parse(priorWatermark) - recordTimeOverlapSeconds * 1000, from == null ? -Infinity : Date.parse(from))).toISOString();
+    }
+    if (pass.window.recordTimeFrom !== from || !sameJson(pass.parameters, epcisQueryParameters(query, from))) issue('its pass differs from its query bounds');
+    if (pending != null && (pending.sequence !== pull.pagesAcknowledged + 1 || pending.page !== pass.pagesAcknowledged + 1 || pending.pass !== pass.number || pending.attempt !== pass.attempt || !sameJson(withoutToken(pending.query).query, pass.parameters))) issue('the pending page does not follow its durable checkpoint');
   }
   try {
     const staged = createMemoryEpcisStorage();
@@ -935,6 +1044,8 @@ export function exportEpcisRecovery(input: ExportEpcisRecoveryInput): Promise<Ex
       for (const held of list) {
         const problem = recordProblem(kind, held.value);
         if (problem != null) return refuse('record-version-unknown', `The store holds a ${kind} record this module does not read: ${problem.detail}. It is not exported as if it were understood.`);
+        const invalid = structuralProblem(kind, held.value);
+        if (invalid) return refuse('store-inconsistent', invalid, { breaches: [`${kind} ${held.key}: ${invalid}`] });
         if (keyOf(kind, held.value) !== held.key) return refuse('store-inconsistent', `The store holds a ${kind} record that is not filed where its own content says.`, { breaches: [`${kind} ${held.key}: filed under a key that is not its own`] });
       }
     }
@@ -1266,6 +1377,8 @@ async function open(source: EpcisRecoverySource, options: VerifyEpcisRecoveryOpt
     const record = value as Json;
     const unread = recordProblem(kind, record);
     if (unread != null) return refuse(unread.code, `The record ${path} is not one this module reads as a ${kind} record: ${unread.detail}. It is not restored as if it were understood.`, { path });
+    const invalid = structuralProblem(kind, record);
+    if (invalid) return refuse('snapshot-inconsistent', invalid, { path, breaches: [invalid] });
     const key = keyOf(kind, record);
     if (key == null || entry.path !== pathOf(kind, key)) return refuse('record-misfiled', `The record ${path} is not filed where its own content says a ${kind} record of that identity sits.`, { path });
     if (kind === 'import') snapshot.imports.set(key, record as unknown as EpcisImportRecord);
@@ -1288,7 +1401,9 @@ async function open(source: EpcisRecoverySource, options: VerifyEpcisRecoveryOpt
   for (const scope of descriptor.scopes) {
     const of = <T extends { sourceId: string }>(records: Map<string, T>): T[] => [...records.values()].filter((record) => record.sourceId === scope.sourceId);
     const pulls = of(snapshot.pulls);
-    const accounted = of(snapshot.imports).length === scope.imports && of(snapshot.observations).length === scope.observations && of(snapshot.resolutions).length === scope.resolutions && pulls.length === scope.pulls.length
+    const imports = of(snapshot.imports);
+    const accounted = imports.length === scope.imports && new Set(imports.map(record => record.sha256)).size === scope.originals
+      && of(snapshot.observations).length === scope.observations && of(snapshot.resolutions).length === scope.resolutions && pulls.length === scope.pulls.length
       && scope.pulls.every((said) => pulls.some((record) => record.pullId === said.pullId && record.queryId === said.queryId && record.definitionDigest === said.definitionDigest && record.source?.baseUrl === said.baseUrl && record.status === said.status && record.pagesAcknowledged === said.pagesAcknowledged));
     if (!accounted) return refuse('snapshot-inconsistent', `The descriptor's account of the source scope ${JSON.stringify(scope.sourceId)} is not what the snapshot's records of that scope are.`, { breaches: [`scope ${JSON.stringify(scope.sourceId)}: the descriptor and the records disagree`] });
   }
@@ -1503,6 +1618,11 @@ export async function restoreEpcisRecovery(input: RestoreEpcisRecoveryInput): Pr
     if (collisions.length > 0) return refuse('reconciliation-required', `The destination already holds ${collisions.length} ${collisions.length === 1 ? 'record that differs' : 'records that differ'} from the snapshot's under the same identity. Nothing was written and nothing is overwritten: restore into an empty store, or reconcile each one by hand.`, { collisions });
 
     const finished = await storage.get(K.restore, snapshotId);
+    if (finished != null) {
+      const receipt = finished.value;
+      const invalid = structuralProblem('restore', receipt);
+      if (invalid || receipt.snapshotId !== snapshotId || receipt.restoreId !== epcisRestoreId(snapshotId) || !sameJson(receipt.counts, opened.counts) || !sameJson(receipt.sourceIds, descriptor.scopes.map(scope => scope.sourceId))) return refuse('destination-inconsistent', invalid ?? 'The previous restore receipt differs from the snapshot it names.');
+    }
     if (own == null && finished != null && absent.size === 0) {
       for (const [sha256, bytes] of snapshot.originals) {
         const held = await storage.getBytes(sha256);

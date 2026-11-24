@@ -49,7 +49,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import { PrivateKey } from '@bsv/sdk'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { canonicalJson, evidencePackageSigningKey, signEvidenceManifest, type EvidencePackageManifest } from '@bsv/dpp-protocol'
-import { BUNDLED_BINDINGS, profileBindingDigest } from '@bsv/dpp-profiles'
+import { CURRENT_SECTOR_BINDINGS, profileBindingDigest } from '@bsv/dpp-profiles'
 import { EPCIS_GS1_ARTEFACTS } from '@bsv/dpp-credentials'
 import { EPCIS_RECORD_KINDS, checkEpcisExchangeInvariants, type EpcisExchangeStorage } from '@bsv/dpp-credentials/epcis-exchange'
 import { loadConfig } from '../src/config.js'
@@ -326,14 +326,14 @@ describe('the exit exercise', () => {
       await a.platform.store.saveBrand({ id: 'dev-brand', name: 'Development brand', identityKey: party.identityKey, did: party.did, createdAt: '2026-03-01T00:00:00.000Z' })
 
       for (const [profile, serial] of [
-        ['eu-battery@1', 'EXIT-BAT-0001'],
-        ['eu-textile@1', 'EXIT-TEX-0001'],
+        ['eu-battery@2', 'EXIT-BAT-0001'],
+        ['eu-textile@2', 'EXIT-TEX-0001'],
       ] as const) {
         const example = (await a.get(`/api/profiles/${ref(profile)}`)).body.examples[0] as { itemReference: string; serial: string; passportId: string; product: Json }
         const swap = (value: string): string => value.replaceAll(example.serial, serial)
         const product = JSON.parse(swap(JSON.stringify(example.product))) as Json
         // A restricted property carries a value that is nowhere else, so a search can tell where it went.
-        if (profile === 'eu-battery@1') product['eubat:manufacturerIdentifier'] = `${RESTRICTED}-BAT`
+        if (profile === 'eu-battery@2') product['eubat:manufacturerIdentifier'] = `${RESTRICTED}-BAT`
         else (product['oec:hasOperatorInformation'] as Json)['gs1:organizationName'] = `${RESTRICTED}-TEX`
         const passportId = swap(example.passportId)
         const issued = await a.post('/api/brands/dev-brand/passports', { profile, itemReference: example.itemReference, serial, product })
@@ -452,10 +452,10 @@ describe('the exit exercise', () => {
     expect(manifest.disclosure).toEqual({ scope: 'all-tiers', recoveryBackup: true })
     expect(manifest.exporter.id).toBe(PUBLISHER_KEY)
     expect(manifest.passportId).toMatch(/^urn:bsv:dpp:evidence-export:sha256:[0-9a-f]{64}$/)
-    expect(manifest.profiles).toEqual(['eu-battery@1', 'eu-textile@1'])
-    expect(descriptor).toMatchObject({ access: 'authorised-recovery', selection: 'all-passports', profiles: { root: 'profiles', carried: ['eu-battery@1', 'eu-textile@1'], named: [] }, epcis: { root: 'epcis', access: 'authorised-recovery', scopes: ['supplier-a', 'supplier-b', 'upload'], cursors: 'excluded' }, records: { brands: 1, offers: 0, claims: 0 } })
+    expect(manifest.profiles).toEqual(['eu-battery@2', 'eu-textile@2'])
+    expect(descriptor).toMatchObject({ access: 'authorised-recovery', selection: 'all-passports', profiles: { root: 'profiles', carried: ['eu-battery@2', 'eu-textile@2'], named: [] }, epcis: { root: 'epcis', access: 'authorised-recovery', scopes: ['supplier-a', 'supplier-b', 'upload'], cursors: 'excluded' }, records: { brands: 1, offers: 0, claims: 0 } })
     expect(descriptor.passports.map((passport) => passport.index.form)).toEqual(['package', 'package'])
-    expect(descriptor.passports.map((passport) => passport.bindingDigest).sort()).toEqual(BUNDLED_BINDINGS.map((entry) => entry.bindingDigest).sort())
+    expect(descriptor.passports.map((passport) => passport.bindingDigest).sort()).toEqual(CURRENT_SECTOR_BINDINGS.map((entry) => entry.bindingDigest).sort())
     // The source is described so that it can be configured again, and its credential is only said to exist.
     expect(descriptor.epcis.sources).toEqual([{ sourceId: 'supplier-a', baseUrl: source.baseUrl, permittedOrigins: [source.origin], localTest: true, repeatListParameters: false, credentialConfigured: true, credentialScheme: 'bearer' }])
     // GS1's files are named by address and digest in the manifest, and are in no file of either package.
@@ -472,7 +472,7 @@ describe('the exit exercise', () => {
     const publicPaths = Object.keys(digestsOf(PUBLIC))
     expect(publicPaths.some((path) => path.endsWith('/journal.json') || path.startsWith('application/brands/') || path.startsWith('epcis/records/import/') || path.startsWith('epcis/records/pull'))).toBe(false)
     expect(publicPaths.filter((path) => path.startsWith('epcis/originals/'))).toHaveLength(1)
-    expect(publicPaths.some((path) => path.startsWith('profiles/eu-battery@1/'))).toBe(true)
+    expect(publicPaths.some((path) => path.startsWith('profiles/eu-battery@2/'))).toBe(true)
 
     // Every byte of the public package is searched for what a public package may never hold.
     const forbiddenInPublic = [
@@ -556,7 +556,7 @@ describe('the exit exercise', () => {
     // 1. A substituted, more permissive profile under a correct exporter signature: the rules are dropped and a restricted property is made public.
     let substituteDigest = ''
     const substituted = await repackaged(AUTHORISED, 'substituted', (folder) => {
-      const at = join(folder, 'profiles/eu-battery@1/binding.json')
+      const at = join(folder, 'profiles/eu-battery@2/binding.json')
       const binding = JSON.parse(readFileSync(at, 'utf8')) as { validation: { steps: string[] }; access: { public: string[] } }
       binding.validation.steps = binding.validation.steps.filter((step) => step !== 'shacl')
       binding.access.public.push('eubat:manufacturerIdentifier')
@@ -566,7 +566,7 @@ describe('the exit exercise', () => {
       // The bundle's own descriptor is made to agree, as whoever built such a package would make it.
       const descriptorAt = join(folder, 'profiles/profile-bundle.json')
       const bundle = JSON.parse(readFileSync(descriptorAt, 'utf8')) as { profiles: Array<{ profile: string; bindingDigest: string }> }
-      bundle.profiles.find((entry) => entry.profile === 'eu-battery@1')!.bindingDigest = substituteDigest
+      bundle.profiles.find((entry) => entry.profile === 'eu-battery@2')!.bindingDigest = substituteDigest
       writeFileSync(descriptorAt, JSON.stringify(bundle))
     })
     await refused('substituted', substituted, 'profile-refused', /bundle-binding-substituted/)
@@ -662,7 +662,7 @@ describe('the exit exercise', () => {
       exporter: PUBLISHER_KEY,
       passports: { written: kept.passports.map((passport) => passport.passportId).sort(), unchanged: [] },
       records: { brands: { written: 1, unchanged: 0 } },
-      profiles: { resolver: 'bundle', folder: join(scratch, 'b-profile-bundle'), filesUnchanged: 0, registered: BUNDLED_BINDINGS.map((entry) => ({ profile: entry.profile, bindingDigest: entry.bindingDigest })), notRegistered: [] },
+      profiles: { resolver: 'bundle', folder: join(scratch, 'b-profile-bundle'), filesUnchanged: 0, registered: CURRENT_SECTOR_BINDINGS.map((entry) => ({ profile: entry.profile, bindingDigest: entry.bindingDigest })), notRegistered: [] },
       epcis: { outcome: 'restored', sourceIds: ['supplier-a', 'supplier-b', 'upload'], written: { originals: 6, imports: 6, resolutions: 1, pulls: 1, pullPages: 2 }, relocations: 6 },
       index: { rebuilt: true, announced: 2, admitted: 2, duplicate: 0, notAnnounced: [] },
       readings: { compared: 2, same: 2, different: [], notCompared: [] },
@@ -724,7 +724,7 @@ describe('the exit exercise', () => {
       // The same profile validation outcome, finding for finding.
       expect(reading.payloadChecks).toEqual(passport.reading.payloadChecks)
       expect(reading.product).toEqual(passport.reading.product)
-      expect(reading.product!.bindingDigest).toBe(BUNDLED_BINDINGS.find((entry) => entry.profile === passport.profile)!.bindingDigest)
+      expect(reading.product!.bindingDigest).toBe(CURRENT_SECTOR_BINDINGS.find((entry) => entry.profile === passport.profile)!.bindingDigest)
 
       // The holder's view: the stored ciphertext is the one the state commits to, and only then is it opened and checked whole.
       const authorised = (await b.post(`/api/passports/${ref(passport.passportId)}/authorised-view`, {})).body as AuthorisedReading
@@ -801,7 +801,7 @@ describe('the exit exercise', () => {
     expect(retried.body).toMatchObject({ outcome: 'retained', replayed: true, record: { importId: kept.upload.importId, receivedAt: kept.upload.receivedAt } })
     expect((await b!.get('/api/epcis/imports?limit=200')).body.imports).toHaveLength(kept.imports.length)
     // The same request identifier with other content still conflicts, and the restored import stands.
-    const changed = await b!.upload(`/api/epcis/imports?requestId=${kept.upload.requestId}`, utf8(JSON.stringify(epcisDocument([objectEvent(13, [item('EXIT-LINE-13')])]))))
+    const changed = await b!.upload(`/api/epcis/imports?requestId=${kept.upload.requestId}&filename=line.jsonld`, utf8(JSON.stringify(epcisDocument([objectEvent(13, [item('EXIT-LINE-13')])]))))
     expect(changed.status).toBe(409)
     expect(changed.body).toMatchObject({ error: 'request-conflict', existingImportId: kept.upload.importId, kept: false })
     expect((await b!.get('/api/epcis/imports?limit=200')).body.imports).toHaveLength(kept.imports.length)
@@ -855,6 +855,38 @@ describe('the exit exercise', () => {
     numbers.pull = { pagesAcknowledgedBeforeExport: 2, requestsRefusedWithoutCredential: refusedRequests, cursor: 'excluded from the package, so the pass replayed from its retained bounds', pageOffsetsAskedForInB: offsets, eventsNewInB: resumed.body.events.new, pageRecordsAfter: state.pages.length, importsThosePagesStandOn: pageImports.length, importsAddedInB: 2 }
   }, 120_000)
 
+  it('keeps both scopes and the resolved conflict after B restarts and replays its pull', async () => {
+    const sharedEvent = (await recordsOf(b!.exchange.storage, EPCIS_RECORD_KINDS.observation))
+      .filter((entry) => entry.value.identity === eventId(1))
+    expect(sharedEvent).toEqual(kept.observations.filter((entry) => entry.value.identity === eventId(1)))
+    expect(sharedEvent.map((entry) => entry.value.sourceId).sort()).toEqual(['supplier-a', 'supplier-b'])
+
+    const supplierImport = kept.imports.find((entry) => entry.record.sourceId === 'supplier-b')!
+    const path = `/api/epcis/imports?sourceId=supplier-b&requestId=${ref(supplierImport.record.requestId as string)}`
+    const retried = await b!.upload(path, supplierImport.original)
+    expect(retried.status).toBe(200)
+    expect(retried.body).toMatchObject({ replayed: true, record: {
+      sourceId: 'supplier-b', importId: supplierImport.importId, receivedAt: supplierImport.record.receivedAt,
+      requestDigest: supplierImport.record.requestDigest,
+    } })
+    const otherScope = sharedEvent.find((entry) => entry.value.sourceId === 'supplier-a')!
+    const differentBytes = kept.imports.find((entry) => entry.importId === otherScope.value.importId)!.original
+    const conflict = await b!.upload(path, differentBytes)
+    expect(conflict.status).toBe(409)
+    expect(conflict.body).toMatchObject({ error: 'request-conflict', existingImportId: supplierImport.importId, kept: false })
+    expect((await b!.get('/api/epcis/imports?limit=200')).body.imports).toHaveLength(kept.imports.length + 2)
+
+    expect((await b!.get(`/api/epcis/conflicts/${ref(kept.conflictId)}`)).body).toEqual(kept.conflict)
+    const decision = kept.resolutions[0]!.value.observations as Array<{ importId: string }>
+    expect(new Set(decision.map((entry) => entry.importId)).size).toBe(2)
+    for (const { importId } of decision) {
+      const original = await b!.get(`/api/epcis/imports/${ref(importId)}/original`)
+      expect(original.status).toBe(200)
+      expect(original.bytes).toEqual(kept.imports.find((entry) => entry.importId === importId)!.original)
+    }
+    numbers.afterReplay = { scopedRetry: retried.status, changedBytes: conflict.status, scopesHoldingSharedId: sharedEvent.length, conflictOriginalsRead: decision.length }
+  })
+
   it('continues an authorised UPDATE in B, which verifies, and made no network attempt beyond its own services', async () => {
     const battery = kept.passports[0]!
     // An explicit passport operation, asked for by a member of the brand that holds the passport. It needs the keys: the brand's, derived from the secret B was
@@ -897,7 +929,7 @@ describe('the exit exercise', () => {
       sourceState: process.env.DPP_EXIT_EXERCISE_SOURCE_STATE ?? 'unknown',
       failures: 0,
       exercised: [
-        'Deployment A built two passports under eu-battery@1 and eu-textile@1, each with a public and a restricted part, and an EPCIS exchange with three source scopes, two of which share an event identifier, one conflict decided with both observations kept, and a pull interrupted after two of four pages.',
+        'Deployment A built two passports under eu-battery@2 and eu-textile@2, each with a public and a restricted part, and an EPCIS exchange with three source scopes, two of which share an event identifier, one conflict decided with both observations kept, and a pull interrupted after two of four pages.',
         'A was exported in the authorised form with npm run export, run as its own process, and in the public form with the same command called in the test process, then switched off: its API, its database and its index were stopped.',
         'Eleven packages that must be refused were refused by name with nothing written: a substituted and more permissive profile under a correct exporter signature, with and without its digest trusted, another exporter key, a pull checkpoint without its import, a conflict decision without its observation, an altered original under the genuine and under a re-signed manifest, a missing journal under the genuine and under a re-signed manifest, the public package, and a file the manifest does not list.',
         'The authorised package was restored with the restore command into deployment B, which keeps the exchange in the file-system adapter and resolves profiles from the installed bundle. A second restore, with npm run restore run as its own process, wrote nothing.',
@@ -905,9 +937,10 @@ describe('the exit exercise', () => {
         'In B every original was returned byte for byte, every import record, observation, decision and pull page equalled A\'s, and the associations rebuilt at B equalled the ones A held.',
         'A request A had acknowledged answered the same import in B with no new receipt, and the same request identifier with other content conflicted.',
         'The pull was refused by the source until its credential was configured in B, then replayed from its retained bounds without a cursor and finished with no event held twice.',
+        'After B restarted and replayed its pull, the shared identifier still had one observation in each supplier scope. A scoped retry returned its original receipt, changed bytes under that request were refused, and both originals named by the conflict decision remained readable.',
         'An UPDATE of the battery passport was written in B and the two-state lineage verified.',
       ],
-      numbers: { export: numbers.export, restore: numbers.restore, refusals: numbers.refusals, passports: numbers.passports, epcis: numbers.epcis, pull: numbers.pull, update: numbers.update, network: numbers.network, disabled: numbers.disabled },
+      numbers: { export: numbers.export, restore: numbers.restore, refusals: numbers.refusals, passports: numbers.passports, epcis: numbers.epcis, pull: numbers.pull, afterReplay: numbers.afterReplay, update: numbers.update, network: numbers.network, disabled: numbers.disabled },
       simulated: [
         'Each index was the reference index\'s code in the test process, over in-memory storage, with its header checks off. It proves no inclusion: every reading in this exercise was made against scripts only, and nothing here is a statement that a state is in a block.',
         'The wallet was the test wallet, with fixed keys and made-up funding. Nothing was sent to a network: each state\'s network answer is dry-run.',
@@ -970,7 +1003,7 @@ describe('the exit exercise', () => {
         const authorised = (await c.post(`/api/passports/${ref(passport.passportId)}/authorised-view`, {})).body as AuthorisedReading
         expect(authorised.ownerTier.status).toBe('pass')
         expect(authorised.authorisedView.status).toBe('not-checked')
-        expect(authorised.authorisedView.summary).toMatch(/sealed to another key than brand:dev-brand's/)
+        expect(authorised.authorisedView.summary).toContain('The wallet for brand:dev-brand could not open the committed restricted part')
         expect(authorised.product).toBeUndefined()
         expect(JSON.stringify(authorised)).not.toContain(RESTRICTED)
       }

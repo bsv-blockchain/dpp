@@ -35,8 +35,8 @@ The canonical industry data profiles of the DPP standard, as `spec/profiles.md` 
 | `generated/mapping/<profile>.md` | The row-level field mapping inventory of each current profile, generated from the manifest; `needs review` where no generator can decide. |
 | `generated/index.json` | Every file with its digest. |
 | `frozen.json` | The digests every published manifest and generated file is held to. |
-| `bindings/<profile>/` | The bindings the package ships, `eu-battery@1` and `eu-textile@1`: `binding.json`, the contexts, shapes and background file it pins by length and SHA-256, and a `NOTICE.md` that names the source and licence of each file. |
-| `src/bundled-bindings.ts` | `BUNDLED_BINDINGS` and `BUNDLED_BINDING_DIGESTS`, the trusted digest list for those bindings, and `registerBundledBindings`, which reads them from the package folder into a registry. Nothing is read at import. |
+| `bindings/<sector>@1/` | The original `binding.json`, the current `binding.v2.json`, their shared digest-pinned contexts, shapes, background and upstream `NOTICE.md`. |
+| `src/bundled-bindings.ts` | `BUNDLED_BINDINGS` lists both historical and current editions. `BUNDLED_BINDING_DIGESTS` pins all four for a reader. `CURRENT_SECTOR_BINDINGS` selects `eu-battery@2` and `eu-textile@2` for a new passport. |
 | `src/retired-profiles.ts` | `RETIRED_PROFILE_IDS`, the one list of retired profiles, with `RETIRED_PROFILE_REPLACEMENTS`, `isRetiredProfile` and `ProfileRetiredError`. Every refusal to write under a retired profile and every `unknown` answer about one starts here ([retired profiles](#retired-profiles)). |
 | `src/profile-binding.ts`, `src/profile-registry.ts` | `readProfileBinding` and its hand-written structural check, held to the same verdict as the schema, and `createProfileRegistry`: a binding registers only when its digest is trusted and every artefact it names matches its recorded length and SHA-256. The manifest profiles resolve through the same registry. |
 | `src/binding-validator.ts`, `src/product-identity.ts`, `src/strict-json.ts` | `bindingPayloadValidator`: the envelope, the binding digest, the binding's steps and the product-to-passport identity rules. A step that could not run is `unknown`, never `pass`. |
@@ -57,7 +57,7 @@ Two manifest profiles are supported: `general@2`, current, and `general@1`, supe
 
 ## Retired profiles
 
-The sector profiles first published as manifests are retired (`spec/profiles.md` §4): `battery@2`, `battery@3`, `battery@4`, `textile@1`, `textile@2`, `textile@3` and `textile@4`. `RETIRED_PROFILE_IDS` is the one list, and `RETIRED_PROFILE_REPLACEMENTS` names what replaces each: the bundled bindings `eu-battery@1` and `eu-textile@1`.
+The sector profiles first published as manifests are retired (`spec/profiles.md` §4): `battery@2`, `battery@3`, `battery@4`, `textile@1`, `textile@2`, `textile@3` and `textile@4`. `RETIRED_PROFILE_IDS` is the one list, and `RETIRED_PROFILE_REPLACEMENTS` names each original replacement at retirement, the bundled bindings `eu-battery@1` and `eu-textile@1`. New sector issuance uses `CURRENT_SECTOR_BINDINGS`.
 
 Retiring a profile changes what the package does with it and nothing it says. The manifests, generated schemas, consumer documents and mapping inventories stay in the package byte for byte, `frozen.json` still holds every one to its digest, and the identifiers are never given another definition.
 

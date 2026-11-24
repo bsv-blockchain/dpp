@@ -7,6 +7,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { verifyEpcisLifecycleClaim } from '@bsv/dpp-credentials/epcis-lifecycle'
 import { loadConfig } from '../src/config.js'
+import { managedParties } from '../src/parties.js'
 import { mintPassportId } from '../src/identifiers.js'
 import { eventSchemaCheck } from '../src/lifecycle.js'
 import { openPlatform, type Platform } from '../src/platform.js'
@@ -24,8 +25,11 @@ let passportId: string
 let payload: Record<string, unknown>
 
 beforeAll(async () => {
-  platform = await openPlatform({ config, mode: 'test', log: () => {} })
   passportId = mintPassportId({ host: config.passportHost, prefix: config.gs1Prefix }, '100000001', `TEST-${Date.now().toString(36).toUpperCase()}`)
+  const recycler = managedParties(config).member('recycler-line-3')
+  platform = await openPlatform({ config, mode: 'test', log: () => {}, lifecyclePolicy: { authorityResolver: (q) => ({
+    status: q.issuer === recycler.did && q.issuerKey === recycler.identityKey && q.passportId === passportId && q.purpose === 'claim' && q.role === 'observer' && q.eventTime === '2026-03-02T08:00:00.000Z' ? 'supported' : 'unsupported',
+  }) } })
   payload = samplePayload(profile, true)
 })
 

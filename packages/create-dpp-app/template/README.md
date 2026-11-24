@@ -84,9 +84,9 @@ Serve the application over HTTPS at `PASSPORT_HOST`: the identifier is an addres
 
 ## Product documents under a binding
 
-Besides the manifest profile `general@2`, the application writes and reads passports under profiles held by a binding: a data model defined outside the DPP packages, as JSON-LD contexts and SHACL shapes or as a JSON Schema, that one immutable `binding.json` pins file by file. The profiles package ships two, `eu-battery@1` and `eu-textile@1`, for battery and textile data of one serialised item. Each name states which data model a product document uses. Neither claims that a passport or a product complies with any law.
+Besides the manifest profile `general@2`, the application writes and reads passports under profiles held by a binding: a data model defined outside the DPP packages, as JSON-LD contexts and SHACL shapes or as a JSON Schema, that one immutable `binding.json` pins file by file. The profiles package ships two editions each for the battery and textile data of one serialised item. New sector passports use `eu-battery@2` and `eu-textile@2`. Existing version 1 passports keep the binding named in their signed state. Each name states which data model a product document uses. Neither claims that a passport or a product complies with any law.
 
-The two bundled profiles replace the earlier manifest profiles `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4`, which are retired. The application offers none of them and refuses every write under one with `profile-retired`. A passport already in the journal under one is still shown, with its profile reported as retired and not checked, and it gets no further state, hand-on or claim. Nothing converts it: issue a new passport under the replacement.
+The original sector bindings replaced the earlier manifest profiles `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4`, which are retired. The application offers none of them and refuses every write under one with `profile-retired`. A passport already in the journal under one is still shown, with its profile reported as retired and not checked, and it gets no further state, hand-on or claim. Nothing converts it: issue a new passport under the replacement.
 
 Under such a profile a passport carries one product document, and the binding lists which of its top-level properties are public. The rest are restricted.
 
@@ -97,7 +97,7 @@ Under such a profile a passport carries one product document, and the binding li
 
 The split is by property, not by value. A restricted value that you repeat inside a public property, such as a name in a description or a link to a private file, is published with that property. The form labels every property Public or Restricted before you submit and asks you to confirm the public list.
 
-**Writing.** Choose `eu-battery@1` or `eu-textile@1` when you issue a passport. The form asks for the item reference and serial once, and writes the document's identifier, GTIN and serial from them, so they cannot disagree with the passport identifier. A field left empty is absent from the document: the form makes up no identifier, classification, date, unit or precision, and a number is written with the digits you typed. A measurement is a value with its unit. **Load example** fills the form with invented data under the demonstration prefix, and **Load a document from a file** takes a product document of your own in the profile's data model. A property the form has no field for is kept as JSON under **Other properties** and written unchanged.
+**Writing.** Choose `eu-battery@2` or `eu-textile@2` when you issue a passport. The form asks for the item reference and serial once, and writes the document's identifier, GTIN and serial from them, so they cannot disagree with the passport identifier. A field left empty is absent from the document: the form makes up no identifier, classification, date, unit or precision, and a number is written with the digits you typed. A measurement is a value with its unit. **Load example** fills the form with invented data under the demonstration prefix, and **Load a document from a file** takes a product document of your own in the profile's data model. A property the form has no field for is kept as JSON under **Other properties** and written unchanged.
 
 The API validates the whole document against the passport identifier it is about to sign, splits it, and signs exactly the public payload the profiles package returns. A document that fails, that could not be checked, or whose public part is over 65,535 bytes is refused before anything is signed, and the form shows each finding at the field it concerns.
 
@@ -109,7 +109,7 @@ The API validates the whole document against the passport identifier it is about
 | Authorised view | The holder | The public payload rejoined with the restricted part satisfies the profile |
 | Owner-tier check | The holder | The stored ciphertext hashes to the state's `payload_owner_hash`. This is the protocol's check, and the only statement about the on-chain commitment |
 
-A check that could not run is shown as **Not checked**, never as passed. After a hand-on the restricted part stays sealed to the holder who wrote it, so the new holder's authorised view is not checked until they write an update.
+A check that could not run is shown as **Not checked**, never as passed. On a managed transfer the giver checks the restricted bytes against the signed predecessor, encrypts their contents to the recipient and commits the new ciphertext. The recipient can open it immediately. An older transfer that kept the original ciphertext still needs the key used for that ciphertext.
 
 **The validation engine.** The engine that checks a product document is a setting, and the application is the same either way (`apps/api/src/validation-engine.ts`).
 
@@ -126,7 +126,11 @@ Whichever engine is chosen, one rule holds: an engine that cannot be used is nev
 
 In both modes every context and rule file is read from the binding, and nothing is fetched.
 
-**Where the profiles are read from.** By default the two sector bindings are read from the folder the profiles package ships. With `PROFILE_BUNDLE_DIR` set they are read from a profile bundle in that folder, which is where a [restore](#export-and-restore) installs the profiles a package carries, and the package's own folder is not read. Trust does not change with the source: a sector profile is accepted only under the digest your installed profiles package publishes for it, and any other binding only when its digest is in `TRUSTED_BINDING_DIGESTS`.
+**Where the profiles are read from.** By default all four sector bindings are read from the folder the profiles package ships. With `PROFILE_BUNDLE_DIR` set they are read from a profile bundle in that folder, which is where a [restore](#export-and-restore) installs the profiles a package carries, and the package's own folder is not read. Trust does not change with the source: a sector profile is accepted only under the digest your installed profiles package publishes for it, and any other binding only when its digest is in `TRUSTED_BINDING_DIGESTS`.
+
+**Sector editions.** The issue form offers `eu-battery@2` and `eu-textile@2`. Each checks the signed subject's product type, including subclasses declared in its pinned ontology. Asking the API to issue explicitly under `eu-battery@1` or `eu-textile@1` returns HTTP 409 with `profile-superseded` and the current profile in `replacedBy`. A holder can still read, update and hand on an existing version 1 passport under its original binding.
+
+To exercise the current editions locally, run `npm run dev` with `LIVE_PUBLISHING=false`, select the version 2 profile by name in the issue form and load its example. The public reading shows its public properties. The holder's authorised reading also opens the sealed restricted properties. An application that reads bindings from `PROFILE_BUNDLE_DIR` needs the current edition there to issue under it, and the historical edition there to read and maintain an existing version 1 passport.
 
 **A profile of your own.** Put its `binding.json` and the files it names in a folder ([how to write a binding](https://github.com/bsv-blockchain/dpp/blob/main/docs/packages/dpp-profiles.md#write-a-binding)), then name the folder and trust its binding in `.env`:
 
@@ -148,11 +152,34 @@ A lifecycle claim is a signed statement of something that happened to a product,
 
 The bindings come from the event's own identifiers, matched to this platform's passports under the identity rules of `@bsv/dpp-profiles`: an item identifier binds that item's passport, written as a GS1 Digital Link or an EPC URN, and a quantity element's class binds every passport of that class at class level only, which never says an item took part. Nothing is made from a passport operation, a metadata edit or a sale: an event that names none of this platform's passports binds nothing and is refused. The pinned EPCIS 2.0.1 schema is applied before anything is signed, from the GS1 files the EPCIS exchange obtained.
 
-Signing is the wallet step: the member's managed identity signs the claim's RFC 8785 bytes. Sending it to `REGISTRY_URL` is a separate step the member ticks: the registry verifies it, keeps the exact bytes and anchors them once for each bound passport, all in one transaction on the index's `tm_attestation`. The reference registry does not accept this format yet, so until it does the answer is recorded as a refusal and nothing is anchored.
+**Configure signing authority.** The operator records a grant after checking the member's authority for a role and passport. The API requires a matching issuer DID, compressed identity key, passport identifier, role, purpose and event time for every passport the event binds. Its wallet signs only after those checks pass. Keep the grant file in operator-controlled configuration outside the served web directory. Set `LIFECYCLE_AUTHORITY_GRANTS_FILE` to its absolute path and restart the API with that configuration.
 
-**Reading.** A passport's page, public or not, lists the claims that concern it: those whose anchors name it as their subject, and those this application holds that bind it. Each is verified, and only a verified binding says whether this passport took part, its item or only its class. An anchor that names a passport the claim does not bind is listed as found and not established. Every finding is shown on its own line: event structure, event semantics, product binding, signature, authority, possession, ownership, anchor, inclusion and correction. What was not checked reads unknown. Authority reads unavailable, because nothing here holds evidence of who holds which role; a valid signature and an account on this application are not that evidence. An anchor proves an anchoring service's commitment to the bytes, not that the event happened, who owns the product or that anything complies with a rule.
+To prepare one entry from the generated project's root, use the same managed identity configuration as the running API. Set `MEMBER_ID` to the verified member's application user ID and `PASSPORT_ID` to the exact passport identifier. The member's own signed-in `GET /api/me` response identifies their `userId`. This example prints the complete JSON document for one `observer` grant on the sample dates. Review its contents and dates before saving it to the configured file.
 
-**Corrections.** **Declare in error** signs a new claim that carries the same event with an EPCIS error declaration. The original claim is never changed, and it reads as declared in error when its own issuer made the declaration.
+```sh
+node --import tsx --input-type=module <<'JS'
+import './apps/api/src/env.ts'
+import { loadConfig } from './apps/api/src/config.ts'
+import { managedParties } from './apps/api/src/parties.ts'
+
+const { MEMBER_ID, PASSPORT_ID } = process.env
+if (!MEMBER_ID || !PASSPORT_ID) throw new Error('Set MEMBER_ID and PASSPORT_ID.')
+const issuer = managedParties(loadConfig()).member(MEMBER_ID)
+console.log(JSON.stringify({ grants: [{
+  issuer: issuer.did, issuerKey: issuer.identityKey, passportId: PASSPORT_ID,
+  role: 'observer', purpose: 'claim',
+  validFrom: '2026-01-01T00:00:00Z', validUntil: '2027-01-01T00:00:00Z',
+}] }, null, 2))
+JS
+```
+
+The interval includes `validFrom` and ends immediately before `validUntil`. It applies to the EPCIS event's `eventTime`. Supported roles are `observer`, `owner`, `custodian` and `authorised-reporter`. Imported events are reported in an allowed non-observer role. An issuer declaring its own event in error still needs its ordinary role grant. To correct another issuer's original, it also needs a matching grant with purpose `error-declaration`. An unreadable or malformed configured file stops the API at startup. Leaving the setting unset allows the API to start, and signing returns `authority-unavailable`. A configured source with no matching grant returns `authority-unconfirmed`. A two-product event requires a grant for each bound passport. A request that supplies only part of that scope returns `authority-scope-incomplete`. The caller cannot add a grant through the claim request.
+
+The member's managed wallet signs the claim's RFC 8785 bytes. Sending it to `REGISTRY_URL` is a separate step the member ticks: the registry verifies it, keeps the exact bytes and anchors them once for each bound passport, all in one transaction on the index's `tm_attestation`. Check the configured registry’s advertised representation before requesting submission. Its intake response records whether it accepted the claim.
+
+**Reading.** A passport's page, public or not, lists the claims that concern it: those whose anchors name it as their subject, and those this application holds that bind it. Each is verified, and only a verified binding says whether this passport took part, its item or only its class. An anchor that names a passport the claim does not bind is listed as found and not established. Every finding is shown on its own line: event structure, event semantics, product binding, signature, authority, possession, ownership, anchor, inclusion and correction. What was not checked reads unknown. The authority result reports what the configured evidence establishes for the issuer, role and event time within the original signed scope. A historical or external claim can bind two products and declare a role for only one. Each product page lists that scope and states whether it includes the current passport. Signature, possession and ownership remain distinct findings. An anchor proves an anchoring service's commitment to the bytes, not that the event happened, who owns the product or that anything complies with a rule.
+
+**Corrections.** **Declare in error** signs a new claim that carries the same event with an EPCIS error declaration. The original signed bytes are retained. The reader reports a verified declaration by the original issuer.
 
 **Historical native claims.** Native claims with one of four event types, `dpp-lifecycle-v1`, are no longer issued here. Those this application issued before are kept exactly as they were signed, still verify under their own rules, and are shown apart, labelled as historical native claims. Their category is not read as an EPCIS event. Other producers of native claims, including any deployed application built from an earlier version of this starter, still issue that format until they change, so a reader keeps verifying it.
 
@@ -329,8 +356,8 @@ One container serves the API and the web app. Run one instance with `WORKER=with
 
 Things this starter leaves to you, each a known path:
 
-- **A registry of your own.** Claims are sent to `REGISTRY_URL`, which anchors each one once per bound passport. The hosted reference does not accept EPCIS lifecycle claims yet. Running your own is the registry role of the standard.
-- **Authority evidence.** Every claim's authority reads unavailable here. To support a role, give the reader an authority resolver backed by evidence you hold, such as a record of who held a passport when.
+- **A registry of your own.** Claims are sent to `REGISTRY_URL`, which anchors each one once per bound passport. Check the configured registry’s advertised EPCIS lifecycle representation and the intake response before recording acceptance. Running your own is the registry role of the standard.
+- **Authority evidence.** Maintain the operator grants described under [Lifecycle claims](#lifecycle-claims). A deployment with its own source of evidence can supply a resolver for the same issuer, passport, role, purpose and event-time questions.
 - **More links at the identifier host.** The resolver lists two links: the passport page of an item, and a plain product page for its GTIN. Your own product page as the GTIN's default, a link at lot level, or an evidence package once you serve one at a stable address, are records to add where `apps/api/src/resolver.ts` makes them, and the checks of `@bsv/dpp-profiles` it applies refuse a set that breaks a rule. It answers a linkset request with JSON whatever the `Accept`, with no page for a person, and it answers only for identifiers under its own `PASSPORT_HOST`.
 - **Server-rendered passport pages.** The public page renders in the browser. If crawlers or no-JavaScript readers matter, serve a plain HTML view of it from the API at the page's own path, not at the identifier's.
 - **Self-custody.** Let a brand or a holder sign from their own BRC-100 wallet: implement a `Party` backed by a wallet connection in the browser, and let a transfer go to a key the holder's wallet derived.

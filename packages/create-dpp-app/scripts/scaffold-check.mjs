@@ -3,15 +3,17 @@
 // runtime candidates; publication checks require the exact versions on npm.
 import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { constants, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { parseEnv } from 'node:util'
 import { PrivateKey } from '@bsv/sdk'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { assertProductionRecordVersions } from '../template/apps/api/src/production-records.mjs'
 import { sourceState } from '../../../scripts/lib/images.mjs'
+import { integrityOf, sha256, verifyCandidates, verifyRecordAgainstSet } from '../../../scripts/lib/candidates.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const repository = resolve(root, '../..')
@@ -20,6 +22,8 @@ const write = (path, value) => writeFileSync(path, `${JSON.stringify(value, null
 const pkg = read(join(root, 'package.json'))
 const { values } = parseArgs({ options: {
   'registry-dependencies': { type: 'boolean', default: false },
+  'candidate-record': { type: 'string' },
+  'starter-archive': { type: 'string' },
   'prepare-only': { type: 'boolean', default: false },
   directory: { type: 'string' },
   // Where the generated application's exit exercise writes the record of its run, such as deploy/evidence/exit-exercise.json.
@@ -29,8 +33,20 @@ const { values } = parseArgs({ options: {
 } })
 if (values['prepare-only'] && !values.directory) throw new Error('--prepare-only requires --directory for the generated project')
 if (!existsSync(join(root, 'dist', 'index.js'))) throw new Error('build the packages first: npm run build')
-const release = read(join(repository, 'release', `${pkg.dpp.releaseSet}.json`))
+const releaseBytes = readFileSync(join(repository, 'release', `${pkg.dpp.releaseSet}.json`))
+const release = JSON.parse(releaseBytes)
 assertProductionRecordVersions(release.wire.records.map(record => record.version))
+let recorded
+if (values['candidate-record'] != null) {
+  if (values['registry-dependencies']) throw new Error('Choose --candidate-record or --registry-dependencies for the runtime dependencies.')
+  const path = resolve(values['candidate-record'])
+  const bytes = readFileSync(path)
+  const record = JSON.parse(bytes)
+  const directory = join(dirname(path), 'candidates')
+  const failures = [...verifyRecordAgainstSet(record, release, releaseBytes), ...verifyCandidates(record, directory)].filter(finding => !finding.ok)
+  if (failures.length) throw new Error(failures.map(finding => finding.sentence).join('\n'))
+  recorded = { directory, sha256: sha256(bytes), candidates: new Map(record.candidates.map(candidate => [candidate.name, candidate])) }
+}
 const runtime = release.packages.filter(p => Object.hasOwn(pkg.dpp.packages, p.name))
 for (const entry of runtime) assert.equal(entry.version, pkg.dpp.packages[entry.name], 'starter pins must match the declared release set')
 assert.equal(runtime.length, 4, 'the app uses the protocol, profiles, overlay and credentials runtime')
@@ -57,7 +73,31 @@ const run = (command, args, cwd) => {
   console.log(`$ ${command} ${args.join(' ')}`)
   execFileSync(command, args, { cwd, env, stdio: 'inherit' })
 }
-const pack = cwd => JSON.parse(execFileSync('npm', ['pack', '--json', '--ignore-scripts', '--pack-destination', scratch], { cwd, env, encoding: 'utf8' }))[0]
+const notices = ['NOTICE', 'PATENTS']
+const npmPack = (cwd, flags) => JSON.parse(execFileSync('npm', ['pack', '--json', '--ignore-scripts', ...flags], { cwd, env, encoding: 'utf8' }))[0]
+function pack(directory) {
+  // npm determines the publication files. Stage them with the repository notices so concurrent checks never change the checkout.
+  const stage = mkdtempSync(join(scratch, 'pack-'))
+  for (const file of npmPack(directory, ['--dry-run']).files) {
+    if (notices.includes(file.path)) continue
+    const dest = join(stage, file.path)
+    mkdirSync(dirname(dest), { recursive: true })
+    copyFileSync(join(directory, file.path), dest)
+  }
+  for (const notice of notices) copyFileSync(join(repository, notice), join(stage, notice))
+  const packed = npmPack(stage, ['--pack-destination', scratch])
+  for (const notice of ['LICENSE', ...notices]) assert.ok(packed.files.some(file => file.path === notice), `${packed.name} must pack ${notice}`)
+  return { name: packed.name, version: packed.version, filename: packed.filename, integrity: packed.integrity,
+    sha256: sha256(readFileSync(join(scratch, packed.filename))) }
+}
+function checkInstalled(directory, archive, lockEntry, sourceDirectory) {
+  assert.equal(lockEntry?.integrity, archive.integrity, `${archive.name} must install the checked archive`)
+  const installed = read(join(directory, 'package.json'))
+  assert.equal(installed.name, archive.name)
+  assert.equal(installed.version, archive.version)
+  assert.deepEqual(readFileSync(join(directory, 'LICENSE')), readFileSync(join(sourceDirectory, 'LICENSE')), `${archive.name} package licence`)
+  for (const notice of notices) assert.deepEqual(readFileSync(join(directory, notice)), readFileSync(join(repository, notice)), `${archive.name} ${notice}`)
+}
 let created = false
 const stops = []
 try {
@@ -73,6 +113,14 @@ try {
   mkdirSync(consumer)
   write(join(consumer, 'package.json'), { name: 'app-starter-consumer', private: true })
   run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', join(scratch, archive.filename)], consumer)
+  checkInstalled(join(consumer, 'node_modules', pkg.name), archive, read(join(consumer, 'package-lock.json')).packages[`node_modules/${pkg.name}`], root)
+  console.log(`Starter archive ${archive.filename}, SHA-256 ${archive.sha256}, npm integrity ${archive.integrity}`)
+  if (values['starter-archive'] != null) {
+    const path = resolve(values['starter-archive'])
+    if (existsSync(path)) assert.equal(sha256(readFileSync(path)), archive.sha256, 'the retained starter path already holds a different file')
+    else copyFileSync(join(scratch, archive.filename), path, constants.COPYFILE_EXCL)
+    console.log(`Retained the installed starter archive at ${path}`)
+  }
   const cli = join(consumer, 'node_modules/.bin/create-dpp-app')
   if (!existsSync(cli)) throw new Error('the packed starter must install the create-dpp-app executable')
   run(process.execPath, [cli, target, '--no-install'], scratch)
@@ -100,13 +148,21 @@ try {
   if (!values['registry-dependencies']) {
     mkdirSync(join(target, '.dpp-candidates'))
     for (const entry of runtime) {
-      const directory = join(repository, entry.directory)
-      const candidate = read(join(directory, 'package.json'))
-      assert.equal(candidate.name, entry.name)
-      assert.equal(candidate.version, entry.version)
-      if (!existsSync(join(directory, 'dist/index.js'))) throw new Error(`build ${entry.name} first: npm run build`)
-      const packed = pack(directory)
-      copyFileSync(join(scratch, packed.filename), join(target, '.dpp-candidates', packed.filename))
+      let packed
+      if (recorded != null) {
+        packed = recorded.candidates.get(entry.name)
+      } else {
+        const directory = join(repository, entry.directory)
+        if (!existsSync(join(directory, 'dist/index.js'))) throw new Error(`build ${entry.name} first: npm run build`)
+        packed = pack(directory)
+      }
+      assert.equal(packed.name, entry.name)
+      assert.equal(packed.version, entry.version)
+      const destination = join(target, '.dpp-candidates', packed.filename)
+      copyFileSync(join(recorded?.directory ?? scratch, packed.filename), destination)
+      const bytes = readFileSync(destination)
+      assert.equal(sha256(bytes), packed.sha256, `${entry.name} copied archive SHA-256`)
+      assert.equal(integrityOf(bytes), packed.integrity, `${entry.name} copied archive npm integrity`)
       api.dependencies[entry.name] = `file:../../.dpp-candidates/${packed.filename}`
       archives.set(entry.name, packed)
     }
@@ -124,6 +180,13 @@ try {
   } else {
     run('npm', ['install', '--no-audit', '--no-fund'], target)
     const lock = read(join(target, 'package-lock.json'))
+    for (const { name, directory } of runtime) {
+      if (!archives.has(name)) continue
+      const packed = archives.get(name)
+      const copies = Object.entries(lock.packages).filter(([path]) => path === `node_modules/${name}` || path.endsWith(`/node_modules/${name}`))
+      assert.ok(copies.length, `${name} must appear in the generated app's lock`)
+      for (const [path, entry] of copies) checkInstalled(join(target, path), packed, entry, join(repository, directory))
+    }
     if (values['dependency-record']) {
       // The generated application resolves its own dependencies, so what it installs is known only from an install. Development-only packages are left out: they do not run in the application.
       const installed = Object.entries(lock.packages).filter(([path, entry]) => path.includes('node_modules/') && entry.link !== true && entry.dev !== true)
@@ -135,6 +198,9 @@ try {
       write(resolve(values['dependency-record']), {
         check: 'packages/create-dpp-app/scripts/scaffold-check.mjs',
         recordedAt: new Date().toLocaleDateString('en-CA'),
+        starterArchive: archive,
+        ...(recorded == null ? {} : { candidateRecordSha256: recorded.sha256 }),
+        ...(archives.size === 0 ? {} : { runtimeArchives: [...archives.values()].map(({ name, version, filename, integrity, sha256 }) => ({ name, version, filename, integrity, sha256 })) }),
         releaseSet: pkg.dpp.releaseSet,
         sourceRevision: sourceState(repository).revision,
         sourceState: sourceState(repository).state,
@@ -157,7 +223,8 @@ try {
     }
     // A profile held by a binding is validated with three libraries the profiles package does not install itself.
     // The generated app declares them at the exact versions that package is tested with, and installs those from npm.
-    const { VALIDATION_ENGINE_LIBRARIES } = await import('@bsv/dpp-profiles/validation-engine')
+    const enginePath = createRequire(apiPath).resolve('@bsv/dpp-profiles/validation-engine')
+    const { VALIDATION_ENGINE_LIBRARIES } = await import(pathToFileURL(enginePath).href)
     for (const [name, version] of Object.entries(VALIDATION_ENGINE_LIBRARIES)) {
       assert.equal(api.dependencies[name], version, `${name} must be declared at the version the validation engine is tested with`)
       const installed = lock.packages[`node_modules/${name}`] ?? lock.packages[`apps/api/node_modules/${name}`]

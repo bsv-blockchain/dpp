@@ -12,6 +12,7 @@
 import { MerklePath, Transaction, Utils, type WalletProtocol } from '@bsv/sdk'
 import {
   acceptanceCommitment,
+  bindAcceptanceToState,
   buildLockingScript,
   completeState,
   findDppOutputs,
@@ -28,9 +29,9 @@ import type { BoundProfiles, ViewCheck } from './bound-profiles.js'
 import { identifierProblems, isDemonstrationPolicy, type IdentifierPolicy } from './identifiers.js'
 import type { IndexClient } from './index-client.js'
 import type { Party } from './parties.js'
-import { DEMONSTRATION_NOTICE, isProfileId, validatePayload, type ManifestProfileId } from './profiles.js'
-import type { PassportRecord, StateEntry, Store } from './store.js'
-import type { PlatformWallet, Tip } from './wallet.js'
+import { DEMONSTRATION_NOTICE, isProfileId, sectorIssueSuccessor, validatePayload, type ManifestProfileId } from './profiles.js'
+import { isInterrupted, type PassportRecord, type StateEntry, type Store } from './store.js'
+import { ActionAlreadySeen, type PlatformWallet, type Tip } from './wallet.js'
 
 /** BRC-43 protocol the owner tier is encrypted under (spec/record-model.md section 7). */
 export const OWNER_DATA_PROTOCOL: WalletProtocol = [2, 'dpp owner data v1']
@@ -57,6 +58,18 @@ export function refuseRetiredProfile(profile: string): void {
   if (isRetiredProfile(profile)) throw new WriteRefused(PROFILE_RETIRED, `${describeRetiredProfile(profile)} Nothing was signed.`, { replacedBy: RETIRED_PROFILE_REPLACEMENTS[profile] })
 }
 
+export function requireIssuableProfile(profile: string): void {
+  if (isRetiredProfile(profile)) {
+    const historical = RETIRED_PROFILE_REPLACEMENTS[profile]
+    const replacedBy = sectorIssueSuccessor(historical) ?? historical
+    throw new WriteRefused(PROFILE_RETIRED, `${describeRetiredProfile(profile)} Use ${replacedBy} for new issuance. Nothing was signed.`, { replacedBy })
+  }
+  const replacedBy = sectorIssueSuccessor(profile)
+  if (replacedBy != null) throw new WriteRefused('profile-superseded', `Use ${replacedBy} to issue a new passport. Existing ${profile} passports keep their original binding.`, { replacedBy })
+}
+
+type SealedTier = { hash: string; ciphertext: number[]; senderIdentityKey?: string }
+
 export interface WriterOptions {
   store: Store
   wallet: PlatformWallet
@@ -82,6 +95,12 @@ const causeOf = (validation: PayloadValidation): string =>
 
 const instant = (): string => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 const short = (hex: string): string => `${hex.slice(0, 12)}...`
+
+function journalTip(record: PassportRecord | undefined, txid: string): StateEntry {
+  const tip = record?.states.at(-1)
+  if (tip?.txid !== txid) throw new WriteRefused('tip-moved', 'the journal tip changed before this operation could finish')
+  return tip
+}
 
 export class Writer {
   private readonly log: (line: string) => void
@@ -124,6 +143,30 @@ export class Writer {
     return { hash, ciphertext }
   }
 
+  /** Resolve carried bytes against the selected predecessor output, including a historical state with no owner commitment. */
+  private carriedTier(passportId: string, tip: Tip, entry: StateEntry): SealedTier | undefined {
+    const previous = findDppOutputs(tip.tx).find((output) => output.outputIndex === tip.outputIndex)?.state
+    if (tip.tx.id('hex') !== tip.txid || previous?.passportId !== passportId) throw new WriteRefused('owner-tier-unsound', 'the retained predecessor differs from the selected passport tip')
+    const tier = entry.ownerTier
+    if (tier == null && previous.payloadOwnerHash === '') return undefined
+    const ciphertext = tier == null ? undefined : Utils.toArray(tier.ciphertext, 'base64')
+    if (tier == null || ciphertext == null || tier.hash !== previous.payloadOwnerHash || !verifyOwnerBlob(ciphertext, previous.payloadOwnerHash)) {
+      throw new WriteRefused('owner-tier-unsound', 'the retained owner tier does not match the signed predecessor commitment')
+    }
+    return { ...tier, ciphertext }
+  }
+
+  private async transferTier(passportId: string, tier: SealedTier, giver: Party, recipient: Party): Promise<SealedTier> {
+    const key = { protocolID: OWNER_DATA_PROTOCOL, keyID: passportId }
+    try {
+      const { plaintext } = await giver.wallet.decrypt({ ...key, ciphertext: tier.ciphertext, counterparty: tier.senderIdentityKey ?? 'self' })
+      const { ciphertext } = await giver.wallet.encrypt({ ...key, plaintext, counterparty: recipient.identityKey })
+      return { hash: ownerBlobHash(ciphertext), ciphertext, senderIdentityKey: giver.identityKey }
+    } catch {
+      throw new WriteRefused('owner-tier-unavailable', 'the holder could not open and re-encrypt the committed owner tier for this recipient')
+    }
+  }
+
   private async withinSpendCap(): Promise<void> {
     const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString()
     const spent = await this.options.store.spentSince(dayAgo)
@@ -141,7 +184,7 @@ export class Writer {
     actor: Party
     controller: Party
     profile: string
-    /** A new public payload and owner tier; absent, the tip's are carried unchanged, which RETIRE requires and a hand-on keeps simple. */
+    /** A new public payload and owner tier; RETIRE carries the tip's bytes unchanged. TRANSFER re-encrypts the restricted part to the new holder. */
     payload?: Record<string, unknown>
     ownerFields?: Record<string, unknown>
     /** Under a profile held by a binding: the complete product document, in place of `payload` and `ownerFields`. */
@@ -149,21 +192,24 @@ export class Writer {
     eventData?: Record<string, unknown>
     acceptance?: ManagedAcceptanceRecord
   }): Promise<WriteOutcome> {
-    const { record, op, actor, controller, profile } = args
+    const { op, actor, controller, profile } = args
     const { store, wallet, index } = this.options
-    const passportId = record.passportId
+    const passportId = args.record.passportId
+    // The caller may have read the passport before another request advanced it.
+    const latest = await store.getPassport(passportId)
+    const record = latest ?? args.record
+    const unresolved = latest?.states.find(isInterrupted)
+    if (unresolved != null) throw new WriteRefused('operation-interrupted', `resolve ${short(unresolved.txid)} before writing another state`)
+    if (op !== 'ISSUE' && latest?.states.at(-1)?.txid !== args.record.states.at(-1)?.txid) throw new WriteRefused('tip-moved', 'the requested predecessor is no longer the journal tip')
     // Every operation, RETIRE included: each would sign a state whose payload declares the retired profile.
     refuseRetiredProfile(profile)
     const tip = this.tipOf(record)
     if (op === 'ISSUE' && tip != null) throw new WriteRefused('already-issued', `${passportId} already has ${record.states.length} state(s); a second genesis is never written`)
     if (op !== 'ISSUE' && tip == null) throw new WriteRefused('not-issued', `${passportId} has no genesis to follow`)
     if (record.status === 'retired') throw new WriteRefused('retired', `${passportId} ended with a RETIRE; nothing may follow it`)
-    const pending = record.states.find((s) => s.network === 'pending')
-    if (pending != null) throw new WriteRefused('operation-interrupted', `${short(pending.txid)} was built and announced but its send was never answered for; resolve it first (was it sent, or abandoned?) before the next state`)
-
     const tipEntry = record.states.at(-1)
     let payloadPublic: string
-    let sealed: { hash: string; ciphertext: number[] }
+    let sealed: SealedTier | undefined
     const bound = this.options.bound.get(profile)
     const writesData = args.payload != null || args.product != null
     if (writesData && bound == null && !isProfileId(profile)) throw new WriteRefused('profile-unknown', `${profile} is not a profile this platform holds: it is neither a published industry profile nor a binding registered at start-up`)
@@ -178,22 +224,28 @@ export class Writer {
     } else if (args.payload != null) {
       if (args.product != null) throw new WriteRefused('payload-required', `${profile} is a manifest profile: send payload and ownerFields, not product`)
       if (!isProfileId(profile)) throw new WriteRefused('profile-unknown', `${profile} is not a profile this platform holds`)
-      const publicCheck = validatePayload(profile, 'public', args.payload)
+      const demo = isDemonstrationPolicy(this.options.identifiers)
+      if (!demo && Object.hasOwn(args.payload, 'notice')) throw new WriteRefused('demonstration-notice-unexpected', 'A real-product record cannot carry a demonstration notice.')
+      const { notice = DEMONSTRATION_NOTICE, ...fields } = args.payload
+      const payload = demo ? { notice, ...fields } : args.payload
+      const publicCheck = validatePayload(profile, 'public', payload)
       if (!publicCheck.valid) throw new WriteRefused('payload-invalid', `the public payload is refused by the ${profile} schema: ${publicCheck.problems.join('; ')}`)
-      payloadPublic = JSON.stringify(args.payload)
+      payloadPublic = JSON.stringify(payload)
       // A new payload with no owner fields carries the tip's sealed tier unchanged, when the actor still controls it.
       sealed =
-        args.ownerFields == null && tipEntry?.ownerTier != null
-          ? { hash: tipEntry.ownerTier.hash, ciphertext: Utils.toArray(tipEntry.ownerTier.ciphertext, 'base64') as number[] }
+        args.ownerFields == null && tip != null && tipEntry != null
+          ? this.carriedTier(passportId, tip, tipEntry)
           : await this.sealOwnerTier(controller, passportId, profile, args.ownerFields ?? {})
     } else if (args.product != null) {
       throw new WriteRefused('payload-required', `${profile} is a manifest profile: send payload and ownerFields, not product`)
     } else {
-      if (tipEntry?.ownerTier == null) throw new WriteRefused('nothing-to-carry', `${passportId} has no tip whose payload and owner tier this ${op} could carry`)
+      if (tip == null || tipEntry == null) throw new WriteRefused('nothing-to-carry', `${passportId} has no tip whose payload this ${op} could carry`)
       payloadPublic = tipEntry.payloadPublic
-      sealed = { hash: tipEntry.ownerTier.hash, ciphertext: Utils.toArray(tipEntry.ownerTier.ciphertext, 'base64') as number[] }
+      sealed = this.carriedTier(passportId, tip, tipEntry)
     }
     await this.withinSpendCap()
+
+    if (op === 'TRANSFER' && sealed != null) sealed = await this.transferTier(passportId, sealed, actor, controller)
 
     const previousController = tip == null ? undefined : record.holder.controllerKey
     const controllerKey = await controller.controllerKey(passportId)
@@ -207,7 +259,7 @@ export class Writer {
       actorKeyId: actor.name,
       eventData: args.eventData == null ? '' : JSON.stringify(args.eventData),
       payloadPublic,
-      payloadOwnerHash: sealed.hash,
+      payloadOwnerHash: sealed?.hash ?? '',
       previousTxid: tip == null ? '' : tip.txid,
       previousOutputIndex: tip == null ? null : tip.outputIndex,
       lineageGenesis: tip == null ? null : { txid: record.states[0].txid, outputIndex: record.states[0].outputIndex },
@@ -245,136 +297,218 @@ export class Writer {
       actor: actor.name,
       controllerKey,
       payloadPublic: data.payloadPublic,
-      ownerTier: { hash: sealed.hash, ciphertext: Utils.toBase64(sealed.ciphertext) },
+      ...(sealed == null ? {} : { ownerTier: { ...sealed, ciphertext: Utils.toBase64(sealed.ciphertext) } }),
       index: 'pending',
       network: 'pending',
     }
-    record.states.push(entry)
-    await store.savePassport(record)
-    this.log(`${op} ${short(built.txid)} built unsent for ${passportId}`)
-
-    const settle = async (patch: Partial<StateEntry>): Promise<void> => {
-      Object.assign(entry, patch)
-      await store.savePassport(record)
+    entry.nextHolder = { party: controller.name, controllerKey }
+    if (args.acceptance != null) entry.acceptance = args.acceptance
+    if (built.reference != null) entry.walletReference = built.reference
+    const settle = async (patch: Partial<StateEntry>) => {
+      const updated = await store.changePassport(passportId, (current) => {
+        const draft = journalTip(current, built.txid)
+        if (draft.network !== 'pending') throw new WriteRefused('operation-interrupted', 'the draft was already resolved')
+        Object.assign(draft, patch)
+        return current
+      })
+      return updated!
     }
-    // A state that is not written leaves the journal as it was: the unsent action is aborted and the entry removed.
     const abandon = async (code: string, detail: string): Promise<never> => {
-      await wallet.adapter.discard(built)
-      record.states.pop()
-      if (record.states.length === 0) await store.deletePassport(record.passportId)
-      else await store.savePassport(record)
+      const current = await settle({ network: code === 'network-refused' ? 'refused' : 'not-sent' })
+      await this.removeDraft(current, built.txid, detail)
       throw new WriteRefused(code, detail)
     }
 
-    // Section 2: the verifier's own checks on the unsent transaction, with the lineage so far in front of it.
-    const lineage = record.states.slice(0, -1).map((s) => Transaction.fromHex(s.rawTx))
-    const checked = await verifyChain([...lineage, built.tx], { chainTracker: 'scripts only', serverIdentityKey: wallet.identityKey, managedAcceptance: true })
-    if (!checked.valid) await abandon('own-check-refused', `the writer's own check refuses the unsent ${op}: ${checked.error ?? 'no reason given'}`)
-    // Under a binding the reader's payload check runs here too, on the state as the unsent transaction carries it:
-    // the public payload and the passport identifier are read back from the signed bytes, never from what was prepared.
-    if (bound != null && writesData) {
-      const signed = findDppOutputs(built.tx)[0]?.state
-      const view = signed == null ? undefined : await this.options.bound.validatePublic({ profile: bound.id, profileVersion: bound.version, payloadPublic: signed.payloadPublic, passportId: signed.passportId })
-      const cause = view == null ? 'no state was decoded' : causeOf(view)
-      if (view == null || view.status === 'fail' || (view.status === 'unknown' && cause !== 'restricted-tier-withheld')) {
-        await abandon('own-check-refused', `the writer's own check refuses the unsent ${op}: its public payload does not validate under ${profile} for the passport identifier it signs (${cause})`)
+    try {
+      // Verify against the selected predecessor before reserving an unsent draft.
+      const lineage = record.states.map((s) => Transaction.fromHex(s.rawTx))
+      const checked = await verifyChain([...lineage, built.tx], { chainTracker: 'scripts only', serverIdentityKey: wallet.identityKey, managedAcceptance: true })
+      if (!checked.valid) throw new WriteRefused('own-check-refused', `the writer's own check refuses the unsent ${op}: ${checked.error ?? 'no reason given'}`)
+      // Under a binding the reader's payload check runs here too, on the state as the unsent transaction carries it:
+      // the public payload and the passport identifier are read back from the signed bytes, never from what was prepared.
+      if (bound != null && writesData) {
+        const signed = findDppOutputs(built.tx)[0]?.state
+        const view = signed == null ? undefined : await this.options.bound.validatePublic({ profile: bound.id, profileVersion: bound.version, payloadPublic: signed.payloadPublic, passportId: signed.passportId })
+        const cause = view == null ? 'no state was decoded' : causeOf(view)
+        if (view == null || view.status === 'fail' || (view.status === 'unknown' && cause !== 'restricted-tier-withheld')) {
+          throw new WriteRefused('own-check-refused', `the writer's own check refuses the unsent ${op}: its public payload does not validate under ${profile} for the passport identifier it signs (${cause})`)
+        }
       }
-    }
 
-    // Section 3: a state after the genesis spends the tip the index returns for the passport.
-    if (tip != null) {
-      const held = await index.lineage(passportId).catch(() => undefined)
-      const heldTip = held?.at(-1)?.id('hex')
-      if (held != null && heldTip !== tip.txid) {
-        await abandon('tip-moved', `the index's tip for ${passportId} is ${heldTip == null ? 'nothing' : short(heldTip)}, not ${short(tip.txid)}`)
+      // Section 3: a state after the genesis spends the tip the index returns for the passport.
+      if (tip != null) {
+        const held = await index.lineage(passportId).catch(() => undefined)
+        const heldTip = held?.at(-1)?.id('hex')
+        if (held != null && heldTip !== tip.txid) {
+          throw new WriteRefused('tip-moved', `the index's tip for ${passportId} is ${heldTip == null ? 'nothing' : short(heldTip)}, not ${short(tip.txid)}`)
+        }
       }
-    }
 
-    // Section 3: announce first, send only on admission. An unreachable index refuses nothing.
+      if (args.acceptance != null && bindAcceptanceToState(args.acceptance, state).length !== 0) throw new WriteRefused('acceptance-mismatch', 'the signed acceptance does not bind to the proposed transfer')
+      await store.changePassport(passportId, (current) => {
+        if (op === 'ISSUE' && current?.states.length) throw new WriteRefused('already-issued', 'another write already reserved this passport')
+        const unresolved = current?.states.find(isInterrupted)
+        if (unresolved != null) throw new WriteRefused('operation-interrupted', `resolve ${short(unresolved.txid)} before writing another state`)
+        if (current?.states.at(-1)?.txid !== tip?.txid || current?.status === 'retired') throw new WriteRefused('tip-moved', 'the journal tip changed while the candidate was prepared')
+        const latest = current ?? { ...record, states: [], acceptanceRecords: [] }
+        latest.states.push(entry)
+        return latest
+      })
+    } catch (cause) {
+      // After a lost acknowledgement the journal can already hold this exact transaction.
+      // Discard only a draft that no persisted writer owns.
+      const held = await store.getPassport(passportId)
+      if (!held?.states.some((item) => item.txid === built.txid)) await wallet.adapter.discard(built)
+      throw cause
+    }
+    this.log(`${op} ${short(built.txid)} built unsent for ${passportId}`)
+
     let announced = await index.announce(built.beef)
     await settle({ index: announced, refusal: index.lastRefusal })
     if (announced === 'refused') await abandon('index-refused', `the index refused ${short(built.txid)} while it was still a draft: ${index.lastRefusal ?? 'no reason given'}`)
     if (announced === 'unauthorised') await abandon('index-unauthorised', 'the index wants a submit token, or a different one; nothing was sent')
 
     if (!this.options.livePublishing && wallet.kind === 'toolbox') {
-      await abandon('live-publishing-off', 'LIVE_PUBLISHING is false: the state was built, checked and admitted as a draft, then aborted. Set LIVE_PUBLISHING=true to write to the chain.')
+      await abandon('live-publishing-off', 'LIVE_PUBLISHING is false: the unsent draft was aborted.')
     }
 
     // Sections 4 and 5: send, and report only the network's answer.
-    const sent = await wallet.adapter.send(built)
-    await settle({ network: wallet.kind === 'test' ? 'dry-run' : sent })
-    if (sent === 'refused') {
-      if (announced === 'admitted') await index.retract(built.txid, 'the network refused the transaction after the index admitted it')
-      await abandon('network-refused', `the network refused ${short(built.txid)}; the state never existed and nothing was spent`)
+    const sent = await wallet.adapter.send(built).catch(() => 'unanswered' as const)
+    if (sent === 'refused') await abandon('network-refused', `the network refused ${short(built.txid)}`)
+    if (sent === 'unanswered') {
+      await settle({ network: 'unanswered' })
+      throw new WriteRefused('network-unanswered', `the network has not answered for ${short(built.txid)}; resolve the retained transaction before writing another state`)
     }
-    if (sent === 'unanswered') throw new WriteRefused('network-unanswered', `the wallet has not yet reported the network's answer for ${short(built.txid)}; do not rebuild, the worker will continue from the journal`)
-    await store.recordSpend({ txid: built.txid, satoshis: Math.ceil(built.tx.toBinary().length / 10) + 1, at: instant() })
-
-    // Section 6: an announcement that could not be made is retried, never a reason to spend again.
+    let updated = await this.finishDraft(passportId, entry, entry.nextHolder!, args.acceptance)
     if (announced === 'unreachable') {
-      announced = await index.announce(built.beef)
-      await settle({ index: announced, refusal: index.lastRefusal })
+      announced = await index.announce(built.beef).catch(() => 'unreachable' as const)
+      updated = await this.recordAnnouncement(passportId, built.txid, announced, index.lastRefusal)
     }
-
-    record.holder = { party: controller.name, controllerKey }
-    if (op === 'RETIRE') record.status = 'retired'
-    if (args.acceptance != null) record.acceptanceRecords.push(args.acceptance)
-    await store.savePassport(record)
-    this.log(`${op} ${short(built.txid)} written: index ${entry.index}, network ${entry.network}`)
-    return { entry, state, record }
+    const written = updated.states.find((item) => item.txid === built.txid)!
+    this.log(`${op} ${short(built.txid)} written: index ${written.index}, network ${written.network}`)
+    return { entry: written, state, record: updated }
   }
 
-  /**
-   * A write interrupted between the announcement and the network's answer,
-   * for example by a crash, leaves an entry with network 'pending'. Only the
-   * operator knows what happened: 'sent' keeps it and carries on; 'abandoned'
-   * withdraws it from the index, aborts it in the wallet and removes it, so
-   * the next state builds on the previous tip. Never rebuild a state that
-   * was sent.
-   */
+  private async finishDraft(id: string, entry: StateEntry, holder: PassportRecord['holder'], acceptance?: ManagedAcceptanceRecord): Promise<PassportRecord> {
+    const accepted = this.options.wallet.kind === 'test' ? 'dry-run' : 'accepted'
+    if (entry.network !== 'pending' && entry.network !== 'unanswered') throw new WriteRefused('not-interrupted', 'this draft cannot be marked sent')
+    if (holder.controllerKey !== entry.controllerKey) throw new WriteRefused('not-the-controller', 'the retained holder differs from the signed controller')
+    // Repeating this accounting after interruption is idempotent by transaction ID.
+    await this.options.store.recordSpend({ txid: entry.txid, satoshis: Math.ceil(entry.rawTx.length / 20) + 1, at: entry.timestamp })
+    const record = await this.options.store.changePassport(id, (current) => {
+      const draft = journalTip(current, entry.txid)
+      if (draft.network !== 'pending' && draft.network !== 'unanswered') throw new WriteRefused('not-interrupted', 'this draft cannot be marked sent')
+      draft.network = accepted
+      current!.holder = holder
+      if (draft.op === 'RETIRE') current!.status = 'retired'
+      if (acceptance != null && !current!.acceptanceRecords.some((item) => acceptanceCommitment(item) === acceptanceCommitment(acceptance))) current!.acceptanceRecords.push(acceptance)
+      delete draft.nextHolder
+      delete draft.acceptance
+      delete draft.walletReference
+      return current
+    })
+    return record!
+  }
+
+  private async removeDraft(record: PassportRecord, txid: string, reason: string): Promise<PassportRecord> {
+    const entry = journalTip(record, txid)
+    try {
+      await this.options.wallet.adapter.discard({ tx: Transaction.fromHex(entry.rawTx), txid, beef: Utils.toArray(entry.sentBeef ?? entry.beef, 'base64') as number[], reference: entry.walletReference })
+    } catch (cause) {
+      if (cause instanceof ActionAlreadySeen) {
+        await this.options.store.changePassport(record.passportId, (latest) => {
+          const draft = journalTip(latest, txid)
+          if (draft.network === 'not-sent' || draft.network === 'refused') draft.network = 'unanswered'
+          return latest
+        })
+        throw new WriteRefused('network-seen', 'the wallet reports that the transaction was seen; retain it and resolve the network outcome')
+      }
+      throw cause
+    }
+    if (entry.index === 'admitted' || entry.index === 'duplicate' || entry.index === 'pending' || entry.index === 'unreachable') {
+      const withdrawn = await this.options.index.retract(txid, reason, entry.outputIndex)
+      if (!withdrawn.ok && !withdrawn.absent) throw new WriteRefused('retraction-pending', `the draft is retained until the index confirms withdrawal: ${withdrawn.detail}`)
+    }
+    const remaining = await this.options.store.changePassport(record.passportId, (current) => {
+      const draft = journalTip(current, txid)
+      if (draft.network !== 'refused' && draft.network !== 'not-sent') throw new WriteRefused('not-interrupted', 'the draft was already resolved')
+      current!.states.pop()
+      return current!.states.length === 0 ? undefined : current
+    })
+    return remaining ?? { ...record, states: [] }
+  }
+
+  /** Resolve the retained transaction once its fate is known. */
   async resolveInterrupted(record: PassportRecord, txid: string, outcome: 'sent' | 'abandoned'): Promise<PassportRecord> {
-    const at = record.states.findIndex((s) => s.txid === txid)
-    const entry = record.states[at]
-    if (entry == null) throw new WriteRefused('unknown-state', `${short(txid)} is not in the journal of ${record.passportId}`)
-    if (entry.network !== 'pending') throw new WriteRefused('not-interrupted', `${short(txid)} is ${entry.network}, not interrupted`)
-    if (at !== record.states.length - 1) throw new WriteRefused('not-the-tip', `${short(txid)} is not the newest state`)
-    if (outcome === 'sent') {
-      entry.network = 'accepted'
-      await this.options.store.savePassport(record)
-      return record
+    const latest = await this.options.store.getPassport(record.passportId)
+    const entry = latest?.states.find((s) => s.txid === txid)
+    if (latest == null || entry == null) throw new WriteRefused('unknown-state', `${short(txid)} is not in the journal`)
+    if (!isInterrupted(entry)) throw new WriteRefused('not-interrupted', `${short(txid)} is ${entry.network}`)
+    if (latest.states.at(-1)?.txid !== txid) throw new WriteRefused('not-the-tip', `${short(txid)} is not the newest state`)
+    if (outcome === 'abandoned') {
+      const cancelling = await this.options.store.changePassport(record.passportId, (current) => {
+        const draft = journalTip(current, txid)
+        if (!isInterrupted(draft)) throw new WriteRefused('not-interrupted', 'the draft was already resolved')
+        draft.network = 'not-sent'
+        return current
+      })
+      return this.removeDraft(cancelling!, txid, 'the operator confirmed that the interrupted transaction was abandoned')
     }
-    if (entry.index === 'admitted') await this.options.index.retract(txid, 'the write was interrupted before the network answered')
-    await this.options.wallet.adapter.discard({ tx: Transaction.fromHex(entry.rawTx), txid, beef: Utils.toArray(entry.beef, 'base64') as number[] })
-    record.states.pop()
-    if (record.states.length === 0) await this.options.store.deletePassport(record.passportId)
-    else {
-      // The actor of the abandoned state was the holder when it was built; control returns to the previous tip's key.
-      const previous = record.states.at(-1)!
-      record.holder = { party: entry.actor, controllerKey: previous.controllerKey }
-      record.status = 'active'
-      await this.options.store.savePassport(record)
+    let acceptance = entry.acceptance
+    if (entry.op === 'TRANSFER') {
+      const state = findDppOutputs(Transaction.fromHex(entry.rawTx)).find((out) => out.outputIndex === entry.outputIndex)?.state
+      if (state?.version !== '2') throw new WriteRefused('acceptance-mismatch', 'the retained transfer cannot be decoded')
+      if (acceptance == null) {
+        const offers = await this.options.store.listOffers({ passportId: record.passportId })
+        acceptance = [...latest.acceptanceRecords, ...offers.flatMap((offer) => offer.record == null ? [] : [offer.record])].find((item) => acceptanceCommitment(item) === state.authorisationCommitment)
+      }
+      if (acceptance == null || bindAcceptanceToState(acceptance, state).length > 0) throw new WriteRefused('acceptance-mismatch', 'the signed acceptance for the interrupted transfer is unavailable or differs')
     }
-    return record
+    const holder = entry.nextHolder ?? { party: acceptance == null ? entry.actor : `recipient:${acceptance.requestId}`, controllerKey: entry.controllerKey }
+    return this.finishDraft(record.passportId, entry, holder, acceptance)
   }
 
-  /** Section 7: the wallet's proof, pushed to the index and kept with the bytes. Returns whether a proof is now held. */
+  async recordAnnouncement(id: string, txid: string, index: StateEntry['index'], refusal?: string): Promise<PassportRecord> {
+    const result = await this.options.store.changePassport(id, (current) => {
+      const state = current?.states.find((item) => item.txid === txid)
+      if (state == null) throw new WriteRefused('unknown-state', 'the announced transaction is absent from the journal')
+      if (state.index !== 'admitted' && state.index !== 'duplicate') Object.assign(state, { index, refusal })
+      return current
+    })
+    return result!
+  }
+
+  /** Keep the proof against the exact transaction for which it was obtained. */
   async prove(record: PassportRecord, txid: string): Promise<boolean> {
-    const entry = record.states.find((s) => s.txid === txid)
-    if (entry == null) throw new WriteRefused('unknown-state', `${short(txid)} is not in the journal of ${record.passportId}`)
+    const id = record.passportId
+    let entry = (await this.options.store.getPassport(id))?.states.find((s) => s.txid === txid)
+    if (entry == null) throw new WriteRefused('unknown-state', `${short(txid)} is not in the journal of ${id}`)
+    if (entry.network !== 'accepted' && entry.network !== 'dry-run') return false
     if (entry.proof == null) {
       const path = await this.options.wallet.adapter.merklePathFor(txid)
       if (path == null) return false
-      entry.proof = { merklePath: path.toHex(), blockHeight: path.blockHeight }
       const tx = Transaction.fromHex(entry.rawTx)
       tx.merklePath = path
-      entry.beef = Utils.toBase64(tx.toAtomicBEEF())
-      await this.options.store.savePassport(record)
+      const updated = await this.options.store.changePassport(id, (current) => {
+        const state = current?.states.find((s) => s.txid === txid)
+        if (state == null) throw new WriteRefused('unknown-state', 'the proven state is absent')
+        if (state.proof == null) {
+          state.sentBeef = state.beef
+          state.beef = Utils.toBase64(tx.toAtomicBEEF())
+          state.proof = { merklePath: path.toHex(), blockHeight: path.blockHeight }
+        }
+        return current
+      })
+      entry = updated!.states.find((s) => s.txid === txid)!
     }
     if (entry.proofPushed !== true) {
-      const pushed = await this.options.index.pushProof(txid, MerklePath.fromHex(entry.proof.merklePath))
-      entry.proofPushed = pushed.ok
-      await this.options.store.savePassport(record)
-      this.log(`proof for ${short(txid)} ${pushed.ok ? 'reached the index' : `not taken by the index: ${pushed.detail}`}`)
+      const proof = entry.proof!
+      const pushed = await this.options.index.pushProof(txid, MerklePath.fromHex(proof.merklePath))
+      if (pushed.ok) await this.options.store.changePassport(id, (current) => {
+        const state = current?.states.find((s) => s.txid === txid)
+        if (state?.proof?.merklePath === proof.merklePath) state.proofPushed = true
+        return current
+      })
     }
     return true
   }
@@ -409,7 +543,7 @@ export class Writer {
   /** The first state: the brand opens the passport under its own controller key. */
   async issue(args: { brandId: string; brand: Party; passportId: string; profile: string; payload?: Record<string, unknown>; ownerFields?: Record<string, unknown>; product?: Record<string, unknown> }): Promise<WriteOutcome> {
     // Before the identifier is checked or the index asked: the answer does not depend on either.
-    refuseRetiredProfile(args.profile)
+    requireIssuableProfile(args.profile)
     const problems = identifierProblems(args.passportId, this.options.identifiers)
     if (problems.length > 0) throw new WriteRefused('identifier-refused', `${args.passportId} cannot be written because ${problems.join('; and ')}`)
     const existing = await this.options.store.getPassport(args.passportId)
@@ -437,7 +571,7 @@ export class Writer {
     return await this.writeState({ record: args.record, op: 'UPDATE', actor: args.actor, controller: args.actor, profile: args.record.profile, ...data, eventData: args.eventData })
   }
 
-  /** The hand-on: the holder acts, control moves to the recipient's key, field 15 commits to the custodian-signed acceptance record, and the payload and owner tier travel unchanged. */
+  /** The hand-on: the holder acts, control moves to the recipient's key, field 15 commits to the custodian-signed acceptance record, and the new commitment binds the ciphertext delivered to the recipient. */
   async transfer(args: { record: PassportRecord; holder: Party; recipient: Party; acceptance: ManagedAcceptanceRecord; eventData?: Record<string, unknown> }): Promise<WriteOutcome> {
     return await this.writeState({ record: args.record, op: 'TRANSFER', actor: args.holder, controller: args.recipient, profile: args.record.profile, eventData: args.eventData, acceptance: args.acceptance })
   }

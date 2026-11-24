@@ -131,6 +131,25 @@ describe('importing an uploaded document', () => {
     expect((await importsOf(api))[0]!.findings).toBeGreaterThan(0)
   })
 
+  it('retains a standalone event solely as an invalid receipt across upload, replay and original-byte export', async () => {
+    const api = await app()
+    const bytes = utf8(JSON.stringify(objectEvent(1, [CELL_A]), null, 2))
+    const request = '/api/epcis/imports?requestId=standalone-file'
+    const first = await api.upload(request, bytes)
+    expect(first.status).toBe(201)
+    const record = first.body.record
+    expect(record).toMatchObject({ documentValidity: 'invalid', events: [], sha256: sha256(bytes) })
+    expect(record.envelope).toBeUndefined()
+    expect(record.findings).toContainEqual(expect.objectContaining({ code: 'envelope-unrecognised' }))
+    const replay = await api.upload(request, bytes)
+    expect(replay.status).toBe(200)
+    expect(replay.body).toMatchObject({ replayed: true, record: { importId: record.importId, receivedAt: record.receivedAt, events: [] } })
+    expect(await importsOf(api)).toHaveLength(1)
+    const original = await api.get(`/api/epcis/imports/${ref(record.importId)}/original`)
+    expect(original.status).toBe(200)
+    expect(Buffer.from(original.bytes).equals(Buffer.from(bytes))).toBe(true)
+  })
+
   it('answers a retry with the same request identifier as the same request, with one receipt', async () => {
     const api = await app()
     const bytes = utf8(JSON.stringify(valid()))

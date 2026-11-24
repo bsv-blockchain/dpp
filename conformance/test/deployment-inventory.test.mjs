@@ -20,7 +20,7 @@ const inventory = JSON.parse(readFileSync(join(root, 'conformance', 'deployment-
 const set = JSON.parse(readFileSync(join(root, inventory.releaseSetPath), 'utf8'))
 
 /** A copy of every file the script reads, in a directory a test may change. */
-const SOURCES = ['package-lock.json', 'release', 'packages/dpp-profiles/bindings', 'packages/dpp-credentials/artifacts/w3c', 'packages/dpp-credentials/src/gs1-artefacts.ts', 'packages/dpp-profiles/src/gs1-artefacts.ts', 'packages/dpp-profiles/validator-image/licence-inventory.json', 'packages/create-dpp-app/template/package.json', 'packages/create-dpp-app/template/apps/api/package.json', 'packages/create-dpp-app/template/apps/web/package.json', 'packages/create-dpp-app/template/_env.example', 'conformance/deployment-inventory.json']
+const SOURCES = ['package-lock.json', 'release', 'packages/dpp-profiles/bindings', 'packages/dpp-profiles/test/fixtures/sector-bindings', 'packages/dpp-credentials/artifacts/w3c', 'packages/dpp-credentials/src/gs1-artefacts.ts', 'packages/dpp-profiles/src/gs1-artefacts.ts', 'packages/dpp-profiles/validator-image/licence-inventory.json', 'packages/create-dpp-app/template/package.json', 'packages/create-dpp-app/template/apps/api/package.json', 'packages/create-dpp-app/template/apps/web/package.json', 'packages/create-dpp-app/template/_env.example', 'conformance/deployment-inventory.json']
 function copyOfSources() {
   const dir = mkdtempSync(join(tmpdir(), 'dpp-inventory-'))
   for (const path of SOURCES) { mkdirSync(dirname(join(dir, path)), { recursive: true }); cpSync(join(root, path), join(dir, path), { recursive: true }) }

@@ -215,6 +215,7 @@
       ],
       "testTargets": [
         "fixtures/attestation-anchor-v1.json",
+        "fixtures/vectors/dpp/attestation-anchor/native-binding-v1.json",
         "fixtures/anchor-v3.json",
         "fixtures/evidence-v1.json",
         "examples/verify-attestation-anchor.mjs"
@@ -278,6 +279,9 @@
         "RULES-6-verification",
         "STATUS-validate-algorithm",
         "REG-contract-routes",
+        "CONF-4-capability-schema",
+        "CONF-4-registry-capabilities",
+        "REG-validate-report-version",
         "VER-2-report"
       ],
       "testTargets": [
@@ -330,13 +334,18 @@
       "pins": "the current signed native claim, its complete representation, digest and ten-field anchor"
     },
     {
+      "path": "fixtures/vectors/dpp/attestation-anchor/native-binding-v1.json",
+      "sha256": "55c3866080d1efe77c1c9042ac48ad3a58a76527067e8595fc6915d7e0f1bdee",
+      "pins": "the native identifier, canonical secured bytes and integrity of an independently signed anchor"
+    },
+    {
       "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
       "sha256": "417dda3c9353283302041a9fac03bde31fe2627c12e4a02260e8c3027fcaa34f",
       "pins": "the current anchor in the stack's vector format, with the six refusals the top-level file does not carry"
     },
     {
       "path": "fixtures/evidence-v1.json",
-      "sha256": "e6e822753668028abc6a7225347465bf379b711c957564e059f441bb358e9ca5",
+      "sha256": "6987e2732816a4f42b14143b6b869628c329667e8a071fda12df75af88b78626",
       "pins": "the verification report for twenty evidence cases"
     },
     {
@@ -361,8 +370,8 @@
     },
     {
       "path": "fixtures/evidence-v2.json",
-      "sha256": "ee22eea1126f3cfd861e5150f9a825a4d28e3ed9a15f945f5b4ae643c17fd2e0",
-      "pins": "the verification report for thirteen version 2 evidence cases"
+      "sha256": "b1dfa03b6888547dcc81c6be5b6fffdde1b9a4f3b8ba92630131ac5a0edaa99c",
+      "pins": "the verification report for nineteen version 2 evidence cases"
     }
   ],
   "dependencies": [

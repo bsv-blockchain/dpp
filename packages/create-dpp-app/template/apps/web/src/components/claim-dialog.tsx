@@ -46,7 +46,7 @@ function RoleFields({ role, setRole, party, setParty, imported }: { role: string
   const roles = LIFECYCLE_ROLES.filter((r) => !(imported && r === 'observer'))
   return (
     <>
-      <Field label="You sign" htmlFor="claim-role" required help={imported ? 'An imported event was observed by whoever supplied it, so it is never signed as the observer.' : 'Your signature says which key signed. It does not show that you hold the role: nothing here supports that, and the claim says so.'}>
+      <Field label="You sign" htmlFor="claim-role" required help={imported ? 'Choose the role in which you report this supplied event. The operator must have granted it for each passport at the event time.' : 'The operator must have granted this role for every passport the event names, at the time the event occurred.'}>
         <Select value={role} onValueChange={setRole}>
           <SelectTrigger id="claim-role" className="w-full">
             <SelectValue />
@@ -310,7 +310,7 @@ export function DeclareErrorDialog({ passportId, claim, onClose, onDone }: { pas
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Declare the event in error</DialogTitle>
-          <DialogDescription>A new claim, signed by you, that carries the same event with an EPCIS error declaration. The original claim stays exactly as it was signed. Only a declaration by the original's issuer is shown as declaring it in error.</DialogDescription>
+          <DialogDescription>A signed declaration records the correction and preserves the original event. Your role grant must cover every bound passport at the original event time. Correcting another issuer’s original also requires permission to declare its error.</DialogDescription>
         </DialogHeader>
         {result != null ? (
           <Outcome claim={result} onClose={onClose} />

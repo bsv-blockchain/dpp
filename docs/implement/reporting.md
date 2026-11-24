@@ -46,7 +46,7 @@ The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab19
 
 ## Declare what you support
 
-A capability document declares supported and unsupported features as JSON under the [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json). Reviewers check this support claim against the ledger; it is not proof of conformance ([conformance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/conformance.md) section 4). An index or a registry serves it at `GET /capabilities`; a library or tool publishes it with its report.
+A capability document declares supported and unsupported features as JSON under the [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json). Reviewers check this support claim against the ledger; it is not proof of conformance ([conformance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/conformance.md) section 4). A registry serves its declaration at `GET /capabilities`. An index can offer that route as an extension. An implementation publishes its declaration with its role claim.
 
 | Requiredness | Fields |
 |---|---|
@@ -97,7 +97,7 @@ console.log(validate(document) ? 'valid' : validate.errors)
 JS
 ```
 
-Expect `valid`. If it prints fields that break the schema, fix them and rerun before publishing the declaration. For a registry, which document `GET /capabilities` answers with is not settled yet ([registry](roles/registry.md)).
+Expect `valid`. If it prints fields that break the schema, fix them and rerun before publishing the declaration. For a registry, validate the actual `GET /capabilities` response against `contracts/registry-capabilities.schema.json`, which includes the common schema. The [registry guide](roles/registry.md) provides the executable check.
 
 ## Send it
 

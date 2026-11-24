@@ -30,6 +30,7 @@ export interface Config {
   passportHost: string
   gs1Prefix: string
   registry: { url?: string; token?: string }
+  lifecycleAuthorityGrantsFile?: string
   /**
    * The index's evidence export, read when this application is exported: the bearer its complete export wants, when
    * it wants one, and the exporter identity key to hold its packages to. Without the key, the one its capability
@@ -39,7 +40,7 @@ export interface Config {
   /** Profiles held by a binding in a folder of your own, and the binding digests this deployment trusts for them. */
   customProfiles: { dirs: string[]; trustedBindingDigests: string[] }
   /**
-   * Where bound profiles are resolved from. Unset, the two sector bindings are read from the folder the profiles
+   * Where bound profiles are resolved from. Unset, the packaged sector editions are read from the folder the profiles
    * package ships. Set, they are read from this folder, which holds a profile bundle as a restore installs it, and
    * the package's own folder is not read.
    */
@@ -157,6 +158,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     passportHost: text(env, 'PASSPORT_HOST') ?? 'localhost:3000',
     gs1Prefix: text(env, 'GS1_PREFIX') ?? '952',
     registry: { url: text(env, 'REGISTRY_URL')?.replace(/\/+$/, ''), token: text(env, 'REGISTRY_TOKEN') },
+    lifecycleAuthorityGrantsFile: text(env, 'LIFECYCLE_AUTHORITY_GRANTS_FILE'),
     indexExport: { token: text(env, 'INDEX_EXPORT_TOKEN'), exporterKey: indexExporterKey },
     customProfiles: { dirs: list(env, 'CUSTOM_PROFILE_DIRS'), trustedBindingDigests },
     profileBundleDir: text(env, 'PROFILE_BUNDLE_DIR'),

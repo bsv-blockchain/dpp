@@ -89,11 +89,11 @@ describe('the validation engine, by configuration', () => {
     // Start-up says which engine it reached, by its address, and never by its token.
     expect(lines.some((line) => line.startsWith(`Validation engine: the validator service at ${service.url}`))).toBe(true)
     expect(await get('/api/health')).toMatchObject({ validationEngine: true, validationEngineKind: 'service' })
-    expect((await get('/api/profiles/eu-battery%401')).engine).toEqual({ available: true, kind: 'service' })
+    expect((await get('/api/profiles/eu-battery%402')).engine).toEqual({ available: true, kind: 'service' })
   })
 
   it('gives the same answers either way: a valid document is written and read as passing, an invalid one is refused for the same cause', async () => {
-    for (const profile of ['eu-battery@1', 'eu-textile@1']) {
+    for (const profile of ['eu-battery@2', 'eu-textile@2']) {
       const readings: PassportReading[] = []
       for (const [platform, mode] of [
         [inProcess, 'IN'],
@@ -111,9 +111,9 @@ describe('the validation engine, by configuration', () => {
     // A document about another item fails the same rule in both, before anything is signed.
     const causes: unknown[] = []
     for (const platform of [inProcess, withService]) {
-      const { product } = exampleFor(platform, 'eu-battery@1', 'ENGINE-OTHER-1')
-      const { passportId } = exampleFor(platform, 'eu-battery@1', 'ENGINE-MINE-1')
-      const refused = await refusal(platform.writer.issue({ brandId, brand: platform.parties.brand(brandId), passportId, profile: 'eu-battery@1', product }))
+      const { product } = exampleFor(platform, 'eu-battery@2', 'ENGINE-OTHER-1')
+      const { passportId } = exampleFor(platform, 'eu-battery@2', 'ENGINE-MINE-1')
+      const refused = await refusal(platform.writer.issue({ brandId, brand: platform.parties.brand(brandId), passportId, profile: 'eu-battery@2', product }))
       causes.push([refused.code, refused.data?.cause])
       expect(await platform.store.getPassport(passportId)).toBeUndefined()
     }
@@ -124,15 +124,15 @@ describe('the validation engine, by configuration', () => {
   })
 
   it('blocks a write and reads as not checked when the service is stopped, exactly as missing libraries do', async () => {
-    const written = await issue(withService, 'eu-battery@1', 'ENGINE-STOP-0001')
+    const written = await issue(withService, 'eu-battery@2', 'ENGINE-STOP-0001')
     const port = service.port
     await service.close()
 
     // The same refusal, by the same code, as a deployment whose libraries did not load.
     const bare = await openPlatform({ config: loadConfig(base), mode: 'test', log: () => {}, loadEngineLibrary: async (name) => { throw new Error(`Cannot find package '${name}'`) } })
     try {
-      const stopped = await refusal(issue(withService, 'eu-battery@1', 'ENGINE-STOP-0002'))
-      const missing = await refusal(issue(bare, 'eu-battery@1', 'ENGINE-STOP-0002'))
+      const stopped = await refusal(issue(withService, 'eu-battery@2', 'ENGINE-STOP-0002'))
+      const missing = await refusal(issue(bare, 'eu-battery@2', 'ENGINE-STOP-0002'))
       expect(stopped.code).toBe('product-not-validated')
       expect(missing.code).toBe('product-not-validated')
       expect(stopped.data?.cause).toBe(missing.data?.cause)
@@ -142,7 +142,7 @@ describe('the validation engine, by configuration', () => {
       expect(stopped.message).not.toMatch(/Install jsonld/)
       expect(missing.message).toMatch(/Install jsonld@9\.0\.0 n3@2\.13\.12 shacl-engine@1\.1\.3/)
       expect(stopped.message).not.toContain(TOKEN)
-      const { passportId } = exampleFor(withService, 'eu-battery@1', 'ENGINE-STOP-0002')
+      const { passportId } = exampleFor(withService, 'eu-battery@2', 'ENGINE-STOP-0002')
       expect(await withService.store.getPassport(passportId)).toBeUndefined()
     } finally {
       await bare.close()
@@ -155,11 +155,11 @@ describe('the validation engine, by configuration', () => {
     expect(view).toMatchObject({ status: 'not-checked', cause: 'validator-unavailable' })
     expect(view.summary).toMatch(/The validation engine is not available: the validator service at/)
     expect(view.summary).toMatch(/A check that could not run is not a pass\./)
-    expect(view.steps.find((step) => step.step === 'passport-identity')?.status).toBe('pass')
+    expect(view.steps.find((step) => step.step === 'passport-identity')?.status).toBe('not-checked')
 
     // The API says so wherever a person looks: the health answer, the form's profile and the operations page.
     expect(await get('/api/health')).toMatchObject({ validationEngine: false, validationEngineKind: 'service' })
-    const described = (await get('/api/profiles/eu-battery%401')).engine
+    const described = (await get('/api/profiles/eu-battery%402')).engine
     expect(described).toMatchObject({ available: false, kind: 'service' })
     expect(described.problem).toMatch(/could not be reached/)
     expect(described.problem).not.toContain(TOKEN)
@@ -168,8 +168,8 @@ describe('the validation engine, by configuration', () => {
     // The service comes back at the same address. Nothing here is restarted: the next look finds it.
     service = await startValidatorService({ token: TOKEN, port })
     expect(await get('/api/health')).toMatchObject({ validationEngine: true })
-    expect((await get('/api/profiles/eu-battery%401')).engine).toEqual({ available: true, kind: 'service' })
-    expect((await issue(withService, 'eu-battery@1', 'ENGINE-STOP-0002')).entry.index).toBe('admitted')
+    expect((await get('/api/profiles/eu-battery%402')).engine).toEqual({ available: true, kind: 'service' })
+    expect((await issue(withService, 'eu-battery@2', 'ENGINE-STOP-0002')).entry.index).toBe('admitted')
     expect((await withService.read(written.record.passportId)).payloadChecks[0]!.publicView.status).toBe('pass')
   })
 
@@ -184,8 +184,8 @@ describe('the validation engine, by configuration', () => {
     expect(nowhere.problem).toMatch(/could not be reached/)
     const platform = await openPlatform({ config: loadConfig({ ...base, VALIDATOR_URL: 'http://127.0.0.1:9' }), mode: 'test', log: () => {} })
     try {
-      expect(platform.profiles.list().map((profile) => profile.profile)).toEqual(['eu-battery@1', 'eu-textile@1'])
-      expect((await refusal(issue(platform, 'eu-textile@1', 'ENGINE-NONE-0001'))).code).toBe('product-not-validated')
+      expect(platform.profiles.list().map((profile) => profile.profile)).toEqual(['eu-battery@1', 'eu-textile@1', 'eu-battery@2', 'eu-textile@2'])
+      expect((await refusal(issue(platform, 'eu-textile@2', 'ENGINE-NONE-0001'))).code).toBe('product-not-validated')
     } finally {
       await platform.close()
     }
@@ -255,7 +255,7 @@ describe('a restricted value, with the validator service configured', () => {
   /** The same restricted properties bound-http.test.ts plants the value in. */
   const withCanary = (profile: string, product: Json): Json => {
     const copy = structuredClone(product)
-    if (profile === 'eu-battery@1') {
+    if (profile === 'eu-battery@2') {
       copy['eubat:manufacturerIdentifier'] = canary
       ;(copy['eubat:hasSupplyChainDueDiligence'] as Json)['eubat:auditBody'] = `${canary} audit body`
     } else {
@@ -271,8 +271,8 @@ describe('a restricted value, with the validator service configured', () => {
     const keep = (where: string, text: string): void => void seen.push([where, text])
 
     for (const [profile, serial] of [
-      ['eu-battery@1', 'SV-LEAK-BAT-0001'],
-      ['eu-textile@1', 'SV-LEAK-TEX-0001'],
+      ['eu-battery@2', 'SV-LEAK-BAT-0001'],
+      ['eu-textile@2', 'SV-LEAK-TEX-0001'],
     ] as const) {
       const bound = platform.profiles.get(profile)!
       const example = sectorExamples(bound, { host: 'passports.example.com', prefix: '952' })[0]!
@@ -308,7 +308,7 @@ describe('a restricted value, with the validator service configured', () => {
     keep('passport list', (await call(`/api/brands/${brandId}/passports`)).text)
     keep('operations', (await call('/api/operations')).text)
     keep('health', (await call('/api/health')).text)
-    keep('profiles', (await call('/api/profiles/eu-battery%401')).text)
+    keep('profiles', (await call('/api/profiles/eu-battery%402')).text)
     keep('journal', JSON.stringify(await platform.store.listPassports()))
     keep('everything printed', printed.join('\n'))
     keep('the service log', JSON.stringify(serviceLog))

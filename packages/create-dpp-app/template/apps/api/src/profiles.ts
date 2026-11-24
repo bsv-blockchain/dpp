@@ -11,6 +11,8 @@ import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import {
   SUPPORTED_PROFILE_IDS,
+  HISTORICAL_SECTOR_BINDINGS,
+  CURRENT_SECTOR_BINDINGS,
   assertProfileNotRetired,
   readManifest,
   readPublicPayloadSchema,
@@ -24,10 +26,16 @@ export const ajv = new Ajv2020({ allErrors: true, strict: false })
 ;(addFormats as unknown as (instance: Ajv2020) => void)(ajv)
 
 /** The sentence a record under the demonstration prefix carries first (spec/profiles.md section 5). */
-export const DEMONSTRATION_NOTICE = 'Demonstration record. Nothing here describes a real product.'
+export const DEMONSTRATION_NOTICE = 'This demonstration record describes no real product.'
 
 /** A manifest profile this application writes and reads under. A retired profile is not one, though the package still publishes its files. */
 export type ManifestProfileId = SupportedProfileId
+
+export function sectorIssueSuccessor(profile: string): string | undefined {
+  if (!HISTORICAL_SECTOR_BINDINGS.some(entry => entry.profile === profile)) return undefined
+  const sector = profile.split('@')[0]
+  return CURRENT_SECTOR_BINDINGS.find(entry => entry.profile.split('@')[0] === sector)?.profile
+}
 
 /** The manifest profiles a brand may choose: every supported version whose manifest says it is current. No retired profile is among them. */
 export function currentProfiles(): Array<{ id: ManifestProfileId; title: string; description?: string }> {

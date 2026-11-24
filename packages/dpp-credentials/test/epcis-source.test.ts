@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  type EpcisParseOptions,
   EPCIS_CONTEXT_DIGEST,
   EPCIS_CONTEXT_IRI,
   EPCIS_DEFAULT_LIMITS,
@@ -66,6 +67,33 @@ describe('parseEpcisSource', () => {
     expect(result.events[0]?.pointer).toBe('');
     expect(result.findings.map((f) => f.code)).toEqual(['single-event']);
     expect(result.context.document).toEqual([EPCIS_CONTEXT_IRI]);
+  });
+
+  it('keeps a standalone event uninterpreted without a recognised envelope and context declarations', () => {
+    const bytes = bytesOf(fiveEventList()[2]);
+    const envelope = { envelopeType: 'EPCISDocument' } as const;
+    const facts = { contextDeclarations: [EPCIS_CONTEXT_IRI] };
+    for (const singleEvent of [
+      {}, envelope, facts, { ...facts, envelopeType: 'ObjectEvent' },
+      ...[null, true, 3, '', 'relative', [], [EPCIS_CONTEXT_IRI, false], [[EPCIS_CONTEXT_IRI]]].map(contextDeclarations => ({ ...envelope, contextDeclarations })),
+    ]) {
+      const result = okOrThrow(parseEpcisSource(bytes, { mediaType: 'application/json', singleEvent: singleEvent as NonNullable<EpcisParseOptions['singleEvent']> }));
+      expect(result.envelope).toBeUndefined();
+      expect(result.events).toEqual([]);
+      expect(result.findings.map(f => f.code)).toEqual(['envelope-unrecognised']);
+    }
+  });
+
+  it('preserves the supplied IRI, inline context or ordered list for a standalone query result', () => {
+    const event = fiveEventList()[2];
+    const inline = { example: 'https://example.org/terms/' };
+    for (const contextDeclarations of [EPCIS_CONTEXT_IRI, inline, [EPCIS_CONTEXT_IRI, inline]]) {
+      const result = okOrThrow(parseEpcisSource(bytesOf(event), { mediaType: 'application/json', singleEvent: { envelopeType: 'EPCISQueryDocument', contextDeclarations } }));
+      expect(result.envelope?.type).toBe('EPCISQueryDocument');
+      expect(result.document).toEqual(event);
+      expect(result.context.document).toEqual(contextDeclarations);
+      expect(result.events.map(e => e.pointer)).toEqual(['']);
+    }
   });
 
   it('names what an envelope lacks without deciding for the caller', () => {

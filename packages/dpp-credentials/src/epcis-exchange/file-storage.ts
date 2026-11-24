@@ -20,8 +20,8 @@
  * passes the shared adapter suite, which is the only claim it makes.
  */
 import { randomBytes } from 'node:crypto';
-import { mkdir, open, readFile, readdir, rename, rm, unlink, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { mkdir, open, readFile, readdir, rename, rm, rmdir, unlink, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve, sep } from 'node:path';
 import type { JsonObject } from '../types.js';
 import {
   EPCIS_STORAGE_KEY,
@@ -102,28 +102,44 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
 
   const syncFolder = async (folder: string): Promise<void> => {
     if (!fsync) return;
-    // Flushing a folder is what makes a rename survive a power loss. A platform that cannot open a folder for it has no such step to take.
-    let handle;
-    try { handle = await open(folder, 'r'); } catch { return; }
-    try { await handle.sync(); } catch { /* not supported here */ } finally { await handle.close(); }
+    const handle = await open(folder, 'r');
+    try { await handle.sync(); } finally { await handle.close(); }
   };
   const writeWhole = async (path: string, content: Uint8Array | string): Promise<void> => {
     const handle = await open(path, 'wx');
     try { await handle.writeFile(content); if (fsync) await handle.sync(); } finally { await handle.close(); }
   };
   const temporary = (): string => join(paths.tmp, `${process.pid}.${randomBytes(8).toString('hex')}.tmp`);
-  /** Make a folder and every missing folder above it. A new folder survives a power loss only once the folder that lists it is flushed, so each one made is. */
+  // Confirm each directory entry once per open. A directory visible after a
+  // failed flush on the previous open may still need its parent flushed.
+  const confirmedFolders = new Set<string>();
   const ensureFolder = async (folder: string): Promise<void> => {
-    const first = await mkdir(folder, { recursive: true });
-    if (first == null || !fsync) return;
-    for (let made = folder; ; made = dirname(made)) {
-      await syncFolder(dirname(made));
-      if (resolve(made) === resolve(first)) break;
+    if (confirmedFolders.has(folder)) return;
+    const parent = dirname(folder);
+    try {
+      await mkdir(folder);
+    } catch (error) {
+      if (isMissing(error) && parent !== folder) {
+        await ensureFolder(parent);
+        await mkdir(folder, { recursive: true });
+      } else if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
     }
+    if (folder !== root && folder.startsWith(root + sep)) await ensureFolder(parent);
+    await syncFolder(parent);
+    confirmedFolders.add(folder);
+  };
+  const removeFile = async (path: string): Promise<void> => {
+    try { await unlink(path); } catch (error) {
+      if (!isMissing(error)) throw error;
+      // A previously removed name may still need its directory flushed.
+      try { await syncFolder(dirname(path)); } catch (cause) { if (!isMissing(cause)) throw cause; }
+      return;
+    }
+    await syncFolder(dirname(path));
   };
 
   /* ---- the lock: one process per folder ---- */
-  await mkdir(root, { recursive: true });
+  await ensureFolder(root);
   let staleLockReplaced = false;
   for (let attempt = 0; ; attempt += 1) {
     try {
@@ -144,6 +160,7 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
 
   let closed = false;
   let stopped: unknown;
+  let writeFailure: unknown;
   const release = async (): Promise<void> => { openFolders.delete(root); await rm(paths.lock, { force: true }); };
 
   try {
@@ -155,8 +172,15 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
       if (entries.length > 0) throw new EpcisStorageError('corrupt', `${root} is not empty and is not an EPCIS exchange folder`);
       await mkdir(paths.tmp, { recursive: true });
       const pending = temporary();
-      await writeWhole(pending, JSON.stringify(FILE_EPCIS_STORAGE_FORMAT));
-      await rename(pending, paths.format);
+      try {
+        await writeWhole(pending, JSON.stringify(FILE_EPCIS_STORAGE_FORMAT));
+        await rename(pending, paths.format);
+      } catch (error) {
+        // This open created both names while holding the lock on an empty store.
+        await rm(pending, { force: true });
+        await rmdir(paths.tmp);
+        throw error;
+      }
       await syncFolder(root);
     } else if ((format as { format?: unknown }).format !== FILE_EPCIS_STORAGE_FORMAT.format || (format as { version?: unknown }).version !== FILE_EPCIS_STORAGE_FORMAT.version) {
       throw new EpcisStorageError('corrupt', `${root} holds format ${JSON.stringify(format)}, which this adapter does not read`);
@@ -178,6 +202,7 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
   };
   const usable = (): void => {
     if (stopped != null) throw stopped;
+    if (writeFailure != null) throw writeFailure;
     if (closed) throw new EpcisStorageError('closed', `${root} was closed`);
   };
 
@@ -201,8 +226,7 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
     const path = recordPath(write.kind, write.key);
     if (write.op === 'delete') {
       step('record-delete');
-      try { await unlink(path); } catch (error) { if (!isMissing(error)) throw error; }
-      await syncFolder(dirname(path));
+      await removeFile(path);
       return;
     }
     step('record-write');
@@ -221,7 +245,11 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
   let journalsApplied = 0;
   try {
     for (const name of await readdir(paths.tmp)) { await rm(join(paths.tmp, name), { force: true }); temporariesRemoved += 1; }
-    for (const name of (await readdir(paths.journal)).sort()) {
+    const journals = (await readdir(paths.journal)).sort();
+    // A failed directory sync can leave a visible journal whose name is
+    // still volatile. Establish its durability before changing any record.
+    if (journals.length > 0) await syncFolder(paths.journal);
+    for (const name of journals) {
       const path = join(paths.journal, name);
       let journal: JournalFile;
       try { journal = JSON.parse(await readFile(path, 'utf8')) as JournalFile; } catch { throw new EpcisStorageError('corrupt', `${path} is not a readable journal file`); }
@@ -246,6 +274,14 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
     tail = next.catch(() => undefined);
     return next;
   };
+  // Once disk state is uncertain, queued operations must wait for a reopen
+  // and journal replay before any read or write can observe a partial batch.
+  const writeInTurn = <T>(run: () => Promise<T>): Promise<T> => inTurn(async () => {
+    try { return await run(); } catch (error) {
+      if (typeof (error as NodeJS.ErrnoException)?.code === 'string' && !(error instanceof EpcisStorageError)) writeFailure = error;
+      throw error;
+    }
+  });
   let sequence = Date.now() * 1000;
 
   const listFolder = async (folder: string): Promise<string[]> => {
@@ -256,11 +292,18 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
     dir: root,
     reopened: { journalsApplied, temporariesRemoved, staleLockReplaced },
 
-    putBytes: (sha256, bytes) => inTurn(async () => {
+    putBytes: (sha256, bytes) => writeInTurn(async () => {
       usable();
       assertStorageBytes(sha256, bytes);
       const path = bytesPath(sha256);
-      try { await (await open(path, 'r')).close(); return; } catch (error) { if (!isMissing(error)) throw error; }
+      let existing;
+      try { existing = await open(path, 'r'); } catch (error) { if (!isMissing(error)) throw error; }
+      if (existing) {
+        try { if (fsync) await existing.sync(); } finally { await existing.close(); }
+        await ensureFolder(dirname(path));
+        await syncFolder(dirname(path));
+        return;
+      }
       step('bytes-write');
       const pending = temporary();
       await writeWhole(pending, bytes);
@@ -276,12 +319,11 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
       try { return new Uint8Array(await readFile(bytesPath(sha256))); } catch (error) { if (isMissing(error)) return undefined; throw error; }
     },
 
-    deleteBytes: (sha256) => inTurn(async () => {
+    deleteBytes: (sha256) => writeInTurn(async () => {
       usable();
       assertStorageDigest(sha256);
       step('bytes-delete');
-      try { await unlink(bytesPath(sha256)); } catch (error) { if (!isMissing(error)) throw error; }
-      await syncFolder(dirname(bytesPath(sha256)));
+      await removeFile(bytesPath(sha256));
     }),
 
     // A read waits for the write in progress, so it never sees a batch half applied.
@@ -315,7 +357,7 @@ export async function openFileEpcisStorage(dir: string, options: FileEpcisStorag
       return out;
     }),
 
-    commit: (writes) => inTurn(async (): Promise<EpcisCommitResult> => {
+    commit: (writes) => writeInTurn(async (): Promise<EpcisCommitResult> => {
       usable();
       const batch: EpcisStorageWrite[] = checkedWrites(writes);
       const journal: JournalFile['writes'] = [];
