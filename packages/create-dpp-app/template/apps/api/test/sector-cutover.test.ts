@@ -1,4 +1,4 @@
-import { Utils } from '@bsv/sdk'
+import { Transaction, Utils } from '@bsv/sdk'
 import { buildLockingScript, completeState, findDppOutputs, ownerBlobHash, ownerKeyFor } from '@bsv/dpp-protocol'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { loadConfig } from '../src/config.js'
@@ -83,6 +83,13 @@ describe.each(['eu-battery@1', 'eu-textile@1'])('the cutover for %s', (profile) 
     expect(updated.states.map(entry => entry.op)).toEqual(['ISSUE', 'UPDATE'])
     expect(updated.profile).toBe(journal.profile)
     expect(updated.states[0].rawTx).toBe(journal.states[0].rawTx)
+    const predecessor = findDppOutputs(Transaction.fromHex(updated.states[0].rawTx))[0]!
+    expect(predecessor.lockingPublicKey.toString()).toBe(await ownerKeyFor(journal.passportId, app.platform.wallet.publisher))
+    expect(predecessor.lockingPublicKey.toString()).not.toBe(predecessor.state.ownerIdentityKey)
+    const next = Transaction.fromAtomicBEEF(Utils.toArray(updated.states[1]!.beef, 'base64'))
+    const successor = findDppOutputs(next)[0]!
+    expect(successor.lockingPublicKey.toString()).toBe(successor.state.ownerIdentityKey)
+    expect(await next.verify('scripts only')).toBe(true)
     expect((await app.post(`/api/passports/${ref}/authorised-view`, {})).body.authorisedView.status).toBe('pass')
   })
 })

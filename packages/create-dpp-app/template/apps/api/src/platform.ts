@@ -101,13 +101,13 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
   let devIndex: DevIndex | undefined
   let index: IndexClient
   if (config.index.joined) {
-    index = new IndexClient({ url: config.index.url!, submitToken: config.index.submitToken, callbackToken: config.index.callbackToken })
+    index = new IndexClient({ url: config.index.url!, submitToken: config.index.submitToken, callbackToken: config.index.callbackToken, supportsRetraction: config.index.supportsRetraction })
   } else {
     // An address with no tokens is an index this app has not joined yet: it
     // would answer 401 to every write. The in-process index stands in until
     // go-live registers the key and stores the tokens.
     devIndex = await startDevIndex({ publisherKey: wallet.identityKey, network: config.network })
-    index = new IndexClient({ url: devIndex.url, submitToken: devIndex.submitToken, callbackToken: devIndex.callbackToken })
+    index = new IndexClient({ url: devIndex.url, submitToken: devIndex.submitToken, callbackToken: devIndex.callbackToken, supportsRetraction: true })
     if (mode === 'live') {
       log(
         config.index.url == null

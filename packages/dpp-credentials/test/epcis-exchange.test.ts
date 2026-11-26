@@ -1305,6 +1305,7 @@ describe('boundaries', () => {
       'epcis-source.ts',
       'gs1-artefacts.ts',
       'jcs.ts',
+      'private-host.ts',
       'types.ts',
     ]);
     // The credential verifier and the did:web resolver of this package are not reached either.

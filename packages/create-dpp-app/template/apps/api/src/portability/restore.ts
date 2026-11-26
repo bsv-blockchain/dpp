@@ -19,16 +19,16 @@
 // anything is written.
 //
 // A restore is a data operation. It builds no state, signs nothing and moves
-// no custody. The one thing it sends anywhere is each state's own bytes, as
-// they were journalled, to this deployment's index, which rebuilds its
-// records from them. Keys and credentials are not restored, because none are
+// no custody. It sends the original announcement and any retained proof
+// to this deployment's index, which rebuilds its records from them.
+// Keys and credentials are not restored, because none are
 // carried: continuing to write needs the wallet's keys, which travel by the
 // wallet's own recovery, and each source's credential, which the operator
 // configures again.
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Transaction, Utils } from '@bsv/sdk'
+import { MerklePath, Transaction, Utils } from '@bsv/sdk'
 import {
   acceptanceCommitment,
   evidencePackageSigner,
@@ -47,6 +47,7 @@ import {
 import { BUNDLED_BINDINGS, BUNDLED_BINDING_DIGESTS, createProfileRegistry, isRetiredProfile, openProfileBundle, profileBundleFiles, registerProfileBundle } from '@bsv/dpp-profiles'
 import { verifyGs1Artefacts } from '@bsv/dpp-credentials'
 import { epcisRecoveryFiles, restoreEpcisRecovery, verifyEpcisRecovery, type EpcisExchangeStorage, type EpcisRestoreCounts, type VerifiedEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'
+import { acceptanceMatchesOffer } from '../custody.js'
 import type { EpcisSourceConfig } from '../epcis/sources.js'
 import type { Platform } from '../platform.js'
 import { isProfileId } from '../profiles.js'
@@ -206,6 +207,18 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
       if (tx.id('hex') !== state.txid || carried.id('hex') !== state.txid || held == null || held.passportId !== passportId || held.payloadPublic !== state.payloadPublic) {
         refuse('records-inconsistent', `The state ${state.txid} of ${passportId} is not the transaction its journal entry describes.`, { passportId, txid: state.txid })
       }
+      try {
+        if (state.sentBeef != null && Transaction.fromAtomicBEEF(Utils.toArray(state.sentBeef, 'base64')).id('hex') !== state.txid) throw new Error('the original announcement carries a different transaction')
+        if (state.proof != null) {
+          const path = MerklePath.fromHex(state.proof.merklePath)
+          const root = path.computeRoot(state.txid)
+          if (path.blockHeight !== state.proof.blockHeight) throw new Error('the retained proof gives a different block height')
+          const embedded = carried.merklePath
+          if (embedded != null && (embedded.blockHeight !== path.blockHeight || embedded.computeRoot(state.txid) !== root)) throw new Error('the BEEF and the retained proof disagree')
+        }
+      } catch (cause) {
+        refuse('records-inconsistent', `The replay evidence for ${state.txid} of ${passportId} is inconsistent (${cause instanceof Error ? cause.message : String(cause)}).`, { passportId, txid: state.txid })
+      }
       const tier = state.ownerTier
       if (tier != null && (typeof tier.ciphertext !== 'string' || tier.hash !== held!.payloadOwnerHash || !verifyOwnerBlob(Utils.toArray(tier.ciphertext, 'base64'), held!.payloadOwnerHash))) {
         refuse('records-inconsistent', `The retained owner tier of ${state.txid} differs from its signed commitment.`, { passportId, txid: state.txid })
@@ -223,13 +236,14 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
     if (!chain.valid) refuse('journal-invalid', `The lineage the journal of ${passportId} carries does not verify: ${chain.error ?? 'no reason given'}.`, { passportId })
 
     // Each acceptance record a hand-on commits to is carried once more as the authority entry a reader of the package finds, and the two agree.
-    const commitments = new Set<string>()
     for (const acceptance of record.acceptanceRecords as ManagedAcceptanceRecord[]) {
       const commitment = acceptanceCommitment(acceptance)
       const path = `${folder}/authority/${commitment}.json`
       const bytes = need(path, `the acceptance record ${commitment} of ${passportId}`)
-      if (!sameBytes(bytes, recordBytes(acceptance)) || listed.get(path)!.represents !== `sha256:${commitment}`) refuse('records-inconsistent', `The acceptance record ${commitment} of ${passportId} differs between the journal and the authority entry.`, { passportId })
-      commitments.add(commitment)
+      const entry = listed.get(path)!
+      if (!sameBytes(bytes, recordBytes(acceptance)) || entry.category !== 'authority' || entry.representation !== acceptance.acceptanceFormat || entry.represents !== `sha256:${commitment}`) {
+        refuse('records-inconsistent', `The acceptance record ${commitment} of ${passportId} does not match its authority inventory entry.`, { passportId })
+      }
       accounted.add(path)
     }
     if (record.acceptanceRecords.length !== passport.acceptanceRecords) refuse('records-inconsistent', `The descriptor counts ${passport.acceptanceRecords} acceptance records for ${passportId} and its journal holds ${record.acceptanceRecords.length}.`, { passportId })
@@ -266,7 +280,14 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
     const declaredAbsent = manifest.completeness.absent.some((line) => line.startsWith(`brand:${record.brandId} `))
     if (!brands.some((brand) => brand.id === record.brandId) && !declaredAbsent) refuse('package-incomplete', `The package is incomplete: it does not carry the brand record of ${record.brandId}, which holds ${record.passportId}.`, { brandId: record.brandId })
   }
-  for (const offer of offers) if (!journals.some((record) => record.passportId === offer.passportId)) refuse('records-inconsistent', `The offer ${offer.requestId} is about a passport the package does not carry.`)
+  for (const offer of offers) {
+    const passport = journals.find(record => record.passportId === offer.passportId)
+    if (passport == null) return refuse('records-inconsistent', `The offer ${offer.requestId} is about a passport the package does not carry.`)
+    const accepted = offer.status === 'accepted' || offer.status === 'transferred'
+    if (accepted !== (offer.record != null) || (offer.record != null && !acceptanceMatchesOffer(offer, offer.record, passport, trust.exporterKey))) {
+      refuse('records-inconsistent', `The status or signed acceptance of offer ${offer.requestId} does not agree with the retained offer.`, { requestId: offer.requestId })
+    }
+  }
   for (const claim of claims) {
     const about = isEpcisLifecycleRecord(claim) ? claim.boundPassports : [claim.passportId]
     if (!journals.some((record) => about.includes(record.passportId))) refuse('records-inconsistent', `The claim ${claim.id} is about a passport the package does not carry.`)
@@ -441,7 +462,7 @@ export interface RestoreApplicationInput {
 }
 
 export interface RestoreReport {
-  /** `restored`: something was written. `unchanged`: this deployment already held all of it, and nothing was written. */
+  /** The outcome for recovered records and profile files. The index also reports its own replay results. */
   outcome: 'restored' | 'unchanged'
   exportId: string
   exportedAt: string
@@ -462,7 +483,12 @@ export interface RestoreReport {
   }
   epcis?: { outcome: 'restored' | 'resumed' | 'unchanged'; snapshotId: string; sourceIds: string[]; written: EpcisRestoreCounts; unchanged: EpcisRestoreCounts; relocations: number; associationsRebuilt?: number }
   /** What became of the index's records of each passport. */
-  index: { rebuilt: boolean; reason?: string; announced: number; admitted: number; duplicate: number; notAnnounced: Array<{ passportId: string; txid: string; answer: string; detail?: string }> }
+  index: {
+    rebuilt: boolean; reason?: string; announced: number; admitted: number; duplicate: number
+    notAnnounced: Array<{ passportId: string; txid: string; answer: string; detail?: string }>
+    proofsApplied: number
+    proofsNotApplied: Array<{ passportId: string; txid: string; detail: string }>
+  }
   /** Each passport read again here, as any reader reads it, and held against how it read where it was exported. */
   readings: { compared: number; same: number; different: Array<{ passportId: string; differences: string[] }>; notCompared: Array<{ passportId: string; reason: string }> }
   /** What no export carries, and so what the operator provides at this deployment before it carries on. */
@@ -471,8 +497,9 @@ export interface RestoreReport {
   attention: string[]
 }
 
-/** A journal without the answers its states got from the index it was written under: those belong to that index, and are the one part a restore may set again. */
-const withoutIndexAnswers = (record: PassportRecord): unknown => ({ ...record, states: record.states.map(({ index: _index, refusal: _refusal, proofPushed: _pushed, ...state }: StateEntry) => state) })
+/** An index's admission and proof receipts belong to the deployment that supplied them. */
+const awaitingIndex = ({ refusal: _refusal, proofPushed: _pushed, ...state }: StateEntry): StateEntry => ({ ...state, index: 'not-asked' })
+const withoutIndexAnswers = (record: PassportRecord): unknown => ({ ...record, states: record.states.map(awaitingIndex) })
 
 /** Where two readings differ, as short sentences. Empty when they are the same reading. */
 function readingDifferences(exported: ExportedReading, here: ExportedReading): string[] {
@@ -586,19 +613,33 @@ export async function restoreApplication(input: RestoreApplicationInput): Promis
   }
 
   for (const brand of plan.brands) await store.saveBrand(brand)
-  for (const record of plan.passports) await store.changePassport(record.passportId, (held) => {
-    if (held == null) return record
-    if (same(withoutIndexAnswers(held), withoutIndexAnswers(record))) return held
-    refuse('reconciliation-required', 'the destination journal changed during restore', { passportId: record.passportId })
-  })
+  const existing = new Set(plan.passportsUnchanged)
+  for (const record of input.rebuildIndex ? verified.journals : plan.passports) {
+    // An earlier restore may have copied receipts from the source. Keep a receipt on repeat
+    // only when the destination actually supplies the transaction and any acknowledged path.
+    const lineage = input.rebuildIndex && existing.has(record.passportId) ? await index.lineage(record.passportId).catch(() => []) : []
+    const atDestination = new Map(lineage.map(tx => [tx.id('hex'), tx]))
+    await store.changePassport(record.passportId, held => {
+      if (held != null && !same(withoutIndexAnswers(held), withoutIndexAnswers(record))) refuse('reconciliation-required', 'the destination journal changed during restore', { passportId: record.passportId })
+      if (held != null && !input.rebuildIndex) return held
+      const journal = held ?? record
+      return { ...journal, states: journal.states.map(state => {
+        // An interrupted draft can still require withdrawal from the original index.
+        if (isInterrupted(state)) return state
+        const tx = atDestination.get(state.txid)
+        if (tx && (state.proofPushed !== true || (state.proof != null && tx.merklePath?.toHex() === state.proof.merklePath))) return state
+        return awaitingIndex(state)
+      }) }
+    })
+  }
   for (const offer of plan.offers) await store.saveOffer(offer)
   for (const claim of plan.claims) await store.saveClaim(claim)
 
   /* ---- rebuild what is derived: this deployment's index is given each state again ---- */
 
-  const indexReport: RestoreReport['index'] = { rebuilt: input.rebuildIndex, announced: 0, admitted: 0, duplicate: 0, notAnnounced: [] }
+  const indexReport: RestoreReport['index'] = { rebuilt: input.rebuildIndex, announced: 0, admitted: 0, duplicate: 0, notAnnounced: [], proofsApplied: 0, proofsNotApplied: [] }
   if (!input.rebuildIndex) {
-    indexReport.reason = 'this deployment has not joined an index that persists, so no state was announced. Connect one, then run the restore again: it changes no record and announces each state.'
+    indexReport.reason = 'Connect a persistent index and run the restore again to deliver the retained states and proofs.'
   } else {
     for (const exported of verified.journals) {
       const record = (await store.getPassport(exported.passportId))!
@@ -612,19 +653,32 @@ export async function restoreApplication(input: RestoreApplicationInput): Promis
         indexReport.announced += 1
         const refusal = index.lastRefusal
         const admitted = answer === 'admitted' || answer === 'duplicate'
-        await store.changePassport(record.passportId, (latest) => {
-          const entry = latest?.states.find((item) => item.txid === state.txid)
-          if (entry != null && entry.index === state.index && entry.refusal === state.refusal) {
-            if (!admitted || (entry.index !== 'admitted' && entry.index !== 'duplicate')) Object.assign(entry, { index: answer, refusal: admitted ? undefined : refusal })
-          }
-          return latest
-        })
         if (admitted) {
+          await platform.writer.recordAnnouncement(record.passportId, state.txid, answer)
           if (answer === 'admitted') indexReport.admitted += 1
           else indexReport.duplicate += 1
         } else {
+          await store.changePassport(record.passportId, latest => {
+            const entry = latest?.states.find(item => item.txid === state.txid)
+            if (entry != null && entry.index === state.index && entry.refusal === state.refusal) Object.assign(entry, { index: answer, refusal })
+            return latest
+          })
           indexReport.notAnnounced.push({ passportId: record.passportId, txid: state.txid, answer, ...(refusal == null ? {} : { detail: refusal }) })
           break
+        }
+        const proof = state.proof
+        if (proof != null) {
+          const pushed = await index.pushProof(state.txid, MerklePath.fromHex(proof.merklePath))
+          await store.changePassport(record.passportId, latest => {
+            const entry = latest?.states.find(item => item.txid === state.txid)
+            if (entry?.proof?.merklePath === proof.merklePath) {
+              if (pushed.ok) entry.proofPushed = true
+              else if (entry.proofPushed === state.proofPushed) delete entry.proofPushed
+            }
+            return latest
+          })
+          if (pushed.ok) indexReport.proofsApplied += 1
+          else indexReport.proofsNotApplied.push({ passportId: record.passportId, txid: state.txid, detail: pushed.detail })
         }
       }
     }
@@ -673,6 +727,7 @@ export async function restoreApplication(input: RestoreApplicationInput): Promis
   const attention: string[] = []
   if (notRegistered.length > 0) attention.push(`This deployment does not hold ${notRegistered.join(', ')} under the binding the records declare. ${bundleDir == null ? 'It resolves profiles from the installed package and its own folders: set PROFILE_BUNDLE_DIR to resolve them from the package\'s bundle, or add the profile\'s folder and trust its digest.' : 'Its trusted digests do not admit the bundle\'s binding.'} Until then those passports read as "not checked" and cannot be written.`)
   for (const entry of indexReport.notAnnounced) attention.push(`The state ${entry.txid} of ${entry.passportId} was not taken by this deployment's index: ${entry.answer}${entry.detail == null ? '' : ` (${entry.detail})`}.`)
+  for (const entry of indexReport.proofsNotApplied) attention.push(`The index has yet to acknowledge the proof for ${entry.txid} of ${entry.passportId} (${entry.detail}). The worker will retry it.`)
   for (const entry of readings.different) attention.push(`${entry.passportId} reads differently here: ${entry.differences.join('; ')}.`)
   if (!gs1.ok) attention.push('The GS1 files are not provisioned here yet.')
 

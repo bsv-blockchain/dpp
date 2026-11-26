@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-22",
+  "updatedAt": "2026-11-26",
   "sources": [
     {
       "id": "spec-record-model",
@@ -1025,7 +1025,7 @@
       "sourceVersion": "working draft",
       "layer": "profile",
       "profileId": "managed-custody@2",
-      "reviewedAt": "2026-11-02",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers",
       "id": "MC-2-lock-placement",
       "clause": "§2",
@@ -1036,14 +1036,18 @@
       "applicability": "when a custodian or wallet spends a tip under managed-custody@2",
       "implementationRefs": [
         "examples/lifecycle-v2.mjs",
-        "docs/packages/build-an-application.md"
+        "docs/packages/build-an-application.md",
+        "packages/create-dpp-app/template/apps/api/src/writer.ts",
+        "packages/create-dpp-app/template/apps/api/src/wallet.ts"
       ],
       "testRefs": [
-        "examples/lifecycle-v2.mjs"
+        "examples/lifecycle-v2.mjs",
+        "packages/create-dpp-app/template/apps/api/test/custody-journal.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/sector-cutover.test.ts"
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "notes": "Decided 2026-11-01: the lock follows custody.md §3. The lifecycle example locks each state to its controller key; the pinned chain-v2 fixture still locks to the custodian's identity key, a build's choice the record model does not see, and says so."
+      "notes": "The starter locks new outputs to the signed controller. The SDK script interpreter verifies the original holder's transfer and the recipient's next spend, and rejects the previous holder and funding wallet for the recipient's output. An update of a historical starter output spends its original platform lock and creates a controller-locked successor. Each writer declares its own custody arrangement."
     },
     {
       "id": "MC-4-transfer-binding",
@@ -1092,16 +1096,19 @@
       "applicability": "when managed-custody@2 is selected",
       "profileId": "managed-custody@2",
       "implementationRefs": [
-        "examples/lifecycle-v2.mjs"
+        "examples/lifecycle-v2.mjs",
+        "packages/create-dpp-app/template/apps/api/src/custody.ts",
+        "packages/create-dpp-app/template/apps/api/src/store.ts"
       ],
       "testRefs": [
-        ".github/workflows/ci.yml"
+        ".github/workflows/ci.yml",
+        "packages/create-dpp-app/template/apps/api/test/custody-journal.test.ts"
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-02",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers",
-      "notes": "A writer duty, self-reported one sentence per rule as GOVERNANCE.md describes; the example demonstrates the sequence and the refusals from fresh keys, and the consuming application's handover service implements the idempotency, decline and expiry in its own suite."
+      "notes": "The starter replays creation by caller request ID, binds the original holder and predecessor, reserves an accepted tip during transfer, and tests concurrent creation, decline, expiry and transfer recovery. Each deploying writer supplies its own statement."
     },
     {
       "id": "MC-5-verification-report",
@@ -1152,16 +1159,21 @@
       "applicability": "when managed-custody@2 is selected and evidence leaves an operator",
       "profileId": "managed-custody@2",
       "implementationRefs": [
-        "packages/dpp-protocol/src/evidencePackage.ts#acceptanceRecordsInPackage"
+        "packages/dpp-protocol/src/evidencePackage.ts#acceptanceRecordsInPackage",
+        "packages/dpp-overlay/src/evidenceExport.ts",
+        "packages/create-dpp-app/template/apps/api/src/portability/export.ts",
+        "packages/create-dpp-app/template/apps/api/src/portability/restore.ts"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/evidencePackage.test.ts"
+        "packages/dpp-protocol/test/evidencePackage.test.ts",
+        "packages/dpp-overlay/test/evidenceExport.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/portability.test.ts"
       ],
       "evidenceRefs": [],
-      "status": "implemented",
-      "reviewedAt": "2026-11-02",
+      "status": "gap",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: the package is the route. The core reads the records out of a package; the reference custodian's export, in the reference application, does not yet include them, and the overlay's export cannot, because an index holds no records."
+      "notes": "The reference index declares missing records by commitment. The starter distinguishes missing records from those withheld in public exports and carries completed records in authorised recovery. A signed acceptance pending transfer remains in the retained offer. The public export and pending authority entry have outstanding scope under §5. See docs/operate/export-import-recovery.md."
     },
     {
       "id": "MC-7-declaration",
@@ -1543,14 +1555,15 @@
       "implementationRefs": [
         "examples/write-passport-v2.mjs (an ISSUE genesis)",
         "examples/lifecycle-v2.mjs (an ISSUE genesis)",
-        "examples/write-passport.mjs (historical: a dry run of the version 1 recipe; refuses to write live)"
+        "examples/write-passport.mjs (historical: a dry run of the version 1 recipe; refuses to write live)",
+        "packages/create-dpp-app/template/apps/api/src/writer.ts"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers",
-      "notes": "Self-reported beside the reference examples, as every writer rule is: no reader can tell when a version 1 genesis was written, so nothing a reader checks changes. The consuming application's writer is assessed in its own repository."
+      "notes": "The worked v2 writer starts a new lineage. After authorised restore, the starter can produce a same-controller v2 UPDATE for a spendable v1 tip under a supported profile. The historical writer refuses a new live v1 genesis."
     },
     {
       "id": "WR-2-verify-before-send",
@@ -1595,16 +1608,20 @@
       "applicability": "when the deployment names an index that serves the retraction extension (SHOULD)",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport-v2.mjs (announce)"
+        "examples/write-passport-v2.mjs (announce)",
+        "packages/create-dpp-app/template/apps/api/src/writer.ts",
+        "packages/create-dpp-app/template/apps/api/src/config.ts"
       ],
       "testRefs": [
-        ".github/workflows/ci.yml (write-passport-v2.mjs --dry-run)"
+        ".github/workflows/ci.yml (write-passport-v2.mjs --dry-run)",
+        "packages/create-dpp-app/template/apps/api/test/writer-journal.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/config.test.ts"
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers",
-      "notes": "Exercised live only; the dry run prints what it would do. From 2026-11-12 the order applies only to an index that serves the overlay contract's retraction extension, as the reference index does, because retraction is optional."
+      "notes": "The generated starter tests both orders. It announces first for a known reference index or the exact URL the operator configures for retraction. Other indexes receive the transaction after the wallet accepts it. A deploying writer reports the order it uses."
     },
     {
       "id": "WR-3-retract-refused",
@@ -1620,14 +1637,17 @@
       "applicability": "when the writer announces before sending",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport-v2.mjs (retract, writeState)"
+        "examples/write-passport-v2.mjs (retract, writeState)",
+        "packages/create-dpp-app/template/apps/api/src/writer.ts"
       ],
-      "testRefs": [],
+      "testRefs": [
+        "packages/create-dpp-app/template/apps/api/test/writer-journal.test.ts"
+      ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-05: the withdrawal is a duty of the §3 order and joins the §11 self-report list. Self-reported beside the reference example, as every writer rule is."
+      "notes": "The starter retains an unresolved withdrawal, binds new drafts to the original index URL by digest, and tests refusal, recovery at that index and older journals. The operator supplies the deployment statement."
     },
     {
       "id": "WR-4-one-writer",
@@ -1671,13 +1691,17 @@
       "profileId": "core",
       "implementationRefs": [
         "docs/deployment.md",
-        "examples/write-passport-v2.mjs (liveAdapter: sendWith the admitted draft)"
+        "examples/write-passport-v2.mjs (liveAdapter: sendWith the admitted draft)",
+        "packages/create-dpp-app/template/apps/api/src/wallet.ts"
       ],
-      "testRefs": [],
+      "testRefs": [
+        "packages/create-dpp-app/template/apps/api/test/wallet-monitor.test.ts"
+      ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-26",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The starter's BRC-100 wallet funds and builds unsent actions. Its monitor registers the header and proof tasks. Sending remains under the application's publishing setting. Actual broadcast acknowledgement, endpoints and fee policy belong to the operating writer."
     },
     {
       "id": "WR-6-announce-retry",
@@ -1693,13 +1717,17 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport-v2.mjs (writeState: announced again after an unreachable index)"
+        "examples/write-passport-v2.mjs (writeState: announced again after an unreachable index)",
+        "packages/create-dpp-app/template/apps/api/src/worker.ts"
       ],
-      "testRefs": [],
+      "testRefs": [
+        "packages/create-dpp-app/template/apps/api/test/writer-journal.test.ts"
+      ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-26",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The starter retries two missed announcements from retained transaction bytes in spend order, including after a clock rollback. The tests check that the wallet sends each state once."
     },
     {
       "id": "WR-7-proof",
@@ -1716,16 +1744,23 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-overlay/src/index.ts (POST /arc-ingest)",
-        "examples/write-passport-v2.mjs (proveState, pushProof)"
+        "examples/write-passport-v2.mjs (proveState, pushProof)",
+        "packages/create-dpp-app/template/apps/api/src/worker.ts",
+        "packages/create-dpp-app/template/apps/api/src/portability/restore.ts",
+        "packages/create-dpp-app/template/apps/api/src/wallet.ts"
       ],
       "testRefs": [
         "packages/dpp-overlay/test/http.test.ts",
-        ".github/workflows/ci.yml (write-passport-v2.mjs --dry-run)"
+        ".github/workflows/ci.yml (write-passport-v2.mjs --dry-run)",
+        "packages/create-dpp-app/template/apps/api/test/writer-journal.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/portability.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/wallet-monitor.test.ts"
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-26",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The starter test applies a late proof acknowledgement to its original transaction after a successor is written. Actual proof acquisition and delivery depend on the deployment. Recovery replays the retained proof to a replacement index and records that destination's response. The SQLite wallet registers the toolbox header and proof tasks, with no rebroadcast attempts."
     },
     {
       "id": "WR-8-retain",
@@ -1743,13 +1778,20 @@
       "profileId": "core",
       "implementationRefs": [
         "contracts/registry.yaml#AnchorProof",
-        "examples/write-passport-v2.mjs (basket dpp, keepAndReadBack)"
+        "examples/write-passport-v2.mjs (basket dpp, keepAndReadBack)",
+        "packages/create-dpp-app/template/apps/api/src/writer.ts",
+        "packages/create-dpp-app/template/apps/api/src/worker.ts",
+        "packages/create-dpp-app/template/apps/api/src/portability/restore.ts"
       ],
-      "testRefs": [],
+      "testRefs": [
+        "packages/create-dpp-app/template/apps/api/test/writer-journal.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/portability.test.ts"
+      ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-26",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The starter tests retained raw transaction bytes, original sent BEEF, a late proof acknowledgement and authorised export and restore. Retention for the full passport lifetime is an operator duty. Recovery replays the retained proof to a replacement index and records that destination's response."
     },
     {
       "id": "SVC-2-passport-admission",
@@ -2648,9 +2690,42 @@
       ],
       "evidenceRefs": [],
       "status": "gap",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-24",
       "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 12 November 2026, when the reference registry removed fetchStatusCredential with its legacy intake. Until then it fetched status lists with a 5000 ms budget, 1 MiB declared and streamed caps, 1 MiB decompressed, no redirects except one explicitly permitted destination re-checked against the host policy, and the host policy applied before any connection. No kept implementation fetches a status list: verifyBitstringStatus reads one through the status policy's resolve, which the reference registry answers from the documents its external policy pins and never from the network. What remains covers identity documents only and is not the whole row: createDidWebResolver, which the exchange entry uses when an operator permits did:web origins, fetches a DID document only from a permitted origin, with a 5000 ms timeout and a 256 KiB declared and streamed cap by default and redirects refused, and checks no address; did-web.test.ts exercises the origin rule and the cap, not the timeout or the redirect refusal. verifyBitstringStatus bounds a list's compressed and decompressed size at 1 MiB. The rule still applies, as stated, to a verifier that fetches status or identity documents. Re-read 2026-11-15 after §7 described the validation engine as a service; §3 and §5 are unchanged."
+      "notes": "The reference registry resolves status list credentials from operator-pinned documents. verifyBitstringStatus limits the compressed and decompressed list to 1 MiB. A maintained transport and qualification evidence for remote status list retrieval are still missing since the legacy registry intake was removed on 12 November 2026. STATUS-did-web-fetch-bounds records the tested identity-document path."
+    },
+    {
+      "id": "STATUS-did-web-fetch-bounds",
+      "sourceId": "spec-external-credential-profile",
+      "sourceUri": "spec/external-credential-profile.md",
+      "sourceVersion": "vc-di-ecdsa-rdfc-2019@1",
+      "clause": "§4 (issuer binding)",
+      "summary": "The external credential verifier resolves an issuer document from a pin or, if configured, by bounded did:web retrieval from a permitted origin with redirects refused.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier"
+      ],
+      "applicability": "when the external credential verifier resolves a did:web issuer",
+      "profileId": "vc-di-ecdsa-rdfc-2019@1",
+      "implementationRefs": [
+        "packages/dpp-credentials/src/exchange.ts#createExternalDocumentLoader",
+        "packages/dpp-credentials/src/did-web.ts#createDidWebResolver",
+        "packages/dpp-credentials/src/did-web-transport.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-credentials/test/did-web-exchange.test.ts",
+        "packages/dpp-credentials/test/did-web-transport.test.ts",
+        "packages/dpp-credentials/test/did-web-wire.test.ts",
+        "packages/dpp-credentials/test/did-web.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-24",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The default transport checks every DNS answer at connection time and limits the wire and decoded response bodies. Offline tests cover address selection, redirects, deadlines during headers and body, byte limits and the signed credential fixture through the exchange entry point. A custom fetcher is operator-supplied.",
+      "sourceDigest": "cea3986769a49df53176e69415736927784e92550e34662500ef2893b135a3f1"
     },
     {
       "id": "W3C-VC-JOSE-ES256K",
@@ -3372,15 +3447,17 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "the reference registry (not published)"
+        "the reference registry (not published)",
+        "packages/dpp-credentials/src/exchange.ts"
       ],
       "testRefs": [
-        "the reference registry (not published)"
+        "the reference registry (not published)",
+        "packages/dpp-credentials/test/exchange.test.ts"
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "notes": "Original bytes and decoded value are separate today; byteLength, schemaRefs and a projection record are not yet stored. Re-read 2026-11-16 after §1 said that no package exports the parked reference module of epcis-event-vc@1, which now sits in the credentials package: the registry of representations and every rule are unchanged.",
-      "reviewedAt": "2026-11-16",
+      "notes": "The credentials verifier reports the identifier of the schema it actually evaluated. An anonymous configured schema may supply an evidence reference. The built-in schema retains its identifier. An operator's registry demonstrates retrieval of original bytes, metadata and decoded content for its own deployment. A projection, when exported, requires its own source and identity.",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3744,10 +3821,10 @@
         "packages/dpp-profiles/test/manifests.test.ts"
       ],
       "evidenceRefs": [],
-      "status": "implemented",
-      "reviewedAt": "2026-11-16",
+      "status": "gap",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers",
-      "notes": "The manifest schema declares the four kinds; the field-level requirement is not enforced yet. The consumer rule (no upgrade by signature) is spec text checked nowhere yet; a test on the verification report follows with issuerAuthority policies. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the value kinds this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the value kinds are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the value kinds are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the value kinds are unchanged. battery@2 and textile@2 are retired, so the row now names general@2, the one current manifest profile; the retired manifests keep the kinds they declared. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the value kinds are unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the value kinds are unchanged."
+      "notes": "The manifest schema defines four value kinds and makes provenance.kind optional. None of the 40 fields in frozen general@2 declares its kind. A consumer cannot recover that classification from a signature. Correcting the field declarations requires a versioned profile or an agreed change to the requirement."
     },
     {
       "id": "DOC-1-role-quick-starts",
@@ -3765,16 +3842,20 @@
       "implementationRefs": [
         "docs/quick-start.md",
         "examples/",
-        "conformance/"
+        "conformance/",
+        "docs/implement/reporting.md"
       ],
       "testRefs": [
-        ".github/workflows/ci.yml"
+        ".github/workflows/ci.yml",
+        "conformance/test/registry-capabilities.test.mjs",
+        "packages/dpp-credentials/test/epcis-lifecycle.test.ts",
+        "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-21",
+      "reviewedAt": "2026-11-26",
       "reviewOwner": "dpp maintainers",
-      "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands. Re-read 2026-11-21 after the claim exercise said that signLifecycleClaim is deprecated and kept for reading historical claims: the commands are unchanged."
+      "notes": "The role guides include worked capability mismatches, a required extension and a refused weaker profile. The conformance suite checks the reader and registry declarations used in the guide. CI runs the fixture examples. Optional hosted commands, an operator's actual capabilities and an independent adopter's run require their own evidence."
     },
     {
       "id": "REG-1-insert-first-intake",

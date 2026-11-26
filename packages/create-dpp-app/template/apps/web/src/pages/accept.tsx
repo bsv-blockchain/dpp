@@ -1,15 +1,20 @@
 import { useState, type ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { CopyButton, DefinitionList, ErrorNotice, Field, Loading, Mono, PageTitle, ToneBadge, ValueView, statusTone } from '@/components/bits'
 import { api, type AcceptResult, type OfferView } from '@/lib/api'
-import { formatTime, humanise, publicPathOf } from '@/lib/format'
+import { formatTime, humanise, offerIdFromPath, publicPathOf } from '@/lib/format'
 import { useLoad } from '@/lib/use-load'
 
 export function Accept() {
-  const { requestId = '' } = useParams()
+  const requestId = offerIdFromPath(useLocation().pathname)
+  if (requestId == null) return <ErrorNotice error={new Error('The offer link contains an invalid request ID.')} title="Could not load the offer" />
+  return <AcceptOffer key={requestId} requestId={requestId} />
+}
+
+function AcceptOffer({ requestId }: { requestId: string }) {
   const offer = useLoad(() => api.offer(requestId), [requestId])
   const [claimCode, setClaimCode] = useState('')
   const [busy, setBusy] = useState<'accept' | 'decline'>()

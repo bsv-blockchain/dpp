@@ -43,6 +43,7 @@ import {
   inventoryEntry,
   sha256Hex,
   signEvidenceManifest,
+  tryParseDppOutput,
   verifyPassportEvidence,
   type EvidencePackageManifest,
   type InventoryEntry,
@@ -277,6 +278,13 @@ class PackageFiles {
     this.merged.mergeBeef(held.parsed)
     this.add(`transactions/${held.row.txid}.tx`, 'transactions', OCTET_STREAM, held.raw, { represents: ref, representation: 'raw-transaction' })
     this.add(`proofs/${held.row.txid}.beef`, 'proofs', OCTET_STREAM, held.beef, { represents: ref, representation: 'beef' })
+    if (held.row.op === 'TRANSFER') {
+      const output = held.parsed.findTxid(held.row.txid)?.tx?.outputs[held.row.outputIndex]
+      const state = output == null ? undefined : tryParseDppOutput(output.lockingScript)?.state
+      if (state?.version === '2' && state.op === 'TRANSFER' && state.passportId === held.row.passportId && state.authorisationCommitment) {
+        this.absent.push(`acceptance:sha256:${state.authorisationCommitment}`)
+      }
+    }
     this.bytes += held.raw.length + held.beef.length
     // An unmined state has no merkle path anywhere yet; the reader's inclusion
     // check will say proof-absent, and the manifest says so first.

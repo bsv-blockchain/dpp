@@ -58,7 +58,7 @@ function WalletPage() {
 
   return (
     <div className="space-y-10">
-      <PageTitle title="Wallet" description="The platform wallet publishes every state, holds the lock on every passport and pays the fees." />
+      <PageTitle title="Wallet" description="The platform wallet publishes passport states and pays the fees. The current holder’s managed key controls each new passport output." />
       {wallet.loading ? (
         <Loading what="Loading the wallet" />
       ) : wallet.error != null || wallet.data == null ? (

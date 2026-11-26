@@ -1,9 +1,10 @@
 import { once } from 'node:events'
 import type { AddressInfo } from 'node:net'
-import { Utils } from '@bsv/sdk'
+import { Beef, Transaction, Utils } from '@bsv/sdk'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadConfig } from '../src/config.js'
 import { mintPassportId } from '../src/identifiers.js'
+import { IndexClient } from '../src/index-client.js'
 import { openPlatform, type Platform } from '../src/platform.js'
 import { createServer } from '../src/server.js'
 import { samplePayload } from '../src/profiles.js'
@@ -22,8 +23,8 @@ let secondary: MongoStore
 let writer: Writer
 let otherWriter: Writer
 
-const newWriter = (store: MongoStore) => new Writer({
-  store, wallet: platform.wallet, index: platform.index, identifiers,
+const newWriter = (store: MongoStore, index = platform.index) => new Writer({
+  store, wallet: platform.wallet, index, identifiers,
   bound: platform.profiles, livePublishing: false, spendCapSatoshis: 20_000,
 })
 const brand = () => platform.parties.brand('sample-brand')
@@ -109,6 +110,79 @@ describe('two writers sharing the passport journal in MongoDB', () => {
     expect((await issue('RETRY-GENESIS', otherWriter)).record.states).toHaveLength(1)
   })
 
+  it('retains a sent state when an index without retraction refuses its announcement', async () => {
+    const index = new IndexClient({ ...platform.devIndex! })
+    const send = vi.spyOn(platform.wallet.adapter, 'send')
+    const announce = vi.spyOn(index, 'announce').mockResolvedValueOnce('refused')
+    const retract = vi.spyOn(index, 'retract')
+    const { entry, record } = await issue('SEND-FIRST', newWriter(primary, index))
+    expect(send).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ txid: entry.txid }))
+    expect(send.mock.invocationCallOrder[0]).toBeLessThan(announce.mock.invocationCallOrder[0]!)
+    expect(entry).toMatchObject({ network: 'dry-run', index: 'refused' })
+    await runDuties({ store: secondary, index, writer: newWriter(secondary, index) })
+    expect((await primary.getPassport(record.passportId))!.states[0]!.index).toBe('admitted')
+    expect(announce.mock.calls).toEqual([[send.mock.calls[0]![0].beef], [send.mock.calls[0]![0].beef]])
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(retract).not.toHaveBeenCalled()
+  })
+
+  it('discards a refused send without contacting a non-retracting index', async () => {
+    const index = new IndexClient({ ...platform.devIndex! })
+    const announce = vi.spyOn(index, 'announce')
+    const retract = vi.spyOn(index, 'retract')
+    vi.spyOn(platform.wallet.adapter, 'send').mockResolvedValueOnce('refused')
+    await expect(issue('REFUSED-SEND-FIRST', newWriter(primary, index))).rejects.toMatchObject({ code: 'network-refused' })
+    expect(announce).not.toHaveBeenCalled()
+    expect(retract).not.toHaveBeenCalled()
+    expect(await secondary.getPassport(id('REFUSED-SEND-FIRST'))).toBeUndefined()
+  })
+
+  it('resumes a send-first write after the process loses its post-send journal update', async () => {
+    const index = new IndexClient({ ...platform.devIndex! })
+    const announce = vi.spyOn(index, 'announce')
+    const send = vi.spyOn(platform.wallet.adapter, 'send')
+    vi.spyOn(primary, 'recordSpend').mockRejectedValueOnce(new Error('interrupted after wallet send'))
+    await expect(issue('RECOVER-SEND-FIRST', newWriter(primary, index))).rejects.toThrow('interrupted after wallet send')
+    const pending = (await secondary.getPassport(id('RECOVER-SEND-FIRST')))!
+    const draft = pending.states[0]!
+    expect(draft).toMatchObject({ network: 'pending', index: 'not-asked' })
+    expect(announce).not.toHaveBeenCalled()
+    const resumedWriter = newWriter(secondary, index)
+    await resumedWriter.resolveInterrupted(pending, draft.txid, 'sent')
+    await runDuties({ store: secondary, writer: resumedWriter, index })
+    expect((await primary.getPassport(pending.passportId))!.states[0]).toMatchObject({ txid: draft.txid, network: 'dry-run', index: 'admitted' })
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(announce).toHaveBeenCalledExactlyOnceWith(send.mock.calls[0]![0].beef)
+  })
+
+  it('backfills two missed states in spend order with original BEEF after the writer clock moved backwards', async () => {
+    const send = vi.spyOn(platform.wallet.adapter, 'send')
+    const submit = platform.index.announce.bind(platform.index)
+    const announce = vi.spyOn(platform.index, 'announce').mockResolvedValue('unreachable')
+    vi.spyOn(platform.index, 'lineage').mockRejectedValue(new Error('index is offline'))
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      vi.setSystemTime(new Date('2026-11-26T10:01:00Z'))
+      const genesis = await issue('BACKFILL')
+      vi.setSystemTime(new Date('2026-11-26T10:00:00Z'))
+      const next = await update(writer, genesis.record, 'offline')
+      expect(send).toHaveBeenCalledTimes(2)
+      const [genesisBytes, nextBytes] = send.mock.calls.map(([built]) => built.beef)
+      expect(Transaction.fromAtomicBEEF(nextBytes!).id('hex')).toBe(next.entry.txid)
+      expect(Beef.fromBinary(nextBytes!).findTxid(genesis.entry.txid)?.tx?.toHex()).toBe(genesis.entry.rawTx)
+
+      // The first backfill is still offline. The worker must defer the successor.
+      announce.mockClear()
+      await runDuties({ store: secondary, index: platform.index, writer: otherWriter })
+      expect(announce.mock.calls).toEqual([[genesisBytes]])
+      announce.mockClear().mockImplementation(submit)
+      await runDuties({ store: secondary, index: platform.index, writer: otherWriter })
+      expect(announce.mock.calls).toEqual([[genesisBytes], [nextBytes]])
+      expect((await primary.getPassport(next.record.passportId))!.states.map(s => s.index)).toEqual(['admitted', 'admitted'])
+      expect(send).toHaveBeenCalledTimes(2)
+    } finally { vi.useRealTimers() }
+  })
+
   it('applies a late proof acknowledgement to its own transaction and retains the original BEEF', async () => {
     const issued = await issue('LATE-PROOF')
     const reached = signal(), release = signal()
@@ -156,17 +230,45 @@ describe('two writers sharing the passport journal in MongoDB', () => {
     expect(states[1]!.network).toBe('dry-run')
     expect(requests.mock.calls[2]![0]).toEqual(Utils.toArray(issued.entry.beef, 'base64'))
   })
-  it('retains a refused draft until withdrawal succeeds, then releases the same genesis', async () => {
+  it.each(['current', 'legacy'] as const)('retains a refused %s draft until withdrawal succeeds at the original index', async (journalVersion) => {
     vi.spyOn(platform.wallet.adapter, 'send').mockResolvedValueOnce('refused')
-    vi.spyOn(platform.index, 'retract').mockResolvedValueOnce({ ok: false, detail: 'temporarily offline' })
+    const withdrawals = vi.spyOn(platform.index, 'retract').mockResolvedValueOnce({ ok: false, detail: 'temporarily offline' })
     await expect(issue('WITHDRAWAL')).rejects.toMatchObject({ code: 'retraction-pending' })
     const record = (await secondary.getPassport(id('WITHDRAWAL')))!
     const draft = record.states[0]!
     expect(draft.network).toBe('refused')
+    expect(draft.draftIndexId).toBe(platform.index.destinationId)
+    if (journalVersion === 'legacy') {
+      delete draft.draftIndexId
+      await secondary.savePassport(record)
+    }
+    expect(withdrawals).toHaveBeenCalledExactlyOnceWith(draft.txid, expect.stringContaining('the network refused'), draft.outputIndex)
     await expect(otherWriter.resolveInterrupted(record, draft.txid, 'sent')).rejects.toMatchObject({ code: 'not-interrupted' })
     await otherWriter.resolveInterrupted(record, draft.txid, 'abandoned')
+    expect(withdrawals.mock.calls[1]).toEqual(withdrawals.mock.calls[0])
     expect(await primary.getPassport(record.passportId)).toBeUndefined()
-    expect((await issue('WITHDRAWAL')).record.states).toHaveLength(1)
+    const retry = await issue('WITHDRAWAL')
+    expect(retry.record.states).toHaveLength(1)
+    expect(retry.entry).not.toHaveProperty('draftIndexId')
+  })
+
+  it('requires the original index to reconcile a withdrawal before replacing an outstanding draft', async () => {
+    vi.spyOn(platform.wallet.adapter, 'send').mockResolvedValueOnce('unanswered')
+    await expect(issue('INDEX-CHANGED')).rejects.toMatchObject({ code: 'network-unanswered' })
+    const pending = (await secondary.getPassport(id('INDEX-CHANGED')))!
+    const draft = pending.states[0]!
+    const replacement = new IndexClient({ url: 'https://replacement.example', supportsRetraction: true })
+    const wrongIndex = vi.spyOn(replacement, 'retract').mockResolvedValue({ ok: false, absent: true, detail: 'output unknown' })
+    const discard = vi.spyOn(platform.wallet.adapter, 'discard')
+    await expect(newWriter(secondary, replacement).resolveInterrupted(pending, draft.txid, 'abandoned'))
+      .rejects.toMatchObject({ code: 'retraction-index-changed' })
+    expect(wrongIndex).not.toHaveBeenCalled()
+    expect(discard).not.toHaveBeenCalled()
+    expect((await primary.getPassport(pending.passportId))!.states[0]!.network).toBe('unanswered')
+    const original = vi.spyOn(platform.index, 'retract')
+    await otherWriter.resolveInterrupted(pending, draft.txid, 'abandoned')
+    expect(original).toHaveBeenCalledExactlyOnceWith(draft.txid, expect.any(String), draft.outputIndex)
+    expect(await primary.getPassport(pending.passportId)).toBeUndefined()
   })
 
   it('keeps the transaction when the wallet reports it was already seen during abandonment', async () => {

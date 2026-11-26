@@ -2,11 +2,11 @@ import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { Beef, PrivateKey, ProtoWallet, Transaction, Utils } from '@bsv/sdk'
-import { chainFromBeef, evidencePackageSigner, inspectEvidencePackage, type EvidencePackageManifest, type EvidenceReport } from '@bsv/dpp-protocol'
+import { Beef, MerklePath, PrivateKey, ProtoWallet, Transaction, Utils } from '@bsv/sdk'
+import { acceptanceCommitment, chainFromBeef, evidencePackageSigner, inspectEvidencePackage, type EvidencePackageManifest, type EvidenceReport } from '@bsv/dpp-protocol'
 import { envelopeFiles, type EvidencePackageEnvelope } from '../src/evidenceExport.js'
 import { startOverlayService, type RunningService } from '../src/index.js'
-import { bodyOf, eventTx, fixtureChain, genesisTx, lookupPassport, makeData, newNode, submitBeef, type TestNode } from './helpers.js'
+import { atomicOver, bodyOf, eventTx, fixtureChain, genesisTx, lookupPassport, makeData, newNode, submitBeef, type TestNode } from './helpers.js'
 import { K1, K2, OPERATORS, policyChain } from './policy-fixture.js'
 
 /**
@@ -236,6 +236,29 @@ describe('GET /evidence-package', () => {
     expect(report.policyId).toBe('dpp-publisher-policy@1:2')
     expect(report.checks.find((c) => c.name === 'publisherSignatures')?.status).toBe('pass')
     expect(report.checks.find((c) => c.name === 'inclusion')).toMatchObject({ status: 'unknown', reasonCode: 'proof-absent' })
+  })
+
+  it('identifies the acceptance record missing from each export of a committed transfer', async () => {
+    const fixture = JSON.parse(readFileSync(new URL('fixtures/chain-v2.json', root), 'utf8'))
+    const base = await serve(newNode(fixture.custodianKey))
+    const beef = new Beef()
+    for (const [index, state] of fixture.states.entries()) {
+      const tx = Transaction.fromHex(state.rawTx)
+      tx.merklePath = MerklePath.fromCoinbaseTxidAndHeight(tx.id('hex'), 810_000 + index)
+      beef.mergeTransaction(tx)
+      const response = await submitBeef(base, atomicOver(beef, state.txid))
+      expect(response.headers.get('x-admission')).toBe('tm_dpp=admitted')
+    }
+    const passportId = fixture.acceptance.passportId
+    const bounded = await exportPackage(base, passportId)
+    const part = await fetch(`${base}/evidence-export?passportId=${encodeURIComponent(passportId)}`)
+    expect(bounded.status).toBe(200)
+    expect(part.status).toBe(200)
+    const complete = await bodyOf(part)
+    for (const envelope of [bounded.envelope, complete.package as EvidencePackageEnvelope]) {
+      expect(envelope.manifest.completeness.absent).toEqual([`acceptance:sha256:${acceptanceCommitment(fixture.acceptance)}`])
+      expect(inspectEvidencePackage(envelope.manifest, envelopeFiles(envelope)).signatureValid).toBe(true)
+    }
   })
 
   it('carries at most 500 states, the newest, and declares the rest absent by outpoint', async () => {

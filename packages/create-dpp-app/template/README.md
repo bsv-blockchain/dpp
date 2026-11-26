@@ -56,7 +56,7 @@ Steps 3 and 5 can come later than the screen that caused them. The worker loop i
 
 ## Custody: who signs
 
-This application runs managed custody: the platform wallet publishes every state and holds the lock on every passport, and every brand, recipient and member signs with a key the platform derives for them. Sign-in decides who may act for which brand; the signature itself is always made with a platform-held key. A recipient of a hand-on needs no wallet: they accept with a claim code, and that code is how they act on the passport from then on.
+This application runs managed custody: the platform wallet funds and publishes each state. Each new passport output is locked to the controller key signed into that state. The platform manages the signing keys for brands, recipients and members. When updating an older passport that still carries the platform wallet’s per-passport lock, the writer spends that original output with the platform wallet and locks its successor to the signed controller. Sign-in decides who may act for which brand; the signature itself is always made with a platform-held key. A recipient of a hand-on needs no wallet: they accept with a claim code, and that code is how they act on the passport from then on.
 
 This is a choice, not a rule of the standard. The standard lets any role be filled by a person's own BRC-100 wallet, and `apps/api/src/parties.ts` is the seam: a party that signs from a user's wallet replaces a managed identity without changing the writer. A passport can also leave managed custody by a transfer to a key the recipient's own wallet derived.
 
@@ -316,13 +316,13 @@ One command checks everything a real write needs and names the fix for each fail
 5. **Funds.** The wallet holds enough for a few states. If not, the command prints a funding address and the `wallet fund` command that takes the payment in. A state costs a little over a hundred satoshis and leaves one satoshi in the passport output.
 6. **Admission.** The index now names the key.
 
-Then `LIVE_PUBLISHING=true` is written and the next write spends real satoshis. Until then, a write is built, checked and admitted as a draft, and aborted before the send, which is the dry run you can rehearse with. `SPEND_CAP_SATOSHIS` refuses writes once the platform has spent that much in a day.
+Then `LIVE_PUBLISHING=true` is written and the next write spends real satoshis. With a funded wallet and live publishing off, the writer checks the draft and aborts it before sending. It requests draft admission only at an index that supports retraction. `SPEND_CAP_SATOSHIS` refuses writes once the platform has spent that much in a day.
 
 Mainnet needs MongoDB (`docker compose -f deploy/compose.yml --env-file .env up -d mongo`, or a hosted one, in `MONGO_URL`) for sign-in and persistence, a WhatsOnChain API key in `WOC_API_KEY` for the wallet's monitor and the reader, `NETWORK=main` with `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net`, and your own `PASSPORT_HOST` and `GS1_PREFIX`. Changing an identity secret changes every key derived from it, so decide `BRAND_ROOT_SECRET` and `MANAGED_IDENTITY_SECRET` once.
 
 ## Connect an index
 
-An index is where your passports become findable: the app announces every state to it before sending, and readers, including other platforms, look states and their evidence up there. The technology behind it is a BSV overlay service. It admits only states countersigned by a publisher key it names, and it follows this app's custody model. Three routes; this app's Compose file starts only the application database.
+Readers use the index to find passports and their evidence. The starter announces drafts to its in-process index and to the two hosted reference index base URLs before sending them. If the wallet refuses a draft, the starter asks that index to withdraw it. The technology behind it is a BSV overlay service. It admits only states countersigned by a publisher key it names, and it follows this app's custody model. Three routes; this app's Compose file starts only the application database.
 
 **The default index.** `.env` names the hosted testnet index, and `npm run go-live` registers this app with it. Mainnet is `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net` with `NETWORK=main`, where the operator approves each registration.
 
@@ -333,9 +333,14 @@ An index is where your passports become findable: the app announces every state 
 | App setting | Meaning |
 | --- | --- |
 | `INDEX_URL` | Index address reachable from the API |
+| `INDEX_RETRACTION_URL` | For a custom index that supports `POST /retract`, set this to its exact `INDEX_URL` to enable draft admission. |
 | `INDEX_SUBMIT_TOKEN` | Submission and retraction access, from registration or the operator |
 | `INDEX_CALLBACK_TOKEN` | Proof-delivery access, from registration or the operator |
 | `NETWORK` | The same network as the wallet and index |
+
+For other indexes the starter sends the transaction first by default. If admission then fails, the journal keeps the completed write and the worker retries the original BEEF in spend order. Confirm custom retraction support with the index operator before setting `INDEX_RETRACTION_URL`. Its value only enables draft admission for that base URL.
+
+Before changing index, settle outstanding drafts and deliver pending proofs to the original index. An interrupted draft records which index may hold it. A withdrawal from a different index leaves the draft pending until the original index reconciles it. For journals created by older starter versions, the operator must reconnect the original index. The in-process development index forgets its outputs and changes address at restart. Use a persistent external index for recoverable deployments. The worker offers proofs to its currently configured index.
 
 Restart the app after changing its settings. Keep the tokens out of browser code. For an API running in Docker, use an index address reachable from that container; `localhost` refers to the API container itself. The app announces to `INDEX_URL` once it holds both tokens; before that it runs an index in this process, and a connection failure does not cause another index to start.
 

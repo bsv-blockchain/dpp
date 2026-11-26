@@ -18,6 +18,7 @@ import { HttpError } from './http-error.js'
 import { isDemonstrationPolicy, mintPassportId } from './identifiers.js'
 import { eventSchemaCheck, readLifecycleClaim, readPassportClaims, type ClaimsReaderOptions } from './lifecycle.js'
 import { sectorExamples } from './sector-examples.js'
+import { offerHolderName } from './custody.js'
 import type { Party } from './parties.js'
 import type { Platform } from './platform.js'
 import { resolverRoutes } from './resolver.js'
@@ -158,15 +159,17 @@ export function createServer(options: ServerOptions): express.Express {
    * holds it; the recipient, with the claim code they accepted with, once a
    * hand-on moved control to them.
    */
-  const actorFor = async (req: Request, record: PassportRecord): Promise<Party> => {
-    const [scope, id] = record.holder.party.split(':', 2)
+  const actorFor = async (req: Request, record: PassportRecord, partyName = record.holder.party): Promise<Party> => {
+    const separator = partyName.indexOf(':')
+    const scope = partyName.slice(0, separator)
+    const id = partyName.slice(separator + 1)
     if (scope === 'brand') {
       await requireMember(req, record.brandId)
       return parties.brand(id)
     }
     if (scope === 'member') {
       const member = parties.member((await requireSession(req)).userId)
-      if (member.name !== record.holder.party) throw new HttpError(403, 'recipient-wrong', 'only the named member holds this passport')
+      if (member.name !== partyName) throw new HttpError(403, 'recipient-wrong', 'only the named member holds this passport')
       return member
     }
     if (scope === 'recipient') {
@@ -390,9 +393,8 @@ export function createServer(options: ServerOptions): express.Express {
     '/api/passports/:ref/offer',
     wrap(async (req) => {
       const record = await passportFrom(param(req, 'ref'))
-      const holder = await actorFor(req, record)
       const terms = typeof req.body?.terms === 'object' && req.body.terms != null ? req.body.terms : { word: 'Handed on' }
-      return await custody.offer({ record, holder, terms, mechanism: req.body?.mechanism, recipientIdentityKey: req.body?.recipientIdentityKey })
+      return await custody.offer({ record, holder: name => actorFor(req, record, name), requestId: req.body?.requestId, terms, mechanism: req.body?.mechanism, recipientIdentityKey: req.body?.recipientIdentityKey })
     })
   )
 
@@ -402,7 +404,7 @@ export function createServer(options: ServerOptions): express.Express {
       const offer = await store.getOffer(param(req, 'requestId'))
       if (offer == null) throw new HttpError(404, 'offer-unknown', `no offer ${param(req, 'requestId')}`)
       const record = await passportFrom(encodeURIComponent(offer.passportId))
-      const holder = await actorFor(req, record)
+      const holder = await actorFor(req, record, offerHolderName(record, offer))
       return await custody.withdraw(param(req, 'requestId'), holder)
     })
   )

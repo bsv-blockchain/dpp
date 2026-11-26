@@ -25,8 +25,8 @@ export interface WorkerOptions {
   log?: (line: string) => void
 }
 
-/** What is still owed for every passport, oldest first. */
-export async function pendingDuties(store: Store): Promise<Duty[]> {
+/** Each passport's journal records its spends in lineage order, even across clock changes. */
+async function journalDuties(store: Store): Promise<Duty[]> {
   const duties: Duty[] = []
   for (const passport of await store.listPassports()) {
     for (const state of passport.states) {
@@ -40,7 +40,12 @@ export async function pendingDuties(store: Store): Promise<Duty[]> {
       else if (state.proofPushed !== true) duties.push({ passportId: passport.passportId, txid: state.txid, op: state.op, duty: 'push-proof', since: state.timestamp })
     }
   }
-  return duties.sort((a, b) => a.since.localeCompare(b.since))
+  return duties
+}
+
+/** The operator's view of the work still owed, oldest timestamp first. */
+export async function pendingDuties(store: Store): Promise<Duty[]> {
+  return (await journalDuties(store)).sort((a, b) => a.since.localeCompare(b.since))
 }
 
 /** One pass over the pending duties. Returns what it did, one line each. */
@@ -53,7 +58,7 @@ export async function runDuties(options: WorkerOptions): Promise<string[]> {
     log(line)
   }
   const waitingForPredecessor = new Set<string>()
-  for (const duty of await pendingDuties(store)) {
+  for (const duty of await journalDuties(store)) {
     const passport = await store.getPassport(duty.passportId)
     const state = passport?.states.find((s) => s.txid === duty.txid)
     if (passport == null || state == null) continue

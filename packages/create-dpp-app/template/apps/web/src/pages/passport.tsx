@@ -1,7 +1,7 @@
 // The brand's view of one passport: what is in the journal, and every action
 // on it in a dialog. A passport that was handed on is held by a recipient,
 // and every action then needs the claim code they accepted with.
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -275,7 +275,7 @@ function PassportPage() {
 
       {dialog === 'update' && bound == null ? <UpdateDialog passport={view} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}
       {dialog === 'update' && bound != null ? <BoundUpdateDialog passport={view} publicProduct={bound.product} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}
-      {dialog === 'offer' ? <HandOnDialog passportId={view.passportId} needsClaimCode={needsClaimCode} onClose={close} onDone={offers.reload} /> : null}
+      {dialog === 'offer' ? <HandOnDialog passportId={view.passportId} needsClaimCode={needsClaimCode} onClose={close} refreshOffers={offers.reload} /> : null}
       {dialog === 'retire' ? <RetireDialog passportId={view.passportId} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}
       {dialog === 'claim' ? <ClaimDialog passportId={view.passportId} onClose={close} onDone={claims.reload} /> : null}
       {declaring == null ? null : <DeclareErrorDialog passportId={view.passportId} claim={declaring} onClose={() => setDeclaring(undefined)} onDone={claims.reload} />}
@@ -292,24 +292,23 @@ function Stat({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
-function ClaimCodeField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+function ClaimCodeField({ value, onChange, disabled = false }: { value: string; onChange: (value: string) => void; disabled?: boolean }) {
   return (
     <Field label="Claim code" htmlFor="claimCode" required help="The holder acts with the claim code they accepted with.">
-      <Input id="claimCode" value={value} onChange={(e) => onChange(e.target.value)} required autoComplete="off" spellCheck={false} />
+      <Input id="claimCode" disabled={disabled} value={value} onChange={(e) => onChange(e.target.value)} required autoComplete="off" spellCheck={false} />
     </Field>
   )
 }
 
-function WithdrawButton({ offer, needsClaimCode, onDone }: { offer: OfferView; needsClaimCode: boolean; onDone: () => void }) {
-  const [claimCode, setClaimCode] = useState('')
+function WithdrawButton({ offer, needsClaimCode, holderClaimCode, onDone }: { offer: OfferView; needsClaimCode: boolean; holderClaimCode?: string; onDone: (withdrawn: OfferView) => void }) {
+  const [claimCode, setClaimCode] = useState(holderClaimCode ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>()
   async function withdraw() {
     setBusy(true)
     setError(undefined)
     try {
-      await api.withdrawOffer(offer.requestId, needsClaimCode ? claimCode : undefined)
-      onDone()
+      onDone(await api.withdrawOffer(offer.requestId, needsClaimCode ? claimCode : undefined))
     } catch (cause) {
       setError(cause)
     } finally {
@@ -319,7 +318,7 @@ function WithdrawButton({ offer, needsClaimCode, onDone }: { offer: OfferView; n
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center gap-2">
-        {needsClaimCode ? <Input value={claimCode} onChange={(e) => setClaimCode(e.target.value)} placeholder="Claim code" className="h-8 w-40" aria-label="Claim code" /> : null}
+        {needsClaimCode && holderClaimCode == null ? <Input value={claimCode} onChange={(e) => setClaimCode(e.target.value)} placeholder="Claim code" className="h-8 w-40" aria-label="Claim code" /> : null}
         <Button variant="outline" size="sm" onClick={withdraw} disabled={busy || (needsClaimCode && claimCode === '')}>
           {busy ? 'Working' : 'Withdraw'}
         </Button>
@@ -475,7 +474,7 @@ function BoundUpdateDialog({ passport, publicProduct, needsClaimCode, onClose, o
   )
 }
 
-function HandOnDialog({ passportId, needsClaimCode, onClose, onDone }: { passportId: string; needsClaimCode: boolean; onClose: () => void; onDone: () => void }) {
+function HandOnDialog({ passportId, needsClaimCode, onClose, refreshOffers }: { passportId: string; needsClaimCode: boolean; onClose: () => void; refreshOffers: () => void }) {
   const [word, setWord] = useState('Handed on')
   const [note, setNote] = useState('')
   const [claimCode, setClaimCode] = useState('')
@@ -483,21 +482,32 @@ function HandOnDialog({ passportId, needsClaimCode, onClose, onDone }: { passpor
   const [error, setError] = useState<unknown>()
   const [result, setResult] = useState<{ offer: OfferView; claimCode?: string }>()
 
+  const attempt = useRef<{ termsKey: string; requestId: string; pending: boolean } | undefined>(undefined)
+
   async function submit(event: FormEvent) {
     event.preventDefault()
+    if (attempt.current?.pending) return
+    const terms = { word: word.trim(), ...(note.trim() === '' ? {} : { note: note.trim() }) }
+    const termsKey = JSON.stringify([passportId, terms])
+    if (attempt.current?.termsKey !== termsKey) attempt.current = { termsKey, requestId: crypto.randomUUID(), pending: false }
+    const submission = attempt.current
+    submission.pending = true
     setBusy(true)
     setError(undefined)
     try {
-      const answer = await api.offerPassport(passportId, { terms: { word: word.trim(), ...(note.trim() === '' ? {} : { note: note.trim() }) }, ...(needsClaimCode ? { claimCode } : {}) })
+      const answer = await api.offerPassport(passportId, { requestId: submission.requestId, terms, ...(needsClaimCode ? { claimCode } : {}) })
       setResult(answer)
-      onDone()
     } catch (cause) {
       setError(cause)
     } finally {
+      submission.pending = false
       setBusy(false)
+      // The server may have saved the offer even if its response was lost.
+      refreshOffers()
     }
   }
 
+  const open = result?.offer.status === 'open' && Date.parse(result.offer.expiresAt) > Date.now()
   const acceptUrl = result == null ? '' : `${window.location.origin}/accept/${encodeURIComponent(result.offer.requestId)}`
 
   return (
@@ -510,13 +520,13 @@ function HandOnDialog({ passportId, needsClaimCode, onClose, onDone }: { passpor
         {result == null ? (
           <form onSubmit={submit} className="space-y-4">
             <Field label="Terms word" htmlFor="offer-word" required help="One word for what is happening, for example Sold or Gifted.">
-              <Input id="offer-word" value={word} onChange={(e) => setWord(e.target.value)} required maxLength={40} />
+              <Input id="offer-word" disabled={busy} value={word} onChange={(e) => setWord(e.target.value)} required maxLength={40} />
             </Field>
             <Field label="Note" htmlFor="offer-note" help="Shown to the recipient before they decide.">
-              <Textarea id="offer-note" value={note} onChange={(e) => setNote(e.target.value)} maxLength={400} />
+              <Textarea id="offer-note" disabled={busy} value={note} onChange={(e) => setNote(e.target.value)} maxLength={400} />
             </Field>
-            {needsClaimCode ? <ClaimCodeField value={claimCode} onChange={setClaimCode} /> : null}
-            {error == null ? null : <ErrorNotice error={error} title="The offer was refused" />}
+            {needsClaimCode ? <ClaimCodeField value={claimCode} onChange={setClaimCode} disabled={busy} /> : null}
+            {error == null ? null : <ErrorNotice error={error} title="Could not confirm the offer" />}
             <DialogFooter>
               <Button type="submit" disabled={busy || word.trim() === ''}>
                 {busy ? 'Working' : 'Make the offer'}
@@ -525,24 +535,47 @@ function HandOnDialog({ passportId, needsClaimCode, onClose, onDone }: { passpor
           </form>
         ) : (
           <div className="space-y-4">
-            <div className="rounded-lg border-2 border-amber-400 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Claim code</p>
-              <div className="mt-1 flex items-center gap-2">
-                <code className="text-2xl font-semibold tracking-wider">{result.claimCode ?? 'none'}</code>
-                {result.claimCode == null ? null : <CopyButton text={result.claimCode} label="Copy the claim code" />}
-              </div>
-              <p className="mt-3 text-sm">Give this code to the recipient out of band. It is shown once and never stored.</p>
-            </div>
-            <Field label="Accept link" help="Where the recipient enters the code.">
-              <div className="flex items-center gap-2">
-                <Mono>{acceptUrl}</Mono>
-                <CopyButton text={acceptUrl} label="Copy the accept link" />
-              </div>
-            </Field>
-            <p className="text-sm text-muted-foreground">
-              Offer {result.offer.requestId}, open until {formatTime(result.offer.expiresAt)}.
+            <p className="text-sm">
+              Offer {result.offer.requestId} is {result.offer.status === 'open' && !open ? 'expired' : result.offer.status}. {open ? `Expires ${formatTime(result.offer.expiresAt)}.` : null}
             </p>
+            {result.offer.status === 'open' && result.claimCode == null ? (
+              <div className="space-y-2">
+                <p>The claim code was returned when this offer was created. If you need a replacement code, withdraw this offer and make a new one.</p>
+                <WithdrawButton
+                  offer={result.offer}
+                  needsClaimCode={needsClaimCode}
+                  holderClaimCode={claimCode}
+                  onDone={(offer) => {
+                    setResult({ offer })
+                    refreshOffers()
+                  }}
+                />
+              </div>
+            ) : null}
+            {open ? (
+              <>
+                {result.claimCode != null ? (
+                  <div className="rounded-lg border-2 border-amber-400 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Claim code</p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <code className="text-2xl font-semibold tracking-wider">{result.claimCode}</code>
+                      <CopyButton text={result.claimCode} label="Copy the claim code" />
+                    </div>
+                    <p className="mt-3 text-sm">Give this code to the recipient out of band. It is shown once and never stored.</p>
+                  </div>
+                ) : null}
+                <Field label="Accept link" help="Where the recipient enters the code.">
+                  <div className="flex items-center gap-2">
+                    <Mono>{acceptUrl}</Mono>
+                    <CopyButton text={acceptUrl} label="Copy the accept link" />
+                  </div>
+                </Field>
+              </>
+            ) : null}
             <DialogFooter>
+              {result.offer.status === 'withdrawn' ? (
+                <Button variant="outline" onClick={() => { attempt.current = undefined; setResult(undefined) }}>Make a new offer</Button>
+              ) : null}
               <Button onClick={onClose}>Done</Button>
             </DialogFooter>
           </div>

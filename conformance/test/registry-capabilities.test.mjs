@@ -21,3 +21,20 @@ test('an index declaration meets the common schema while the registry route requ
     assert.equal(registry(wrongRole), false, field)
   }
 })
+
+test('the reporting guide reader cannot verify the external credential offered by the example registry', () => {
+  const guide = readFileSync(new URL('../../docs/implement/reporting.md', import.meta.url), 'utf8')
+  const declaration = guide.split('## Declare what you support')[1].match(/```json\n([\s\S]*?)\n```/)[1]
+  const reader = JSON.parse(declaration)
+  const service = read('conformance/examples/capabilities-registry.json')
+  assert.equal(common(reader), true)
+  assert.equal(registry(service), true)
+  const id = 'vc-di-ecdsa-rdfc-2019@1'
+  assert.ok(service.representations.some(rep => rep.id === id && rep.verification === 'content'))
+  assert.ok(service.proofSuites.includes('ecdsa-rdfc-2019'))
+  assert.ok(reader.unsupported.some(rep => rep.id === id))
+  assert.ok(!reader.representations.some(rep => rep.id === id))
+  assert.ok(!reader.proofSuites.includes('ecdsa-rdfc-2019'))
+  assert.deepEqual(reader.profiles.filter(profile => profile.id === 'managed-custody').map(profile => profile.version), ['1'])
+  assert.ok(reader.representations.some(rep => rep.id === 'dpp-managed-acceptance@1'))
+})

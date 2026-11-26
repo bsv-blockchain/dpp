@@ -90,6 +90,8 @@ Run the three records in `fixtures/vectors/dpp/attestation-anchor/native-binding
 
 No fixture case alters the native claim's own signature; add one to your own tests. [Run the fixtures](../fixture-runner.md#what-a-matching-report-is) says which parts of a report must match. Add [external credentials](../../interoperability/external-credentials.md) only for the representations you support.
 
+Follow the two-party example when the registry offers a credential or profile your reader cannot verify. [Capability mismatch and version selection](../reporting.md#check-what-two-parties-can-verify).
+
 ## What not to copy from the fixtures
 
 - The fixture claim is about the genesis of `fixtures/chain-v1.json`, named by its outpoint, under `general@2` ([fields for a live claim](attestation-issuer.md#fields-for-a-live-claim)).

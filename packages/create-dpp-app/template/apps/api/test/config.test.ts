@@ -19,6 +19,15 @@ describe('configuration', () => {
     expect(joined.url).toBe('http://index.example:8080')
   })
 
+  it('limits draft admission to a known retraction-capable index or its configured base URL', () => {
+    expect(loadConfig({ INDEX_URL: 'https://dpp-overlay-testnet.bsvb.net' }).index.supportsRetraction).toBe(true)
+    expect(loadConfig({ INDEX_URL: 'https://unknown.example' }).index.supportsRetraction).toBe(false)
+    const retraction = { INDEX_RETRACTION_URL: 'https://index.example/a/' }
+    expect(loadConfig({ ...retraction, INDEX_URL: 'https://index.example/a' }).index.supportsRetraction).toBe(true)
+    expect(loadConfig({ ...retraction, INDEX_URL: 'https://index.example/b' }).index.supportsRetraction).toBe(false)
+    expect(loadConfig({ ...retraction, INDEX_URL: 'https://replacement.example/a' }).index.supportsRetraction).toBe(false)
+  })
+
   it('refuses to write to the chain without an index it has joined', () => {
     expect(() => loadConfig({ LIVE_PUBLISHING: 'true', WALLET_ROOT_KEY: rootKey })).toThrow(/INDEX_URL/)
     expect(() => loadConfig({ LIVE_PUBLISHING: 'true', WALLET_ROOT_KEY: rootKey, INDEX_URL: 'http://index.example:8080/' })).toThrow(/go-live/)

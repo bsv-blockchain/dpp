@@ -26,6 +26,8 @@ export interface StateEntry {
   nextHolder?: PassportRecord['holder']
   acceptance?: ManagedAcceptanceRecord
   walletReference?: string
+  /** SHA-256 of the index base URL where this draft may have been announced. Older journals omit it. */
+  draftIndexId?: string
   timestamp: string
   actor: string
   controllerKey: string
@@ -233,7 +235,8 @@ export class MemoryStore implements Store {
       .map(clone)
   }
   async createOpenOffer(record: OfferRecord) {
-    if (this.offers.has(record.requestId) || [...this.offers.values()].some(held => held.passportId === record.passportId && held.status === 'open')) return false
+    if (this.offers.has(record.requestId) || [...this.offers.values()].some(held => held.passportId === record.passportId &&
+      (held.status === 'open' || (held.status === 'accepted' && offerTipSlot(held) === offerTipSlot(record))))) return false
     this.offers.set(record.requestId, clone(record))
     return true
   }
@@ -274,16 +277,21 @@ export class MemoryStore implements Store {
   }
 }
 
+// The existing unique index accepts multiple keys on an open offer. Its passport key
+// blocks other opens. Its outpoint key persists through signing until transfer settles.
+const offerTipSlot = (offer: OfferRecord): string =>
+  JSON.stringify([offer.passportId, offer.expectedPredecessor.txid, offer.expectedPredecessor.outputIndex])
+
 export class MongoStore implements Store {
   private passports: Collection<PassportRecord & { _journalRevision?: string }>
-  private offers: Collection<OfferRecord & { _openSlot?: string }>
+  private offers: Collection<OfferRecord & { _openSlot?: string | string[] }>
   private claims: Collection<ClaimRecord>
   private brands: Collection<BrandRecord>
   private spends: Collection<SpendRecord & { _id: string | ObjectId }>
 
   constructor(db: Db) {
     this.passports = db.collection<PassportRecord & { _journalRevision?: string }>('passports')
-    this.offers = db.collection<OfferRecord & { _openSlot?: string }>('offers')
+    this.offers = db.collection<OfferRecord & { _openSlot?: string | string[] }>('offers')
     this.claims = db.collection<ClaimRecord>('claims')
     this.brands = db.collection<BrandRecord>('brands')
     this.spends = db.collection<SpendRecord & { _id: string | ObjectId }>('spends')
@@ -306,7 +314,7 @@ export class MongoStore implements Store {
 
   private strip<T extends object>(doc: (T & { _id?: unknown }) | null): T | undefined {
     if (doc == null) return undefined
-    const { _id: _ignored, _journalRevision: _revision, _openSlot: _slot, ...rest } = doc as T & { _id?: unknown; _journalRevision?: string; _openSlot?: string }
+    const { _id: _ignored, _journalRevision: _revision, _openSlot: _slot, ...rest } = doc as T & { _id?: unknown; _journalRevision?: string; _openSlot?: string | string[] }
     return rest as T
   }
 
@@ -364,9 +372,12 @@ export class MongoStore implements Store {
   }
   async createOpenOffer(record: OfferRecord) {
     // Earlier stores and restored offers have no reservation field. They still hold their place.
-    if (await this.offers.findOne({ passportId: record.passportId, status: 'open' }, { projection: { _id: 1 } })) return false
+    if (await this.offers.findOne({ passportId: record.passportId, $or: [
+      { status: 'open' },
+      { status: 'accepted', 'expectedPredecessor.txid': record.expectedPredecessor.txid, 'expectedPredecessor.outputIndex': record.expectedPredecessor.outputIndex },
+    ] }, { projection: { _id: 1 } })) return false
     try {
-      await this.offers.insertOne({ ...record, _openSlot: record.passportId })
+      await this.offers.insertOne({ ...record, _openSlot: [record.passportId, offerTipSlot(record)] })
       return true
     } catch (cause) {
       if (cause instanceof MongoServerError && cause.code === 11000) return false
@@ -377,7 +388,8 @@ export class MongoStore implements Store {
     await this.offers.replaceOne({ requestId: record.requestId }, record, { upsert: true })
   }
   async changeOfferStatus(record: OfferRecord, expected: OfferRecord['status']) {
-    return (await this.offers.replaceOne({ requestId: record.requestId, status: expected }, record)).matchedCount === 1
+    const replacement = record.status === 'accepted' ? { ...record, _openSlot: offerTipSlot(record) } : record
+    return (await this.offers.replaceOne({ requestId: record.requestId, status: expected }, replacement)).matchedCount === 1
   }
   async listClaims(filter: ClaimFilter = {}) {
     const query: Record<string, unknown> = {}

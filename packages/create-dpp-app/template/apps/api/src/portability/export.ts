@@ -22,13 +22,15 @@
 // publisher key, assembled these bytes. It does not say they are true or
 // complete beyond what the manifest declares, and it gives no profile any
 // authority at the place the package is restored.
-import { Utils } from '@bsv/sdk'
+import { Transaction, Utils } from '@bsv/sdk'
 import {
+  ACCEPTANCE_RECORD_REPRESENTATIONS,
   EVIDENCE_PACKAGE_FORMAT,
   EVIDENCE_PACKAGE_PROTOCOL,
   EVIDENCE_PACKAGE_VERSION,
   acceptanceCommitment,
   evidencePackageSigner,
+  findDppOutputs,
   inspectEvidencePackage,
   signEvidenceManifest,
   type EvidencePackageManifest,
@@ -192,6 +194,12 @@ async function indexEvidenceFor(input: ExportApplicationInput, passportId: strin
     throw new PortabilityRefused('index-evidence-refused', `The index's evidence for ${passportId} does not check: ${detail} Nothing was exported.`, { passportId, failures })
   }
   const place = (base: string, manifest: EvidencePackageManifest, encoded: Record<string, string>, into: IndexEvidence['files']): void => {
+    if (input.access === 'public-evidence') {
+      const carriesAcceptances = manifest.inventory.some(entry => ACCEPTANCE_RECORD_REPRESENTATIONS.some(format => entry.representation === format))
+      if (manifest.disclosure.scope !== 'public' || manifest.disclosure.recoveryBackup || carriesAcceptances) {
+        refuse('its disclosure scope or acceptance records cannot be carried by this public export.', [])
+      }
+    }
     into.push({ path: `${base}/manifest.json`, bytes: utf8(JSON.stringify(manifest)), category: 'reports', mediaType: JSON_MEDIA_TYPE, represents: passportId, representation: APPLICATION_REPRESENTATIONS.indexManifest })
     for (const entry of manifest.inventory) {
       const bytes = Uint8Array.from(Buffer.from(encoded[entry.path] ?? '', 'base64'))
@@ -322,8 +330,28 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
     const evidence = await indexEvidenceFor(input, record.passportId, folder, exporterKey, exportedAt)
     for (const file of evidence.files) add(file.path, file.category, file.mediaType, file.bytes, { ...(file.represents == null ? {} : { represents: file.represents }), ...(file.representation == null ? {} : { representation: file.representation }) })
     snapshots.push(...evidence.snapshots)
-    absent.push(...evidence.absent)
+    // Each nested manifest states what the index holds. The writer may hold a record the index lacks.
+    const passportOffers = await store.listOffers({ passportId: record.passportId })
+    const heldAcceptances = new Set(record.acceptanceRecords.map(acceptance => `acceptance:sha256:${acceptanceCommitment(acceptance)}`))
+    for (const offer of passportOffers) {
+      if (offer.record != null) heldAcceptances.add(`acceptance:sha256:${acceptanceCommitment(offer.record)}`)
+    }
+    absent.push(...evidence.absent.filter(reference => !heldAcceptances.has(reference)))
     sources.push(...evidence.sources)
+
+    if (!authorised) {
+      // The exported index transactions are public. Offers still waiting for a transfer are private.
+      for (const file of evidence.files) {
+        if (file.category !== 'transactions' || file.representation !== 'raw-transaction') continue
+        const outputs = findDppOutputs(Transaction.fromBinary(Array.from(file.bytes)))
+        for (const { state } of outputs) {
+          if (state.version !== '2' || state.op !== 'TRANSFER' || state.passportId !== record.passportId || !state.authorisationCommitment) continue
+          const reference = `acceptance:sha256:${state.authorisationCommitment}`
+          if (heldAcceptances.has(reference)) withheld.push(`${reference} not-public`)
+          else absent.push(reference)
+        }
+      }
+    }
 
     // How the passport verifies here, now, as any reader would find it. The index only finds the bytes.
     let reading: ExportedReading | undefined
@@ -351,7 +379,7 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
         if (isEpcisLifecycleRecord(claim)) add(`application/lifecycle-claims/${sha256Hex(claim.id)}.json`, 'native-claims', EPCIS_LIFECYCLE_MEDIA_TYPE, new TextEncoder().encode(claim.bytes), { represents: claim.attestationId, representation: EPCIS_LIFECYCLE_REPRESENTATION })
         claims += 1
       }
-      for (const offer of await store.listOffers({ passportId: record.passportId })) {
+      for (const offer of passportOffers) {
         add(`application/offers/${sha256Hex(offer.requestId)}.json`, 'reports', JSON_MEDIA_TYPE, recordBytes(offer), { represents: offer.requestId, representation: APPLICATION_REPRESENTATIONS.offer })
         offers += 1
       }

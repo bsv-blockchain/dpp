@@ -1,9 +1,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { contexts as vcContexts } from '@digitalbazaar/credentials-context';
 import {
-  DEFAULT_CONTEXT_SETS, EXTERNAL_CREDENTIAL_LIMIT_BYTES, EXTERNAL_PASSPORT_CONTEXT, EXTERNAL_PASSPORT_CONTEXT_URL, EXTERNAL_PASSPORT_SCHEMA, VC_V2_CONTEXT,
+  DEFAULT_CONTEXT_SETS, EXTERNAL_CREDENTIAL_LIMIT_BYTES, EXTERNAL_PASSPORT_CONTEXT, EXTERNAL_PASSPORT_CONTEXT_URL, EXTERNAL_PASSPORT_SCHEMA, EXTERNAL_PASSPORT_SCHEMA_ID, VC_V2_CONTEXT,
   createExternalDocumentLoader, externalCredentialVerifierFor, parseExternalCredentialBytes, verifyBitstringStatus, verifyExternalCredential, type ExternalVerificationPolicy,
 } from '../src/exchange.js';
 import type { Credential, JsonObject } from '../src/types.js';
@@ -74,6 +75,7 @@ describe('verifyExternalCredential', () => {
   it('verifies the positive credential check by check and never reads a trust list from the credential', async () => {
     const result = await verifyExternalCredential({ bytes: bytes(signed), representation: 'vc-di-ecdsa-rdfc-2019@1', policy: policy() });
     expect(Object.values(result.checks).map(c => c.outcome)).toEqual(Array(10).fill('verified'));
+    expect(result.checks.schema.evidence).toEqual([EXTERNAL_PASSPORT_SCHEMA_ID]);
     expect(result.issuer).toBe(ISSUER);
     expect(result.subjects).toEqual([PASSPORT_ID]);
     expect(result.types).toEqual(['VerifiableCredential', 'ProductPassportCredential']);
@@ -82,6 +84,27 @@ describe('verifyExternalCredential', () => {
     expect(untrusted.checks.authority.outcome).toBe('invalid');
     expect(untrusted.checks.authority.issues[0]?.code).toBe('issuer_unauthorised');
   }, 30_000);
+  it.each([
+    { name: 'schema identifier', schema: { $id: 'urn:trial:structural', type: 'object' }, reference: 'urn:trial:profile', expected: ['urn:trial:structural'] },
+    { name: 'operator reference', schema: { type: 'object' }, reference: 'urn:trial:profile', expected: ['urn:trial:profile'] },
+    { name: 'anonymous validator', schema: true, reference: undefined, expected: undefined },
+  ])('reports the schema actually applied with $name', async ({ schema, reference, expected }) => {
+    const payloadSchema = new Ajv2020().compile(schema);
+    const configured = policy({ payloadSchema, payloadSchemaRef: reference });
+    const input = { representation: 'vc-di-ecdsa-rdfc-2019@1', bytes: bytes(signed) };
+    const result = await verifyExternalCredential({ ...input, policy: configured });
+    expect(result.checks.schema.outcome).toBe('verified');
+    expect(result.checks.schema.evidence).toEqual(expected);
+    const report = await externalCredentialVerifierFor(configured)({ ...input, bytes: [...input.bytes], digest: result.digest, checkedAt: NOW });
+    expect(report.schema.status).toBe('pass');
+    expect(report.schema.evidenceRefs).toEqual(expected);
+  });
+  it('attributes refusal to the configured schema that rejected the credential', async () => {
+    const schemaId = 'urn:trial:other-credential';
+    const payloadSchema = new Ajv2020().compile({ $id: schemaId, type: 'object', properties: { id: { const: 'urn:trial:different' } } });
+    const result = await verifyExternalCredential({ representation: 'vc-di-ecdsa-rdfc-2019@1', bytes: bytes(signed), policy: policy({ payloadSchema }) });
+    expect(result.checks.schema).toMatchObject({ outcome: 'invalid', evidence: [schemaId], issues: [{ code: 'schema', path: '/id' }] });
+  });
   it('refuses another representation by name and leaves every other check not evaluated', async () => {
     const result = await verifyExternalCredential({ bytes: bytes(signed), representation: 'vsc-seal-json-v1', policy: policy() });
     expect(result.checks.parse.outcome).toBe('unsupported');

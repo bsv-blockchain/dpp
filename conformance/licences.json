@@ -85,6 +85,12 @@
           "range": "11.6.0",
           "version": "11.6.0",
           "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "undici",
+          "range": "6.29.1",
+          "version": "6.29.1",
+          "licence": "MIT"
         }
       ]
     },

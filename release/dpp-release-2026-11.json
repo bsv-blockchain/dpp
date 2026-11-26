@@ -251,9 +251,11 @@
       "nodeBuiltins": [
         "node:assert/strict",
         "node:crypto",
+        "node:dns/promises",
         "node:fs",
         "node:fs/promises",
         "node:module",
+        "node:net",
         "node:os",
         "node:path",
         "node:util",

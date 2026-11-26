@@ -3,6 +3,7 @@
 // be reached refuses nothing, and the writer sends anyway and announces the
 // same bytes again later. A 401 or 403 is this platform's own configuration
 // and stops a write while the state is still a draft.
+import { createHash } from 'node:crypto'
 import { Beef, Transaction, type MerklePath } from '@bsv/sdk'
 import { chainFromBeef, decodeAttestationAnchor } from '@bsv/dpp-protocol'
 
@@ -19,6 +20,8 @@ export interface IndexClientOptions {
   url: string
   submitToken?: string
   callbackToken?: string
+  /** This index can withdraw drafts admitted before the network answers. */
+  supportsRetraction?: boolean
   /** Silence the in-process index's logging during a call; tests use it. */
   quiet?: boolean
 }
@@ -46,6 +49,8 @@ export async function boundedJson(response: Response, limit: number): Promise<un
 
 export class IndexClient {
   readonly url: string
+  readonly supportsRetraction: boolean
+  readonly destinationId: string
   private submitToken?: string
   private callbackToken?: string
   /** The last refusal reason the index gave in X-Admission-Refusal, for the journal. */
@@ -53,6 +58,8 @@ export class IndexClient {
 
   constructor(options: IndexClientOptions) {
     this.url = options.url.replace(/\/+$/, '')
+    this.destinationId = createHash('sha256').update(this.url).digest('hex')
+    this.supportsRetraction = options.supportsRetraction ?? false
     this.submitToken = options.submitToken
     this.callbackToken = options.callbackToken
   }
@@ -185,7 +192,7 @@ export class IndexClient {
     return { part: (await response.json()) as Record<string, unknown> }
   }
 
-  /** Announce an unsent transaction (spec/writing.md section 3). */
+  /** Submit a signed transaction for index admission. */
   async announce(beef: number[]): Promise<Announcement> {
     this.lastRefusal = undefined
     let response: Response
