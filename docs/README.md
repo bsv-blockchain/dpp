@@ -1,4 +1,14 @@
-# Build with the open DPP standard
+# Create your first digital product passport app
+
+```sh
+npm create @bsv/dpp-app
+```
+
+Paste the command into a terminal with Node.js 22.23.4 and npm installed. It creates your app in `my-dpp`.
+
+**Launch the app** with `cd my-dpp && npm run dev`, then open the **Local** URL printed in the terminal. [Issue your first test passport](packages/create-dpp-app.md#create-and-check-offline). When you are ready to write to the blockchain, follow [Testnet and mainnet setup](packages/create-dpp-app.md#run-the-published-starter-on-testnet-or-mainnet).
+
+## Explore the standard
 
 Application teams and service owners can use this guide to choose a route: build a digital product passport platform, add passport features to an application, or supply services other implementations can use.
 
