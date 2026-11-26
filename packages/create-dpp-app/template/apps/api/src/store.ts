@@ -360,7 +360,7 @@ export class MongoStore implements Store {
     await this.passports.deleteOne({ passportId, states: { $size: 0 } })
   }
   async getOffer(requestId: string) {
-    return this.strip(await this.offers.findOne({ requestId }))
+    return this.strip(await this.offers.findOne({ requestId: { $eq: requestId } }))
   }
   async listOffers(filter: { passportId?: string; brandId?: string; status?: OfferRecord['status'] } = {}) {
     const query: Record<string, unknown> = {}
