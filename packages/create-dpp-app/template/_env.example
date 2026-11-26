@@ -31,7 +31,7 @@ BRAND_ROOT_SECRET=
 MANAGED_IDENTITY_SECRET=
 
 # The index this app announces passports to and readers look them up in. The default is the
-# hosted testnet index (mainnet: https://dpp-overlay.bsvb.net with NETWORK=main). Until
+# hosted testnet index (mainnet: https://dpp-overlay-mainnet.bsvb.net with NETWORK=main). Until
 # `npm run go-live` has registered the app's publisher key and stored the two tokens below, the
 # API runs an index in this process instead. `npm run connect-index` takes another provider's
 # address and tokens, or with --from the connection file an index operator wrote with
