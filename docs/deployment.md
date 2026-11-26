@@ -1,6 +1,6 @@
 # The hosted reference
 
-Readers, application teams and operators can use this page to select hosted services and verify sample records. The programme hosts one instance of each service for live lookups, reader tests and peering before you run your own. Check its access, versions and limits below.
+Readers, application teams and operators can use this page to select hosted services and verify sample records. The programme hosts a mainnet reference application and registry, a mainnet index for their records and separate testnet and mainnet indexes for registering applications. Check its access, versions and limits below.
 
 For production, [choose your services](start/choose-components-and-services.md) and confirm provider access and operating commitments. This reference is no catalogue of generally available production providers. Public URLs and successful reads grant neither writes nor a service agreement.
 
@@ -12,23 +12,42 @@ For production, [choose your services](start/choose-components-and-services.md) 
 |---|---|
 | Browse or read | Browser or HTTP client; public service URLs below need no read token. |
 | Run the verification example | Node 22 or later and a [checkout after setup](quick-start.md#get-the-code), with `npm ci` and `npm run build`. Run from its root. A WhatsOnChain API key can be set as `WOC_API_KEY` if anonymous header checks are limited. |
-| Write, deliver proofs or export | Destination-specific tokens from the operator, subject to the restrictions below. |
+| Write, deliver proofs or export | For the November indexes, register your publisher key to obtain its two write tokens. The reference index has separate access arrangements. [Registration and operator keys](#registration-and-operator-keys) |
 | Check policy or evidence signatures | Independently obtain the operator identity key; use the export signer and accepted anchoring key below for their respective checks. |
 
 ## Services
 
-Read each service's `/capabilities` for what that deployment reports. The index and registry responses were checked on 28 October 2026 (UTC) after their redeployment; the application description reflects its 21 October deployment of the `dpp-release-2026-10-10` set, and the proof-page description remains the recorded operator information from 6 October. The application serves no capability document, and the registry response names a protocol rather than an implementation version. Reported capabilities do not establish operator identity or prove that a particular record is valid.
+Read each service's `/capabilities` for what that deployment reports. The three indexes were checked on 26 November 2026 (UTC). The registry response was checked on 28 October 2026 (UTC). The application description reflects its 21 October deployment of the `dpp-release-2026-10-10` set, and the proof-page description remains the recorded operator information from 6 October. The application serves no capability document, and the registry response names a protocol rather than an implementation version. Reported capabilities do not establish operator identity or prove that a particular record is valid.
 
 | Host | Serves | Runs |
 |---|---|---|
 | `https://dpp.bsvb.net` | The reference application: the brand console, a GS1-Conformant Resolver at `/01/...` for the identifiers it issued, and each passport page at `/passport/01/<gtin>/21/<serial>` | The `dpp-release-2026-10-10` set: `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12` and `@bsv/dpp-credentials@0.2.0-beta.5` |
 | `https://dpp-overlay.bsvb.net` | The index: `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay@0.4.0-beta.12`, `single-operator@2` under publisher policy version 1, pulling all three topics from one peer run under the same administration, with discovery and advertising off |
+| `https://dpp-overlay-testnet.bsvb.net` | BSV testnet, open registration for state publishers | `@bsv/dpp-overlay@0.4.0-beta.13`, `managed-custody@2` |
+| `https://dpp-overlay-mainnet.bsvb.net` | BSV mainnet, registration subject to operator approval | `@bsv/dpp-overlay@0.4.0-beta.13`, `managed-custody@2` |
 | `https://dpp-resolver.bsvb.net` | The registry: claim validation, storage, anchoring and proofs | `attestation-registry/1` |
 | `https://dpp-proof.bsvb.net` | The anchor proof page: the claims a registry holds, each compared with its anchor; the hosted registry unless you type another registry's address ([run your own](implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) | A static page over a registry's showcase routes |
 
-The index names peers statically. beta.12 supports opt-in discovery, advertising and left-behind retry, but discovery and advertising are off: capabilities report `static-peers` and unsupported `ship-slap-discovery`. The registry reports discovery and external credential policy as `not-configured`; its `resolver` hostname denotes this claim registry, not a hosted GS1 resolver.
+The beta.12 reference index names peers statically. beta.12 supports opt-in discovery, advertising and left-behind retry, but discovery and advertising are off: capabilities report `static-peers` and unsupported `ship-slap-discovery`. The registry reports discovery and external credential policy as `not-configured`; its `resolver` hostname denotes this claim registry, not a hosted GS1 resolver.
+
+## Registration and operator keys
+
+Use the testnet or mainnet beta.13 host above with a starter that writes `managed-custody@2`. Check the network at `GET /health` and the custody profile and registration mode at `GET /capabilities`. The published beta.1 starter uses different setup. [Starter network setup](packages/create-dpp-app.md#run-the-published-starter-on-testnet-or-mainnet)
+
+The November starter’s `npm run go-live` sends a wallet-signed `POST /register` request. Testnet returns HTTP 201 and two credentials on acceptance. Mainnet returns HTTP 202 for a new request. After operator approval, run the command again to sign a fresh request and collect the credentials. Each host accepts up to ten registration requests per source address per hour and returns HTTP 429 above that limit.
+
+Registration admits the key to publish states on that index. Keep the submit token for `POST /submit` and `POST /retract` and the callback token for `POST /arc-ingest`. The operator separately selects anchoring services. Both beta.13 hosts reported bounded evidence packages and complete exports unavailable at the check date. Registration carries no service or retention commitment.
+
+| Network | Policy operator | Public identity key |
+|---|---|---|
+| Testnet | BSV Blockchain | `027c509b2252910db65734fddecb54387f2e89e33e0ed8f13248cfd0f58643209e` |
+| Mainnet (beta.13) | BSV Blockchain Mainnet | `022b577299011ad5e0b25600a83bc72839474a05fef6a09da8949cc7e6b84192e7` |
+
+Use the key for the selected network with `verifyPolicyChain` from `@bsv/dpp-protocol` to verify the response from `GET /publisher-policy`. Versions 1 to 3 on each host verified against its configured operator key on 26 November 2026 (UTC). The operator can run `dpp-index registrations revoke --publisher <key>` to retire a publisher in a new signed policy version and revoke its tokens. Earlier signed policy versions retain the publisher’s admission history. [Index configuration](operate/README.md#what-to-prepare)
 
 ## What is open and what needs a token
+
+The index entries in the following tables apply to the beta.12 reference at `dpp-overlay.bsvb.net`. Use that index for the existing reference application’s passports. On the check date, the beta.12 index returned 14 history entries across the four sample passports listed below. The beta.13 mainnet index returned an empty history for each. Its policy listed a different set of state publishers.
 
 | Service | Route or operation | Access |
 |---|---|---|
@@ -47,11 +66,11 @@ The index names peers statically. beta.12 supports opt-in discovery, advertising
 
 These are documented rules; the latest capability check did not exercise authenticated writes. Keep each token with its intended endpoint.
 
-The operator does not distribute tokens for general use. To publish, [run your own index](operate/README.md) or arrange access with a compatible provider. For a token or a hosted peer arrangement, [contact the programme](start/choose-your-path.md#contact-the-programme).
+The beta.12 reference operator does not distribute tokens for general use. To publish, [run your own index](operate/README.md) or arrange access with a compatible provider. For a token or a hosted peer arrangement, [contact the programme](start/choose-your-path.md#contact-the-programme).
 
 ## Run the same services yourself
 
-The hosted reference runs the packages a release set names. The same index is delivered two ways, as the npm package `@bsv/dpp-overlay` with its `dpp-index` command and as the `dpp-overlay` image, and they are the same runtime.
+The reference application uses the October packages. The registration indexes run the November candidate. The same index is delivered two ways, as the npm package `@bsv/dpp-overlay` with its `dpp-index` command and as the `dpp-overlay` image, and they are the same runtime.
 
 | You want | Use | Leaves out |
 |---|---|---|
@@ -121,7 +140,7 @@ Every other known limit, of the hosted services and of the standard, is on [know
 
 ## Overlays running now
 
-The index below serves `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, which holds anchors in the format before the current one. Records move between two indexes only in the direction a node pulls, from the peers its operator names ([which way records flow](operate/federation.md#which-way-records-flow)).
+The beta.12 reference index below serves `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, which holds anchors in the format before the current one. Records move between two indexes only in the direction a node pulls, from the peers its operator names ([which way records flow](operate/federation.md#which-way-records-flow)).
 
 | Index | Operator | Pulls from | Admits | Runs |
 |---|---|---|---|---|
@@ -131,9 +150,11 @@ Its one peer is run by the same administration, so the exchange between them dem
 
 ## Join the hosted reference
 
-Without operator involvement, anyone can read and verify held passports and anchors, fetch `GET /evidence-package` to [restore a passport's signed bounded package](operate/export-import-recovery.md#restore-a-passport-from-the-bounded-package) into their index, or pull records by naming the reference in `SYNC_PEERS` ([federation](operate/federation.md)).
+To request a listing for another provider on this page, send the programme your public index URL, network, operator identity and access terms through the [programme contact form](start/choose-your-path.md#contact-the-programme). A listing and a peering arrangement are separate requests.
 
-Everything else is a setting only the reference's operator holds. Ask for it through the [contact form](start/choose-your-path.md#contact-the-programme), with what the table says to send:
+On the beta.12 reference, anyone can read and verify held passports and anchors, fetch `GET /evidence-package` to [restore a passport's signed bounded package](operate/export-import-recovery.md#restore-a-passport-from-the-bounded-package) into their index, or pull records by naming the reference in `SYNC_PEERS` ([federation](operate/federation.md)).
+
+For these arrangements, send the beta.12 reference operator the details in the table through the [contact form](start/choose-your-path.md#contact-the-programme).
 
 | You want | The operator changes | Send |
 |---|---|---|
