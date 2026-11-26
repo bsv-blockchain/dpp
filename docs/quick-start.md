@@ -1,10 +1,6 @@
-# Quick start
+# Source checkout exercises
 
-```sh
-npm create @bsv/dpp-app
-```
-
-Run this in a terminal with Node.js 22.23.4 and npm. It creates the `my-dpp` folder. To launch the app, run `cd my-dpp && npm run dev` and open the **Local** URL printed in the terminal.
+For a generated application, follow the [application quick start](start/app-quick-start.md).
 
 Developers and evaluators can verify a version 2 test passport here and learn to explain its report before using a live service. Start with the offline fixture, then optionally try a version 2 writer dry run, a historical live read and native claim validation.
 
