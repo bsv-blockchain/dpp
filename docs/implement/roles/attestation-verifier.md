@@ -112,11 +112,12 @@ node examples/check-registry.mjs --fixture
 node examples/check-registry.mjs https://dpp-resolver.bsvb.net
 ```
 
-The first runs offline on repository test data and ends `Every sentence above holds.` The second checks a live registry's first 10 records.
+The first runs offline on repository test data and ends `Every sentence above holds.` The second checks a live registry's first 10 records. For a testnet registry, pass its URL and `--network=test` to fetch its transactions, merkle proofs and headers from testnet.
 
 | Option or output | Meaning |
 |---|---|
 | `--subject=<passportId>` | Select one passport. |
+| `--network=test` | Select testnet for chain evidence. Omit the option or use `--network=main` for mainnet. |
 | `--limit=<n>` | Check more records. |
 | `--anchoring-services=<key>,<key>` | Name the anchoring services you accept. |
 | `WOC_API_KEY` | Raise WhatsOnChain's rate limit. |
@@ -126,9 +127,10 @@ The first runs offline on repository test data and ends `Every sentence above ho
 | Check | What it does | Where the evidence comes from |
 |---|---|---|
 | `digest` | Hashes the stored bytes with SHA-256 and compares the result with the registry's `digest` | `GET /attestations/{id}/proof`: `securedBytes`, or `canonical` on a `legacy-uora-json` record |
-| `claim signature` | Verifies a native claim with `verifyLifecycleClaim` from `@bsv/dpp-protocol` | The stored bytes |
+| `claim signature` | Verifies a historical native claim with `verifyLifecycleClaim` or a signed EPCIS lifecycle claim with `verifyEpcisLifecycleClaim` | The stored bytes |
 | `anchor` | Decode using the first field's format; verify signature and locking key | WhatsOnChain transaction (`/tx/<txid>/hex`), located by the proof's `anchor.recordId` and `anchor.outputIndex`. Any registry-supplied script must match. |
 | `binding` | The anchor commits to the digest and names the claim's identifier, issuer, subject and type | The decoded anchor and the claim |
+| `anchor coverage` | Reports how many distinct passports in the signed EPCIS bindings have a matching anchor output. | The secured claim and the chain outputs located by the registry’s `anchors` list. |
 | `inclusion` | Verify the transaction's merkle path against headers. A registry-supplied path counts only if its root matches the header. | The proof's `anchor.merklePath`, otherwise WhatsOnChain's `/tx/<txid>/proof/bump`. Both are BUMPs read unchanged by `MerklePath.fromHex` from `@bsv/sdk`. Block headers come from your header source. |
 | `anchoring service` | Compare the anchor's signing key with accepted services; without your own list, use the registry's keys. | Decoded anchor and `--anchoring-services`, otherwise `GET /capabilities` keys in `publisherPolicy.anchoringServices`, or `anchoredBy` from a registry on the earlier contract. |
 
@@ -137,6 +139,7 @@ What each kind of record can establish:
 | Record | Anchor | What can be established |
 |---|---|---|
 | `dpp-lifecycle-json-v1`, a native claim | `bsv-attestation-anchor-v1`, read with `inspectAttestationAnchor` from `@bsv/dpp-protocol` | Every check |
+| `dpp-epcis-lifecycle-json@1` | `bsv-attestation-anchor-v1`, one output per bound passport | Checks the secured bytes, claim signature, anchor commitments, service keys and inclusion. A supplied subject must occur in the signed bindings. Product identity comparison, issuer role authority and EPCIS schema validation require separate evidence. |
 | `legacy-uora-json` | `uora-anchor-v3`, read with `tryParseUoraAnchor` from `@bsv/dpp-overlay` | Every check but the claim signature, which the example does not check |
 | `legacy-uora-json` | `uora-anchor-v1` | The digest, inclusion, and that the output is signed by its own locking key. A v1 anchor names no issuer and no anchoring service, so who anchored it cannot be established |
 | `vsc-seal-json-v1`, a SEAL credential | `bsv-attestation-anchor-v1` | The digest, anchor and inclusion; the credential itself is the parked VSC profile's, which [`@bsv/dpp-credentials`](../../packages/dpp-credentials.md#parked-the-vsc-compatibility-profile) verified up to 0.2.0-beta.5 |

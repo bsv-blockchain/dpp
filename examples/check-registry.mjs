@@ -6,7 +6,7 @@
  *
  *   node examples/check-registry.mjs --fixture                        # offline: the repository's own test data
  *   node examples/check-registry.mjs https://dpp-resolver.bsvb.net    # a live registry, its first 10 records
- *   node examples/check-registry.mjs <registry> --subject=<passportId> --limit=50 --anchoring-services=<key>,<key>
+ *   node examples/check-registry.mjs <registry> --network=test --subject=<passportId> --limit=50 --anchoring-services=<key>,<key>
  *
  * For every record it prints one line per check, each pass, fail, unknown or
  * not-applicable, and never an overall verdict:
@@ -31,12 +31,15 @@
 import { readFileSync } from 'node:fs'
 import { Hash, LockingScript, MerklePath, PushDrop, Signature, Transaction, Utils, WhatsOnChain } from '@bsv/sdk'
 import { inspectAttestationAnchor, verifyLifecycleClaim } from '@bsv/dpp-protocol'
+import { EPCIS_LIFECYCLE_REPRESENTATION, verifyEpcisLifecycleClaim } from '@bsv/dpp-credentials/epcis-lifecycle'
 import { tryParseUoraAnchor } from '@bsv/dpp-overlay'
 
 const args = process.argv.slice(2)
 const option = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3)
 const fixtureMode = args.includes('--fixture')
 const registryUrl = (args.find((a) => !a.startsWith('--')) ?? 'https://dpp-resolver.bsvb.net').replace(/\/$/, '')
+const network = option('network') ?? 'main'
+if (!['main', 'test'].includes(network)) throw new Error('--network must be main or test')
 const subject = option('subject')
 const limit = Number(option('limit') ?? 10)
 const short = (hex) => `${String(hex).slice(0, 12)}...`
@@ -71,7 +74,7 @@ function liveRegistry(base) {
 
 /** The chain, through WhatsOnChain: transactions, merkle proofs and block headers, one request at a time. */
 function liveChain() {
-  const woc = 'https://api.whatsonchain.com/v1/bsv/main'
+  const woc = `https://api.whatsonchain.com/v1/bsv/${network}`
   const apiKey = process.env.WOC_API_KEY
   let queue = Promise.resolve()
   const pause = (ms) => new Promise((wait) => setTimeout(wait, ms))
@@ -88,7 +91,7 @@ function liveChain() {
     if (!response.ok) throw new Error(`WhatsOnChain ${path} answered HTTP ${response.status}`)
     return read(response)
   })
-  const headers = new WhatsOnChain('main', apiKey ? { apiKey } : {})
+  const headers = new WhatsOnChain(network, apiKey ? { apiKey } : {})
   return {
     async transaction(txid) {
       const hex = await get(`/tx/${txid}/hex`, (r) => r.text())
@@ -113,9 +116,9 @@ function liveChain() {
 
 /**
  * --fixture: a registry and a chain made from the repository's own test data,
- * a native claim (fixtures/attestation-anchor-v1.json) and a legacy UORA claim
- * (fixtures/anchor-v3.json). Each anchor sits alone in a made-up transaction
- * with a made-up merkle path whose root only the stand-in headers know.
+ * a native claim, a legacy UORA claim and an EPCIS transformation with four
+ * bound passports. Synthetic transactions and merkle paths exercise inclusion
+ * against stand-in headers.
  */
 function fixtureSources() {
   const read = (name) => JSON.parse(readFileSync(new URL(`../fixtures/${name}`, import.meta.url), 'utf8'))
@@ -124,9 +127,9 @@ function fixtureSources() {
   const transactions = new Map()
   const paths = new Map()
   const roots = new Map()
-  const anchorTransaction = (lockingScript, height) => {
+  const anchorTransaction = (scripts, height) => {
     const tx = new Transaction()
-    tx.addOutput({ satoshis: 1, lockingScript: LockingScript.fromHex(lockingScript) })
+    for (const script of scripts) tx.addOutput({ satoshis: 1, lockingScript: LockingScript.fromHex(script) })
     const txid = tx.id('hex')
     const path = new MerklePath(height, [[{ offset: 0, hash: 'ab'.repeat(32) }, { offset: 1, hash: txid, txid: true }]])
     transactions.set(txid, tx)
@@ -134,7 +137,7 @@ function fixtureSources() {
     roots.set(height, path.computeRoot(txid))
     return txid
   }
-  const nativeTxid = anchorTransaction(native.lockingScript, 900000)
+  const nativeTxid = anchorTransaction([native.lockingScript], 900000)
   const proofs = new Map([
     [native.anchor.attestationId, {
       attestationId: native.anchor.attestationId,
@@ -150,15 +153,31 @@ function fixtureSources() {
       attestation: legacy.attestation,
       canonical: legacy.canonical,
       digest: legacy.digest,
-      anchor: { recordId: anchorTransaction(legacy.lockingScript, 900001), outputIndex: 0, format: 'uora-anchor-v3' },
+      anchor: { recordId: anchorTransaction([legacy.lockingScript], 900001), outputIndex: 0, format: 'uora-anchor-v3' },
     }],
   ])
+  const lifecycle = read('vectors/dpp/epcis-lifecycle/v1.json')
+  const vector = lifecycle.vectors.find((v) => v.id === 'transformation-event-manufacturing')
+  const scripts = vector.input.options.anchors_hex
+  const recordId = anchorTransaction(scripts, 900002)
+  const anchors = vector.expected.bound_passports.map((passportId, outputIndex) => ({
+    subject: passportId, recordId, outputIndex, lockingScript: scripts[outputIndex],
+  }))
+  proofs.set(vector.expected.attestation_id, {
+    attestationId: vector.expected.attestation_id,
+    representation: vector.input.representation,
+    mediaType: vector.input.media_type,
+    securedBytes: vector.input.claim,
+    digest: vector.expected.digest_hex,
+    anchor: anchors[0],
+    anchors,
+  })
   return {
     registry: {
       records: async () => [...proofs.values()].map(({ attestationId, representation }) => ({ attestationId, representation })),
       proof: async (attestationId) => proofs.get(attestationId),
       // The test registry names its anchoring key, as a registry under the contract may.
-      capabilities: async () => ({ publisherPolicy: { anchoringServices: [native.anchor.anchoredBy] } }),
+      capabilities: async () => ({ publisherPolicy: { anchoringServices: [native.anchor.anchoredBy, lifecycle.keys.anchoring_service.identity_key_hex] } }),
     },
     chain: {
       transaction: async (txid) => transactions.get(txid) ?? null,
@@ -223,6 +242,11 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
       digest === proof.digest ? `the stored bytes hash to ${short(digest)}, the digest the registry states` : `the stored bytes hash to ${short(digest)}, not the ${short(proof.digest)} the registry states`)
   }
 
+  if (proof.representation === EPCIS_LIFECYCLE_REPRESENTATION) {
+    await checkEpcisRecord(record.attestationId, proof, chain, accepted, registryKeys, say)
+    return lines
+  }
+
   // 2. The claim's own signature. A native claim is checked with
   // verifyLifecycleClaim; another representation needs its own verifier.
   let claim = proof.attestation
@@ -284,11 +308,93 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
       problems.length === 0 ? `the anchor commits to this digest${named ? ' and names this claim' : ''}` : problems.join('; '))
   }
 
+  await checkInclusion(txid, proof.anchor?.merklePath, chain, say)
+  checkAnchoringService(anchor, accepted, registryKeys, say)
+  return lines
+}
+
+async function checkEpcisRecord(attestationId, proof, chain, accepted, registryKeys, say) {
+  if (typeof proof.securedBytes !== 'string') {
+    say('unknown', 'claim signature', 'the registry supplied no secured EPCIS claim bytes')
+    return
+  }
+  const locations = Array.isArray(proof.anchors) ? proof.anchors : (proof.anchor ? [proof.anchor] : [])
+  if (proof.anchors != null && !Array.isArray(proof.anchors)) {
+    say('fail', 'anchor', 'the proof lists its anchors in an invalid format')
+  }
+  if (proof.anchor && !locations.some((location) =>
+    location?.recordId === proof.anchor.recordId && location?.outputIndex === proof.anchor.outputIndex)) {
+    say('fail', 'anchor', 'the primary anchor is missing from the reported outputs')
+  }
+  const transactions = new Map()
+  const evidence = []
+  const subjects = new Set()
+  for (const location of locations) {
+    const txid = location?.recordId
+    const index = location?.outputIndex
+    if (!/^[0-9a-f]{64}$/.test(txid) || !Number.isSafeInteger(index) || index < 0) {
+      say('fail', 'anchor', 'an EPCIS anchor location needs a transaction ID and an output index')
+      continue
+    }
+    if (!transactions.has(txid)) transactions.set(txid, await chain.transaction(txid))
+    const transaction = transactions.get(txid)
+    if (transaction == null) {
+      say('unknown', 'anchor', `the chain source has no transaction ${txid}`)
+      continue
+    }
+    const script = transaction.outputs[index]?.lockingScript
+    if (transaction.id('hex') !== txid || script == null) {
+      say('fail', 'anchor', `the transaction returned does not supply ${txid}:${index}`)
+      continue
+    }
+    evidence.push({ lockingScript: script })
+    const anchor = readAnchor(script)
+    if (location.lockingScript != null && location.lockingScript !== script.toHex()) {
+      say('fail', 'anchor', `the registry’s script differs from output ${txid}:${index}`)
+    }
+    if (anchor.format !== 'bsv-attestation-anchor-v1' || !anchor.verified) {
+      say('fail', 'anchor', `output ${txid}:${index} has no verified attestation anchor`)
+      continue
+    }
+    if ((location.subject != null && location.subject !== anchor.subject) || subjects.has(anchor.subject)) {
+      say('fail', 'anchor', `output ${txid}:${index} repeats a subject or disagrees with the proof’s subject`)
+    }
+    subjects.add(anchor.subject)
+    checkAnchoringService(anchor, accepted, registryKeys, (status, check, message) =>
+      say(status, check, `${anchor.subject} at output ${index}: ${message}`))
+  }
+
+  const verified = await verifyEpcisLifecycleClaim(proof.securedBytes, { anchors: evidence })
+  const signature = verified.findings.signature
+  say(signature.status, 'claim signature', signature.reasonCode ?? `the EPCIS claim is signed by ${verified.issuer}`)
+  if (verified.attestationId !== attestationId || verified.attestationId !== proof.attestationId) {
+    say('fail', 'binding', 'the requested and served identifiers must match the identifier derived from the secured bytes')
+  }
+  if (subject != null) {
+    say(verified.boundPassports.includes(subject) ? 'pass' : 'fail', 'subject', `checking the signed passport bindings for ${subject}`)
+  }
+  const binding = verified.findings.anchorCommitment
+  say(binding.status, 'binding', binding.reasonCode ?? 'the on-chain outputs commit to the signed claim')
+  const covered = binding.detail?.coveredPassports ?? []
+  if (binding.status === 'pass' && subjects.size > covered.length) {
+    say('fail', 'anchor coverage', 'the proof includes an output for an unbound subject')
+  } else {
+    const complete = verified.boundPassports.length > 0 && covered.length === verified.boundPassports.length
+    say(complete ? 'pass' : 'unknown', 'anchor coverage', `${covered.length} of ${verified.boundPassports.length} bound passports have a matching output`)
+  }
+  for (const [txid, transaction] of transactions) {
+    if (transaction?.id('hex') === txid) {
+      const sent = proof.anchor?.recordId === txid ? proof.anchor.merklePath : undefined
+      await checkInclusion(txid, sent, chain, say)
+    }
+  }
+}
+
+async function checkInclusion(txid, sent, chain, say) {
   // 5. The anchor transaction is in a block: its merkle path matches that
   // block's header. A registry may send the path with the anchor
   // (anchor.merklePath, a BUMP); only the header decides, so a path the
   // registry sends that does not match is set aside and the chain source asked.
-  const sent = proof.anchor?.merklePath
   let fromRegistry = false
   if (typeof sent === 'string' && /^[0-9a-f]+$/.test(sent)) {
     try {
@@ -315,7 +421,9 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
       }
     }
   }
+}
 
+function checkAnchoringService(anchor, accepted, registryKeys, say) {
   // 6. The key that wrote the anchor is one you accept; without a list of
   // your own, a key the registry's capability document names, which shows
   // the anchor is this registry's and not that the registry is trusted.
@@ -331,7 +439,6 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
     say(accepted.includes(anchor.anchoredBy) ? 'pass' : 'fail', 'anchoring service',
       `written by ${short(anchor.anchoredBy)}, ${accepted.includes(anchor.anchoredBy) ? 'a service you accept' : 'which is not among the services you accept'}`)
   }
-  return lines
 }
 
 // -------------------------------------------------------------------- run
