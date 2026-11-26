@@ -4,7 +4,7 @@
 npm create @bsv/dpp-app
 ```
 
-Run this in a terminal with Node.js 22.23.4 and npm. It creates the `my-dpp` folder. To launch the app, run `cd my-dpp && npm run dev` and open the **Local** URL printed in the terminal.
+Run this in a terminal with Node.js 22.23.4 and npm. It creates the `my-dpp` folder. To launch the app, run `cd my-dpp && npm run dev` and open the **Local** URL printed in the terminal. [Issue your first test passport](docs/start/app-quick-start.md#issue-and-view-a-local-passport).
 
 A draft standard for digital product passports on the BSV blockchain, with specifications, service interfaces, test fixtures and a reference implementation.
 
@@ -54,7 +54,7 @@ node examples/verify-attestation-anchor.mjs
 node examples/write-passport-v2.mjs --dry-run
 ```
 
-The [quick-start guide](docs/quick-start.md) covers live reads and writes, version 1 records, interoperability examples and conformance checks. Live writes require a funded BRC-100 wallet and a configured index.
+The [source checkout exercises](docs/quick-start.md) cover live reads and writes, version 1 records, interoperability examples and conformance checks. Live writes require a funded BRC-100 wallet and a configured index.
 
 ## How it works
 
