@@ -107,7 +107,7 @@ npm run connection
 
 ### Run the November source candidate
 
-The source candidate adds `npm run go-live` to request publisher registration and check wallet funding and index admission. Its go-live check requires `managed-custody@2`. To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. Both commands enable publishing when all checks pass. [Connect an application](../operate/README.md#connect-an-application)
+The source candidate adds `npm run go-live` to request publisher registration and check wallet funding and index admission. Its go-live check requires `managed-custody@2`. For hosted testnet, use `NETWORK=test` with `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`. For hosted mainnet, use `NETWORK=main` with `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net`. Confirm the network at `/health` and the custody profile at `/capabilities` before registering. To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. Both commands enable publishing when all checks pass. [Connect an application](../operate/README.md#connect-an-application)
 
 ## What is included
 

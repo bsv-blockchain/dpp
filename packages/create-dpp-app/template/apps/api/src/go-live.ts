@@ -95,7 +95,7 @@ export async function goLive(options: GoLiveOptions): Promise<GoLiveResult> {
     }
     const known = host == null ? undefined : KNOWN_INDEX_HOSTS[host]
     if (known != null && known !== config.network) {
-      fail('configuration', `${host} serves ${known} and NETWORK is ${config.network}`, `set NETWORK=${known} for that index, or INDEX_URL to the ${config.network} index (${config.network === 'test' ? 'https://dpp-overlay-testnet.bsvb.net' : 'https://dpp-overlay.bsvb.net'})`)
+      fail('configuration', `${host} serves ${known} and NETWORK is ${config.network}`, `set NETWORK=${known} for that index, or INDEX_URL to the ${config.network} index (${config.network === 'test' ? 'https://dpp-overlay-testnet.bsvb.net' : 'https://dpp-overlay-mainnet.bsvb.net'})`)
     }
   }
   if (config.network === 'main') {
@@ -141,7 +141,7 @@ export async function goLive(options: GoLiveOptions): Promise<GoLiveResult> {
       registrationMode = (document.profiles?.find((p) => p.kind === 'operator')?.options?.registration as string | undefined) ?? 'off'
       publisherKeys = document.publisherPolicy?.publisherKeys ?? []
       if (custodyProfile !== CUSTODY_PROFILE) {
-        fail('index', `${indexUrl} admits under custody profile ${custodyProfile ?? 'none'} and this app writes under ${CUSTODY_PROFILE}`, 'use an index that declares managed custody (the default indexes and the DPP operator preset do), then run npm run connect-index')
+        fail('index', `${indexUrl} admits under custody profile ${custodyProfile ?? 'none'} and this app writes under ${CUSTODY_PROFILE}`, `use an index on ${config.network} that advertises ${CUSTODY_PROFILE}, then run npm run connect-index`)
       }
     } catch (cause) {
       fail('index', `${indexUrl} could not be reached: ${describe(cause)}`, 'check the address and that the index is running; to use another index, run npm run connect-index -- --url <index>')

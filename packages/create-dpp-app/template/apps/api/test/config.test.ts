@@ -145,6 +145,7 @@ describe('configuration', () => {
 
   it('knows which network each hosted index serves', () => {
     expect(KNOWN_INDEX_HOSTS['dpp-overlay-testnet.bsvb.net']).toBe('test')
+    expect(KNOWN_INDEX_HOSTS['dpp-overlay-mainnet.bsvb.net']).toBe('main')
     expect(KNOWN_INDEX_HOSTS['dpp-overlay.bsvb.net']).toBe('main')
   })
 })
