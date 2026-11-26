@@ -71,6 +71,7 @@ const text = (env: NodeJS.ProcessEnv, name: string): string | undefined => {
 /** The hosted indexes and the network each serves: go-live refuses a known host on the other network. */
 export const KNOWN_INDEX_HOSTS: Record<string, Network> = {
   'dpp-overlay-testnet.bsvb.net': 'test',
+  'dpp-overlay-mainnet.bsvb.net': 'main',
   'dpp-overlay.bsvb.net': 'main',
 }
 

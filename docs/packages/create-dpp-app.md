@@ -9,7 +9,7 @@ Application developers can generate an editable passport app with `@bsv/create-d
 | Create a project | Node 22 or later, npm, network access to install dependencies and a new or empty destination; non-empty directories are refused |
 | Check a source candidate | A DPP repository checkout and a new app directory; run the source commands below from the repository root |
 | Offline lifecycle exercise | The generated project and installed dependencies; no wallet, funds, Docker or network. In the source candidate `npm test` also tests EPCIS exchange, and its first run fetches the three pinned GS1 files and a MongoDB test binary once ([EPCIS exchange](#epcis-exchange)) |
-| Activate live writes | Use the generated README to arrange wallet, funds and index admission. Stop before `npm run go-live` until these and write authority are established |
+| Activate live writes | Set up the wallet, funds and index admission for the selected network. [Testnet and mainnet setup](#run-the-published-starter-on-testnet-or-mainnet) |
 
 **Run the starter once.** It already declares and pins `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/sdk` and, for the offline exercise only, `@bsv/dpp-overlay`. The source candidate also declares the three validation libraries a profile held by a binding needs, `jsonld@9.0.0`, `n3@2.13.12` and `shacl-engine@1.1.3`, and `@bsv/dpp-credentials` for EPCIS exchange. Do not add any of them again.
 
@@ -19,7 +19,7 @@ Application developers can generate an editable passport app with `@bsv/create-d
 | Your generated project | Holds the web app, the API, its wallet, configuration and deployment files | Run its commands to develop, test and deploy |
 | `@bsv/dpp-protocol` and `@bsv/dpp-profiles` | Write and read passports inside that project | Included automatically with the project's dependencies |
 
-Connect over HTTP to a compatible index, or [run your own](../operate/README.md) from the repository's Compose preset. The app's Compose file starts only its database, never an index.
+The app’s Compose file starts its database. For live writes, connect over HTTP to an index compatible with your starter version. The [network setup guide](#run-the-published-starter-on-testnet-or-mainnet) covers hosted and self-hosted indexes for the published starter.
 
 ## Create your project
 
@@ -38,6 +38,10 @@ cd my-app
 npm test
 npm run dev
 ```
+
+Open the **Local** URL. To issue a first test passport with the development defaults, choose **Your brands**, **Development brand**, then **Issue a passport**. Select `general@2`, enter `000000001` for **Item reference** and `DEMO-001` for **Serial**, keep the sample product details and click **Issue the passport**.
+
+If another service uses port `3000`, stop the starter with `Ctrl+C`. On macOS or Linux, run `PORT=3001 API_URL=http://127.0.0.1:3001 npm run dev` from the generated app folder to use port `3001` for the API.
 
 To test a source candidate instead, run these commands from the DPP repository root, choosing a new directory for the app:
 
@@ -63,9 +67,49 @@ The dependency record identifies the generator and all four installed runtime ar
 
 ### Stop before activating live writes
 
-The published starter writes PushDrop v2. Its generated README explains how to configure live writes.
+Choose the instructions for the starter you installed. The published starter writes PushDrop v2 and uses manual network configuration. The November source candidate adds a go-live command.
 
-The November candidate adds a check that blocks live publishing with a v3-capable protocol. Its `npm run go-live` command registers the app's publisher key with the default testnet index, checks the wallet, funds and admission, and switches real writes on. Use the generated README for each check's inputs and mainnet settings. Its `connect-index` command connects another provider's index or your own: with `--from`, it takes the connection file an index operator writes with `dpp-index connection` ([connect an application](../operate/README.md#connect-an-application)). It then runs the same checks and, when all pass, switches real writes on as `go-live` does.
+### Run the published starter on testnet or mainnet
+
+The passport format and verification rules are the same on both networks. The published starter (`0.1.0-beta.1`) reads its network from the generated app’s `.env`. Copy `.env.example` to `.env` for a new installation. The example defaults to `NETWORK=main`, so set the network explicitly before creating or funding the wallet.
+
+| Setting | Testnet | Mainnet |
+|---|---|---|
+| Network | `NETWORK=test` | `NETWORK=main` |
+| Wallet funding | Free testnet BSV from the [BSV faucet](https://bsvfaucet.com/) | A payment from a funded mainnet BSV wallet |
+| Index access | Arrange a testnet index with an operator or [run your own matching index](#run-your-own-matching-index). | The hosted mainnet index allows public reads. Arrange write access with an operator or run your own index. [Hosted services and access](../deployment.md) |
+
+1. **Configure one app per network.** Give each its own `.env`, `WALLET_ROOT_KEY`, `WALLET_FILE` and `MONGO_DB`. Generate each wallet root key with `openssl rand -hex 32`. Keep `LIVE_PUBLISHING=false` while you set up MongoDB, the identity secrets and the WhatsOnChain header service (`WOC_API_KEY`). [Published starter setup](https://github.com/bsv-blockchain/dpp/blob/0e45ac32da351c1e877431d55e2e9c0c41f54c33/packages/create-dpp-app/template/README.md#going-live)
+2. Run `npm run wallet` from the generated app. Check for **Wallet: toolbox on test** or **Wallet: toolbox on main** before sending funds. Save the funding command it prints. It contains the receiving address and its derivation prefix and suffix. Give the index operator the **public publisher key** printed separately.
+3. On testnet, open the faucet, choose **Get testnet BSV**, sign in and paste the funding address as the destination. On mainnet, pay the mainnet funding address from your own wallet. Keep the payment transaction ID. Run the command below with that ID and the address, prefix and suffix from step 2. Run `npm run wallet` again to confirm the balance.
+
+   ```sh
+   npm run wallet -- fund <txid> <address> <prefix> <suffix>
+   ```
+
+4. **Connect the index.** Ask its operator to admit your public publisher key and provide the server-side settings `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. Check the index’s `/health` for the selected network and `/capabilities` for your publisher key and the published starter’s `managed-custody@1` profile.
+5. **Enable publishing.** For real products, set `GS1_PREFIX` to your licensed GS1 company prefix and `PASSPORT_HOST` to a domain you control. Once you have confirmed the wallet balance and index access, set `LIVE_PUBLISHING=true` and restart the app. Testnet writes use test coins. Mainnet writes spend real BSV.
+
+#### Run your own matching index
+
+From the parent directory of your app, run the command below. At the prompts, supply the public publisher key from `npm run wallet` and choose `test` or `main` to match the app. This generator provides the `managed-custody@1` profile used by the published starter.
+
+```sh
+npm create @bsv/dpp-index@0.1.0-beta.1 my-index
+```
+
+Start Docker with Compose v2, then run these commands. The online check verifies the index’s network, custody profile and publisher key. The last command writes the four connection settings to `my-index/.app.env`. Copy them into the app’s server-side `.env`, then complete step 5 above.
+
+```sh
+cd my-index
+npm run up
+npm run doctor -- --online
+npm run connection
+```
+
+### Run the November source candidate
+
+The source candidate adds `npm run go-live` to request publisher registration and check wallet funding and index admission. Its go-live check requires `managed-custody@2` and blocks live publishing with a v3-capable protocol. For hosted testnet, use `NETWORK=test` with `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`. For hosted mainnet, use `NETWORK=main` with `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net`. Confirm the network at `/health` and the custody profile at `/capabilities` before registering. To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. Both commands enable publishing when all checks pass. [Connect an application](../operate/README.md#connect-an-application)
 
 ## What is included
 

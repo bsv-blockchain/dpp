@@ -2,6 +2,8 @@
 
 Implementers can use this index to select rules for their release. For an introduction, use the [passport model](../start/architecture.md), [quick start](../quick-start.md) or [implementer start](../implement/README.md).
 
+The same passport format and verification rules apply on BSV testnet and mainnet. To select a network, fund a wallet and connect the published app to an index, follow [Testnet and mainnet setup](../packages/create-dpp-app.md#run-the-published-starter-on-testnet-or-mainnet).
+
 ## Before selecting a source
 
 | Target | Source to use |

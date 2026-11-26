@@ -291,7 +291,7 @@ Every state goes through six steps, in this order ([writing lifecycle](https://g
 node examples/write-passport-v2.mjs --dry-run
 ```
 
-The dry run broadcasts nothing and calls no hosted service. It substitutes fixed test keys and made-up funding, and runs a loopback index with real admission rules except the block-header check. Expect about a second and exit code 0. The transaction ids and port vary:
+The dry run broadcasts nothing and calls no hosted service. It uses fixed test keys, simulated funding and a loopback index that checks proofs against locally generated block roots. Expect about a second and exit code 0. The transaction ids and port vary:
 
 ```
 ok: the index's capability document names this wallet's identity key 034f355bdcb7... as a state publisher, so it can admit what this wallet countersigns.
@@ -307,7 +307,7 @@ ok: the index refuses it too, and says why: control-not-proven, the code a verif
 Every sentence above holds.
 ```
 
-Both the writer and index also refuse an `UPDATE` without its required control proof. Network steps print `Would send` and `Would prove`; made-up proofs work only with header checks off. A `FAIL:` line means a step did not hold and the exit code is not 0.
+Both the writer and index also refuse an `UPDATE` without its required control proof. Network steps print `Would send` and `Would prove`. The local proof check exercises the callback without a mined transaction. A `FAIL:` line means a step did not hold and the exit code is not 0.
 
 ### Run it live
 

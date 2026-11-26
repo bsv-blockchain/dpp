@@ -2,6 +2,8 @@
 
 Writers and operators can use this page to retain transaction evidence and deliver proofs to readers' indexes. The reference writer uses a BRC-100 wallet; its wallet, broadcaster, index and header source have separate duties. Bitcoin Request for Comments (BRC) identifies an ecosystem protocol.
 
+If you created an app with `npm create @bsv/dpp-app`, follow [Run the published starter on testnet or mainnet](../packages/create-dpp-app.md#run-the-published-starter-on-testnet-or-mainnet) to configure the network, fund the wallet and connect an index.
+
 ## Before a dry run or live write
 
 | Mode | Required inputs and their source |
