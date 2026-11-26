@@ -30,7 +30,7 @@
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, sep } from 'node:path'
-import { EVIDENCE_PACKAGE_MANIFEST_PATH, canonicalJson, pathProblem, type InventoryCategory, type InventoryEntry } from '@bsv/dpp-protocol'
+import { ACCEPTANCE_RECORD_REPRESENTATIONS, EVIDENCE_PACKAGE_MANIFEST_PATH, canonicalJson, inspectManagedAcceptance, pathProblem, type InventoryCategory, type InventoryEntry, type ManagedAcceptanceRecord } from '@bsv/dpp-protocol'
 
 export const APPLICATION_EXPORT_FORMAT = 'dpp-application-export'
 export const APPLICATION_EXPORT_VERSION = '1'
@@ -47,6 +47,8 @@ export const APPLICATION_REPRESENTATIONS = {
   descriptor: 'dpp-application-export@1',
   /** The manifest of the package the index signed for one passport, carried whole. */
   indexManifest: 'dpp-evidence-package@1',
+  /** The original authority entry is read under the enclosed index manifest. */
+  nestedAuthority: 'dpp-nested-authority@1',
   /** The signed coverage record of one part of the index's complete export. */
   indexCoverage: 'dpp-evidence-export-coverage@1',
   journal: 'dpp-application-passport-journal@1',
@@ -55,6 +57,24 @@ export const APPLICATION_REPRESENTATIONS = {
   offer: 'dpp-application-offer@1',
   claim: 'dpp-application-claim@1',
 } as const
+
+/** Check an acceptance under the representation and commitment the nested exporter signed. */
+export function readNestedAcceptance(entry: InventoryEntry, bytes: Uint8Array, passportId: string, custodian: string): ManagedAcceptanceRecord | undefined {
+  if (!ACCEPTANCE_RECORD_REPRESENTATIONS.some(format => format === entry.representation)) return undefined
+  let record: ManagedAcceptanceRecord
+  try {
+    record = JSON.parse(Buffer.from(bytes).toString('utf8')) as ManagedAcceptanceRecord
+  } catch {
+    throw new PortabilityRefused('index-evidence-refused', 'A signed index acceptance is not JSON.', { passportId, path: entry.path })
+  }
+  const checked = inspectManagedAcceptance(record, { custodians: [custodian] })
+  if (entry.category !== 'authority' || checked.signatureValid !== true || checked.failures.length || checked.commitment == null ||
+      record.acceptanceFormat !== entry.representation || record.passportId !== passportId ||
+      (entry.represents != null && entry.represents !== `sha256:${checked.commitment}`)) {
+    throw new PortabilityRefused('index-evidence-refused', 'A signed index acceptance does not verify for this custodian, passport and inventory entry.', { passportId, path: entry.path })
+  }
+  return record
+}
 
 /** What no export of this application carries or establishes, in fixed words. Every descriptor carries exactly these. */
 export const APPLICATION_EXPORT_LIMITS = {

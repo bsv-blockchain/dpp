@@ -13,6 +13,7 @@ import {
   LIFECYCLE_MEDIA_TYPE,
   LIFECYCLE_REPRESENTATION,
   MANAGED_CUSTODY_PROFILE,
+  MANAGED_CUSTODY_EXPORT_PROFILE,
   STANDARD_VERSION,
   STANDARD_VERSION_V2,
   policyInForceAt,
@@ -152,6 +153,7 @@ export interface CapabilityInput {
   controlAuthorities?: string[]
   /** ACCEPTANCE_COMMITMENT=required: the managed-custody profile is selected, so a version 2 TRANSFER must carry its acceptance commitment. */
   managedAcceptance?: boolean
+  custodyExportProfile?: typeof MANAGED_CUSTODY_EXPORT_PROFILE
   /** Whether EXPORTER_PRIVATE_KEY is set, so evidence packages are signed. */
   exportAvailable: boolean
   /** The public half of EXPORTER_PRIVATE_KEY, which the document names so a reader derives each package's signer from it. */
@@ -218,6 +220,10 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   const anchorsUnrestricted = anchorPolicyKeys == null && anchoringServices.length === 0
   const controlAuthorities = [...(input.controlAuthorities ?? [])]
   const managedAcceptance = input.managedAcceptance === true
+  const custodyProfiles = [declaredCustodyProfile(managedAcceptance)]
+  if (managedAcceptance && input.exportAvailable && input.custodyExportProfile === MANAGED_CUSTODY_EXPORT_PROFILE) {
+    custodyProfiles.push(MANAGED_CUSTODY_EXPORT_PROFILE)
+  }
 
   const unsupported: CapabilityDocument['unsupported'] = [
     ...(input.syncDiscovery === true
@@ -300,14 +306,14 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
       // managed-custody profile when its acceptance commitment is required,
       // else the record model baseline, named so a writer learns which rule
       // applies from the document and not from a refusal.
-      {
-        ...profileEntry(declaredCustodyProfile(managedAcceptance)),
-        kind: 'custody',
+      ...custodyProfiles.map((profile) => ({
+        ...profileEntry(profile),
+        kind: 'custody' as const,
         options: {
           acceptanceCommitment: managedAcceptance ? 'required' : 'not-selected',
           controlAuthorities,
         },
-      },
+      })),
     ],
     representations: [
       { id: LIFECYCLE_REPRESENTATION, mediaType: LIFECYCLE_MEDIA_TYPE, verification: 'commitment-only' },

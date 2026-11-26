@@ -39,6 +39,7 @@ import {
   canonicalJson,
   chainFromBeef,
   evidencePackageSigningKey,
+  MANAGED_CUSTODY_EXPORT_PROFILE,
   inspectEvidencePackage,
   inventoryEntry,
   sha256Hex,
@@ -80,6 +81,7 @@ export interface EvidenceExportRequest {
   publisherPolicy?: PublisherPolicyConfig
   /** The operator profile this index runs, as its capability document names it (`operatorProfileFor`); the policy's own profile when unset. */
   operatorProfile?: string
+  custodyExportProfile?: typeof MANAGED_CUSTODY_EXPORT_PROFILE
   serviceIdentityKey?: string
   /** The version 2 options the node admits under (CONTROL_AUTHORITIES, ACCEPTANCE_COMMITMENT). */
   controlAuthorities?: string[]
@@ -148,6 +150,12 @@ export function exportScopeText(passportId: string, snapshotId: string, index: n
   return index === 1 && final ? `passportId=${passportId}` : `passportId=${passportId}; sequences ${from}..${to} of snapshot ${snapshotId}; part ${index} of the complete export`
 }
 
+interface ExportInspectionOptions {
+  expectedPassportId?: string
+  expectedSigner?: string
+  requiredCustodyProfile?: typeof MANAGED_CUSTODY_EXPORT_PROFILE
+}
+
 export interface ExportPartInspection {
   /** The coverage signature verifies under the record's signer, or null when the record has no canonical form. */
   coverageAuthentic: boolean | null
@@ -164,11 +172,11 @@ export interface ExportPartInspection {
  * package itself. Only a part whose coverage is authentic and bound may say
  * anything about what an export covers.
  */
-export function inspectEvidenceExportPart(part: EvidenceExportPart, options: { expectedPassportId?: string; expectedSigner?: string } = {}): ExportPartInspection {
+export function inspectEvidenceExportPart(part: EvidenceExportPart, options: ExportInspectionOptions = {}): ExportPartInspection {
   const failures: string[] = []
   const label = `part ${part.part?.index}`
   const manifest = part.package?.manifest
-  const packageInspection = inspectEvidencePackage(manifest, envelopeFiles(part.package), { expectedPassportId: options.expectedPassportId ?? part.passportId, ...(options.expectedSigner == null ? {} : { expectedSigner: options.expectedSigner }) })
+  const packageInspection = inspectEvidencePackage(manifest, envelopeFiles(part.package), { ...options, expectedPassportId: options.expectedPassportId ?? part.passportId })
   for (const failure of packageInspection.failures) failures.push(`${label}: ${failure.detail}`)
   if (packageInspection.signatureValid !== true) failures.push(`${label}: the package signature does not verify`)
 
@@ -326,6 +334,24 @@ class PackageFiles {
 const policyIdOf = (policy: PublisherPolicyConfig | undefined): string => (policy == null ? IMPLICIT_POLICY_VERSION : `${PUBLISHER_POLICY_FORMAT}:${newestPolicy(policy).policyVersion}`)
 const operatorProfileOf = (policy: PublisherPolicyConfig | undefined): string => (policy == null ? SINGLE_OPERATOR_PROFILE : newestPolicy(policy).scope.operatorProfile)
 
+export class PublicDisclosureRefused extends Error {
+  readonly code = 'disclosure-contradiction'
+  readonly status = 422
+}
+
+async function signPublicPackage(
+  unsigned: UnsignedEvidenceManifest,
+  files: PackageFiles,
+  sign: (bytes: number[]) => Promise<number[]>
+): Promise<EvidencePackageManifest> {
+  const manifest = await signEvidenceManifest(unsigned, { sign })
+  if (manifest.profiles?.includes(MANAGED_CUSTODY_EXPORT_PROFILE)) {
+    const inspection = inspectEvidencePackage(manifest, files.files)
+    if (inspection.failures.length > 0) throw new PublicDisclosureRefused('The evidence could not be disclosed under the selected custody export profile.')
+  }
+  return manifest
+}
+
 /** A genesis is the state with no predecessor; the first held row is not one merely by being first. */
 const isGenesis = (row: DppRecord | undefined): row is DppRecord => row != null && row.previousTxid === ''
 
@@ -421,7 +447,7 @@ export async function buildEvidencePackage(request: EvidenceExportRequest): Prom
     ...(last == null ? {} : { selectedTip: { txid: last.txid, outputIndex: last.outputIndex } }),
     exportedAt,
     exporter: { id: exporterId, role: 'overlay', software: request.software },
-    profiles: [request.operatorProfile ?? operatorProfileOf(policy)],
+    profiles: [request.operatorProfile ?? operatorProfileOf(policy), ...(request.custodyExportProfile ? [request.custodyExportProfile] : [])],
     policyId,
     // Public scope, and therefore never a recovery backup: the restricted
     // tiers are not held here, so they are withheld by name, not implied.
@@ -429,7 +455,7 @@ export async function buildEvidencePackage(request: EvidenceExportRequest): Prom
     completeness: {
       snapshots: [{ source: DPP_SERVICE, snapshotId: snapshot.id, completeForSnapshot: omitted.length === 0, scope: `passportId=${passportId}` }],
       withheld: [...WITHHELD_TIERS],
-      absent: files.absent,
+      absent: request.custodyExportProfile ? [...new Set(files.absent)] : files.absent,
     },
     sources: [
       { id: DPP_SERVICE, kind: 'overlay-lookup', observedAt: exportedAt, result: spendResult },
@@ -438,7 +464,7 @@ export async function buildEvidencePackage(request: EvidenceExportRequest): Prom
     inventory: files.inventory,
     signature: { suite: 'bsv-ecdsa-der', signer },
   }
-  const manifest = await signEvidenceManifest(unsigned, { sign })
+  const manifest = await signPublicPackage(unsigned, files, sign)
   return { manifest, files: files.envelope() }
 }
 
@@ -503,7 +529,7 @@ export async function buildEvidenceExportPart(request: EvidencePartRequest): Pro
     ...(tip == null ? {} : { selectedTip: { txid: tip.txid, outputIndex: tip.outputIndex } }),
     exportedAt,
     exporter: { id: exporterId, role: 'overlay', software: request.software },
-    profiles: [request.operatorProfile ?? operatorProfileOf(policy)],
+    profiles: [request.operatorProfile ?? operatorProfileOf(policy), ...(request.custodyExportProfile ? [request.custodyExportProfile] : [])],
     policyId: policyIdOf(policy),
     disclosure: { scope: 'public', recoveryBackup: false },
     completeness: {
@@ -517,13 +543,13 @@ export async function buildEvidenceExportPart(request: EvidencePartRequest): Pro
         scope: exportScopeText(passportId, snapshot.id, index, from, to, final),
       }],
       withheld: [...WITHHELD_TIERS],
-      absent: files.absent,
+      absent: request.custodyExportProfile ? [...new Set(files.absent)] : files.absent,
     },
     sources: [{ id: DPP_SERVICE, kind: 'spend-status', observedAt: exportedAt, result: spendResult }],
     inventory: files.inventory,
     signature: { suite: 'bsv-ecdsa-der', signer },
   }
-  const manifest = await signEvidenceManifest(unsigned, { sign })
+  const manifest = await signPublicPackage(unsigned, files, sign)
   // The coverage record, signed by the same key and bound to the manifest
   // exactly as signed: the cursor stays outside it, being a resumption token
   // of this process and no statement about coverage.
@@ -578,7 +604,7 @@ export interface JoinedEvidenceExport {
  * signature inside, and no signature proves the exporter held everything
  * that exists elsewhere.
  */
-export function joinEvidenceExport(parts: EvidenceExportPart[], options: { expectedPassportId?: string; expectedSigner?: string } = {}): JoinedEvidenceExport {
+export function joinEvidenceExport(parts: EvidenceExportPart[], options: ExportInspectionOptions = {}): JoinedEvidenceExport {
   const problems: string[] = []
   const files = new Map<string, number[]>()
   const manifests: EvidencePackageManifest[] = []
@@ -589,7 +615,7 @@ export function joinEvidenceExport(parts: EvidenceExportPart[], options: { expec
   const signer = options.expectedSigner ?? parts.find((p) => typeof p.signature?.signer === 'string')?.signature.signer
   const trusted: EvidenceExportPart[] = []
   for (const part of parts) {
-    const inspection = inspectEvidenceExportPart(part, { ...(options.expectedPassportId == null ? {} : { expectedPassportId: options.expectedPassportId }), ...(signer == null ? {} : { expectedSigner: signer }) })
+    const inspection = inspectEvidenceExportPart(part, { ...options, expectedSigner: signer })
     problems.push(...inspection.failures)
     if (inspection.coverageAuthentic === true && inspection.manifestBound && inspection.package.structureValid && inspection.package.inventoryVerified && inspection.package.signatureValid === true) trusted.push(part)
     else problems.push(`part ${part.part?.index}: its coverage is not established, so its range, index and finality are not counted`)

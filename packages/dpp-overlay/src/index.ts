@@ -103,7 +103,7 @@ import { Engine, type LookupService } from '@bsv/overlay'
 import { DppTopicManager, DPP_TOPIC, type AdmissionRefusals } from './tmDpp.js'
 import { DppLookupService, DPP_SERVICE } from './lsDpp.js'
 import { InMemoryDppStorage, MongoDppStorage, type DppRecordStore } from './storage.js'
-import { findDppOutputs, verifyServerSignature } from '@bsv/dpp-protocol'
+import { MANAGED_CUSTODY_EXPORT_PROFILE, findDppOutputs, verifyServerSignature } from '@bsv/dpp-protocol'
 import { tokenDigest, tokenStoreFromEnvironment, writeAccessWarnings, type PublisherTokenStore, type TokenUse } from './publisherTokens.js'
 import { identityKeyFromDidKey, tryParseUoraAnchor } from './uoraAnchor.js'
 import { decodeAttestationAnchor } from './attestationAnchor.js'
@@ -121,7 +121,7 @@ import {
 import { MAX_BODY_BYTES, MAX_PAGE_SIZE } from './limits.js'
 import { buildCapabilities, declaredCustodyProfile, implementationIdentity, operatorProfileFor } from './capabilities.js'
 import { HistoryError, HistoryPaginator } from './history.js'
-import { buildEvidenceExportPart, buildEvidencePackage } from './evidenceExport.js'
+import { buildEvidenceExportPart, buildEvidencePackage, PublicDisclosureRefused } from './evidenceExport.js'
 import { RetractionRefused, retractOutput } from './retraction.js'
 import { policyKeysFor, publisherPolicyFromEnvironment, type PublisherPolicyConfig } from './policyConfig.js'
 import { inspectRegistration } from '@bsv/dpp-protocol'
@@ -173,6 +173,7 @@ export interface NodeComponents {
   /** CONTROL_AUTHORITIES and ACCEPTANCE_COMMITMENT, the version 2 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
   controlAuthorities?: string[]
   managedAcceptance?: boolean
+  custodyExportProfile?: typeof MANAGED_CUSTODY_EXPORT_PROFILE
   /**
    * SYNC_PEERS and SYNC_INTERVAL_MS, reported by the capability document; the
    * Engine holds the same peers as its syncConfiguration. With discovery,
@@ -816,6 +817,7 @@ async function handle(
         anchorServiceKeys: components?.anchorServiceKeys,
         controlAuthorities: components?.controlAuthorities,
         managedAcceptance: components?.managedAcceptance,
+        custodyExportProfile: components?.custodyExportProfile,
         registration: components?.registration?.mode,
         exportAvailable: options.exportIdentity != null,
         ...(options.exportIdentity == null ? {} : { exporterIdentityKey: options.exportIdentity.toPublicKey().toString() }),
@@ -1183,6 +1185,7 @@ async function handle(
         signingKey: options.exportIdentity,
         publisherPolicy: options.components.publisherPolicy,
         operatorProfile: operatorProfileFor(options.components.publisherPolicy, synchronisingIn(options.components)),
+        custodyExportProfile: options.components.custodyExportProfile,
         serviceIdentityKey: options.components.serviceIdentityKey,
         controlAuthorities: options.components.controlAuthorities,
         managedAcceptance: options.components.managedAcceptance,
@@ -1223,6 +1226,7 @@ async function handle(
         signingKey: options.exportIdentity,
         publisherPolicy: options.components.publisherPolicy,
         operatorProfile: operatorProfileFor(options.components.publisherPolicy, synchronisingIn(options.components)),
+        custodyExportProfile: options.components.custodyExportProfile,
         serviceIdentityKey: options.components.serviceIdentityKey,
         now: options.now(),
         software: options.software,
@@ -1292,7 +1296,7 @@ async function handle(
     json(response, 404, { status: 'error', description: `no route for ${route}` })
   } catch (cause) {
     const description = cause instanceof Error ? cause.message : 'unknown error'
-    if (cause instanceof NamedError || cause instanceof HistoryError || cause instanceof RetractionRefused) {
+    if (cause instanceof NamedError || cause instanceof HistoryError || cause instanceof PublicDisclosureRefused || cause instanceof RetractionRefused) {
       // Named refusals are the client's to branch on and are not failures of
       // this node, so they are logged as a line rather than a stack.
       console.warn(`${route} refused (${cause.code}): ${description}`)
@@ -1438,16 +1442,27 @@ export function refuseRemovedCustodySettings(env: NodeJS.ProcessEnv = process.en
  * only, validated when the topic manager is built; any other value of
  * ACCEPTANCE_COMMITMENT fails the boot.
  */
-export function versionTwoAdmission(): { managedAcceptance: boolean; controlAuthorities?: string[] } {
+export function versionTwoAdmission(): { managedAcceptance: boolean; controlAuthorities?: string[]; custodyExportProfile?: typeof MANAGED_CUSTODY_EXPORT_PROFILE } {
   const declared = (process.env.ACCEPTANCE_COMMITMENT ?? '').trim()
   if (declared !== '' && declared !== 'required') {
     throw new Error(`ACCEPTANCE_COMMITMENT must be "required" or unset, got "${declared}"`)
+  }
+  const custodyExportProfile = (process.env.CUSTODY_EXPORT_PROFILE ?? '').trim()
+  if (custodyExportProfile && custodyExportProfile !== MANAGED_CUSTODY_EXPORT_PROFILE) {
+    throw new Error(`CUSTODY_EXPORT_PROFILE must be ${MANAGED_CUSTODY_EXPORT_PROFILE} or unset`)
+  }
+  if (custodyExportProfile && declared !== 'required') {
+    throw new Error('CUSTODY_EXPORT_PROFILE requires ACCEPTANCE_COMMITMENT=required')
   }
   const authorities = (process.env.CONTROL_AUTHORITIES ?? '')
     .split(',')
     .map((key) => key.trim())
     .filter((key) => key !== '')
-  return { managedAcceptance: declared === 'required', ...(authorities.length === 0 ? {} : { controlAuthorities: authorities }) }
+  return {
+    managedAcceptance: declared === 'required',
+    ...(custodyExportProfile ? { custodyExportProfile: MANAGED_CUSTODY_EXPORT_PROFILE } : {}),
+    ...(authorities.length === 0 ? {} : { controlAuthorities: authorities }),
+  }
 }
 
 /**
@@ -1721,6 +1736,7 @@ async function buildEngineFromEnvironment(
     serviceIdentityKey: identityKey,
     anchorServiceKeys: acceptedAnchorServices,
     managedAcceptance: versionTwo.managedAcceptance,
+    custodyExportProfile: versionTwo.custodyExportProfile,
     ...(versionTwo.controlAuthorities == null ? {} : { controlAuthorities: versionTwo.controlAuthorities }),
     sync: { peers: [...sync.peers], staticPeers: [...sync.peers], intervalMs: sync.intervalMs, legacy: sync.legacy, ...(discovery.enabled ? { discovery } : {}) },
     ...(publisherTokens == null ? {} : { publisherTokens }),
@@ -1804,6 +1820,7 @@ export async function runFromEnvironment(): Promise<void> {
           anchorServiceKeys: components.anchorServiceKeys,
           controlAuthorities: components.controlAuthorities,
           managedAcceptance: components.managedAcceptance,
+          custodyExportProfile: components.custodyExportProfile,
           registration: components.registration?.mode,
           exportAvailable: signingKey != null,
           ...(signingKey == null ? {} : { exporterIdentityKey: PrivateKey.fromHex(signingKey).toPublicKey().toString() }),

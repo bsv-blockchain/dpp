@@ -247,6 +247,8 @@ npm run export -- --out ../my-dpp-public --public    # only what anyone may hold
 npm run restore -- --from ../my-dpp-export --exporter-key <publisher key of the deployment that exported>
 ```
 
+To exercise the proposed custody export profile, add `--custody-profile managed-custody@3` to the public or authorised export command. A public package identifies withheld and missing acceptances by commitment. A recovery package carries completed acceptances held in the journal or in a retained offer. A signed handover awaiting transfer stays with its offer. Add `--require-custody-profile managed-custody@3` to restore when the replacement requires these rules. Earlier packages can still be read under their original edition.
+
 An export is one `dpp-evidence-package@1`: a folder of files under a manifest, `manifest.json`, that this application signs with a key derived from its publisher key. Every file is listed once in the manifest, with its length and SHA-256.
 
 | In the folder | What it is | Authorised export | Public export |

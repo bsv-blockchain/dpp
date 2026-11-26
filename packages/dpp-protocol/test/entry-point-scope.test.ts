@@ -63,7 +63,7 @@ describe('the protocol package reads no event format', () => {
     expect(graph.files).toEqual(readdirSync(src).sort())
     expect(graph.files).toEqual([
       'acceptance.ts', 'anchor.ts', 'attestation.ts', 'blob.ts', 'canonical.ts', 'canonicalJson.ts', 'codec.ts', 'constants.ts', 'did.ts',
-      'evidence.ts', 'evidencePackage.ts', 'index.ts', 'nativeAnchorBinding.ts', 'owner.ts', 'publisherPolicy.ts', 'registration.ts', 'signatures.ts', 'transition.ts',
+      'evidence.ts', 'evidencePackage.ts', 'index.ts', 'managedCustodyExport.ts', 'nativeAnchorBinding.ts', 'owner.ts', 'publisherPolicy.ts', 'registration.ts', 'signatures.ts', 'transition.ts',
       'types.ts', 'verifyChain.ts',
     ])
   })

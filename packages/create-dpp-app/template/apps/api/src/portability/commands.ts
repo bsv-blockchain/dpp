@@ -5,8 +5,8 @@
 // has no operator role to give one to, and a signed-in member of a brand is
 // not the operator of the deployment.
 //
-//   export --out <folder> [--public] [--passport <id>]... [--public-source <name>]... [--cursors include]
-//   restore --from <folder> [--exporter-key <key>] [--index-exporter-key <key>] [--report <file>]
+//   export --out <folder> [--public] [--passport <id>]... [--public-source <name>]... [--cursors include] [--custody-profile managed-custody@3]
+//   restore --from <folder> [--exporter-key <key>] [--index-exporter-key <key>] [--report <file>] [--require-custody-profile managed-custody@3]
 //   epcis-remap --source <name>
 //
 // Each opens the platform from the configuration, as the API does, and calls
@@ -18,6 +18,7 @@ import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { remapEpcisSourceEndpoint } from '@bsv/dpp-credentials/epcis-exchange'
+import { MANAGED_CUSTODY_EXPORT_PROFILE } from '@bsv/dpp-protocol'
 import { loadConfig } from '../config.js'
 import { openExchangeStorage } from '../epcis/exchange.js'
 import { openPlatform } from '../platform.js'
@@ -34,7 +35,7 @@ export interface CommandContext {
 }
 
 export const PORTABILITY_USAGE =
-  'export --out <folder> [--public] [--passport <id>]... [--public-source <name>]... [--cursors include] | restore --from <folder> [--exporter-key <key>] [--index-exporter-key <key>] [--report <file>] | epcis-remap --source <name>'
+  'export --out <folder> [--public] [--passport <id>]... [--public-source <name>]... [--cursors include] [--custody-profile managed-custody@3] | restore --from <folder> [--exporter-key <key>] [--index-exporter-key <key>] [--report <file>] [--require-custody-profile managed-custody@3] | epcis-remap --source <name>'
 
 /** The command's options, or nothing when one was given that the command does not take: the caller then prints how it is used. */
 function optionsOf<T>(read: () => T, context: CommandContext): T | undefined {
@@ -59,17 +60,25 @@ async function answering(context: CommandContext, run: () => Promise<number>): P
   }
 }
 
+function custodyProfileOption(value: string | undefined, context: CommandContext): typeof MANAGED_CUSTODY_EXPORT_PROFILE | undefined | false {
+  if (value === undefined || value === MANAGED_CUSTODY_EXPORT_PROFILE) return value
+  context.out(`Refused (not-selected): Unsupported custody export profile ${JSON.stringify(value)}. Nothing was written.`)
+  return false
+}
+
 /** Write the complete export of this application into an empty folder. */
 export async function runExportCommand(args: string[], context: CommandContext): Promise<number> {
-  const values = optionsOf(() => parseArgs({ args, options: { out: { type: 'string' }, public: { type: 'boolean', default: false }, passport: { type: 'string', multiple: true }, 'public-source': { type: 'string', multiple: true }, cursors: { type: 'string' } } }).values, context)
+  const values = optionsOf(() => parseArgs({ args, options: { out: { type: 'string' }, public: { type: 'boolean', default: false }, passport: { type: 'string', multiple: true }, 'public-source': { type: 'string', multiple: true }, cursors: { type: 'string' }, 'custody-profile': { type: 'string' } } }).values, context)
   if (values?.out == null) {
-    context.out('usage: export --out <folder> [--public] [--passport <id>]... [--public-source <name>]... [--cursors include]')
+    context.out('usage: export --out <folder> [--public] [--passport <id>]... [--public-source <name>]... [--cursors include] [--custody-profile managed-custody@3]')
     return 2
   }
   if (values.cursors != null && values.cursors !== 'include' && values.cursors !== 'exclude') {
     context.out('--cursors is include or exclude')
     return 2
   }
+  const custodyProfile = custodyProfileOption(values['custody-profile'], context)
+  if (custodyProfile === false) return 1
   const folder = resolve(context.cwd, values.out)
   const config = loadConfig(context.env)
   const platform = await openPlatform({ config, mode: 'live', log: () => {} })
@@ -82,6 +91,7 @@ export async function runExportCommand(args: string[], context: CommandContext):
         platform,
         epcis: { storage: store.storage, sources: config.epcis.sources },
         access: values.public ? 'public-evidence' : 'authorised-recovery',
+        custodyProfile,
         ...(values.passport == null ? {} : { passportIds: values.passport }),
         ...(values['public-source'] == null ? {} : { publicSources: values['public-source'] }),
         ...(values.cursors == null ? {} : { cursors: values.cursors as 'include' | 'exclude' }),
@@ -124,11 +134,13 @@ function printReport(report: RestoreReport, out: (line: string) => void): void {
 
 /** Restore an authorised export into this deployment. Everything is verified before anything is written. */
 export async function runRestoreCommand(args: string[], context: CommandContext): Promise<number> {
-  const values = optionsOf(() => parseArgs({ args, options: { from: { type: 'string' }, 'exporter-key': { type: 'string' }, 'index-exporter-key': { type: 'string' }, report: { type: 'string' } } }).values, context)
+  const values = optionsOf(() => parseArgs({ args, options: { from: { type: 'string' }, 'exporter-key': { type: 'string' }, 'index-exporter-key': { type: 'string' }, report: { type: 'string' }, 'require-custody-profile': { type: 'string' } } }).values, context)
   if (values?.from == null) {
-    context.out('usage: restore --from <folder> [--exporter-key <key>] [--index-exporter-key <key>] [--report <file>]')
+    context.out('usage: restore --from <folder> [--exporter-key <key>] [--index-exporter-key <key>] [--report <file>] [--require-custody-profile managed-custody@3]')
     return 2
   }
+  const requiredCustodyProfile = custodyProfileOption(values['require-custody-profile'], context)
+  if (requiredCustodyProfile === false) return 1
   for (const name of ['exporter-key', 'index-exporter-key'] as const) {
     if (values[name] != null && !/^0[23][0-9a-f]{64}$/.test(values[name]!)) {
       context.out(`--${name} is a compressed public key: 66 lower-case hexadecimal characters starting 02 or 03`)
@@ -144,6 +156,7 @@ export async function runRestoreCommand(args: string[], context: CommandContext)
       const exporterKey = values['exporter-key'] ?? platform.wallet.identityKey
       const verified = await verifyApplicationPackage(read, {
         exporterKey,
+        requiredCustodyProfile,
         trustedBindingDigests: config.customProfiles.trustedBindingDigests,
         ...(values['index-exporter-key'] ?? config.indexExport.exporterKey) == null ? {} : { indexExporterKey: (values['index-exporter-key'] ?? config.indexExport.exporterKey)! },
       })

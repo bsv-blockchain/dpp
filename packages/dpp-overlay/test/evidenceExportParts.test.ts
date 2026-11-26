@@ -111,7 +111,7 @@ async function walk(base: string, passportId: string, headers: Record<string, st
 }
 
 /** Build parts in process with narrowed bounds, the way the route does it with the defaults. */
-async function buildParts(node: TestNode, passportId: string, bounds: { maxStates?: number; maxBytes?: number } = {}, now: () => Date = () => NOW): Promise<{ parts: EvidenceExportPart[]; paginator: HistoryPaginator }> {
+async function buildParts(node: TestNode, passportId: string, bounds: { maxStates?: number; maxBytes?: number; custodyExportProfile?: 'managed-custody@3' } = {}, now: () => Date = () => NOW): Promise<{ parts: EvidenceExportPart[]; paginator: HistoryPaginator }> {
   const paginator = new HistoryPaginator(node.records, { now })
   const parts: EvidenceExportPart[] = []
   let cursor: string | null | undefined
@@ -225,6 +225,15 @@ describe('GET /evidence-export', () => {
     expect(byStates.parts.map((p) => [p.part.index, p.part.states, p.final])).toEqual([[1, 4, false], [2, 2, true]])
     expect(ranges(byStates.parts)).toEqual([[1, 4], [5, 6]])
     expect(joinEvidenceExport(byStates.parts, { expectedPassportId: F.passportId })).toMatchObject({ complete: true, problems: [] })
+
+    const required = { requiredCustodyProfile: 'managed-custody@3' as const }
+    const selected = await buildParts(node, F.passportId, { maxStates: 4, custodyExportProfile: 'managed-custody@3' })
+    expect(joinEvidenceExport(selected.parts, required)).toMatchObject({ complete: true, problems: [] })
+    const earlierPart = byStates.parts[1]
+    expect(inspectEvidenceExportPart(earlierPart, required).package.failures).toContainEqual(expect.objectContaining({ reason: 'not-selected' }))
+    const mixed = joinEvidenceExport([selected.parts[0], earlierPart], required)
+    expect(mixed.complete).toBe(false)
+    expect(mixed.problems).toContainEqual(expect.stringMatching(/part 2.*managed-custody@3/))
 
     // Within the defaults, one part is the whole snapshot and says so, exactly as the bounded package does.
     const whole = await buildParts(node, F.passportId)

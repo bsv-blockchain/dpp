@@ -30,12 +30,17 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { MerklePath, Transaction, Utils } from '@bsv/sdk'
 import {
+  ACCEPTANCE_RECORD_REPRESENTATIONS,
   acceptanceCommitment,
+  bindAcceptanceToState,
   evidencePackageSigner,
   findDppOutputs,
   inspectEvidencePackage,
+  inspectManagedAcceptance,
+  MANAGED_CUSTODY_EXPORT_PROFILE,
   verifyChain,
   verifyOwnerBlob,
+  type DppStateV2,
   type EvidencePackageManifest,
   type InventoryEntry,
   type ManagedAcceptanceRecord,
@@ -64,6 +69,7 @@ import {
   asNumberArrays,
   exportScopeId,
   passportFolder,
+  readNestedAcceptance,
   recordBytes,
   sameBytes,
   sha256Hex,
@@ -82,6 +88,8 @@ export interface RestoreTrust {
   trustedBindingDigests: readonly string[]
   /** The exporter identity key of the index whose evidence is carried, when this deployment was told it. Without it, each carried package is held to the key its own manifest names, which the export's signature covers. */
   indexExporterKey?: string
+  /** Require the signed exporter to have selected this custody profile for the operation. */
+  requiredCustodyProfile?: typeof MANAGED_CUSTODY_EXPORT_PROFILE
 }
 
 /** A package that was read and checked. Nothing has been written anywhere. */
@@ -144,6 +152,10 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
   if (unlisted.length > 0) refuse('file-unlisted', `The folder holds ${unlisted.length === 1 ? 'a file' : 'files'} the signed manifest does not list: ${unlisted.map((failure) => failure.path).join(', ')}. Nothing the exporter did not vouch for is restored.`, { unlisted: unlisted.map((failure) => failure.path) })
   if (!inspection.inventoryVerified || inspection.failures.length > 0) refuse('manifest-invalid', `The package does not inspect: ${inspection.failures.map((failure) => failure.detail).join('; ')}.`)
 
+  const custodyV3 = Array.isArray(manifest.profiles) && manifest.profiles.every(profile => typeof profile === 'string') && manifest.profiles.includes(MANAGED_CUSTODY_EXPORT_PROFILE)
+  if (trust.requiredCustodyProfile != null && (trust.requiredCustodyProfile !== MANAGED_CUSTODY_EXPORT_PROFILE || !custodyV3)) {
+    refuse('not-selected', `This recovery requires ${trust.requiredCustodyProfile}, which could not be selected for the signed package.`, { profile: trust.requiredCustodyProfile })
+  }
   if (manifest.disclosure.scope !== 'all-tiers' || manifest.disclosure.recoveryBackup !== true) {
     refuse('not-a-recovery-package', `The package was assembled under the ${manifest.disclosure.scope} disclosure and is not a recovery backup. A public export carries no journal and no operational record, and restores nothing.`)
   }
@@ -181,6 +193,12 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
   const journals: PassportRecord[] = []
   const readings = new Map<string, ExportedReading>()
   const declaredDigests = new Map<string, string>()
+  // Only a successful send completes a journal transfer. Index admission can precede it.
+  const transfersByCommitment = new Map<string, DppStateV2>()
+  const transfersByTxid = new Map<string, DppStateV2>()
+  const authority = new Set<string>()
+  const heldAcceptances = new Set<string>()
+  const interruptedTransfers = new Set<string>()
   const accounted = new Set<string>([APPLICATION_EXPORT_DESCRIPTOR])
   for (const passport of descriptor.passports) {
     const { passportId } = passport
@@ -223,6 +241,26 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
       if (tier != null && (typeof tier.ciphertext !== 'string' || tier.hash !== held!.payloadOwnerHash || !verifyOwnerBlob(Utils.toArray(tier.ciphertext, 'base64'), held!.payloadOwnerHash))) {
         refuse('records-inconsistent', `The retained owner tier of ${state.txid} differs from its signed commitment.`, { passportId, txid: state.txid })
       }
+      if (custodyV3) {
+        if (held?.version === '2' && held.op === 'TRANSFER') {
+          if (state.op !== held.op) refuse('records-inconsistent', `The journal misidentifies transfer ${state.txid}.`, { passportId, txid: state.txid })
+          if (state.network === 'accepted' || state.network === 'dry-run') {
+            transfersByCommitment.set(held.authorisationCommitment, held)
+            transfersByTxid.set(state.txid, held)
+          } else if (isInterrupted(state)) {
+            interruptedTransfers.add(held.authorisationCommitment)
+          } else {
+            refuse('records-inconsistent', `Transfer ${state.txid} has an unknown send outcome.`, { passportId, txid: state.txid })
+          }
+        }
+        if (state.acceptance != null) {
+          const checked = inspectManagedAcceptance(state.acceptance, { custodians: [trust.exporterKey] })
+          if (checked.failures.length > 0 || checked.commitment == null || held?.version !== '2' || bindAcceptanceToState(state.acceptance, held).length > 0) {
+            return refuse('records-inconsistent', `The retained acceptance in ${state.txid} does not bind to its transfer.`, { passportId, txid: state.txid })
+          }
+          heldAcceptances.add(checked.commitment)
+        }
+      }
       lineage.push(tx)
       const digest = declaredBindingDigest(state.payloadPublic)
       if (digest != null) {
@@ -238,6 +276,14 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
     // Each acceptance record a hand-on commits to is carried once more as the authority entry a reader of the package finds, and the two agree.
     for (const acceptance of record.acceptanceRecords as ManagedAcceptanceRecord[]) {
       const commitment = acceptanceCommitment(acceptance)
+      if (custodyV3) {
+        const transfer = transfersByCommitment.get(commitment)
+        const checked = inspectManagedAcceptance(acceptance, { custodians: [trust.exporterKey] })
+        if (authority.has(commitment) || transfer?.passportId !== passportId || checked.failures.length > 0 || bindAcceptanceToState(acceptance, transfer).length > 0) {
+          refuse('records-inconsistent', `The authority record ${commitment} for ${passportId} must uniquely bind to a completed transfer.`, { passportId, commitment })
+        }
+        authority.add(commitment)
+      }
       const path = `${folder}/authority/${commitment}.json`
       const bytes = need(path, `the acceptance record ${commitment} of ${passportId}`)
       const entry = listed.get(path)!
@@ -248,7 +294,10 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
     }
     if (record.acceptanceRecords.length !== passport.acceptanceRecords) refuse('records-inconsistent', `The descriptor counts ${passport.acceptanceRecords} acceptance records for ${passportId} and its journal holds ${record.acceptanceRecords.length}.`, { passportId })
 
-    await verifyIndexEvidence({ passportId, folder, form: passport.index?.form, manifest, files, listed, trust, journal: record, accounted, refuse })
+    await verifyIndexEvidence({
+      passportId, folder, form: passport.index?.form, files, listed, trust, journal: record, accounted, refuse,
+      custody: custodyV3 ? { transfersByCommitment, heldAcceptances } : undefined,
+    })
 
     if (listed.has(`${folder}/reading.json`)) {
       readings.set(passportId, json<ExportedReading>(`${folder}/reading.json`, `the reading of ${passportId}`))
@@ -284,9 +333,41 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
     const passport = journals.find(record => record.passportId === offer.passportId)
     if (passport == null) return refuse('records-inconsistent', `The offer ${offer.requestId} is about a passport the package does not carry.`)
     const accepted = offer.status === 'accepted' || offer.status === 'transferred'
-    if (accepted !== (offer.record != null) || (offer.record != null && !acceptanceMatchesOffer(offer, offer.record, passport, trust.exporterKey))) {
+    let missingCompletedRecord = false
+    if (custodyV3) {
+      if (offer.record != null) {
+        const commitment = acceptanceCommitment(offer.record)
+        heldAcceptances.add(commitment)
+        if (offer.status === 'accepted') interruptedTransfers.delete(commitment)
+      }
+      if (offer.status === 'transferred') {
+        const transfer = offer.transferTxid == null ? undefined : transfersByTxid.get(offer.transferTxid)
+        if (transfer?.passportId !== offer.passportId || transfer.previousTxid !== offer.expectedPredecessor?.txid || transfer.previousOutputIndex !== offer.expectedPredecessor?.outputIndex ||
+          transfer.actorIdentityKey !== offer.holderIdentityKey || (offer.record != null && transfer.authorisationCommitment !== acceptanceCommitment(offer.record))) {
+          refuse('records-inconsistent', `The completed offer ${offer.requestId} does not match its retained transfer.`, { requestId: offer.requestId })
+        } else {
+          missingCompletedRecord = offer.record == null && !authority.has(transfer.authorisationCommitment)
+        }
+      }
+    }
+    if ((accepted !== (offer.record != null) && !missingCompletedRecord) || (offer.record != null && !acceptanceMatchesOffer(offer, offer.record, passport, trust.exporterKey))) {
       refuse('records-inconsistent', `The status or signed acceptance of offer ${offer.requestId} does not agree with the retained offer.`, { requestId: offer.requestId })
     }
+  }
+  if (custodyV3) {
+    if (interruptedTransfers.size > 0) refuse('records-inconsistent', 'An interrupted transfer lacks its retained signed offer.')
+    const absent = manifest.completeness.absent.filter(line => line.startsWith('acceptance:'))
+    const expected = new Set<string>()
+    for (const commitment of transfersByCommitment.keys()) {
+      if (authority.has(commitment)) continue
+      if (heldAcceptances.has(commitment)) refuse('records-inconsistent', `The package holds the acceptance ${commitment} of a completed transfer but omits its authority entry.`, { commitment })
+      expected.add(`acceptance:sha256:${commitment}`)
+    }
+    for (const reference of absent) {
+      if (!expected.delete(reference)) refuse('records-inconsistent', `The recovery manifest declares an unexpected or duplicate absent acceptance ${reference}.`)
+    }
+    if (expected.size > 0) refuse('records-inconsistent', 'The manifest omits a missing completed acceptance.', { missing: [...expected] })
+    if (manifest.completeness.withheld.some(line => line.startsWith('acceptance:'))) refuse('records-inconsistent', 'An authorised recovery manifest withholds a signed acceptance.')
   }
   for (const claim of claims) {
     const about = isEpcisLifecycleRecord(claim) ? claim.boundPassports : [claim.passportId]
@@ -364,7 +445,7 @@ async function verifyIndexEvidence(args: {
   passportId: string
   folder: string
   form: string | undefined
-  manifest: EvidencePackageManifest
+  custody?: { transfersByCommitment: Map<string, DppStateV2>; heldAcceptances: Set<string> }
   files: Map<string, Uint8Array>
   listed: Map<string, InventoryEntry>
   trust: RestoreTrust
@@ -372,7 +453,7 @@ async function verifyIndexEvidence(args: {
   accounted: Set<string>
   refuse: (code: string, detail: string, data?: Record<string, unknown>) => never
 }): Promise<void> {
-  const { passportId, folder, form, files, listed, trust, journal, accounted, refuse } = args
+  const { passportId, folder, form, files, listed, trust, journal, custody, accounted, refuse } = args
   const base = `${folder}/index/`
   const under = [...listed.keys()].filter((path) => path.startsWith(base))
   if (form === 'none') {
@@ -404,8 +485,28 @@ async function verifyIndexEvidence(args: {
     return { nested, nestedFiles }
   }
   const transactions = new Map<string, Uint8Array>()
-  const collect = (nested: EvidencePackageManifest, nestedFiles: Map<string, Uint8Array>): void => {
-    for (const entry of nested.inventory) if (entry.category === 'transactions' && entry.path.endsWith('.tx')) transactions.set(entry.path.slice(entry.path.lastIndexOf('/') + 1, -3), nestedFiles.get(entry.path)!)
+  const scopedAuthority = new Set<string>()
+  const collect = (at: string, nested: EvidencePackageManifest, nestedFiles: Map<string, Uint8Array>): void => {
+    for (const entry of nested.inventory) {
+      const bytes = nestedFiles.get(entry.path)
+      if (bytes == null) return refuse('index-evidence-refused', 'The index inventory names a missing file.', { passportId, path: at + entry.path })
+      if (entry.category === 'transactions' && entry.path.endsWith('.tx')) transactions.set(entry.path.slice(entry.path.lastIndexOf('/') + 1, -3), bytes)
+      if (custody == null) continue
+      const record = readNestedAcceptance(entry, bytes, passportId, trust.exporterKey)
+      if (record == null) continue
+      const path = at + entry.path
+      const outer = listed.get(path)!
+      if (outer.representation !== APPLICATION_REPRESENTATIONS.nestedAuthority || outer.category !== entry.category || outer.represents !== entry.represents || outer.mediaType !== entry.mediaType) {
+        refuse('index-evidence-refused', 'The scoped authority entry differs from the signed index inventory.', { passportId, path })
+      }
+      const commitment = acceptanceCommitment(record)
+      const transfer = custody.transfersByCommitment.get(commitment)
+      if (transfer?.passportId !== passportId || bindAcceptanceToState(record, transfer).length > 0) {
+        refuse('index-evidence-refused', 'An index acceptance does not bind to a completed transfer in the supplied journal.', { passportId, path, commitment })
+      }
+      scopedAuthority.add(path)
+      custody.heldAcceptances.add(commitment)
+    }
   }
 
   if (form === 'export-parts') {
@@ -418,7 +519,7 @@ async function verifyIndexEvidence(args: {
       const coverage = JSON.parse(decoder.decode(coverageBytes)) as Record<string, unknown>
       // The cursor is not part of what the index signed and was not carried. It only has to agree with the signed final flag.
       parts.push({ ...coverage, nextCursor: coverage.final === true ? null : 'not-carried', package: { manifest: nested, files: Object.fromEntries([...nestedFiles].map(([path, bytes]) => [path, Buffer.from(bytes).toString('base64')])) } })
-      collect(nested, nestedFiles)
+      collect(`${base}part-${at}/`, nested, nestedFiles)
     }
     if (parts.length === 0) refuse('package-incomplete', `The package is incomplete: it carries no part of the index's evidence for ${passportId}.`, { passportId })
     const first = (parts[0] as { package: { manifest: EvidencePackageManifest } }).package.manifest
@@ -431,10 +532,18 @@ async function verifyIndexEvidence(args: {
       refuse('index-evidence-refused', `The index's evidence for ${passportId} is refused: ${inspection.failures.map((failure) => failure.detail).join('; ')}.`, { passportId, failures: inspection.failures.map((failure) => failure.reason) })
     }
     if (form === 'package' && !nested.completeness.snapshots.every((snapshot) => snapshot.completeForSnapshot)) refuse('records-inconsistent', `The descriptor says the index's package for ${passportId} is complete for its snapshot, and the package does not say so.`, { passportId })
-    collect(nested, nestedFiles)
+    collect(base, nested, nestedFiles)
     // A file under the folder that the index's own manifest does not list was not vouched for by the index.
     const extra = under.filter((path) => path !== `${base}manifest.json` && !nested.inventory.some((entry) => `${base}${entry.path}` === path))
     if (extra.length > 0) refuse('index-evidence-refused', `The folder of the index's evidence for ${passportId} holds files its manifest does not list: ${extra.join(', ')}.`, { passportId })
+  }
+  if (custody != null) {
+    for (const path of under) {
+      const representation = listed.get(path)!.representation
+      if (ACCEPTANCE_RECORD_REPRESENTATIONS.some(format => representation === format) || (representation === APPLICATION_REPRESENTATIONS.nestedAuthority && !scopedAuthority.has(path))) {
+        refuse('index-evidence-refused', 'A nested authority label has no corresponding scoped entry in the signed index evidence.', { passportId, path })
+      }
+    }
   }
   // The index and the journal describe one lineage: a transaction the index holds for the passport is a state of the journal, in the same bytes.
   for (const [txid, raw] of transactions) {
@@ -725,6 +834,11 @@ export async function restoreApplication(input: RestoreApplicationInput): Promis
     gs1.ok ? `The GS1 files for EPCIS validation are present in ${gs1.dir}.` : `The GS1 files for EPCIS validation are not in ${gs1.dir}: this deployment obtains them from GS1 at start, or the operator places them. Until then every import and pull is refused.`,
   ]
   const attention: string[] = []
+  if (Array.isArray(manifest.profiles) && manifest.profiles.includes(MANAGED_CUSTODY_EXPORT_PROFILE)) {
+    for (const reference of manifest.completeness.absent) {
+      if (reference.startsWith('acceptance:sha256:')) attention.push(`The signed acceptance for a completed transfer identified by ${reference} was unavailable at recovery.`)
+    }
+  }
   if (notRegistered.length > 0) attention.push(`This deployment does not hold ${notRegistered.join(', ')} under the binding the records declare. ${bundleDir == null ? 'It resolves profiles from the installed package and its own folders: set PROFILE_BUNDLE_DIR to resolve them from the package\'s bundle, or add the profile\'s folder and trust its digest.' : 'Its trusted digests do not admit the bundle\'s binding.'} Until then those passports read as "not checked" and cannot be written.`)
   for (const entry of indexReport.notAnnounced) attention.push(`The state ${entry.txid} of ${entry.passportId} was not taken by this deployment's index: ${entry.answer}${entry.detail == null ? '' : ` (${entry.detail})`}.`)
   for (const entry of indexReport.proofsNotApplied) attention.push(`The index has yet to acknowledge the proof for ${entry.txid} of ${entry.passportId} (${entry.detail}). The worker will retry it.`)

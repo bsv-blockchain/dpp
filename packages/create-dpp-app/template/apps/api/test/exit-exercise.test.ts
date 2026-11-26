@@ -80,6 +80,7 @@ const PUBLISHER_KEY = PrivateKey.fromHex(WALLET_ROOT).toPublicKey().toString()
 const scratch = mkdtempSync(join(tmpdir(), 'dpp-exit-exercise-'))
 const AUTHORISED = join(scratch, 'export-authorised')
 const PUBLIC = join(scratch, 'export-public')
+const MANAGED_RECOVERY = join(scratch, 'export-managed-recovery')
 
 /* ------------------------------- deployments ----------------------------- */
 
@@ -436,6 +437,8 @@ describe('the exit exercise', () => {
     const unknown = await npmRun('export', ['--out', join(scratch, 'never-written'), '--no-such-option'], envA)
     expect(unknown.code, unknown.text).toBe(2)
     expect(unknown.text).toMatch(/^usage: export --out <folder>/m)
+    const unknownProfile = await command(runExportCommand, ['--out', join(scratch, 'never-written'), '--custody-profile', 'managed-custody@99'], envA)
+    expect(unknownProfile).toMatchObject({ code: 1, text: expect.stringContaining('not-selected') })
     expect(existsSync(join(scratch, 'never-written'))).toBe(false)
     expect(authorised.text).not.toContain(SOURCE_SECRET)
     // An export never overwrites: the same folder is refused the second time.
@@ -444,7 +447,9 @@ describe('the exit exercise', () => {
     expect(again.text).toMatch(/^Refused \(destination-not-empty\)/)
 
     // The public form, with one source scope named as publishable. No other scope and no operational record goes with it.
-    const open = await command(runExportCommand, ['--out', PUBLIC, '--public', '--public-source', 'supplier-b'], envA)
+    const selected = await command(runExportCommand, ['--out', MANAGED_RECOVERY, '--custody-profile', 'managed-custody@3'], envA)
+    expect(selected.code, selected.text).toBe(0)
+    const open = await command(runExportCommand, ['--out', PUBLIC, '--custody-profile', 'managed-custody@3', '--public', '--public-source', 'supplier-b'], envA)
     expect(open.code, open.text).toBe(0)
 
     const manifest = JSON.parse(readFileSync(join(AUTHORISED, 'manifest.json'), 'utf8')) as EvidencePackageManifest
@@ -466,6 +471,7 @@ describe('the exit exercise', () => {
 
     const publicManifest = JSON.parse(readFileSync(join(PUBLIC, 'manifest.json'), 'utf8')) as EvidencePackageManifest
     const publicDescriptor = JSON.parse(readFileSync(join(PUBLIC, 'application/application-export.json'), 'utf8')) as ApplicationExportDescriptor
+    expect(publicManifest.profiles).toContain('managed-custody@3')
     expect(publicManifest.disclosure).toEqual({ scope: 'public', recoveryBackup: false })
     expect(publicDescriptor).toMatchObject({ access: 'public-evidence', epcis: { access: 'public-evidence', scopes: ['supplier-b'], cursors: 'excluded' }, records: { brands: 0, offers: 0, claims: 0 } })
     expect(publicDescriptor.epcis.sources).toBeUndefined()
@@ -627,6 +633,7 @@ describe('the exit exercise', () => {
     await refused('lacking-resigned', await repackaged(AUTHORISED, 'lacking-resigned', (folder) => rmSync(join(folder, journal))), 'package-incomplete', new RegExp(`does not carry the journal of ${kept.passports[0]!.passportId.replaceAll('/', '\\/')}`))
 
     // 6. The public package is not a recovery backup.
+    await refused('custody-edition', AUTHORISED, 'not-selected', /managed-custody@3/, {}, ['--require-custody-profile', 'managed-custody@3'])
     await refused('public', PUBLIC, 'not-a-recovery-package', /public disclosure/)
 
     // 7. A file nobody listed is not carried along.
@@ -653,7 +660,7 @@ describe('the exit exercise', () => {
     expect(guard.attempts.splice(0)).toHaveLength(5)
 
     const reportFile = join(scratch, 'restore-report.json')
-    const restored = await command(runRestoreCommand, ['--from', AUTHORISED, '--exporter-key', PUBLISHER_KEY, '--report', reportFile], envB)
+    const restored = await command(runRestoreCommand, ['--from', MANAGED_RECOVERY, '--require-custody-profile', 'managed-custody@3', '--exporter-key', PUBLISHER_KEY, '--report', reportFile], envB)
     expect(restored.code, restored.text).toBe(0)
     const first = JSON.parse(readFileSync(reportFile, 'utf8')) as RestoreReport
     report.first = first

@@ -6,6 +6,7 @@ describe('the custody settings from the environment', () => {
   afterEach(() => {
     delete process.env.ACCEPTANCE_COMMITMENT
     delete process.env.CONTROL_AUTHORITIES
+    delete process.env.CUSTODY_EXPORT_PROFILE
   })
 
   it('name no control authorities and select no profile when unset', () => {
@@ -16,6 +17,15 @@ describe('the custody settings from the environment', () => {
     process.env.ACCEPTANCE_COMMITMENT = 'required'
     process.env.CONTROL_AUTHORITIES = ' 02aa, 03bb ,'
     expect(versionTwoAdmission()).toEqual({ managedAcceptance: true, controlAuthorities: ['02aa', '03bb'] })
+  })
+
+  it('selects the successor export only with managed admission and a recognised edition', () => {
+    process.env.CUSTODY_EXPORT_PROFILE = 'managed-custody@3'
+    expect(() => versionTwoAdmission()).toThrow('ACCEPTANCE_COMMITMENT')
+    process.env.ACCEPTANCE_COMMITMENT = 'required'
+    expect(versionTwoAdmission()).toMatchObject({ managedAcceptance: true, custodyExportProfile: 'managed-custody@3' })
+    process.env.CUSTODY_EXPORT_PROFILE = 'unknown'
+    expect(() => versionTwoAdmission()).toThrow('CUSTODY_EXPORT_PROFILE')
   })
 
   it('refuse any other value of ACCEPTANCE_COMMITMENT rather than guessing', () => {

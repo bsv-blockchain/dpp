@@ -96,6 +96,7 @@ describe('the export of an application', () => {
   it('carries a handed-on passport whole, under one signed manifest, with the index\'s complete export in place of its bounded package', async () => {
     exported = await exportApplication({ platform: first, epcis: exchange(), access: 'authorised-recovery', indexRoute: 'complete' })
     const { manifest, descriptor, files } = exported
+    expect(manifest.profiles).not.toContain('managed-custody@3')
     expect(manifest.passportId).toBe(exportScopeId([passportId, otherId]))
     expect(manifest.passportId.startsWith(EXPORT_SCOPE_PREFIX)).toBe(true)
     expect(manifest.signature.signer).toBe(evidencePackageSigner(first.wallet.identityKey, manifest.passportId))
@@ -182,7 +183,9 @@ describe('the export of an application', () => {
       const pendingOffer = (await source.store.getOffer(pending.requestId))!
       const signed = pendingOffer.record!
 
-      const recovery = await exportApplication({ platform: source, epcis: exchange(), access: 'authorised-recovery' })
+      const selected = { platform: source, epcis: exchange(), custodyProfile: 'managed-custody@3' as const }
+      const recovery = await exportApplication({ ...selected, access: 'authorised-recovery' })
+      expect(recovery.manifest.profiles).toContain('managed-custody@3')
       const verified = await verifyApplicationPackage({ manifestText: JSON.stringify(recovery.manifest), files: recovery.files }, trust(source))
       expect(verified.offers.find(item => item.requestId === pending.requestId)).toMatchObject({ status: 'accepted', record: signed })
       const replacement = await openPlatform({ config, mode: 'test', log: () => {} })
@@ -190,6 +193,9 @@ describe('the export of an application', () => {
         await restoreApplication({ verified, platform: replacement, epcis: exchange(), rebuildIndex: true })
         const retried = await replacement.custody.accept(pending)
         expect(retried.record).toEqual(signed)
+        expect((await replacement.custody.accept(pending)).transferTxid).toBe(retried.transferTxid)
+        const after = await exportApplication({ ...selected, platform: replacement, access: 'authorised-recovery' })
+        expect(acceptanceRecordsInPackage(after.manifest, asNumberArrays(after.files)).map(item => item.record)).toContainEqual(signed)
         expect((await replacement.store.getPassport(id))!.acceptanceRecords).toEqual([...completed, signed])
       } finally {
         await replacement.close()
@@ -197,11 +203,16 @@ describe('the export of an application', () => {
       const authority = acceptanceRecordsInPackage(recovery.manifest, asNumberArrays(recovery.files))
       expect(authority).toHaveLength(completed.length)
       for (const record of completed) {
+        const path = `${passportFolder(id)}/authority/${acceptanceCommitment(record)}.json`
+        expect(Buffer.from(recovery.files.get(path)!).toString('utf8')).toBe(stableJson(record))
         expect(authority.filter(item => item.represents === `sha256:${acceptanceCommitment(record)}`)).toEqual([
-          { path: `${passportFolder(id)}/authority/${acceptanceCommitment(record)}.json`, represents: `sha256:${acceptanceCommitment(record)}`, record },
+          { path, represents: `sha256:${acceptanceCommitment(record)}`, record },
         ])
       }
-      const open = await exportApplication({ platform: source, epcis: exchange(), access: 'public-evidence' })
+      const open = await exportApplication({ ...selected, access: 'public-evidence' })
+      expect(open.manifest.profiles).toContain('managed-custody@3')
+      const publicReading = JSON.parse(Buffer.from(open.files.get(`${passportFolder(id)}/reading.json`)!).toString('utf8'))
+      expect(publicReading.checks).toContainEqual({ name: 'evidenceAvailability', status: 'unknown', reasonCode: 'referenced-artefact-unavailable' })
       expect(acceptanceRecordsInPackage(open.manifest, asNumberArrays(open.files))).toEqual([])
       for (const record of completed) {
         const reference = `acceptance:sha256:${acceptanceCommitment(record)}`
@@ -212,6 +223,24 @@ describe('the export of an application', () => {
       const publicBytes = Buffer.concat([Buffer.from(JSON.stringify(open.manifest)), ...Array.from(open.files.values(), bytes => Buffer.from(bytes))])
       for (const secret of [pending.requestId, pending.claimCode, acceptanceCommitment(signed), ...[...completed, signed].map(record => record.signature)]) {
         expect(publicBytes.includes(Buffer.from(secret))).toBe(false)
+      }
+
+      // The journal may hold the only copy of the pending acceptance.
+      const before = (await source.store.getPassport(id))!
+      const { record: _signed, ...pendingWithoutRecord } = pendingOffer
+      await source.store.saveOffer(pendingWithoutRecord)
+      await source.store.savePassport({ ...before, acceptanceRecords: [...before.acceptanceRecords, signed] })
+      const read = source.read.bind(source)
+      const disclose = vi.spyOn(source, 'read').mockImplementationOnce(async (...args) => {
+        const reading = await read(...args)
+        return { ...reading, checks: [...reading.checks, { name: 'unavailable', label: 'Detail', status: acceptanceCommitment(signed) }] }
+      })
+      try {
+        expect((await refusal(exportApplication({ ...selected, access: 'public-evidence' }))).code).toBe('export-unsound')
+      } finally {
+        disclose.mockRestore()
+        await source.store.saveOffer(pendingOffer)
+        await source.store.savePassport(before)
       }
 
       // The package signature covers the exporting store's bytes. The acceptance must separately verify for its offer.
@@ -228,13 +257,45 @@ describe('the export of an application', () => {
       await source.store.savePassport({ ...journal, acceptanceRecords: [] })
       const { record: lost, ...secondOffer } = (await source.store.getOffer(secondTransfer.record.requestId))!
       await source.store.saveOffer(secondOffer)
-      const partial = await exportApplication({ platform: source, epcis: exchange(), access: 'public-evidence' })
+      const partial = await exportApplication({ ...selected, access: 'public-evidence' })
       const retained = `acceptance:sha256:${acceptanceCommitment(firstTransfer.record)}`
       const missing = `acceptance:sha256:${acceptanceCommitment(lost!)}`
       expect(partial.manifest.completeness.withheld).toContain(`${retained} not-public`)
       expect(partial.manifest.completeness.absent).not.toContain(retained)
       expect(partial.manifest.completeness.absent).toContain(missing)
       expect(partial.manifest.completeness.withheld).not.toContain(`${missing} not-public`)
+
+      // The index can be unavailable. The source journal still establishes both completed handovers.
+      const index = vi.spyOn(source.index, 'evidencePackage').mockResolvedValue({ absent: 'not-held', detail: 'offline' })
+      const partialRecovery = await exportApplication({ ...selected, access: 'authorised-recovery' })
+      expect(partialRecovery.manifest.completeness.absent).toContain(missing)
+      expect(partialRecovery.manifest.completeness.absent).not.toContain(retained)
+      expect(acceptanceRecordsInPackage(partialRecovery.manifest, asNumberArrays(partialRecovery.files)).map(item => item.record)).toEqual([firstTransfer.record])
+      expect(partialRecovery.descriptor.passports[0]!.acceptanceRecords).toBe(1)
+      const copy = JSON.parse(Buffer.from(partialRecovery.files.get(`${passportFolder(id)}/journal.json`)!).toString('utf8'))
+      expect(copy.acceptanceRecords).toEqual([firstTransfer.record])
+      expect((await source.store.getPassport(id))!.acceptanceRecords).toEqual([])
+      const recovered = await verifyApplicationPackage({ manifestText: JSON.stringify(partialRecovery.manifest), files: partialRecovery.files }, trust(source))
+      expect(recovered.journals[0]!.acceptanceRecords).toEqual([firstTransfer.record])
+      index.mockRestore()
+
+      // An index admission and a retained acceptance cannot answer an interrupted send.
+      const secondOfferAccepted = { ...secondOffer, status: 'accepted' as const }
+      delete secondOfferAccepted.transferTxid
+      await source.store.saveOffer(secondOfferAccepted)
+      await source.store.savePassport({ ...journal, states: journal.states.map(entry =>
+        entry.txid === secondTransfer.transferTxid ? { ...entry, network: 'unanswered', acceptance: lost } : entry) })
+      const interrupted = await exportApplication({ ...selected, access: 'authorised-recovery' })
+      expect(acceptanceRecordsInPackage(interrupted.manifest, asNumberArrays(interrupted.files)).map(item => item.record)).toEqual([firstTransfer.record])
+      expect(interrupted.manifest.completeness.absent).not.toContain(missing)
+      const offered = interrupted.manifest.inventory.find(entry => entry.represents === secondOffer.requestId)!
+      expect(JSON.parse(Buffer.from(interrupted.files.get(offered.path)!).toString('utf8')).record).toEqual(lost)
+      expect((await source.store.getOffer(secondOffer.requestId))!.record).toBeUndefined()
+
+      // A pending send cannot be resumed without the signed record.
+      await source.store.savePassport({ ...journal, acceptanceRecords: [firstTransfer.record], states: journal.states.map(entry =>
+        entry.txid === secondTransfer.transferTxid ? { ...entry, network: 'unanswered' } : entry) })
+      expect(await refusal(exportApplication({ ...selected, access: 'authorised-recovery' }))).toMatchObject({ code: 'records-inconsistent' })
     } finally {
       await source.close()
     }
@@ -267,7 +328,54 @@ describe('the export of an application', () => {
         fetchPackage.mockResolvedValue({ envelope: { manifest, files } })
         const problem = await refusal(exportApplication({ platform: first, epcis: exchange(), access: 'public-evidence', passportIds: [passportId] }))
         expect(problem.code).toBe('index-evidence-refused')
+        if (includeRecord) {
+          const scope = { platform: first, epcis: exchange(), access: 'authorised-recovery' as const, passportIds: [passportId] }
+          const selected = { ...scope, custodyProfile: 'managed-custody@3' as const }
+          const indexFile = `${passportFolder(passportId)}/index/${path}`
+          const journal = (await first.store.getPassport(passportId))!
+          const offer = (await first.store.getOffer(record.requestId))!
+          try {
+            for (const nestedOnly of [false, true]) {
+              if (nestedOnly) {
+                await first.store.savePassport({ ...journal, acceptanceRecords: [] })
+                const { record: _record, ...withoutAcceptance } = offer
+                await first.store.saveOffer(withoutAcceptance)
+              }
+              const recovery = await exportApplication(selected)
+              expect(recovery.manifest.inventory.find(entry => entry.path === indexFile)).toMatchObject({ category: 'authority', representation: 'dpp-nested-authority@1' })
+              expect(Buffer.from(recovery.files.get(indexFile)!)).toEqual(bytes)
+              expect(JSON.parse(Buffer.from(recovery.files.get(`${passportFolder(passportId)}/index/manifest.json`)!).toString())).toEqual(manifest)
+              expect(acceptanceRecordsInPackage(recovery.manifest, asNumberArrays(recovery.files)).map(entry => entry.record)).toEqual([record])
+              const recovered = await verifyApplicationPackage({ manifestText: JSON.stringify(recovery.manifest), files: recovery.files }, { ...trust(first), indexExporterKey: id })
+              expect(recovered.journals[0]!.acceptanceRecords).toEqual([record])
+              expect(recovered.offers[0]!.record).toEqual(record)
+            }
+          } finally {
+            await first.store.savePassport(journal)
+            await first.store.saveOffer(offer)
+          }
+          const earlier = await exportApplication(scope)
+          expect(earlier.manifest.inventory.find(entry => entry.path === indexFile)?.representation).toBe(record.acceptanceFormat)
+
+          // The index signature authenticates the package, independently of the custodian's acceptance.
+          const broken = { ...record, signature: '00' }
+          const brokenBytes = Buffer.from(JSON.stringify(broken))
+          const brokenEntry = { ...entry, byteLength: brokenBytes.length, sha256: createHash('sha256').update(brokenBytes).digest('hex'), represents: `sha256:${acceptanceCommitment(broken)}` }
+          const damaged = await signEvidenceManifest({ ...manifest, inventory: [...original.inventory, brokenEntry] }, signing)
+          fetchPackage.mockResolvedValue({ envelope: { manifest: damaged, files: { ...files, [path]: brokenBytes.toString('base64') } } })
+          expect((await refusal(exportApplication(selected))).code).toBe('index-evidence-refused')
+        }
       }
+
+      // A signed proof can carry the transfer without a separate raw transaction file.
+      const inventory = original.inventory.filter(entry => entry.category !== 'transactions')
+      const proofOnly = await signEvidenceManifest({
+        ...original, inventory, exporter: { ...original.exporter, id },
+        signature: { suite: 'bsv-ecdsa-der', signer: signingKey.toPublicKey().toString() },
+      }, signing)
+      fetchPackage.mockResolvedValue({ envelope: { manifest: proofOnly, files: Object.fromEntries(inventory.map(entry => [entry.path, result.envelope.files[entry.path]!])) } })
+      const publicProofs = await exportApplication({ platform: first, epcis: exchange(), access: 'public-evidence', custodyProfile: 'managed-custody@3', passportIds: [passportId] })
+      expect(publicProofs.manifest.completeness.withheld).toContain(`acceptance:sha256:${acceptanceCommitment(record)} not-public`)
     } finally {
       fetchPackage.mockRestore()
       identity.mockRestore()
