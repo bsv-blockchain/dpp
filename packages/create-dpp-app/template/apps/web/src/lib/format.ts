@@ -59,13 +59,27 @@ export function passportIdFromRef(ref: string): string {
   }
 }
 
+/** Decode the original accept-link segment once so an ID can contain either a slash or the literal characters %2F. */
+export function offerIdFromPath(pathname: string): string | undefined {
+  const segment = /\/accept\/([^/]+)\/*$/i.exec(pathname)?.[1]
+  if (segment == null) return undefined
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    return undefined
+  }
+}
+
 export const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /** Payload keys that are stamps or the demonstration marker, not product data. */
 export const STAMP_KEYS = new Set(['notice', 'profile', 'profile_version'])
 
 export const holderLabel = (party: string): string => {
-  const [scope, id] = party.split(':', 2)
+  const separator = party.indexOf(':')
+  if (separator < 0) return party
+  const scope = party.slice(0, separator)
+  const id = party.slice(separator + 1)
   if (scope === 'brand') return `Brand ${id}`
   if (scope === 'recipient') return `Recipient of offer ${id}`
   if (scope === 'member') return `Member ${id}`

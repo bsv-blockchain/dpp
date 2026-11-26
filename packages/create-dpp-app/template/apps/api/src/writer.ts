@@ -1,14 +1,12 @@
 // The writer: every state goes through the six steps of spec/writing.md in
-// order. Build it unsent; check it with the reader's own rules; announce it
-// to the index and send only on admission; send, and report only the
-// network's answer; push the proof once the wallet has it; keep everything.
+// order. Check the signed draft before spending. Announce it before sending
+// to a retraction-capable index, or after sending to another index. Report
+// the wallet's answer and retain the transaction, its BEEF and its proof.
 // The journal entry is written before each step is acted on, so a retry
 // continues an operation and never builds a second transaction.
 //
-// Under managed custody the platform wallet is publisher and holds the lock;
-// the acting party (a brand, a holder) signs as actor from a key the
-// platform derives for it, and the controller key in field 6 is that
-// party's per-passport key.
+// The platform funds and publishes managed writes. Each new output locks
+// to its controller's field-6 key. Its holder signs the next spend.
 import { MerklePath, Transaction, Utils, type WalletProtocol } from '@bsv/sdk'
 import {
   acceptanceCommitment,
@@ -95,6 +93,7 @@ const causeOf = (validation: PayloadValidation): string =>
 
 const instant = (): string => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 const short = (hex: string): string => `${hex.slice(0, 12)}...`
+const mayHoldDraft = (index: StateEntry['index']): boolean => index === 'admitted' || index === 'duplicate' || index === 'pending' || index === 'unreachable'
 
 function journalTip(record: PassportRecord | undefined, txid: string): StateEntry {
   const tip = record?.states.at(-1)
@@ -109,9 +108,18 @@ export class Writer {
     this.log = options.log ?? (() => {})
   }
 
-  /** The platform wallet's lock key for a passport: its own per-passport key, which only it can open. */
-  private lockKey(passportId: string): Promise<string> {
-    return ownerKeyFor(passportId, this.options.wallet.publisher)
+  private async spendableTip(tip: Tip, record: PassportRecord, actor: Party) {
+    const output = findDppOutputs(tip.tx).find(ref => ref.outputIndex === tip.outputIndex)
+    if (output?.state.ownerIdentityKey !== record.holder.controllerKey) {
+      throw new WriteRefused('tip-controller-mismatch', 'the signed predecessor and journal name different controllers')
+    }
+    const lock = output.lockingPublicKey.toString()
+    if (lock === record.holder.controllerKey) return { ...tip, signer: actor.wallet }
+    // Older starter outputs used the funding wallet's per-passport lock. Spend the original
+    // outpoint with that wallet once, then place the successor under its signed controller.
+    const publisher = this.options.wallet.publisher
+    if (lock === await ownerKeyFor(record.passportId, publisher)) return { ...tip, signer: publisher }
+    throw new WriteRefused('tip-lock-unavailable', 'the predecessor is locked to a key this writer cannot spend')
   }
 
   /** The tip from the journal's BEEF, which carries its ancestry and, once proven, its merkle path. */
@@ -276,13 +284,14 @@ export class Writer {
           : `${actor.name} does not control ${passportId}; its controller key is held by ${record.holder.party}`
       )
     }
+    const spend = tip && await this.spendableTip(tip, record, actor)
     const state = (await completeState(data, actor.wallet, wallet.publisher)) as DppStateV2
-    const lockingScript = buildLockingScript(state, await this.lockKey(passportId))
+    const lockingScript = buildLockingScript(state, controllerKey)
 
     // Section 3: built unsent, complete and signed, spending nothing until it is sent.
     let built
     try {
-      built = await wallet.adapter.build({ lockingScript, tip, passportId })
+      built = await wallet.adapter.build({ lockingScript, tip: spend, passportId })
     } catch (cause) {
       throw new WriteRefused('wallet-build-failed', `the wallet could not build the ${op} (${cause instanceof Error ? cause.message : String(cause)}); nothing was sent. An empty wallet needs funding first.`)
     }
@@ -298,7 +307,8 @@ export class Writer {
       controllerKey,
       payloadPublic: data.payloadPublic,
       ...(sealed == null ? {} : { ownerTier: { ...sealed, ciphertext: Utils.toBase64(sealed.ciphertext) } }),
-      index: 'pending',
+      ...(index.supportsRetraction ? { draftIndexId: index.destinationId } : {}),
+      index: index.supportsRetraction ? 'pending' : 'not-asked',
       network: 'pending',
     }
     entry.nextHolder = { party: controller.name, controllerKey }
@@ -363,10 +373,13 @@ export class Writer {
     }
     this.log(`${op} ${short(built.txid)} built unsent for ${passportId}`)
 
-    let announced = await index.announce(built.beef)
-    await settle({ index: announced, refusal: index.lastRefusal })
-    if (announced === 'refused') await abandon('index-refused', `the index refused ${short(built.txid)} while it was still a draft: ${index.lastRefusal ?? 'no reason given'}`)
-    if (announced === 'unauthorised') await abandon('index-unauthorised', 'the index wants a submit token, or a different one; nothing was sent')
+    let announced = entry.index
+    if (index.supportsRetraction) {
+      announced = await index.announce(built.beef)
+      await settle({ index: announced, refusal: index.lastRefusal })
+      if (announced === 'refused') await abandon('index-refused', `the index refused ${short(built.txid)} while it was still a draft: ${index.lastRefusal ?? 'no reason given'}`)
+      if (announced === 'unauthorised') await abandon('index-unauthorised', 'the index wants a submit token, or a different one; nothing was sent')
+    }
 
     if (!this.options.livePublishing && wallet.kind === 'toolbox') {
       await abandon('live-publishing-off', 'LIVE_PUBLISHING is false: the unsent draft was aborted.')
@@ -380,7 +393,7 @@ export class Writer {
       throw new WriteRefused('network-unanswered', `the network has not answered for ${short(built.txid)}; resolve the retained transaction before writing another state`)
     }
     let updated = await this.finishDraft(passportId, entry, entry.nextHolder!, args.acceptance)
-    if (announced === 'unreachable') {
+    if (announced === 'not-asked' || announced === 'unreachable') {
       announced = await index.announce(built.beef).catch(() => 'unreachable' as const)
       updated = await this.recordAnnouncement(passportId, built.txid, announced, index.lastRefusal)
     }
@@ -405,6 +418,7 @@ export class Writer {
       delete draft.nextHolder
       delete draft.acceptance
       delete draft.walletReference
+      delete draft.draftIndexId
       return current
     })
     return record!
@@ -425,7 +439,7 @@ export class Writer {
       }
       throw cause
     }
-    if (entry.index === 'admitted' || entry.index === 'duplicate' || entry.index === 'pending' || entry.index === 'unreachable') {
+    if (mayHoldDraft(entry.index)) {
       const withdrawn = await this.options.index.retract(txid, reason, entry.outputIndex)
       if (!withdrawn.ok && !withdrawn.absent) throw new WriteRefused('retraction-pending', `the draft is retained until the index confirms withdrawal: ${withdrawn.detail}`)
     }
@@ -446,13 +460,19 @@ export class Writer {
     if (!isInterrupted(entry)) throw new WriteRefused('not-interrupted', `${short(txid)} is ${entry.network}`)
     if (latest.states.at(-1)?.txid !== txid) throw new WriteRefused('not-the-tip', `${short(txid)} is not the newest state`)
     if (outcome === 'abandoned') {
+      if (mayHoldDraft(entry.index) && entry.draftIndexId != null && entry.draftIndexId !== this.options.index.destinationId) {
+        throw new WriteRefused('retraction-index-changed', 'reconnect the original index before withdrawing this draft')
+      }
       const cancelling = await this.options.store.changePassport(record.passportId, (current) => {
         const draft = journalTip(current, txid)
         if (!isInterrupted(draft)) throw new WriteRefused('not-interrupted', 'the draft was already resolved')
-        draft.network = 'not-sent'
+        if (draft.network !== 'refused') draft.network = 'not-sent'
         return current
       })
-      return this.removeDraft(cancelling!, txid, 'the operator confirmed that the interrupted transaction was abandoned')
+      const reason = journalTip(cancelling, txid).network === 'refused'
+        ? `the network refused ${short(txid)}`
+        : 'the operator confirmed that the interrupted transaction was abandoned'
+      return this.removeDraft(cancelling!, txid, reason)
     }
     let acceptance = entry.acceptance
     if (entry.op === 'TRANSFER') {

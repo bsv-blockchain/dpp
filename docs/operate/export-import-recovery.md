@@ -242,6 +242,8 @@ An application holds more than an index does: its journal of every passport with
 | 5. Reprovision | The new deployment | Each source's credential in its settings. If a source is now reached at another address, set the address and run `npm run epcis-remap -- --source <name>` once. The GS1 files are obtained at start, or placed by hand |
 | 6. Resume | The new deployment | Start the API. Each unfinished pull continues under its own query name. Passports are read and written as before |
 
+During an index rebuild, the application announces the original transaction bytes in spend order. As each state is admitted or confirmed as already held, it sends any retained Merkle path to the replacement's `POST /arc-ingest`. The restore report counts proofs the replacement acknowledged and identifies failed deliveries. The worker retries from the journal. A restore into a fresh application without a persistent index leaves these deliveries pending. An interrupted draft keeps the original index details needed to withdraw it.
+
 **What the package carries, names and leaves out.** The manifest says each of the three, and the descriptor `application/application-export.json` repeats it in a form a program reads.
 
 | | Authorised export | Public export (`--public`) |
@@ -250,7 +252,8 @@ An application holds more than an index does: its journal of every passport with
 | The index's signed evidence for each passport | Carried, as the index exported it | Carried |
 | How each passport verified at export | Carried | Carried |
 | The application's journal, with each sealed owner tier | Carried. The tier stays ciphertext | Left out |
-| Acceptance records, brands, offers, claims | Carried | Left out |
+| Signed handover acceptances | Each record in the passport journal has an `authority` entry keyed by `sha256:<commitment>`, with the record's own format. An accepted offer awaiting its transfer carries its signed record inside the offer | Signed records are omitted. For each transfer commitment in the carried index transactions, the manifest identifies the record as withheld if the application holds it, or absent if it does not |
+| Brands, offers and claims | Carried | Left out |
 | Profile bundle: each binding, its files, notices and licence text | Carried | Carried |
 | EPCIS exchange | The recovery snapshot of every source scope | The public form of the scopes named with `--public-source`, with no provenance, operational record or cursor |
 | How each EPCIS source was configured | Its address and whether it had a credential | Left out |
@@ -258,6 +261,12 @@ An application holds more than an index does: its journal of every passport with
 | The files GS1 publishes | Named by address and digest in `completeness.withheld`. Never carried | The same |
 | Wallet keys, secrets, tokens and source credentials | Never carried. Every byte is searched for each configured secret before the folder is written | The same |
 | Sign-in accounts, sessions, memberships | Never carried | Never carried |
+
+The reference index signs its package as an overlay. It holds the transfer transactions and lists each missing signed record by its `acceptance:sha256:<commitment>`. The starter signs the enclosing package as a writer under the same publisher identity that attests managed handovers. The enclosing manifest describes what the application itself holds. A public export only accepts index packages with public disclosure and without entries identified as signed acceptance records.
+
+An authorised restore checks the custodian's signature and the retained offer against its acceptance, including an offer still awaiting its transfer. The offer can resume with the original signed record. A generic reader given that pending record as an `authority` entry must report `referenced-artefact-mismatch` because no transfer in the lineage commits to it. The draft needs to reconcile this verification rule with the custodian's duty to carry every record it signs as an `authority` entry. [Managed custody section 5](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/managed-custody.md#5-verification) and [portable evidence section 2](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/portable-evidence.md#2-the-evidence-package).
+
+The public export's omission of signed records also remains open under the custodian's carriage duty. The starter serves completed acceptance records in its open `GET /api/passports/:ref` journal view. That view comes from the custodian application. The profile prohibits a standalone acceptance-record route on an index or registry.
 
 A package that carries more than one passport names the export in its manifest's `passportId`, not one passport (`spec/portable-evidence.md` section 2). Each passport's own evidence sits in a folder of its own as the package the index signed, so a reader who wants one passport inspects that folder under the index's exporter key.
 
@@ -299,7 +308,7 @@ The chain as a whole is valid.
 Inclusion across the chain: verified.
 ```
 
-3. Compare with the same command against the source while it remains available. The restored history should read the same. Stop on an unexplained difference. A state now reading `inclusion` pending arrived without its proof; the source still needs to deliver it to the replacement's `POST /arc-ingest`.
+3. Compare with the same command against the source while it remains available. The restored history should read the same. Stop on an unexplained difference. For `inclusion` pending on a state that previously verified, check the replacement's proof delivery and header source. The application restore retries a retained proof through its worker. For an index-only restore, supply any missing proof to the replacement's `POST /arc-ingest`.
 
 ## What no archive recovers
 

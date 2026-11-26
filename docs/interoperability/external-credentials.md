@@ -18,6 +18,8 @@ This profile accepts VC Data Model 2.0, a `did:web` issuer, one identified subje
 
 Use `@bsv/dpp-credentials/exchange`; the root `@bsv/dpp-credentials` does not re-export it. A Verifiable Supply Chain (VSC) SEAL is a different representation with different rules, whose parked profile is no longer in the package. JSON parsing alone does not select the representation.
 
+To enable live issuer lookup, pass `{ didWeb: { allowedOrigins: ['https://issuer.example'] } }` as the second argument to `createExternalDocumentLoader`, using the issuer's HTTPS origin. Pinned documents take precedence. The default transport checks all resolved addresses, refuses redirects and gives headers and body a combined five seconds. It limits both the wire body and decoded document to 256 KiB by default. Supply status list credentials through `statusPolicy.resolve`.
+
 ## Verify the vector file's credentials
 
 1. Run this to verify `positive` in the [credential vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/external-credential/v1.json), then compare all cases with their expected checks.
@@ -85,6 +87,8 @@ The vector file and API use different policy names:
 | Omitted `statusOptional` | `status-missing-optional` prints `differs on status`: `indeterminate` instead of the expected `not-required`. |
 
 `verifyExternalCredential` evaluates the credential's own checks; `externalCredentialVerifierFor` adapts them to the shared passport report, where they answer `externalCredentialProof`, `schema`, `credentialTime`, `credentialStatus`, `issuerAuthority` and `evidenceAvailability`. Missing status or authority sources can leave those findings `unknown` even when the proof verifies.
+
+When the operator supplies a compiled JSON Schema validator through `payloadSchema`, the schema finding cites that validator’s `$id`. For an anonymous validator, supply `payloadSchemaRef` to identify the policy artefact used. Without either identifier, the finding records its result without a schema reference. The built-in validator cites the external passport schema.
 
 ## Run the example and the tests
 

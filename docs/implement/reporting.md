@@ -71,7 +71,7 @@ A reader that verifies passport history and acceptance records, but neither anch
     { "id": "managed-custody", "version": "1", "kind": "custody" }
   ],
   "representations": [
-    { "id": "dpp-managed-acceptance-v1", "mediaType": "application/json", "verification": "content" }
+    { "id": "dpp-managed-acceptance@1", "mediaType": "application/json", "verification": "content" }
   ],
   "proofSuites": [],
   "anchorFormats": [],
@@ -98,6 +98,19 @@ JS
 ```
 
 Expect `valid`. If it prints fields that break the schema, fix them and rerun before publishing the declaration. For a registry, validate the actual `GET /capabilities` response against `contracts/registry-capabilities.schema.json`, which includes the common schema. The [registry guide](roles/registry.md) provides the executable check.
+
+## Check what two parties can verify
+
+Suppose the example reader above asks the example registry for a claim. The application requires a verified claim before it marks a repair as verified. The registry declares content verification for `vc-di-ecdsa-rdfc-2019@1` and the `ecdsa-rdfc-2019` proof suite. The reader explicitly lists that representation as unsupported and declares no proof suites. Record both declarations with the outcome. [Registry declaration](https://github.com/bsv-blockchain/dpp/blob/55a040fe76f40e6a605783d7523ec5f5ad32387e/conformance/examples/capabilities-registry.json).
+
+| What arrives or is requested | What the reader reports | What the application does |
+| --- | --- | --- |
+| A credential in the registry's external representation | `representation-unsupported` for content verification | Retain the reference and leave the repair unverified. Sending its bytes to a native claim decoder would change the interpretation. |
+| A reader supports the representation, but the signed credential names a proof suite it does not implement | `suite-unsupported` for the proof | Preserve the signed bytes and leave the signature unverified. An anchor or a different proof algorithm cannot establish that signature. |
+| The workflow requires `managed-custody@2`, and its partner offers the reader's `managed-custody@1` declaration | `not-selected` for the required profile | Stop the dependent handover. Reading a historical version 1 record remains a separate operation. |
+| An EPCIS claim depends on an extension rule the verifier lacks | Event semantics are `unavailable` with `x-extension-rule-unavailable` | Preserve the event and withhold the outcome that depends on its meaning. A reader that understands the extension can evaluate the original evidence. |
+
+Run `npm test` from the checkout to exercise the capability declarations and the credential and EPCIS refusal cases. [Verifier guide](roles/attestation-verifier.md#the-cases-to-run).
 
 ## Send it
 

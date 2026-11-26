@@ -37,6 +37,9 @@ MANAGED_IDENTITY_SECRET=
 # address and tokens, or with --from the connection file an index operator wrote with
 # `dpp-index connection`, your own index's included.
 INDEX_URL=https://dpp-overlay-testnet.bsvb.net
+# For a custom index whose operator confirms POST /retract, set this to the same base URL
+# as INDEX_URL to announce drafts before sending. Other custom indexes receive sent states.
+INDEX_RETRACTION_URL=
 INDEX_SUBMIT_TOKEN=
 INDEX_CALLBACK_TOKEN=
 # Only for `npm run export`, which carries the index's own signed evidence for each passport. The token is the

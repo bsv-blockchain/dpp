@@ -1,6 +1,6 @@
 // Who signs. Under managed custody the platform holds every key: the
-// custodian (the platform wallet) publishes every state, holds the lock and
-// signs acceptance records; brands, recipients and members are managed
+// platform wallet publishes states and signs acceptance records. The managed
+// controller spends its passport output. Brands, recipients and members are
 // identities the platform derives from a secret. The `Party` interface is
 // the seam: a later implementation can be a person's own BRC-100 wallet,
 // which the standard allows for every role, without changing the writer.

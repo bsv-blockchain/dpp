@@ -364,7 +364,7 @@ export const api = {
   updatePassport: (passportId: string, body: ({ payload: Record<string, unknown>; ownerFields: Record<string, unknown> } | { product: Record<string, unknown> }) & { eventData?: Record<string, unknown>; claimCode?: string }) =>
     post<PassportView>(`/api/passports/${passportRef(passportId)}/update`, body),
   authorisedView: (passportId: string, claimCode?: string) => post<AuthorisedReading>(`/api/passports/${passportRef(passportId)}/authorised-view`, claimCode == null ? {} : { claimCode }),
-  offerPassport: (passportId: string, body: { terms: { word: string; note?: string }; claimCode?: string }) =>
+  offerPassport: (passportId: string, body: { requestId?: string; terms: { word: string; note?: string }; claimCode?: string }) =>
     post<{ offer: OfferView; claimCode?: string }>(`/api/passports/${passportRef(passportId)}/offer`, body),
   passportOffers: (passportId: string) => get<OfferView[]>(`/api/passports/${passportRef(passportId)}/offers`),
   withdrawOffer: (requestId: string, claimCode?: string) => post<OfferView>(`/api/offers/${encodeURIComponent(requestId)}/withdraw`, claimCode == null ? {} : { claimCode }),

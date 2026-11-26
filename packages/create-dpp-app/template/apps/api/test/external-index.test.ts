@@ -5,7 +5,7 @@ import { expect, it } from 'vitest'
 import { loadConfig } from '../src/config.js'
 import { openPlatform } from '../src/platform.js'
 
-it('uses the index it has joined and reports its failure without falling back to a development index', async () => {
+it.each([false, true])('uses the joined index with configured retraction support %s and reports its failure', async (supportsRetraction) => {
   let healthy = true
   const requests: string[] = []
   const server = createServer((request, response) => {
@@ -16,9 +16,10 @@ it('uses the index it has joined and reports its failure without falling back to
   server.listen(0, '127.0.0.1')
   await once(server, 'listening')
   const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
-  const platform = await openPlatform({ config: loadConfig({ INDEX_URL: url, INDEX_SUBMIT_TOKEN: 'a'.repeat(64), INDEX_CALLBACK_TOKEN: 'b'.repeat(64), LIVE_PUBLISHING: 'false' }), mode: 'test', log: () => {} })
+  const platform = await openPlatform({ config: loadConfig({ INDEX_URL: url, INDEX_RETRACTION_URL: supportsRetraction ? url : undefined, INDEX_SUBMIT_TOKEN: 'a'.repeat(64), INDEX_CALLBACK_TOKEN: 'b'.repeat(64), LIVE_PUBLISHING: 'false' }), mode: 'test', log: () => {} })
   try {
     expect(platform.index.url).toBe(url)
+    expect(platform.index.supportsRetraction).toBe(supportsRetraction)
     expect(await platform.index.publisherKeys()).toEqual(['configured-provider'])
     healthy = false
     await expect(platform.index.publisherKeys()).rejects.toThrow('HTTP 503')

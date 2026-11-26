@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { PrivateKey, Utils } from '@bsv/sdk'
+import { MerklePath, PrivateKey, Transaction, Utils } from '@bsv/sdk'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { acceptanceCommitment, acceptanceRecordsInPackage, findDppOutputs, verifyOwnerBlob, evidencePackageSigner, evidencePackageSigningKey, inspectEvidencePackage, signEvidenceManifest, signLifecycleClaim, type EvidencePackageManifest } from '@bsv/dpp-protocol'
 import { createMemoryEpcisStorage } from '@bsv/dpp-credentials/epcis-exchange'
@@ -28,6 +28,7 @@ import { EXPORT_SCOPE_PREFIX, PortabilityRefused, asNumberArrays, exportScopeId,
 import { restoreApplication, verifyApplicationPackage, type RestoreReport } from '../src/portability/restore.js'
 import { samplePayload } from '../src/profiles.js'
 import type { EpcisLifecycleClaimRecord } from '../src/store.js'
+import { runDuties } from '../src/worker.js'
 import { OWNER_DATA_PROTOCOL } from '../src/writer.js'
 import { gs1Dir } from './epcis-fixtures.js'
 
@@ -161,6 +162,118 @@ describe('the export of an application', () => {
     expect((await refusal(verifyApplicationPackage({ manifestText: JSON.stringify(open.manifest), files: open.files }, trust(first)))).code).toBe('not-a-recovery-package')
   })
 
+  it('accounts for two completed handovers and keeps a signed, unexecuted offer recoverable', async () => {
+    const source = await openPlatform({ config, mode: 'test', log: () => {} })
+    try {
+      const id = mintPassportId(policy, '100000204', 'PORT-HANDOVERS')
+      const brand = source.parties.brand(brandId)
+      await source.writer.issue({ brandId, brand, passportId: id, profile: 'general@2', payload: samplePayload('general@2', true) })
+      async function offer() {
+        const record = (await source.store.getPassport(id))!
+        const created = await source.custody.offer({ record, holder: source.custody.holderOf(record), terms: { word: 'Handed on' } })
+        return { requestId: created.offer.requestId, claimCode: created.claimCode! }
+      }
+      const firstTransfer = await source.custody.accept(await offer())
+      const secondTransfer = await source.custody.accept(await offer())
+      const completed = [firstTransfer.record, secondTransfer.record]
+      const pending = await offer()
+      vi.spyOn(source.writer, 'transfer').mockRejectedValueOnce(new Error('wallet offline'))
+      await expect(source.custody.accept(pending)).rejects.toThrow('wallet offline')
+      const pendingOffer = (await source.store.getOffer(pending.requestId))!
+      const signed = pendingOffer.record!
+
+      const recovery = await exportApplication({ platform: source, epcis: exchange(), access: 'authorised-recovery' })
+      const verified = await verifyApplicationPackage({ manifestText: JSON.stringify(recovery.manifest), files: recovery.files }, trust(source))
+      expect(verified.offers.find(item => item.requestId === pending.requestId)).toMatchObject({ status: 'accepted', record: signed })
+      const replacement = await openPlatform({ config, mode: 'test', log: () => {} })
+      try {
+        await restoreApplication({ verified, platform: replacement, epcis: exchange(), rebuildIndex: true })
+        const retried = await replacement.custody.accept(pending)
+        expect(retried.record).toEqual(signed)
+        expect((await replacement.store.getPassport(id))!.acceptanceRecords).toEqual([...completed, signed])
+      } finally {
+        await replacement.close()
+      }
+      const authority = acceptanceRecordsInPackage(recovery.manifest, asNumberArrays(recovery.files))
+      expect(authority).toHaveLength(completed.length)
+      for (const record of completed) {
+        expect(authority.filter(item => item.represents === `sha256:${acceptanceCommitment(record)}`)).toEqual([
+          { path: `${passportFolder(id)}/authority/${acceptanceCommitment(record)}.json`, represents: `sha256:${acceptanceCommitment(record)}`, record },
+        ])
+      }
+      const open = await exportApplication({ platform: source, epcis: exchange(), access: 'public-evidence' })
+      expect(acceptanceRecordsInPackage(open.manifest, asNumberArrays(open.files))).toEqual([])
+      for (const record of completed) {
+        const reference = `acceptance:sha256:${acceptanceCommitment(record)}`
+        expect(recovery.manifest.completeness.absent).not.toContain(reference)
+        expect(open.manifest.completeness.absent).not.toContain(reference)
+        expect(open.manifest.completeness.withheld).toContain(`${reference} not-public`)
+      }
+      const publicBytes = Buffer.concat([Buffer.from(JSON.stringify(open.manifest)), ...Array.from(open.files.values(), bytes => Buffer.from(bytes))])
+      for (const secret of [pending.requestId, pending.claimCode, acceptanceCommitment(signed), ...[...completed, signed].map(record => record.signature)]) {
+        expect(publicBytes.includes(Buffer.from(secret))).toBe(false)
+      }
+
+      // The package signature covers the exporting store's bytes. The acceptance must separately verify for its offer.
+      for (const change of [{ record: firstTransfer.record }, { record: { ...signed, signature: '00' } }, { terms: { word: 'Different terms' } }]) {
+        await source.store.saveOffer({ ...pendingOffer, ...change })
+        const damaged = await exportApplication({ platform: source, epcis: exchange(), access: 'authorised-recovery' })
+        const result = await refusal(verifyApplicationPackage({ manifestText: JSON.stringify(damaged.manifest), files: damaged.files }, trust(source)))
+        expect(result).toMatchObject({ code: 'records-inconsistent', data: { requestId: pending.requestId } })
+      }
+      await source.store.saveOffer(pendingOffer)
+
+      // A partial store holds only the first acceptance in its offer and has lost the second altogether.
+      const journal = (await source.store.getPassport(id))!
+      await source.store.savePassport({ ...journal, acceptanceRecords: [] })
+      const { record: lost, ...secondOffer } = (await source.store.getOffer(secondTransfer.record.requestId))!
+      await source.store.saveOffer(secondOffer)
+      const partial = await exportApplication({ platform: source, epcis: exchange(), access: 'public-evidence' })
+      const retained = `acceptance:sha256:${acceptanceCommitment(firstTransfer.record)}`
+      const missing = `acceptance:sha256:${acceptanceCommitment(lost!)}`
+      expect(partial.manifest.completeness.withheld).toContain(`${retained} not-public`)
+      expect(partial.manifest.completeness.absent).not.toContain(retained)
+      expect(partial.manifest.completeness.absent).toContain(missing)
+      expect(partial.manifest.completeness.withheld).not.toContain(`${missing} not-public`)
+    } finally {
+      await source.close()
+    }
+  })
+
+  it('requires a public index package without custody records before using it in a public export', async () => {
+    const result = await first.index.evidencePackage(passportId)
+    if (!('envelope' in result)) throw new Error('the index gave no package')
+    const original = result.envelope.manifest as EvidencePackageManifest
+    const key = PrivateKey.fromRandom()
+    const id = key.toPublicKey().toString()
+    const signingKey = evidencePackageSigningKey(key, passportId)
+    const signing = { sign: (preimage: number[]) => signingKey.sign(preimage).toDER() as number[] }
+    const identity = vi.spyOn(first.index, 'exporterIdentityKey').mockResolvedValue(id)
+    const fetchPackage = vi.spyOn(first.index, 'evidencePackage')
+    try {
+      const record = (await first.store.getPassport(passportId))!.acceptanceRecords[0]!
+      const bytes = Buffer.from(JSON.stringify(record))
+      const path = 'authority/acceptance.json'
+      const entry = { path, category: 'authority' as const, mediaType: 'application/json', byteLength: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), represents: `sha256:${acceptanceCommitment(record)}`, representation: record.acceptanceFormat }
+      for (const includeRecord of [false, true]) {
+        const manifest = await signEvidenceManifest({
+          ...original,
+          exporter: { ...original.exporter, id },
+          disclosure: includeRecord ? original.disclosure : { scope: 'all-tiers', recoveryBackup: true },
+          inventory: includeRecord ? [...original.inventory, entry] : original.inventory,
+          signature: { suite: 'bsv-ecdsa-der', signer: signingKey.toPublicKey().toString() },
+        }, signing)
+        const files = includeRecord ? { ...result.envelope.files, [path]: bytes.toString('base64') } : result.envelope.files
+        fetchPackage.mockResolvedValue({ envelope: { manifest, files } })
+        const problem = await refusal(exportApplication({ platform: first, epcis: exchange(), access: 'public-evidence', passportIds: [passportId] }))
+        expect(problem.code).toBe('index-evidence-refused')
+      }
+    } finally {
+      fetchPackage.mockRestore()
+      identity.mockRestore()
+    }
+  })
+
   it('refuses to hand over an export that holds a secret this deployment was configured with', async () => {
     const secret = 'REGISTRY-TOKEN-CANARY-71D0E4B2'
     const leaky = await openPlatform({ config: loadConfig({ ...settings, REGISTRY_URL: 'https://registry.example', REGISTRY_TOKEN: secret }), mode: 'test', log: () => {} })
@@ -182,6 +295,61 @@ describe('the export of an application', () => {
 describe('the restore of an application', () => {
   let folder: string
   let report: RestoreReport
+
+  it('rebuilds delivery receipts at a replacement index and retries a retained proof without the source wallet', async () => {
+    const source = await openPlatform({ config, mode: 'test', log: () => {} })
+    const destination = await openPlatform({ config, mode: 'test', log: () => {} })
+    try {
+      const id = mintPassportId(policy, '100000205', 'PORT-PROOF')
+      const brand = source.parties.brand(brandId)
+      const issued = await source.writer.issue({ brandId, brand, passportId: id, profile: 'general@2', payload: samplePayload('general@2', true) })
+      const { txid } = issued.entry
+      await source.writer.prove(issued.record, txid)
+      const proven = (await source.store.getPassport(id))!
+      const state = proven.states[0]!
+      expect(state).toMatchObject({ index: 'admitted', proofPushed: true, sentBeef: issued.entry.beef })
+      const packageData = await exportApplication({ platform: source, epcis: exchange(), access: 'authorised-recovery' })
+      const verified = await verifyApplicationPackage({ manifestText: JSON.stringify(packageData.manifest), files: packageData.files }, trust(source))
+      const restore = (rebuildIndex: boolean) => restoreApplication({ verified, platform: destination, epcis: exchange(), rebuildIndex })
+      await restore(false)
+      const waiting = (await destination.store.getPassport(id))!.states[0]!
+      expect(waiting).toMatchObject({ index: 'not-asked', proof: state.proof, sentBeef: state.sentBeef })
+      expect(waiting.proofPushed).not.toBe(true)
+      expect(verified.journals[0]!.states[0]!.proofPushed).toBe(true)
+
+      // A repeat can encounter receipts copied by an older restore, even on a fresh index.
+      await destination.store.savePassport(proven)
+      const walletProof = vi.spyOn(destination.wallet.adapter, 'merklePathFor')
+      const send = vi.spyOn(destination.wallet.adapter, 'send')
+      const push = vi.spyOn(destination.index, 'pushProof').mockResolvedValueOnce({ ok: false, detail: 'callback unavailable' })
+      const tried = await restore(true)
+      expect(tried.index).toMatchObject({ proofsApplied: 0, proofsNotApplied: [{ passportId: id, txid, detail: 'callback unavailable' }] })
+      expect(tried.attention).toEqual(expect.arrayContaining([expect.stringContaining('callback unavailable')]))
+      expect(push.mock.calls.map(([id]) => id)).toEqual([txid])
+      expect((await destination.store.getPassport(id))!.states[0]!.proofPushed).not.toBe(true)
+      expect((await destination.index.lineage(id))[0]!.merklePath).toBeUndefined()
+
+      await runDuties({ store: destination.store, writer: destination.writer, index: destination.index })
+      expect((await destination.index.lineage(id))[0]!.merklePath?.toHex()).toBe(state.proof!.merklePath)
+      expect((await destination.store.getPassport(id))!.states[0]!.proofPushed).toBe(true)
+      expect((await restore(true)).index).toMatchObject({ duplicate: 1, proofsApplied: 1, proofsNotApplied: [] })
+      expect(push.mock.calls.map(([id, path]) => [id, path.toHex()])).toEqual(Array(3).fill([txid, state.proof!.merklePath]))
+      expect(walletProof).not.toHaveBeenCalled()
+      expect(send).not.toHaveBeenCalled()
+
+      const fresh = await openPlatform({ config, mode: 'test', log: () => {} })
+      try {
+        const rebuilt = await restoreApplication({ verified, platform: fresh, epcis: exchange(), rebuildIndex: true })
+        expect(rebuilt.index).toMatchObject({ admitted: 1, proofsApplied: 1, proofsNotApplied: [] })
+        expect((await fresh.index.lineage(id))[0]!.merklePath?.toHex()).toBe(state.proof!.merklePath)
+      } finally {
+        await fresh.close()
+      }
+    } finally {
+      await source.close()
+      await destination.close()
+    }
+  })
 
   it('reads a package back from its folder and restores it: every state is given to the index, and the passports read as they did', async () => {
     folder = join(scratch, 'export')
@@ -285,6 +453,31 @@ describe('the restore of an application', () => {
     }
   })
 
+  it('refuses a signed journal that would replay another transaction or its proof', async () => {
+    const original = (await first.store.getPassport(passportId))!
+    const other = (await first.store.getPassport(otherId))!.states[0]!
+    const path = MerklePath.fromCoinbaseTxidAndHeight(other.txid, 800_011)
+    const tx = Transaction.fromHex(original.states[0]!.rawTx)
+    tx.merklePath = MerklePath.fromCoinbaseTxidAndHeight(tx.id('hex'), 800_012)
+    const anotherHeight = MerklePath.fromCoinbaseTxidAndHeight(tx.id('hex'), 800_013)
+    try {
+      for (const patch of [
+        { sentBeef: other.beef },
+        { proof: { merklePath: path.toHex(), blockHeight: path.blockHeight } },
+        { beef: Utils.toBase64(tx.toAtomicBEEF()), proof: { merklePath: anotherHeight.toHex(), blockHeight: anotherHeight.blockHeight } },
+      ]) {
+        const damaged = structuredClone(original)
+        Object.assign(damaged.states[0]!, patch)
+        await first.store.savePassport(damaged)
+        const recovery = await exportApplication({ platform: first, epcis: exchange(), access: 'authorised-recovery', passportIds: [passportId] })
+        const refused = await refusal(verifyApplicationPackage({ manifestText: JSON.stringify(recovery.manifest), files: recovery.files }, trust(first)))
+        expect(refused.code).toBe('records-inconsistent')
+      }
+    } finally {
+      await first.store.savePassport(original)
+    }
+  })
+
   it('never overwrites: a deployment that now holds another journal under the same identifier is left as it is', async () => {
     const before = stableJson(await second.store.listPassports())
     const refused = await refusal(restoreApplication({ verified: await verifyApplicationPackage(readPackageFolder(folder), trust(first)), platform: second, epcis: exchange(), rebuildIndex: true }))
@@ -329,6 +522,14 @@ describe('the restore of an application', () => {
     })
     const claimRefusal = await refusal(verifyApplicationPackage(readPackageFolder(alteredClaim), trust(first)))
     expect(claimRefusal.code).toBe('claim-invalid')
+
+    // Readers find acceptance records by category and format. The bytes alone cannot supply a mislabelled entry.
+    for (const change of [{ category: 'reports' as const }, { representation: 'dpp-managed-acceptance@1' }]) {
+      const altered = await resign(`mislabelled-acceptance-${Object.keys(change)[0]}`, (_dir, manifest) => {
+        Object.assign(manifest.inventory.find(entry => entry.representation === 'dpp-managed-acceptance@2')!, change)
+      })
+      expect((await refusal(verifyApplicationPackage(readPackageFolder(altered), trust(first)))).code).toBe('records-inconsistent')
+    }
 
     // A manifest signed, correctly, under the name of another selection than the passports the package carries.
     const scope = await resign('scope', (_dir, manifest) => {

@@ -24,7 +24,7 @@ export interface Config {
   brandRootSecret: string
   managedIdentitySecret: string
   /** `joined`: the address and both write tokens are set, so the app announces to this index; without tokens the index is one the app has not registered with yet (go-live). */
-  index: { url?: string; submitToken?: string; callbackToken?: string; joined: boolean }
+  index: { url?: string; submitToken?: string; callbackToken?: string; joined: boolean; supportsRetraction: boolean }
   passportHost: string
   gs1Prefix: string
   registry: { url?: string; token?: string }
@@ -105,6 +105,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (rootKeyHex != null && !/^[0-9a-fA-F]{64}$/.test(rootKeyHex)) throw new Error('WALLET_ROOT_KEY must be 64 hexadecimal characters')
   if (livePublishing && rootKeyHex == null) throw new Error('LIVE_PUBLISHING=true needs WALLET_ROOT_KEY')
   const indexUrl = text(env, 'INDEX_URL')?.replace(/\/+$/, '')
+  // The optional retraction route is absent from core-only indexes. Bind the operator's
+  // confirmation to this base URL so switching provider cannot inherit it.
+  const retractionUrl = text(env, 'INDEX_RETRACTION_URL')?.replace(/\/+$/, '')
+  const supportsRetraction = retractionUrl == null
+    ? Object.keys(KNOWN_INDEX_HOSTS).some(host => indexUrl === `https://${host}`)
+    : retractionUrl === indexUrl
   const submitToken = text(env, 'INDEX_SUBMIT_TOKEN')
   const callbackToken = text(env, 'INDEX_CALLBACK_TOKEN')
   const joined = indexUrl != null && submitToken != null && callbackToken != null
@@ -151,7 +157,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     },
     brandRootSecret: secret(env, 'BRAND_ROOT_SECRET'),
     managedIdentitySecret: secret(env, 'MANAGED_IDENTITY_SECRET'),
-    index: { url: indexUrl, submitToken, callbackToken, joined },
+    index: { url: indexUrl, submitToken, callbackToken, joined, supportsRetraction },
     passportHost: text(env, 'PASSPORT_HOST') ?? 'localhost:3000',
     gs1Prefix: text(env, 'GS1_PREFIX') ?? '952',
     registry: { url: text(env, 'REGISTRY_URL')?.replace(/\/+$/, ''), token: text(env, 'REGISTRY_TOKEN') },

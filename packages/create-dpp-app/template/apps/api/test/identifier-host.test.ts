@@ -18,7 +18,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { DPP_EVIDENCE_PACKAGE_LINK_TYPE, GS1_LINK_TYPES, JSON_LD_CONTEXT_RELATION, LINKSET_CONTEXT_URI, describeResolver, selectLink, type LinksetDocument } from '@bsv/dpp-profiles'
-import { publicPathOf } from '../../web/src/lib/format'
+import { holderLabel, offerIdFromPath, publicPathOf } from '../../web/src/lib/format'
 import { loadConfig } from '../src/config.js'
 import { mintGtin, mintPassportId } from '../src/identifiers.js'
 import { openPlatform, type Platform } from '../src/platform.js'
@@ -241,4 +241,16 @@ describe('the identifier host', () => {
     },
     20_000
   )
+})
+
+describe('custody offer links', () => {
+  it.each(['supplier/id', 'supplier%2Fid', 'offer:part:two', 'offer-previous-1'])('preserves the exact request ID %s', (id) => {
+    const link = new URL(`/accept/${encodeURIComponent(id)}`, 'https://issuer.example')
+    expect(offerIdFromPath(link.pathname)).toBe(id)
+    expect(holderLabel(`recipient:${id}`)).toBe(`Recipient of offer ${id}`)
+  })
+
+  it('refuses a link with an invalid escape', () => {
+    expect(offerIdFromPath('/accept/bad%')).toBeUndefined()
+  })
 })

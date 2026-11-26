@@ -4,7 +4,7 @@
   "generatedBy": "scripts/deployment-inventory.mjs",
   "releaseSet": "dpp-release-2026-11",
   "releaseSetPath": "release/dpp-release-2026-11.json",
-  "lockfileSha256": "3cfd7ddacc86a750c808ab45f32772e5f6c294d7b2ff0d5196d2d935b7429e47",
+  "lockfileSha256": "f253a5fcb4f5368b52f01c17d9ff8b62e3f040b5fe498c27a70f983b965d5469",
   "npmPackages": [
     {
       "name": "@bsv/dpp-protocol",
@@ -736,7 +736,7 @@
           {
             "name": "undici",
             "version": "6.29.1",
-            "relation": "transitive",
+            "relation": "direct",
             "licence": "MIT",
             "disposition": "npm-permissive",
             "integrity": "sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA=="

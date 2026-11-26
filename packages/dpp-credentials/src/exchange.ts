@@ -87,10 +87,9 @@ export interface ExternalLoaderOptions {
  * The profile's document loader: the maintained VC 2.0, Data Integrity,
  * Multikey and DID contexts, the owned payload context from the package's
  * own bytes, and the caller's pinned documents (issuer DID documents, keys,
- * status list credentials). Nothing else is served: a context or document a
- * credential names that is not pinned is unavailable, and the owned context
- * of the parked SEAL profile is refused by name so a foreign credential cannot
- * borrow it.
+ * status list credentials). If configured, the did:web resolver also serves
+ * unpinned issuer documents and their verification methods. Contexts come
+ * from pins, and the parked SEAL profile's owned context is refused.
  */
 export function createExternalDocumentLoader(documents: ReadonlyMap<string, JsonObject> = new Map(), options: ExternalLoaderOptions = {}): DocumentLoader {
   const builtins = new Map<string, JsonObject>([
@@ -142,6 +141,8 @@ export interface ExternalVerificationPolicy {
   contextPolicy?: ExternalContextPolicy;
   /** A compiled JSON Schema 2020-12 validator; defaults to the owned external passport schema. */
   payloadSchema?: ValidateFunction;
+  /** Operator's evidence reference for a configured schema without a $id. An anonymous validator yields a finding without a schema reference. */
+  payloadSchemaRef?: string;
   issuerPolicy?: ExternalIssuerPolicy;
   statusPolicy?: StatusPolicy;
   /** Only with no status policy: a profile option recording that a credential without status is accepted with a stated limitation. */
@@ -185,9 +186,16 @@ function contextsCheck(credential: JsonObject, policy: ExternalContextPolicy): C
   return good(contexts as string[]);
 }
 
-function schemaCheck(credential: JsonObject, validate: ValidateFunction): Check {
-  if (validate(credential)) return good([EXTERNAL_PASSPORT_SCHEMA_ID]);
-  return { outcome: 'invalid', issues: (validate.errors ?? []).map(e => ({ code: 'schema', path: e.instancePath, message: e.message ?? 'Invalid field' })) };
+function schemaCheck(credential: JsonObject, policy: ExternalVerificationPolicy): Check {
+  const validate = policy.payloadSchema ?? externalPassportSchemaValidator();
+  const schemaId = typeof validate.schema === 'object' ? validate.schema?.$id : undefined;
+  const reference = schemaId?.trim() || policy.payloadSchemaRef?.trim();
+  if (validate(credential)) return good(reference ? [reference] : undefined);
+  return {
+    outcome: 'invalid',
+    issues: (validate.errors ?? []).map(e => ({ code: 'schema', path: e.instancePath, message: e.message ?? 'Invalid field' })),
+    ...(policy.payloadSchema != null && reference ? { evidence: [reference] } : {}),
+  };
 }
 
 interface Resolved { didDocument?: JsonObject; unavailable: string[]; available: string[] }
@@ -376,7 +384,7 @@ export async function verifyExternalCredential({ bytes, representation, policy }
   const proofs = proofArray(credential);
 
   const contexts = contextsCheck(credential, policy.contextPolicy ?? { allowedContextSets: DEFAULT_CONTEXT_SETS });
-  const schema = schemaCheck(credential, policy.payloadSchema ?? externalPassportSchemaValidator());
+  const schema = schemaCheck(credential, policy);
   const issuerBinding = await issuerBindingCheck(credential, proofs, policy, resolved);
   // The proof is evaluated under pinned contexts and a resolved, supported
   // issuer binding. An unsupported key or an unresolved document leaves the

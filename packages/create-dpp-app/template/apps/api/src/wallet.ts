@@ -1,6 +1,6 @@
 // The platform wallet: a BRC-100 wallet the API owns, which countersigns
-// every state as publisher, holds the lock on every passport, builds, signs
-// and sends the transactions, and obtains their merkle proofs. Live it is
+// every state as publisher, funds and submits the transactions, and
+// obtains their merkle proofs. Live it is
 // @bsv/wallet-toolbox on a SQLite file with a root key from the environment;
 // in tests it is a ProtoWallet with a fixed key and made-up funding, which
 // is what makes the first run need no money.
@@ -54,13 +54,13 @@ export interface Built {
 export class ActionAlreadySeen extends Error {}
 
 export interface WriterAdapter {
-  build(args: { lockingScript: LockingScript; tip?: Tip; passportId: string }): Promise<Built>
+  build(args: { lockingScript: LockingScript; tip?: Tip & { signer: PublisherWallet }; passportId: string }): Promise<Built>
   send(built: Built): Promise<'accepted' | 'refused' | 'unanswered'>
   discard(built: Built): Promise<void>
   merklePathFor(txid: string): Promise<MerklePath | undefined>
 }
 
-/** The slice of the platform wallet the packages call: publisher signature and the lock key. */
+/** The slice of the platform wallet the packages call: publisher signature and public key derivation. */
 export type PublisherWallet = DataSigner & {
   getPublicKey: ProtoWallet['getPublicKey']
 }
@@ -114,7 +114,7 @@ export async function openToolboxWallet(options: ToolboxWalletOptions): Promise<
   // CommonJS, loaded once here: the toolbox carries its own copy of the SDK,
   // so its objects cross into this module as bytes and hex, never as instances.
   const toolbox = await import('@bsv/wallet-toolbox')
-  const { Monitor, Services, Setup, StorageKnex, Wallet, WalletStorageManager } = toolbox
+  const { Monitor, Services, Setup, StorageKnex, Task, Wallet, WalletStorageManager } = toolbox
   // The toolbox loads the SDK's CommonJS build; its key deriver must come from that same copy.
   const sdkCjs = createRequire(import.meta.url)('@bsv/sdk') as typeof import('@bsv/sdk')
   const chain = options.network
@@ -140,11 +140,14 @@ export async function openToolboxWallet(options: ToolboxWalletOptions): Promise<
   if (options.arcUrl != null) serviceOptions.arcUrl = options.arcUrl
   const services = new Services(serviceOptions)
   const monitor = new Monitor(Monitor.createDefaultWalletMonitorOptions(chain, manager, services))
+  // Wallet sends stay under the writer's publishing gate. The monitor only follows headers and proofs.
+  monitor.addTask(new Task.TaskNewHeader(monitor))
+  monitor.addTask(new Task.TaskCheckForProofs(monitor))
   const keyDeriver = new sdkCjs.CachedKeyDeriver(sdkCjs.PrivateKey.fromHex(options.rootKeyHex))
   const wallet = new Wallet({ chain, keyDeriver: keyDeriver as unknown as ConstructorParameters<typeof Wallet>[0]['keyDeriver'], storage: manager, services, monitor })
   const { user } = await storage.findOrInsertUser(identityKey)
   // The monitor asks a header source for proofs once a block is a minute old and attaches them to the wallet's transactions.
-  void monitor.startTasks()
+  const monitoring = monitor.startTasks()
 
   const brc100 = wallet as unknown as WalletInterface
 
@@ -167,7 +170,7 @@ export async function openToolboxWallet(options: ToolboxWalletOptions): Promise<
         }
         return { tx: Transaction.fromAtomicBEEF(created.tx), txid: created.txid, beef: Array.from(created.tx) }
       }
-      // Every later state spends the tip, whose lock only this wallet can open.
+      // The funding wallet builds the action and adds the controller's signature to the passport input.
       const created = await brc100.createAction({
         description: 'dpp state',
         inputBEEF: tip.beef,
@@ -181,7 +184,7 @@ export async function openToolboxWallet(options: ToolboxWalletOptions): Promise<
         const unsigned = Transaction.fromAtomicBEEF(signable.tx)
         const at = unsigned.inputs.findIndex((input) => (input.sourceTXID ?? input.sourceTransaction?.id('hex')) === tip.txid && input.sourceOutputIndex === tip.outputIndex)
         if (at === -1) throw new Error('the wallet built a transaction that does not spend the tip')
-        const unlockingScript = await new PushDrop(brc100).unlock(OWNER_PROTOCOL_ID, passportId, 'self').sign(unsigned, at)
+        const unlockingScript = await new PushDrop(tip.signer as WalletInterface).unlock(OWNER_PROTOCOL_ID, passportId, 'self').sign(unsigned, at)
         const signed = await brc100.signAction({ reference: signable.reference, spends: { [at]: { unlockingScript: unlockingScript.toHex() } }, options: { noSend: true } })
         if (signed.tx == null || signed.txid == null) throw new Error('the wallet did not return a signed transaction')
         return { tx: Transaction.fromAtomicBEEF(signed.tx), txid: signed.txid, beef: Array.from(signed.tx), reference: signable.reference }
@@ -272,7 +275,11 @@ export async function openToolboxWallet(options: ToolboxWalletOptions): Promise<
     },
     async close() {
       monitor.stopTasks()
-      await wallet.destroy()
+      try {
+        await monitoring
+      } finally {
+        await wallet.destroy()
+      }
     },
   }
 }
@@ -315,7 +322,7 @@ export function openTestWallet(rootKeyHex = '11'.repeat(32), network: Network = 
         tx.addInput({ sourceTransaction: tip.tx, sourceOutputIndex: 1, unlockingScript: new UnlockingScript([]) })
         tx.addOutput({ satoshis: 1, lockingScript })
         tx.addOutput({ satoshis: Math.max(1_000, (tip.tx.outputs[1]?.satoshis ?? 9_000) - 1_000), lockingScript: ANYONE_CAN_SPEND })
-        tx.inputs[0].unlockingScript = await new PushDrop(wallet as unknown as WalletInterface).unlock(OWNER_PROTOCOL_ID, passportId, 'self').sign(tx, 0)
+        tx.inputs[0].unlockingScript = await new PushDrop(tip.signer as WalletInterface).unlock(OWNER_PROTOCOL_ID, passportId, 'self').sign(tx, 0)
       }
       return { tx, txid: tx.id('hex'), beef: tx.toAtomicBEEF(), reference: tip == null ? undefined : 'test-reference' }
     },
