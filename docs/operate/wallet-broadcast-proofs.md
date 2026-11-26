@@ -45,7 +45,7 @@ The writer needs a BRC-100 wallet. The standard names the interface, not a produ
 
 | Compatibility or build requirement | Rule |
 |---|---|
-| Current release set | `@bsv/sdk` 2.8.10; `@bsv/wallet-toolbox` 2.14.3 and `@bsv/wallet-toolbox-client` 2.14.3 install beside that single version. |
+| Current release set | The starter pins `@bsv/wallet-toolbox` 2.18.0 and the index pins `@bsv/wallet-toolbox-client` 2.18.0. Both support the candidate’s `@bsv/sdk` 4.1.2. |
 | Earlier toolbox versions | Some declare an older SDK range but call methods introduced in SDK 2.8.0. Installation can succeed while sending or receiving fails. Choose the named version or check the toolbox's changes. |
 | Module formats | `@bsv/wallet-toolbox` uses CommonJS and the SDK's CommonJS build. DPP packages use ES modules and its ES module build, so one process holds two SDK instances even with one installed version. `@bsv/wallet-toolbox-client` also ships an ES module build, loaded by an ES module application. |
 | Values crossing the wallet boundary | Exchange transactions, BEEF, scripts and keys as bytes or hex, as BRC-100 does. Build SDK objects needed by DPP packages from the application's own `@bsv/sdk` import. |

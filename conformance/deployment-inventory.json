@@ -4,7 +4,7 @@
   "generatedBy": "scripts/deployment-inventory.mjs",
   "releaseSet": "dpp-release-2026-11",
   "releaseSetPath": "release/dpp-release-2026-11.json",
-  "lockfileSha256": "3cfd7ddacc86a750c808ab45f32772e5f6c294d7b2ff0d5196d2d935b7429e47",
+  "lockfileSha256": "7d913f9fb0f3fa8aecc9312c804699e6a01db3d7fb002ce9b9a059a46776a638",
   "npmPackages": [
     {
       "name": "@bsv/dpp-protocol",
@@ -22,18 +22,18 @@
       "installs": {
         "packageCount": 1,
         "licences": {
-          "Open BSV License Version 6": 1
+          "Apache-2.0": 1
         },
         "packages": [
           {
             "name": "@bsv/sdk",
-            "version": "2.8.10",
+            "version": "4.1.2",
             "relation": "direct",
-            "licence": "Open BSV License Version 6",
-            "licenceFile": "LICENSE.txt",
-            "licenceFileOpens": "Open BSV License Version 6",
+            "licence": "Apache-2.0",
+            "licenceFile": "LICENSE",
+            "licenceFileOpens": "Apache License",
             "disposition": "bsv-packages",
-            "integrity": "sha512-0KJxu772gbF2wKmD2dASciHYfAmo87ddXYknrMgYzGmI683l0trNcZHo0SYLWO5xZqJG5EB4ROyLuWXvhLCYFg=="
+            "integrity": "sha512-VBZ0Sl28gr1ZQ/bCAzqrBIHO03V56ATdeDwrKh/Rnu/mEgnNWkHeEtTOVe+JVOPbKcoRBurahmbYaH7Ta+RpbA=="
           }
         ]
       }
@@ -55,8 +55,7 @@
         "packageCount": 45,
         "licences": {
           "MIT": 33,
-          "Apache-2.0": 6,
-          "Open BSV License Version 6": 4,
+          "Apache-2.0": 10,
           "BSD-2-Clause": 1,
           "ISC": 1
         },
@@ -79,44 +78,44 @@
           },
           {
             "name": "@bsv/gasp",
-            "version": "1.3.6",
+            "version": "1.3.11",
             "relation": "transitive",
-            "licence": "Open BSV License Version 6",
-            "licenceFile": "LICENSE.txt",
-            "licenceFileOpens": "Open BSV License Version 6",
+            "licence": "Apache-2.0",
+            "licenceFile": "LICENSE",
+            "licenceFileOpens": "Apache License",
             "disposition": "bsv-packages",
-            "integrity": "sha512-ma40fayQxQeQulgiP0awopkARvWOqcoVXoDUXYWCcArCxoeulGUY3OCRStE3uIseV9YYdvTSzeYKnuEKp+MXXA=="
+            "integrity": "sha512-m9R/nPx//5CpvZDUC/9dfuOrcbrUVmSnf7sGHLJcT9R9KCHqh2UC6qXZt1miqPdmHzpHzHCJUGxuwta+qymGiA=="
           },
           {
             "name": "@bsv/overlay",
-            "version": "2.3.1",
+            "version": "2.8.0",
             "relation": "direct",
-            "licence": "Open BSV License Version 6",
-            "licenceFile": "LICENSE.txt",
-            "licenceFileOpens": "Open BSV License Version 6",
+            "licence": "Apache-2.0",
+            "licenceFile": "LICENSE",
+            "licenceFileOpens": "Apache License",
             "disposition": "bsv-packages",
-            "integrity": "sha512-db6e4E/xnwG/f8sRc8e4gPdoplsb1pX79PPsNzua2ahIRBeU2ecLblMo7O7H0TfLcW8PUaSoG2NgR3jI5gzmoA=="
+            "integrity": "sha512-aKinQ/Lj9mOo2TjTZ7PU6IhLhZKk7VA+0eHc1erDqb4kyFNj+9ClIuuJCJSFiCMdgwKZeh2v4LTzKV328tX22g=="
           },
           {
             "name": "@bsv/sdk",
-            "version": "2.8.10",
+            "version": "4.1.2",
             "relation": "direct",
-            "licence": "Open BSV License Version 6",
-            "licenceFile": "LICENSE.txt",
-            "licenceFileOpens": "Open BSV License Version 6",
+            "licence": "Apache-2.0",
+            "licenceFile": "LICENSE",
+            "licenceFileOpens": "Apache License",
             "disposition": "bsv-packages",
-            "integrity": "sha512-0KJxu772gbF2wKmD2dASciHYfAmo87ddXYknrMgYzGmI683l0trNcZHo0SYLWO5xZqJG5EB4ROyLuWXvhLCYFg=="
+            "integrity": "sha512-VBZ0Sl28gr1ZQ/bCAzqrBIHO03V56ATdeDwrKh/Rnu/mEgnNWkHeEtTOVe+JVOPbKcoRBurahmbYaH7Ta+RpbA=="
           },
           {
             "name": "@bsv/wallet-toolbox-client",
-            "version": "2.11.0",
+            "version": "2.18.0",
             "relation": "direct",
             "optional": true,
-            "licence": "Open BSV License Version 6",
-            "licenceFile": "LICENSE.txt",
-            "licenceFileOpens": "Open BSV License Version 6",
+            "licence": "Apache-2.0",
+            "licenceFile": "LICENSE",
+            "licenceFileOpens": "Apache License",
             "disposition": "bsv-packages",
-            "integrity": "sha512-2qr5+Nkw3gobMomwWxho18KvOE1JA416V3daZtNhmoCP4blkdI7Fyjwovg1Dyr7t8nbmj+W0QbLkJdFkEemT7g=="
+            "integrity": "sha512-yLzgn2oDi+pBiKrnOmTSKOvC2MEgv2yzEkG97V+ypnyPZpGjm0D/LI+aZy1atyq65rH6tkfGbscsetyp2SPcJg=="
           },
           {
             "name": "@mongodb-js/saslprep",
@@ -161,11 +160,11 @@
           },
           {
             "name": "canonicalize",
-            "version": "5.0.0",
+            "version": "5.1.0",
             "relation": "transitive",
             "licence": "Apache-2.0",
             "disposition": "npm-permissive",
-            "integrity": "sha512-O/NCg79G0/TWoD3Fo6scOMfP4p7/TsxRXVmRo9mEfD6h/5y5o1wtVbKyBO0E2i7FEcqe5tRijyAH/IWHIHMH4w=="
+            "integrity": "sha512-bab9+WefZljqQ8jT0qRwVmTyzAUU63K97QIQD3agynIBrb6sa5M2eAy8Hv8K3p4V9+ONVYZKtGYl4Dg+/5Gumw=="
           },
           {
             "name": "colorette",
@@ -307,11 +306,11 @@
           },
           {
             "name": "mongodb",
-            "version": "7.6.0",
+            "version": "7.9.1",
             "relation": "direct",
             "licence": "Apache-2.0",
             "disposition": "npm-permissive",
-            "integrity": "sha512-WbZ6OCjYw2c53LOjfkQa+reXr7kIiOVpXXglnASFuiMtif0BvsMwHe3ClJHLm1/r7wJFwaasfFtD6iYIktB01g=="
+            "integrity": "sha512-OWtk/bcf8tx4Qe6lB8OsMksOwGGhC2FH+zl5UNwE+L7uz2VQDhCcnJThAvInEaBrEDaSsUWlMRbuFR4/TjF44w=="
           },
           {
             "name": "mongodb-connection-string-url",
@@ -461,11 +460,11 @@
         "packages": [
           {
             "name": "canonicalize",
-            "version": "5.0.0",
+            "version": "5.1.0",
             "relation": "direct",
             "licence": "Apache-2.0",
             "disposition": "npm-permissive",
-            "integrity": "sha512-O/NCg79G0/TWoD3Fo6scOMfP4p7/TsxRXVmRo9mEfD6h/5y5o1wtVbKyBO0E2i7FEcqe5tRijyAH/IWHIHMH4w=="
+            "integrity": "sha512-bab9+WefZljqQ8jT0qRwVmTyzAUU63K97QIQD3agynIBrb6sa5M2eAy8Hv8K3p4V9+ONVYZKtGYl4Dg+/5Gumw=="
           }
         ]
       }
@@ -488,11 +487,10 @@
         "licences": {
           "BSD-3-Clause": 13,
           "MIT": 10,
-          "Apache-2.0": 2,
+          "Apache-2.0": 3,
           "BSD-3-Clause for the package, and the W3C Software and Document License for the context files it carries": 2,
           "ISC": 2,
-          "(MIT OR CC0-1.0)": 1,
-          "Open BSV License Version 6": 1
+          "(MIT OR CC0-1.0)": 1
         },
         "packages": [
           {
@@ -505,13 +503,13 @@
           },
           {
             "name": "@bsv/sdk",
-            "version": "2.8.10",
+            "version": "4.1.2",
             "relation": "direct",
-            "licence": "Open BSV License Version 6",
-            "licenceFile": "LICENSE.txt",
-            "licenceFileOpens": "Open BSV License Version 6",
+            "licence": "Apache-2.0",
+            "licenceFile": "LICENSE",
+            "licenceFileOpens": "Apache License",
             "disposition": "bsv-packages",
-            "integrity": "sha512-0KJxu772gbF2wKmD2dASciHYfAmo87ddXYknrMgYzGmI683l0trNcZHo0SYLWO5xZqJG5EB4ROyLuWXvhLCYFg=="
+            "integrity": "sha512-VBZ0Sl28gr1ZQ/bCAzqrBIHO03V56ATdeDwrKh/Rnu/mEgnNWkHeEtTOVe+JVOPbKcoRBurahmbYaH7Ta+RpbA=="
           },
           {
             "name": "@digitalbazaar/credentials-context",
@@ -784,15 +782,15 @@
           },
           {
             "name": "@bsv/overlay",
-            "range": "2.3.1"
+            "range": "2.8.0"
           },
           {
             "name": "@bsv/sdk",
-            "range": "2.8.10"
+            "range": "4.1.2"
           },
           {
             "name": "@bsv/wallet-toolbox",
-            "range": "2.14.6"
+            "range": "2.18.0"
           },
           {
             "name": "ajv",
@@ -804,7 +802,7 @@
           },
           {
             "name": "better-auth",
-            "range": "1.7.7"
+            "range": "1.7.27"
           },
           {
             "name": "express",
@@ -816,7 +814,7 @@
           },
           {
             "name": "mongodb",
-            "range": "7.7.0"
+            "range": "7.9.1"
           },
           {
             "name": "n3",
@@ -834,35 +832,35 @@
         "dependencies": [
           {
             "name": "better-auth",
-            "range": "1.7.7"
+            "range": "1.7.27"
           },
           {
             "name": "class-variance-authority",
-            "range": "^0.7.1"
+            "range": "0.7.1"
           },
           {
             "name": "cn",
-            "range": "^0.4.0"
+            "range": "0.5.2"
           },
           {
             "name": "lucide-react",
-            "range": "^1.54.0"
+            "range": "1.78.0"
           },
           {
             "name": "radix-ui",
-            "range": "^1.7.0"
+            "range": "1.8.1"
           },
           {
             "name": "react",
-            "range": "19.3.0"
+            "range": "19.3.1"
           },
           {
             "name": "react-dom",
-            "range": "19.3.0"
+            "range": "19.3.1"
           },
           {
             "name": "react-router",
-            "range": "8.4.0"
+            "range": "8.5.2"
           }
         ]
       }
@@ -1217,7 +1215,7 @@
       },
       "npmPackages": {
         "inventory": "packages/dpp-profiles/validator-image/licence-inventory.json",
-        "sha256": "d94c312b2f05b570da1daba3ed696a3f90ccf00509fdc9febd8adcdc2ae31803",
+        "sha256": "9d9142bea421344185e3cf471c4d1c08705c9d258d2f158c7123088693c29fd6",
         "packageCount": 413,
         "licences": {
           "MIT": 383,
@@ -1278,11 +1276,9 @@
       "id": "bsv-packages",
       "subject": "@bsv/sdk, @bsv/overlay, @bsv/gasp and @bsv/wallet-toolbox-client at the pinned versions",
       "status": "conditional",
-      "basis": "The archives of these versions carry the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. It is not Apache-2.0. The index image installs them and every install of @bsv/dpp-overlay brings them. The repository these packages are built from changed its licence to Apache-2.0 on 11 November 2026: @bsv/sdk 4.1.1 and @bsv/wallet-toolbox-client 2.17.0 are published with that text, and no published @bsv/overlay or @bsv/gasp carries it yet.",
+      "basis": "The pinned packages declare Apache-2.0 for current first-party contributions. Each archive identifies historical and third-party material under separate terms in THIRD_PARTY_NOTICES.md.",
       "conditions": [
-        "The pinned versions are used under the Open BSV License Version 6 their archives carry; this repository states no other terms for them.",
-        "The documentation names the four packages, the pinned versions and the licence each archive carries, and never describes an install or a deployment as a whole as Apache-2.0.",
-        "The pins move to versions published with the Apache-2.0 text once the index runtime is tested against them."
+        "Keep the notices and the referenced LICENSES files with distributions that contain the corresponding material."
       ]
     },
     {
@@ -1345,7 +1341,7 @@
       "status": "conditional",
       "basis": "Its dependencies are declared in the template and resolved at its own install. The record of one such install lists each package with its licence.",
       "conditions": [
-        "It installs @bsv packages that carry the Open BSV License Version 6 (see bsv-packages), @bsv/wallet-toolbox among them.",
+        "Retain the notices and applicable licence files in the BSV packages the generated application distributes, including @bsv/wallet-toolbox.",
         "The tool chain that builds its web client installs lightningcss under MPL-2.0, a copyleft that applies file by file to changes made to lightningcss itself; the application does not change it.",
         "Its defaults name hosted services that are offered for demonstration with no stated terms of service; a deployment replaces them with its own.",
         "A generated application is its author's own project and takes its own licence decision."

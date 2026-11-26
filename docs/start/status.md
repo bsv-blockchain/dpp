@@ -4,8 +4,9 @@ Application teams and operators can use this page to choose a release and identi
 
 | Status fact | Value |
 |---|---|
-| Updated | **12 November 2026** |
-| Evidence checked on that date | [Merged source](https://github.com/bsv-blockchain/dpp/tree/08bdfa0a056d970c64b1749064b92bd1e6ae9d67), npm versions and hosted capability documents. |
+| npm versions checked | **24 November 2026** |
+| Hosted capabilities and merged source checked | **12 November 2026** |
+| Source used for the 12 November check | [Merged source](https://github.com/bsv-blockchain/dpp/tree/08bdfa0a056d970c64b1749064b92bd1e6ae9d67) |
 | Standard and packages | Working draft before version 1.0; experimental packages under the Apache 2.0 licence. |
 | Available work | Build passport applications, readers, writers and indexes; implement a registry against the published contract. |
 

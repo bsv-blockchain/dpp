@@ -22,6 +22,7 @@ import { execFileSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { assertProductionRecordVersions } from '../packages/create-dpp-app/template/apps/api/src/production-records.mjs'
 import { currentReleaseSet, sha256 } from './lib/candidates.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -30,6 +31,7 @@ const setBytes = readFileSync(join(root, setPath))
 const set = JSON.parse(setBytes.toString('utf8'))
 console.log(`packing ${setPath}`)
 if (set.status !== 'candidate') throw new Error(`${setPath} is ${set.status}; only a candidate set is packed`)
+assertProductionRecordVersions(set.wire.records.map(record => record.version))
 if (set.selection == null) throw new Error(`${setPath} names no selection; a set names the selection that qualifies it`)
 if (!existsSync(join(root, set.selection))) throw new Error(`${setPath} names ${set.selection}, which does not exist`)
 const selection = JSON.parse(readFileSync(join(root, set.selection), 'utf8'))
@@ -44,6 +46,8 @@ const run = (args, cwd = root) => execFileSync(args[0], args.slice(1), { cwd, en
 // builds from an empty dist/: a module since removed from src/ is not packed.
 for (const pkg of set.packages) rmSync(join(root, pkg.directory, 'dist'), { recursive: true, force: true })
 run(['npm', 'run', 'build'])
+const { SUPPORTED_VERSIONS } = await import('@bsv/dpp-protocol')
+assertProductionRecordVersions(SUPPORTED_VERSIONS)
 const revision = (() => { try { return run(['git', 'rev-parse', 'HEAD']).trim() } catch { return 'unknown' } })()
 const dirty = (() => { try { return run(['git', 'status', '--porcelain']).trim() !== '' } catch { return true } })()
 

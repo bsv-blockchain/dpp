@@ -51,7 +51,9 @@ npm run build
 npm run starter:check -- --directory ../my-app
 ```
 
-The source check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. It publishes nothing.
+The source check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it.
+
+The `0.1.0-beta.2` starter candidate pins the API to `@bsv/wallet-toolbox@2.18.0` and `mongodb@7.9.1`. The API and web app use `better-auth@1.7.27`. The web app pins `react@19.3.1`, `react-dom@19.3.1` and `react-router@8.5.2`. [DPP package pins for both releases](README.md#install-from-npm)
 
 For release qualification, use the four archives written by `npm run release:candidates`. The checker verifies the release set and the recorded size, SHA-256 and npm integrity of each archive before creating the app. To retain the generator that the check actually installs, supply an output file alongside the exit and dependency records.
 
@@ -65,7 +67,7 @@ The dependency record identifies the generator and all four installed runtime ar
 
 ### Stop before activating live writes
 
-Choose the instructions for the starter you installed. The published starter uses manual network configuration. The November source candidate adds a go-live command.
+Choose the instructions for the starter you installed. The published starter writes PushDrop v2 and uses manual network configuration. The November source candidate adds a go-live command.
 
 ### Run the published starter on testnet or mainnet
 
@@ -107,7 +109,7 @@ npm run connection
 
 ### Run the November source candidate
 
-The source candidate adds `npm run go-live` to request publisher registration and check wallet funding and index admission. Its go-live check requires `managed-custody@2`. For hosted testnet, use `NETWORK=test` with `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`. For hosted mainnet, use `NETWORK=main` with `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net`. Confirm the network at `/health` and the custody profile at `/capabilities` before registering. To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. Both commands enable publishing when all checks pass. [Connect an application](../operate/README.md#connect-an-application)
+The source candidate adds `npm run go-live` to request publisher registration and check wallet funding and index admission. Its go-live check requires `managed-custody@2` and blocks live publishing with a v3-capable protocol. For hosted testnet, use `NETWORK=test` with `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`. For hosted mainnet, use `NETWORK=main` with `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net`. Confirm the network at `/health` and the custody profile at `/capabilities` before registering. To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. Both commands enable publishing when all checks pass. [Connect an application](../operate/README.md#connect-an-application)
 
 ## What is included
 

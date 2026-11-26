@@ -22,9 +22,9 @@
         },
         {
           "name": "@bsv/sdk",
-          "range": "2.8.10",
-          "version": "2.8.10",
-          "licence": "SEE LICENSE IN LICENSE.txt"
+          "range": "4.1.2",
+          "version": "4.1.2",
+          "licence": "Apache-2.0"
         },
         {
           "name": "@digitalbazaar/credentials-context",
@@ -107,20 +107,20 @@
         },
         {
           "name": "@bsv/overlay",
-          "range": "2.3.1",
-          "version": "2.3.1",
-          "licence": "SEE LICENSE IN LICENSE.txt"
+          "range": "2.8.0",
+          "version": "2.8.0",
+          "licence": "Apache-2.0"
         },
         {
           "name": "@bsv/sdk",
-          "range": "2.8.10",
-          "version": "2.8.10",
-          "licence": "SEE LICENSE IN LICENSE.txt"
+          "range": "4.1.2",
+          "version": "4.1.2",
+          "licence": "Apache-2.0"
         },
         {
           "name": "mongodb",
-          "range": "7.6.0",
-          "version": "7.6.0",
+          "range": "7.9.1",
+          "version": "7.9.1",
           "licence": "Apache-2.0"
         }
       ]
@@ -132,8 +132,8 @@
       "dependencies": [
         {
           "name": "canonicalize",
-          "range": "5.0.0",
-          "version": "5.0.0",
+          "range": "5.1.0",
+          "version": "5.1.0",
           "licence": "Apache-2.0"
         }
       ]
@@ -145,9 +145,9 @@
       "dependencies": [
         {
           "name": "@bsv/sdk",
-          "range": "2.8.10",
-          "version": "2.8.10",
-          "licence": "SEE LICENSE IN LICENSE.txt"
+          "range": "4.1.2",
+          "version": "4.1.2",
+          "licence": "Apache-2.0"
         }
       ]
     }

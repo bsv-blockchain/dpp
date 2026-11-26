@@ -5,14 +5,8 @@ import { startOverlayService, type RunningService } from '../src/index.js'
 import { bodyOf, eventTx, genesisTx, lookupPassport, newNode, PASSPORT_ID, SERVER_ID, submitBeef } from './helpers.js'
 
 /**
- * A refused spend of the admitted tip. The Engine reads a spend it did not
- * retain as the tip's consumption and evicts the tip with its lineage, and
- * before that it announces the spend to every lookup service. tm_dpp now
- * retains the offered coins on every refusal, and ls_dpp records a spend only
- * once the spending transaction is admitted, so the passport reads exactly as
- * it did before the refused announcement. What the Engine still does with the
- * refused transaction is asserted here too, so the residue is a documented
- * fact and not a surprise.
+ * A refused spend must leave the tip and its history available for the
+ * next valid state, including when the refused transaction is retried.
  */
 
 const HOST = '127.0.0.1'
@@ -51,7 +45,7 @@ describe('a refused spend of the tip', () => {
       expect(response.status).toBe(200)
       expect(response.headers.get('x-admission')).toBe('tm_dpp=none')
       expect(response.headers.get('x-admission-refusal')).toBe(`tm_dpp=${reason}`)
-      expect(await bodyOf(response)).toEqual({ tm_dpp: { outputsToAdmit: [], coinsToRetain: [0], coinsRemoved: [] } })
+      expect(await bodyOf(response)).toEqual({ tm_dpp: { outputsToAdmit: [], coinsToRetain: [] } })
     }
     expect(warn.mock.calls.filter((call) => String(call[0]).includes('admitted nothing'))).toHaveLength(2)
 
@@ -61,15 +55,10 @@ describe('a refused spend of the tip', () => {
     expect(historyAfter.items).toEqual(historyBefore.items)
     expect(JSON.parse(JSON.stringify(await node.records.findByPassport(PASSPORT_ID)))).toEqual(recordsBefore)
 
-    // What the Engine did with the refused transactions: kept the tip and
-    // its lineage (the guard), marked the tip spent in its own storage all
-    // the same, and recorded each refused transaction as applied to the
-    // topic. The host reads that record for what it is: the same bytes
-    // announced again are re-evaluated and answered none, never duplicate,
-    // so the writer records an incident and not success.
+    // The engine rejects this topic before marking the input spent.
     const held = await node.storage.findOutput(tip.id('hex'), 0, 'tm_dpp')
     expect(held).not.toBeNull()
-    expect(held?.spent).toBe(true)
+    expect(held?.spent).toBe(false)
     expect(held?.consumedBy).toEqual([])
     expect(await node.storage.findOutput(genesis.id('hex'), 0, 'tm_dpp')).not.toBeNull()
     for (const refused of [wrongKey, wrongPassport]) {
@@ -80,7 +69,7 @@ describe('a refused spend of the tip', () => {
       expect(await node.storage.doesAppliedTransactionExist({ txid: refused.id('hex'), topic: 'tm_dpp' })).toBe(false)
       const again = await submitBeef(base, refused.toBEEF())
       expect(again.headers.get('x-admission')).toBe('tm_dpp=none')
-      expect(await bodyOf(again)).toEqual({ tm_dpp: { outputsToAdmit: [], coinsToRetain: [0], coinsRemoved: [] } })
+      expect(await bodyOf(again)).toEqual({ tm_dpp: { outputsToAdmit: [], coinsToRetain: [] } })
       expect(await node.storage.doesAppliedTransactionExist({ txid: refused.id('hex'), topic: 'tm_dpp' })).toBe(false)
     }
     expect(warn.mock.calls.filter((call) => String(call[0]).includes('was announced and refused before'))).toHaveLength(0)

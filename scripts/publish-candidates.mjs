@@ -18,6 +18,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
+import { assertProductionRecordVersions } from '../packages/create-dpp-app/template/apps/api/src/production-records.mjs'
 import { sha256, verifyCandidates, verifyRecordAgainstSet } from './lib/candidates.mjs'
 import { assertApproval, NPM_REGISTRY, oidcPublishEnv, publicationActions, publicationOrder, waitForRegistryVersion } from './lib/publication.mjs'
 
@@ -33,6 +34,7 @@ const record = JSON.parse(readFileSync(join(root, 'release/candidates.json'), 'u
 if (!/^release\/dpp-release-[a-z0-9-]+\.json$/.test(record.releaseSetPath)) throw new Error('invalid release set path')
 const setBytes = readFileSync(join(root, record.releaseSetPath))
 const set = JSON.parse(setBytes)
+assertProductionRecordVersions(set.wire.records.map(record => record.version))
 const candidateDir = join(root, 'release/candidates')
 const failures = [...verifyRecordAgainstSet(record, set, setBytes), ...verifyCandidates(record, candidateDir)].filter((f) => !f.ok)
 if (failures.length) throw new Error(failures.map((f) => f.sentence).join('\n'))

@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
+import { assertProductionRecordVersions } from '../template/apps/api/src/production-records.mjs'
 import { sourceState } from '../../../scripts/lib/images.mjs'
 import { integrityOf, sha256, verifyCandidates, verifyRecordAgainstSet } from '../../../scripts/lib/candidates.mjs'
 
@@ -34,6 +35,7 @@ if (values['prepare-only'] && !values.directory) throw new Error('--prepare-only
 if (!existsSync(join(root, 'dist', 'index.js'))) throw new Error('build the packages first: npm run build')
 const releaseBytes = readFileSync(join(repository, 'release', `${pkg.dpp.releaseSet}.json`))
 const release = JSON.parse(releaseBytes)
+assertProductionRecordVersions(release.wire.records.map(record => record.version))
 let recorded
 if (values['candidate-record'] != null) {
   if (values['registry-dependencies']) throw new Error('Choose --candidate-record or --registry-dependencies for the runtime dependencies.')
@@ -202,7 +204,7 @@ try {
         releaseSet: pkg.dpp.releaseSet,
         sourceRevision: sourceState(repository).revision,
         sourceState: sourceState(repository).state,
-        note: 'Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. The application resolves its own ranges, so another install on another day may differ.',
+        note: 'Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. Direct dependencies have exact pins. Transitive dependencies may resolve differently in a fresh installation.',
         packageCount: installed.length,
         licences: Object.fromEntries(Object.entries(licences).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'en'))),
         packages: installed,

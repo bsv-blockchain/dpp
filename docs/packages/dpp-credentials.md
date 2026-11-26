@@ -34,10 +34,16 @@ Wallet funding, passport movement and index lookups stay with [@bsv/dpp-protocol
 
 ## Install
 
-In your project, with Node 22 or later:
+With Node 22 or later, install the published version from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
+npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5
+```
+
+For the November examples, [pack the candidate archives](README.md#use-the-renamed-source-candidate), then install credentials and its protocol dependency together in your project:
+
+```sh
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-credentials-0.2.0-beta.6.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz
 ```
 
 | Release fact | Value |

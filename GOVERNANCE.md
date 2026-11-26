@@ -16,6 +16,12 @@ Once published, the contents of `spec/`, `contracts/` and `fixtures/` are normat
 
 The core standard versions as a whole and is pre-1.0: breaking changes are expected, recorded in `CHANGELOG.md`, and not apologised for until 1.0 is declared. Wire formats also carry their own version identifiers (the record's `version` field, the anchor's prefix), and a layout change is a version change of that identifier, never a silent revision: a reader meeting an identifier it does not know refuses rather than guesses. Industry data profiles version independently of the core standard (a profile change does not bump the standard, and the reverse), and a profile's canonical definition lives in this repository from the moment it joins.
 
+### Production passport records
+
+New passports use the v2 PushDrop record. Existing v1 passports remain readable. Record v3 is blocked for production until 1Color is ready and its adoption has been approved under the normative change process below. The proposal to lift the hold must record the 1Color release and the interoperability evidence, and update the production check in the same reviewed change.
+
+This rule applies to the on-chain record format. All other npm packages, including the SDK, overlay, wallets and development tools, may be updated independently of 1Color readiness.
+
 ## Proposing a change
 
 1. Open an issue describing the gap or the defect: what an implementer cannot do, or what two conforming implementations would disagree about.

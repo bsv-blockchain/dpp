@@ -30,6 +30,7 @@
  * index's own publisher policy and anchoring settings, exactly as from a
  * named peer. Nor does it advertise this index; that needs a funded wallet.
  */
+import { normalizePeerEndpoint, securePeerFetch } from '@bsv/overlay/RemoteSecurity.ts'
 import {
   DEFAULT_SLAP_TRACKERS,
   DEFAULT_TESTNET_SLAP_TRACKERS,
@@ -98,7 +99,7 @@ export async function advertisedHosts(answer: LookupAnswer, topic: string): Prom
         ignored++
         continue
       }
-      const host = stripTrailingSlashes(advert.domain)
+      const host = stripTrailingSlashes(normalizePeerEndpoint(advert.domain))
       if (!hosts.includes(host)) hosts.push(host)
     } catch {
       ignored++
@@ -209,7 +210,6 @@ export interface PeerDiscovery {
 
 export function startPeerDiscovery(options: PeerDiscoveryOptions): PeerDiscovery {
   const now = options.now ?? Date.now
-  const fetchImpl = options.fetchImpl ?? fetch
   const log = options.log ?? ((line) => console.log(line))
   const warn = options.warn ?? ((line) => console.warn(line))
   const self = options.self == null || options.self.trim() === '' ? undefined : stripTrailingSlashes(options.self.trim())
@@ -256,7 +256,7 @@ export function startPeerDiscovery(options: PeerDiscoveryOptions): PeerDiscovery
     const cached = admissions.get(host)
     if (cached != null && now() - cached.at < DISCOVERY_REFRESH_MS) return cached.value
     try {
-      const value = admissionOf(await readBoundedJson(`${host}/capabilities`, fetchImpl))
+      const value = admissionOf(await readBoundedJson(`${host}/capabilities`, options.fetchImpl ?? securePeerFetch(host).fetchImpl))
       admissions.set(host, { at: now(), value })
       return value
     } catch (cause) {

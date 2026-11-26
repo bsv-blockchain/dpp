@@ -188,7 +188,7 @@ describe('the validator service is nobody\'s dependency', () => {
     expect(own.exports['./validator-client']).toEqual({ types: './dist/validator-client.d.ts', default: './dist/validator-client.js' })
     expect(own.exports['./validator-service']).toEqual({ types: './dist/validator-service.d.ts', default: './dist/validator-service.js' })
     // Still one dependency: the service and the client need Node and nothing else.
-    expect(own.dependencies).toEqual({ canonicalize: '5.0.0' })
+    expect(own.dependencies).toEqual({ canonicalize: '5.1.0' })
     expect(existsSync(join(packageRoot, 'src', 'validator-cli.ts'))).toBe(true)
     expect(readFileSync(join(packageRoot, 'src', 'validator-cli.ts'), 'utf8').startsWith('#!/usr/bin/env node\n')).toBe(true)
   })

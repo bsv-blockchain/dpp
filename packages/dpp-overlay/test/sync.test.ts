@@ -2,7 +2,7 @@ import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterEach, describe, expect, it } from 'vitest'
 import { InMemoryOverlayStorage } from '../src/engineStorage.js'
-import { startPeerSynchronisation, type SyncConfiguration, type SyncRound } from '../src/sync.js'
+import { parseSyncPeers, startPeerSynchronisation, type SyncConfiguration, type SyncRound } from '../src/sync.js'
 
 /**
  * The reconciliation after a round (sync.ts): the SDK moves the checkpoint to
@@ -41,6 +41,15 @@ function admitted(storage: InMemoryOverlayStorage, txid: string, topic: string):
   return storage.insertOutput({ txid, outputIndex: 0, outputScript: [0x51], satoshis: 1, topic, spent: false, outputsConsumed: [], consumedBy: [] } as never)
 }
 
+describe('configured sync peers', () => {
+  it('normalises HTTPS endpoints and refuses unsupported peer URLs', () => {
+    expect(parseSyncPeers('https://a.example/,https://a.example')).toEqual(['https://a.example'])
+    for (const url of ['http://a.example', 'https://user@a.example', 'https://a.example/?q=1', 'https://a.example/#a']) {
+      expect(() => parseSyncPeers(url)).toThrow('SYNC_PEERS')
+    }
+  })
+})
+
 describe('reconciliation after a synchronisation round', () => {
   it('holds the checkpoint at the earliest offered output that did not arrive, so the next round offers it again', async () => {
     const storage = new InMemoryOverlayStorage()
@@ -50,7 +59,7 @@ describe('reconciliation after a synchronisation round', () => {
     const warnings: string[] = []
     const sync = startPeerSynchronisation(engine, {
       intervalMs: 0, peers: [peer.base], log: () => {}, warn: (line) => warnings.push(line),
-      reconcile: { storage, topics: ['tm_dpp'], maxAttempts: 3 },
+      reconcile: { fetchImpl: fetch, storage, topics: ['tm_dpp'], maxAttempts: 3 },
     })
     const first = await sync.runOnce()
     expect(first.ok).toBe(true)
@@ -82,7 +91,7 @@ describe('reconciliation after a synchronisation round', () => {
     const warnings: string[] = []
     const sync = startPeerSynchronisation(engine, {
       intervalMs: 0, peers: [peer.base], log: () => {}, warn: (line) => warnings.push(line),
-      reconcile: { storage, topics: ['tm_dpp'], maxAttempts: 2 },
+      reconcile: { fetchImpl: fetch, storage, topics: ['tm_dpp'], maxAttempts: 2 },
     })
     expect((await sync.runOnce()).reconciliation?.[0]).toMatchObject({ missing: 1, heldAt: 40, abandoned: [] })
     expect(await storage.getLastInteraction(peer.base, 'tm_dpp')).toBe(40)
@@ -99,7 +108,7 @@ describe('reconciliation after a synchronisation round', () => {
     const warnings: string[] = []
     const sync = startPeerSynchronisation(engine, {
       intervalMs: 0, peers: [peer.base, 'http://127.0.0.1:1'], log: () => {}, warn: (line) => warnings.push(line),
-      reconcile: { storage, topics: ['tm_dpp', 'tm_attestation'] },
+      reconcile: { fetchImpl: fetch, storage, topics: ['tm_dpp', 'tm_attestation'] },
     })
     const round = await sync.runOnce()
     expect(round.ok).toBe(true)
@@ -130,7 +139,7 @@ describe('reconciliation after a synchronisation round', () => {
     const warnings: string[] = []
     const sync = startPeerSynchronisation(engine, {
       intervalMs: 0, peers: [peer.base], log: (line) => logs.push(line), warn: (line) => warnings.push(line),
-      reconcile: { storage, topics: ['tm_dpp'], maxAttempts: 1, retryAfterRounds: 2, maxRetryAfterRounds: 3 },
+      reconcile: { fetchImpl: fetch, storage, topics: ['tm_dpp'], maxAttempts: 1, retryAfterRounds: 2, maxRetryAfterRounds: 3 },
     })
     // Round 1 leaves it behind; rounds 2 waits; round 3 asks again from its score and leaves it behind again, for longer.
     expect((await sync.runOnce()).reconciliation?.[0]).toMatchObject({ offered: 1, abandoned: [`${TXID_A}.0`] })
@@ -161,7 +170,7 @@ describe('reconciliation after a synchronisation round', () => {
     const plans = [{ tm_dpp: [peer.base, 'http://127.0.0.1:1'], tm_attestation: [] }]
     const sync = startPeerSynchronisation(engine, {
       intervalMs: 0, peers: [], log: () => {}, warn: () => {},
-      reconcile: { storage, topics: ['tm_dpp', 'tm_attestation'] },
+      reconcile: { fetchImpl: fetch, storage, topics: ['tm_dpp', 'tm_attestation'] },
       plan: async () => {
         const next = plans.shift()
         if (next == null) throw new Error('the trackers are down')

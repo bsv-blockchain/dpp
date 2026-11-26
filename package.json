@@ -26,11 +26,6 @@
     "release:bundle": "node scripts/implementer-bundle.mjs",
     "starter:check": "node packages/create-dpp-app/scripts/scaffold-check.mjs"
   },
-  "overrides": {
-    "@bsv/overlay": {
-      "@bsv/sdk": "2.8.10"
-    }
-  },
   "devDependencies": {
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1"

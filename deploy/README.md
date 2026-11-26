@@ -33,7 +33,7 @@ To run the index and its database without the validator service, name the index:
 
 `/health` names the topics and services; `/capabilities` is the capability document (`contracts/capabilities.schema.json`), which says which custody profiles this node admits (`managed-custody@2` when `ACCEPTANCE_COMMITMENT=required` in this source candidate, `managed-custody@1` in the published October set, otherwise the record model's baseline), whether it exports, and whether it synchronises.
 
-The header source is the trust boundary of the inclusion check. Left empty, `CHAIN_TRACKER` is WhatsOnChain on `NETWORK`, a third party's headers; the node has no setting for another header service yet, and `WOC_API_KEY` raises WhatsOnChain's rate limit. `CHAIN_TRACKER=scripts-only` is a local fixture and demonstration setting: it admits unproven ancestry, verifies no merkle path, and every state it serves reads `pending` to a verifier. It never claims inclusion, and a reachable deployment must not run it.
+The header source is the trust boundary of the inclusion check. Left empty, `CHAIN_TRACKER` is WhatsOnChain on `NETWORK`, a third party's headers; the node has no setting for another header service yet, and `WOC_API_KEY` raises WhatsOnChain's rate limit. `CHAIN_TRACKER=scripts-only` is a local fixture and demonstration setting: it admits unproven ancestry, verifies no merkle path, and every state it serves reads `pending` to a verifier. In that mode, a callback carrying a proof for a held state receives HTTP 503. Use the configured network’s header source for proof ingestion.
 
 ## Build from source
 
@@ -90,7 +90,7 @@ The portable form is the evidence package (`spec/portable-evidence.md`): with `E
 
 ## A second operator
 
-`compose.second-operator.yml` is the second node: its own MongoDB, its own identity, tokens (including its own `EXPORT_TOKEN`) and exporter key, a second env file, and `SYNC_PEERS` pointing at the first (`http://host.docker.internal:8080` when both run on one machine). It pins the same index image and the same MongoDB image by digest, and runs no validator service of its own. It pulls the first operator's tips through GASP every `SYNC_INTERVAL_MS` and admits every offered output through its own topic managers, so a peer can make evidence findable and never make it admitted.
+`compose.second-operator.yml` is the second node: its own MongoDB, its own identity, tokens (including its own `EXPORT_TOKEN`) and exporter key, a second env file, and `SYNC_PEERS` set to the first operator's public HTTPS URL. It pins the same index image and the same MongoDB image by digest, and runs no validator service of its own. It pulls the first operator's tips through GASP every `SYNC_INTERVAL_MS` and admits every offered output through its own topic managers, so a peer can make evidence findable and never make it admitted.
 
 ```
 cp deploy/operator.env.example deploy/operator-b.env

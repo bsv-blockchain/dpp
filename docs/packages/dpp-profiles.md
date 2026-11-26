@@ -12,7 +12,7 @@ Developers and data reviewers can use `@bsv/dpp-profiles` to build, validate and
 | Candidate installation | A source checkout containing `packages/dpp-protocol`, from [source access](README.md#source-access). |
 | Payload validation | `ajv@8.20.0` and `ajv-formats@3.0.1`, installed below. The package supplies no validator library. |
 | Report fragment | `@bsv/dpp-protocol@0.3.0-beta.10`; your reader's `evidence`, `expected` and `policy` ([report reference](dpp-protocol.md#what-the-report-takes)). |
-| Stored payload example | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/sdk@2.8.10` and access to the hosted index named in `show-payload.mjs`. |
+| Stored payload example | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/sdk@4.1.2` and access to the hosted index named in `show-payload.mjs`. |
 | Profile held by a binding | `ajv@8.20.0` and `ajv-formats@3.0.1` for its schema. For JSON-LD and SHACL steps, `jsonld@9.0.0`, `n3@2.13.12` and `shacl-engine@1.1.3`, installed [below](#install-the-validation-engines). The package depends on none of them. |
 | Commands naming `examples/` | Repository checkout after `npm ci` and `npm run build`; run from its root. |
 
@@ -24,13 +24,13 @@ Developers and data reviewers can use `@bsv/dpp-profiles` to build, validate and
 2. In your application, install profiles plus protocol/SDK for the stored-payload example below. Replace `/absolute/path/to/dpp` with the checkout's absolute path; retain archives and lockfile.
 
 ```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@4.1.2
 ```
 
-The npm command below applies once these exact versions have been published. Run it in your project:
+To install the published October release from npm, use its exact pins. The examples below use the November candidate archives.
 
 ```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.10
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.9
 ```
 
 Use 0.3.0-beta.4 or later: earlier readers accept identifiers the package does not publish. A bare `npm install @bsv/dpp-profiles` selects `latest`, the newest beta. Pin versions, keep the lockfile and review compatibility before upgrading. The [support table](support-table.md) distinguishes Node modules from data entry points.

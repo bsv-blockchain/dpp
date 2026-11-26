@@ -24,7 +24,7 @@ The candidate inventory below gives each release-set field and the exact spellin
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|
 | Packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-credentials@0.2.0-beta.6` | `packages` | `implementation`: the index's own package and version |
-| Runtime | Node 22 or later, `@bsv/sdk` 2.8.10 | `runtime` | Not advertised |
+| Runtime | Node 22 or later, `@bsv/sdk` 4.1.2 | `runtime` | Not advertised |
 | Passport records | Version 1 (14 fields) and version 2 (17 fields); version 3, the token carrier, is [parked](../reference/parked/token-carrier/README.md) | `wire.records` | `protocols`: `dpp-record` version `1` and version `2` |
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |
 | Anchor | `bsv-attestation-anchor-v1` | `wire.anchor` | `protocols`: `bsv-attestation-anchor` version `1`; `anchorFormats` lists it as `current` |
@@ -37,6 +37,8 @@ The candidate inventory below gives each release-set field and the exact spellin
 Versions move independently. Installing a package never selects a record format or industry profile, or rewrites stored records. Its prerelease number is not a specification, wire-format or profile version. A reader may need both record decoders within one release set; an industry profile does not select a different blockchain format.
 
 ## Record versions 1 and 2
+
+The npm release `@bsv/dpp-protocol@0.3.0-beta.9` advertises v1, v2 and v3. The November candidate `0.3.0-beta.10` advertises v1 and v2. New passports use PushDrop v2. The candidate release checks and starter block v3 for production until 1Color is ready and adoption has been approved. Other packages can be upgraded independently of that decision.
 
 | | Version 1 | Version 2 |
 |---|---|---|

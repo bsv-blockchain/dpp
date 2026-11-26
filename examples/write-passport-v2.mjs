@@ -61,8 +61,8 @@
  * refuses is shown refused by the writer's own check and by the index. Nothing
  * is broadcast, mainnet is never touched and no hosted service is called. The
  * send and the proof, which need a network, print as what they would do, and
- * the proofs pushed to the in-process index are made up, which is the only
- * kind it could take with its header checks off.
+ * the in-process index verifies the example proofs against a local table of
+ * synthetic block roots.
  *
  * Results print one sentence per step, never a score, as GOVERNANCE.md
  * requires of every conformance surface.
@@ -384,12 +384,19 @@ function syntheticFunding() {
  * after the build is the same code in both modes.
  */
 function dryAdapter(wallet) {
-  let proofHeight = 800_001
+  const funding = syntheticFunding()
+  const roots = new Map([[funding.merklePath.blockHeight, funding.id('hex')]])
+  let proofHeight = funding.merklePath.blockHeight + 1
   return {
+    chainTracker: {
+      // The synthetic single-transaction blocks are mature for the SDK's coinbase check.
+      currentHeight: async () => proofHeight + 100,
+      isValidRootForHeight: async (root, height) => roots.get(height) === root,
+    },
     async build({ lockingScript, tip }) {
       const tx = new Transaction()
       if (tip == null) {
-        tx.addInput({ sourceTransaction: syntheticFunding(), sourceOutputIndex: 0, unlockingScript: new UnlockingScript([]) })
+        tx.addInput({ sourceTransaction: funding, sourceOutputIndex: 0, unlockingScript: new UnlockingScript([]) })
         tx.addOutput({ satoshis: 1, lockingScript })
         tx.addOutput({ satoshis: 9_000, lockingScript: ANYONE })
       } else {
@@ -410,7 +417,8 @@ function dryAdapter(wallet) {
       console.log(`Would abort: wallet.abortAction({ reference: ${built.reference ?? short(built.txid)} }), so the wallet has its inputs back.`)
     },
     async waitForProof(txid) {
-      // Nothing is mined: a single-transaction path at a made-up height, which an index with its header checks off will take.
+      // In a one-transaction block the transaction ID is also its Merkle root.
+      roots.set(proofHeight, txid)
       return MerklePath.fromCoinbaseTxidAndHeight(txid, proofHeight++)
     },
   }
@@ -544,7 +552,7 @@ function liveAdapter(wallet) {
  * top, so a live run needs none of it. The host is reached by path because
  * the package's entry point is the library and never starts a server.
  */
-async function startLocalIndex(publisherKey) {
+async function startLocalIndex(publisherKey, chainTracker) {
   let overlay, topics, host
   try {
     overlay = await import('@bsv/overlay')
@@ -576,7 +584,7 @@ async function startLocalIndex(publisherKey) {
     { tm_dpp: new topics.DppTopicManager('', { publisherPolicy: policy.chain, managedAcceptance: true, admittedOutputs: storage }) },
     lookupServices,
     storage,
-    'scripts only', // header checks off: nothing here is mined
+    chainTracker,
     undefined, undefined, undefined, undefined, undefined,
     { tm_dpp: false }, // no peers, no synchronisation
     false,
@@ -590,6 +598,7 @@ async function startLocalIndex(publisherKey) {
     host: '127.0.0.1',
     submitToken: 'dry-run-submit-token',
     proofToken: 'dry-run-callback-token',
+    chainTracker,
     components: { records, engineStorage: storage, lookupServices, publisherPolicy: policy, managedAcceptance: true },
   })
   return { url: `http://127.0.0.1:${service.port}`, port: service.port, close: service.close }
@@ -764,7 +773,7 @@ async function proveState(adapter, ctx, written) {
     return false
   }
   if (dryRun) {
-    console.log(`Would prove: wait for the wallet's merkle path of ${short(written.txid)}, then POST ${indexUrl}/arc-ingest {"txid","merklePath","blockHeight"}. Nothing is mined here, so the path pushed instead is made up; only an index with its header checks off would take it.`)
+    console.log(`Would prove: wait for the wallet's merkle path of ${short(written.txid)}, then POST ${indexUrl}/arc-ingest {"txid","merklePath","blockHeight"}. The in-process index checks the example path against its synthetic block roots.`)
   }
   const path = await adapter.waitForProof(written.txid, waitMinutes)
   if (path == null) {
@@ -967,13 +976,14 @@ async function main() {
   if (dryRun) {
     const wallet = new ProtoWallet(PrivateKey.fromHex('11'.repeat(32)))
     const { publicKey: identityKey } = await wallet.getPublicKey({ identityKey: true })
-    const index = await startLocalIndex(identityKey)
+    const adapter = dryAdapter(wallet)
+    const index = await startLocalIndex(identityKey, adapter.chainTracker)
     indexUrl = index.url
     submitToken = 'dry-run-submit-token'
     callbackToken = 'dry-run-callback-token'
     console.log(`The index is in this process at ${indexUrl}, with in-memory storage and a publisher key policy that names the writer's key and selects ${CUSTODY_PROFILE}.`)
     try {
-      return await run(dryAdapter(wallet), wallet, prepared)
+      return await run(adapter, wallet, prepared)
     } finally {
       await index.close()
     }

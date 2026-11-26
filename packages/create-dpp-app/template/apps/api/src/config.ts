@@ -1,6 +1,8 @@
 // Configuration is environment only. Secrets are read here once and never
 // printed. `npm test` and `npm run dev` work with the defaults; the values
 // marked live in .env.example are needed only to write real passports.
+import { SUPPORTED_VERSIONS } from '@bsv/dpp-protocol'
+import { assertProductionRecordVersions } from './production-records.mjs'
 import { loadEpcisSources, type EpcisSourceConfig } from './epcis/sources.js'
 
 export type Network = 'main' | 'test'
@@ -102,6 +104,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const network = (text(env, 'NETWORK') ?? 'main') as Network
   if (network !== 'main' && network !== 'test') throw new Error(`NETWORK must be main or test, not ${network}`)
   const livePublishing = text(env, 'LIVE_PUBLISHING') === 'true'
+  if (livePublishing) assertProductionRecordVersions(SUPPORTED_VERSIONS)
   const rootKeyHex = text(env, 'WALLET_ROOT_KEY')
   if (rootKeyHex != null && !/^[0-9a-fA-F]{64}$/.test(rootKeyHex)) throw new Error('WALLET_ROOT_KEY must be 64 hexadecimal characters')
   if (livePublishing && rootKeyHex == null) throw new Error('LIVE_PUBLISHING=true needs WALLET_ROOT_KEY')

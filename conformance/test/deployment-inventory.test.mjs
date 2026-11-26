@@ -96,10 +96,10 @@ test('a package under a licence nobody reviewed stops the script', () => {
 test('a package that names a licence file at a version nobody read stops the script', () => {
   const dir = copyOfSources()
   try {
-    edit(dir, 'package-lock.json', (text) => { const lock = JSON.parse(text); lock.packages['node_modules/@bsv/sdk'].version = '99.0.0'; return JSON.stringify(lock, null, 2) })
+    edit(dir, 'package-lock.json', (text) => { const lock = JSON.parse(text); lock.packages['node_modules/did-context'].version = '99.0.0'; return JSON.stringify(lock, null, 2) })
     const result = run('--root', dir)
     assert.notEqual(result.status, 0)
-    assert.match(result.stderr, /@bsv\/sdk@99\.0\.0 names no licence in the lockfile .* is not in SEPARATE_TERMS at this version/)
+    assert.match(result.stderr, /did-context@99\.0\.0 names no licence in the lockfile .* is not in SEPARATE_TERMS at this version/)
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 

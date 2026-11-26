@@ -44,7 +44,7 @@ The commands publish nothing. Expect archives in `release/candidates/`, source r
 2. In your application directory, install the selected archives together so npm resolves unpublished dependencies locally. Replace `/absolute/path/to/dpp` with the checkout path:
 
 ```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@4.1.2
 ```
 
 3. To embed an index, include `bsv-dpp-overlay-0.4.0-beta.13.tgz` from the same directory. HTTP-only clients need no index package. Retain the selected archives and resulting lockfile.
@@ -61,9 +61,13 @@ The latest complete publication with a receipt here is `dpp-release-2026-10-10` 
 | Profiles | `@bsv/dpp-profiles@0.3.0-beta.9` | `0.3.0-beta.10` | Manifests, payload schemas and supported projection/discovery helpers |
 | Credentials | `@bsv/dpp-credentials@0.2.0-beta.5` | `0.2.0-beta.6` | W3C credential verification, EPCIS source import and the EPCIS lifecycle claim; the candidate no longer contains the parked VSC profile. Unnecessary for native lifecycle-claim signing |
 | Overlay | `@bsv/dpp-overlay@0.4.0-beta.12` | `0.4.0-beta.13` | Embedded topic managers/lookup services; starters declare it, HTTP clients need none |
-| SDK | `@bsv/sdk@2.8.10` | `2.8.10` | Declare directly when importing wallet or transaction APIs |
+| Application starter | `@bsv/create-dpp-app@0.1.0-beta.1` | `0.1.0-beta.2` | Generate an application pinned to the corresponding DPP set |
 
-Install only what your code uses. Start with protocol:
+The published DPP protocol and overlay packages pin `@bsv/sdk@2.8.10`. The published DPP overlay also pins `@bsv/overlay@2.3.1`. Use those versions for direct imports alongside the October libraries.
+
+The November candidate pins `@bsv/sdk@4.1.2`, `@bsv/overlay@2.8.0`, `@bsv/wallet-toolbox-client@2.18.0` and `mongodb@7.9.1`. Its profiles package pins `canonicalize@5.1.0`. The protocol candidate `0.3.0-beta.10` writes PushDrop v2 and reads v1 and v2. Production use of v3 requires 1Color readiness and approval. [Version compatibility](../learn/versions-and-compatibility.md#record-versions-1-and-2)
+
+To install the published protocol from npm:
 
 ```sh
 npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9
