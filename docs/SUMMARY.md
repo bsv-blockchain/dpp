@@ -1,6 +1,6 @@
 # Summary
 
-* [Build with the open DPP standard](README.md "Start here")
+* [Create your first digital product passport app](README.md "Start here")
   * [Plan your platform](start/plan-your-platform.md)
   * [Choose packages and services](start/choose-components-and-services.md)
   * [The passport model](start/architecture.md)

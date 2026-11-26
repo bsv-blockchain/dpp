@@ -1,5 +1,11 @@
 # The DPP Standard
 
+```sh
+npm create @bsv/dpp-app
+```
+
+Run this in a terminal with Node.js 22.23.4 and npm. It creates the `my-dpp` folder. To launch the app, run `cd my-dpp && npm run dev` and open the **Local** URL printed in the terminal.
+
 A draft standard for digital product passports on the BSV blockchain, with specifications, service interfaces, test fixtures and a reference implementation.
 
 A digital product passport records information about a product and its history, such as manufacture, ownership transfers, repairs and recycling. This project defines how to sign, store, exchange and verify those records so that different applications and service providers can work with the same passport.
