@@ -240,7 +240,12 @@ describe('GET /evidence-package', () => {
 
   it('identifies the acceptance record missing from each export of a committed transfer', async () => {
     const fixture = JSON.parse(readFileSync(new URL('fixtures/chain-v2.json', root), 'utf8'))
-    const base = await serve(newNode(fixture.custodianKey))
+    const node = newNode(fixture.custodianKey, { managedAcceptance: true })
+    node.components.managedAcceptance = true
+    node.components.custodyExportProfile = 'managed-custody@3'
+    const base = await serve(node)
+    const capabilities = await bodyOf(await fetch(`${base}/capabilities`))
+    expect(capabilities.profiles).toContainEqual(expect.objectContaining({ id: 'managed-custody', version: '3', options: { acceptanceCommitment: 'required', controlAuthorities: [] } }))
     const beef = new Beef()
     for (const [index, state] of fixture.states.entries()) {
       const tx = Transaction.fromHex(state.rawTx)
@@ -256,8 +261,24 @@ describe('GET /evidence-package', () => {
     expect(part.status).toBe(200)
     const complete = await bodyOf(part)
     for (const envelope of [bounded.envelope, complete.package as EvidencePackageEnvelope]) {
+      expect(envelope.manifest.profiles).toContain('managed-custody@3')
       expect(envelope.manifest.completeness.absent).toEqual([`acceptance:sha256:${acceptanceCommitment(fixture.acceptance)}`])
       expect(inspectEvidencePackage(envelope.manifest, envelopeFiles(envelope)).signatureValid).toBe(true)
+    }
+  })
+
+  it('refuses both public exports when the carried transaction discloses a retained claim code', async () => {
+    const node = newNode()
+    node.components.managedAcceptance = true
+    node.components.custodyExportProfile = 'managed-custody@3'
+    const base = await serve(node)
+    const { tx } = await genesisTx({ payloadPublic: JSON.stringify({ claimCode: 'retained-handover-code' }) })
+    expect((await submitBeef(base, tx.toBEEF())).headers.get('x-admission')).toBe('tm_dpp=admitted')
+    for (const route of ['evidence-package', 'evidence-export']) {
+      const response = await fetch(`${base}/${route}?passportId=${encodeURIComponent(makeData().passportId)}`)
+      const body = await bodyOf(response)
+      expect(body).toMatchObject({ error: 'disclosure-contradiction' })
+      expect(JSON.stringify(body)).not.toContain('retained-handover-code')
     }
   })
 

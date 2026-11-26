@@ -17,8 +17,11 @@
  * `signature.signer`, and still inspects with it as `expectedSigner`.
  */
 import { CachedKeyDeriver, Hash, PublicKey, Signature, Utils, type PrivateKey, type WalletProtocol } from '@bsv/sdk'
+import { inspectPublicCustody, MANAGED_CUSTODY_EXPORT_PROFILE, privateCustodyRepresentation } from './managedCustodyExport.js'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
 import { MANAGED_ACCEPTANCE_FORMAT, MANAGED_ACCEPTANCE_FORMAT_V1, inspectManagedAcceptance, type ManagedAcceptanceRecord } from './acceptance.js'
+
+export { MANAGED_CUSTODY_EXPORT_PROFILE, publicCustodyTransfers } from './managedCustodyExport.js'
 
 export const EVIDENCE_PACKAGE_FORMAT = 'dpp-evidence-package'
 export const EVIDENCE_PACKAGE_VERSION = '1'
@@ -102,6 +105,8 @@ export interface PackageSigner {
   sign(preimage: number[]): Promise<number[]> | number[]
 }
 
+const PROFILE = /^[a-z][a-z0-9.-]*@[0-9][0-9a-z.-]*$/
+const DISCLOSURE_SCOPES: readonly DisclosureScope[] = ['public', 'public-and-owner', 'public-and-legitimate', 'public-and-authority', 'all-tiers']
 const KEY = /^0[23][0-9a-f]{64}$/
 const HEX64 = /^[0-9a-f]{64}$/
 const TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/
@@ -151,6 +156,7 @@ export type PackageFailureReason =
   | 'signer-unexpected'
   | 'disclosure-contradiction'
   | 'passport-mismatch'
+  | 'not-selected'
 
 export interface PackageFailure { reason: PackageFailureReason; path?: string; detail: string }
 
@@ -177,6 +183,7 @@ function structure(manifest: EvidencePackageManifest, failures: PackageFailure[]
     if (outpoint != null && (!HEX64.test(outpoint.txid ?? '') || !Number.isInteger(outpoint.outputIndex) || outpoint.outputIndex < 0)) fail('format', `${name} is not an outpoint`)
   }
   if (manifest.exporter == null || typeof manifest.exporter.id !== 'string' || manifest.exporter.id.length === 0) fail('format', 'exporter.id is required')
+  if (manifest.profiles !== undefined && (!Array.isArray(manifest.profiles) || !manifest.profiles.every(profile => typeof profile === 'string' && PROFILE.test(profile)))) fail('format', 'profiles must be an array of versioned profile identifiers')
   if (manifest.disclosure == null || typeof manifest.disclosure.recoveryBackup !== 'boolean') fail('format', 'disclosure.recoveryBackup must be declared')
   else if (manifest.disclosure.recoveryBackup && manifest.disclosure.scope !== 'all-tiers') fail('disclosure-contradiction', `a ${manifest.disclosure.scope} package cannot be a recovery backup`)
   if (manifest.completeness == null || !Array.isArray(manifest.completeness.snapshots) || !Array.isArray(manifest.completeness.withheld) || !Array.isArray(manifest.completeness.absent)) fail('format', 'completeness must declare snapshots, withheld and absent')
@@ -199,15 +206,39 @@ function structure(manifest: EvidencePackageManifest, failures: PackageFailure[]
   }
 }
 
+export interface PackageInspectionOptions {
+  expectedPassportId?: string
+  expectedSigner?: string
+  /** Refuse operations that require the successor when the signed manifest omits it. */
+  requiredCustodyProfile?: typeof MANAGED_CUSTODY_EXPORT_PROFILE
+}
+
 /**
  * Inspect a package: the manifest, the files by their inventory path (the
  * manifest itself is not among them), and what the reader expects. The
  * returned answers are separate on purpose; a caller that wants one word
  * chooses it knowingly.
  */
-export function inspectEvidencePackage(manifest: EvidencePackageManifest, files: Map<string, number[]>, options: { expectedPassportId?: string; expectedSigner?: string } = {}): PackageInspection {
+export function inspectEvidencePackage(manifest: EvidencePackageManifest, files: Map<string, number[]>, options: PackageInspectionOptions = {}): PackageInspection {
+  return inspectPackage(manifest, files, options, false)
+}
+
+function inspectPackage(manifest: EvidencePackageManifest, files: Map<string, number[]>, options: PackageInspectionOptions, nested: boolean): PackageInspection {
   const failures: PackageFailure[] = []
   structure(manifest, failures, options.expectedPassportId)
+  const selected = Array.isArray(manifest.profiles) && manifest.profiles.includes(MANAGED_CUSTODY_EXPORT_PROFILE)
+  if (options.requiredCustodyProfile != null && (options.requiredCustodyProfile !== MANAGED_CUSTODY_EXPORT_PROFILE || !selected)) failures.push({ reason: 'not-selected', detail: `The package must select ${options.requiredCustodyProfile}.` })
+  if (selected && !DISCLOSURE_SCOPES.includes(manifest.disclosure?.scope)) failures.push({ reason: 'format', detail: 'The custody package must declare a recognised disclosure scope.' })
+  // Historical packages can use the exporter's raw key. Successor packages always derive the signer.
+  if (failures.length === 0 && (selected || (nested && manifest.exporter.id !== manifest.signature.signer))) {
+    let signerMatches = false
+    try { signerMatches = evidencePackageSigner(manifest.exporter.id, manifest.passportId) === manifest.signature.signer } catch { /* Invalid exporter identity. */ }
+    if (!signerMatches) failures.push({ reason: 'signer-unexpected', detail: 'The advertised exporter identity does not derive the package signing key.' })
+  }
+  if (selected && failures.length === 0 && manifest.disclosure.scope === 'public') {
+    inspectPublicCustody(manifest, files, failures)
+    if (!nested) inspectNestedPublicPackages(manifest, files, failures)
+  }
   const structureValid = failures.length === 0
 
   let inventoryVerified = false
@@ -252,6 +283,37 @@ export function inspectEvidencePackage(manifest: EvidencePackageManifest, files:
     declaredWithheld: Array.isArray(manifest.completeness?.withheld) ? [...manifest.completeness.withheld] : [],
     declaredAbsent: Array.isArray(manifest.completeness?.absent) ? [...manifest.completeness.absent] : [],
     recoveryBackup: manifest.disclosure?.recoveryBackup === true,
+  }
+}
+
+/** Nested packages have their own inventory and signer. Each signed manifest speaks for the files in its folder. */
+function inspectNestedPublicPackages(manifest: EvidencePackageManifest, files: Map<string, number[]>, failures: PackageFailure[]): void {
+  const carried = new Map(manifest.inventory.map(entry => [entry.path, entry]))
+  for (const entry of manifest.inventory) {
+    if (entry.representation !== 'dpp-evidence-package@1') continue
+    const bytes = files.get(entry.path)
+    if (bytes == null) continue
+    try {
+      const nested: EvidencePackageManifest = JSON.parse(Utils.toUTF8(bytes))
+      if (nested.disclosure.scope !== 'public' || nested.disclosure.recoveryBackup !== false) throw new Error('The nested package must declare public disclosure.')
+      const folder = entry.path.slice(0, entry.path.lastIndexOf('/') + 1)
+      const nestedFiles = new Map<string, number[]>()
+      for (const member of nested.inventory) {
+        const path = folder + member.path
+        const outer = carried.get(path)
+        if (outer == null || outer.category !== member.category) throw new Error('The enclosing inventory must carry each nested file in its original category.')
+        if (privateCustodyRepresentation(member.representation)) throw new Error('The nested inventory lists a private custody record.')
+        if (member.representation === 'dpp-evidence-package@1' && outer.representation !== member.representation) throw new Error('A nested package manifest has been relabelled.')
+        if ((member.category === 'transactions' || member.category === 'proofs') && outer.represents != null && outer.represents !== member.represents) throw new Error('The enclosing and nested inventories disagree about the represented transaction.')
+        const content = files.get(path)
+        if (content != null) nestedFiles.set(member.path, content)
+      }
+      // All nested manifests are inventoried in the enclosing package. Each is inspected once.
+      const inspection = inspectPackage(nested, nestedFiles, { expectedPassportId: entry.represents }, true)
+      for (const failure of inspection.failures) failures.push({ ...failure, path: failure.path == null ? entry.path : folder + failure.path })
+    } catch (error) {
+      failures.push({ reason: 'disclosure-contradiction', path: entry.path, detail: error instanceof Error ? error.message : 'The nested public package could not be inspected.' })
+    }
   }
 }
 

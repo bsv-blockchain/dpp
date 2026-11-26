@@ -33,7 +33,8 @@ export interface Platform {
   chainTracker: ChainTracker | 'scripts only'
   /** The profiles held by a binding, the validation engine and anything refused at start-up. */
   profiles: BoundProfiles
-  read(passportId: string): Promise<PassportReading>
+  /** Exporters can limit verification to the acceptance records carried in this disclosure. */
+  read(passportId: string, acceptanceRecords?: PassportRecord['acceptanceRecords']): Promise<PassportReading>
   /** The holder's view of a passport under a bound profile: the owner-tier check, then the two parts rejoined and checked whole. */
   readAuthorised(record: PassportRecord, holder: Party): Promise<AuthorisedReading>
   close(): Promise<void>
@@ -160,11 +161,11 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     async readAuthorised(record, holder) {
       return await readAuthorised({ record, holder, index, profiles })
     },
-    async read(passportId) {
+    async read(passportId, acceptanceRecords) {
       // A passport this platform wrote: its brand is the genesis issuer the policy names, and its acceptance records are supplied. Another platform's passport is read with what the index holds, and authority stays unknown.
       const own = await store.getPassport(passportId)
       const genesisIssuers = own == null ? [] : [parties.brand(own.brandId).identityKey]
-      return await readPassport(passportId, { index, chainTracker, acceptanceCustodians: [wallet.identityKey], genesisIssuers, profiles }, { acceptanceRecords: own?.acceptanceRecords ?? [] })
+      return await readPassport(passportId, { index, chainTracker, acceptanceCustodians: [wallet.identityKey], genesisIssuers, profiles }, { acceptanceRecords: acceptanceRecords ?? own?.acceptanceRecords ?? [] })
     },
     async close() {
       await wallet.close()

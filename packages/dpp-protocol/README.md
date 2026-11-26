@@ -67,6 +67,7 @@ specifier anything needs:
 | `transition.ts` | Which operation may change what, state by state, for every version: the version 2 control proof, the terminal `RETIRE` and the single upgrade transition |
 | `owner.ts` | The owner and controller key, the linkage scalar and the control proof of version 2 |
 | `acceptance.ts` | The managed acceptance record `dpp-managed-acceptance@2` (`spec/managed-custody.md` §3), signed with the custodian's derived key: inspect, sign, commit and bind to the `TRANSFER`; the superseded `@1` is read under §9 |
+| `evidencePackage.ts`, `managedCustodyExport.ts` | Signed manifest and inventory inspection. Pass `{ requiredCustodyProfile: 'managed-custody@3' }` to `inspectEvidencePackage` when an operation requires the proposed custody export rules. A missing selection yields `not-selected`. |
 | `verifyChain.ts` | Chain verification from genesis, including SPV inclusion; `inspectChain` is the same loop reported finding by finding |
 | `evidence.ts` | `verifyPassportEvidence`, the one verification contract of `spec/verification.md`: sixteen named checks, four answers each, an expected subject and a latest-state observation, across the token, attestation, anchor and credential rails |
 | `anchor.ts` | The generic complete-representation anchor `bsv-attestation-anchor-v1` (`spec/rules.md` §5): build, strict decode and check-by-check inspection |
@@ -74,6 +75,8 @@ specifier anything needs:
 | `blob.ts` | Owner-tier blob hash binding (§7) |
 | `canonical.ts` | The canonical bytes an attestation is signed and hashed over: a refusing subset of JCS (`spec/rules.md` §4) |
 | `constants.ts`, `types.ts` | The shared vocabulary both of the above are written against |
+
+For a public package selecting `managed-custody@3`, inspection checks the declared acceptance dispositions against the carried transfer outputs. It checks the nested package inventories, BEEF transactions, signed record representations and recognisable custody records in text and JSON. Exporters must also check any application-specific encodings they carry and their own records of which acceptances they hold. Supply a trusted `expectedSigner` when the operation depends on a particular exporter.
 
 The package reads no event format and no product identifier scheme. The EPCIS lifecycle claim `dpp-epcis-lifecycle@1` is in `@bsv/dpp-credentials/epcis-lifecycle`, and `verifyPassportEvidence` is given it through `credentialVerifier`. `test/entry-point-scope.test.ts` holds that boundary.
 

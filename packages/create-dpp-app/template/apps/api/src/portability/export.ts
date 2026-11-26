@@ -28,11 +28,19 @@ import {
   EVIDENCE_PACKAGE_FORMAT,
   EVIDENCE_PACKAGE_PROTOCOL,
   EVIDENCE_PACKAGE_VERSION,
+  MANAGED_CUSTODY_EXPORT_PROFILE,
   acceptanceCommitment,
+  bindAcceptanceToState,
   evidencePackageSigner,
   findDppOutputs,
   inspectEvidencePackage,
+  inspectManagedAcceptance,
+  publicCustodyTransfers,
   signEvidenceManifest,
+  verifyServerSignature,
+  verifyUserSignature,
+  type DppStateV2,
+  type ManagedAcceptanceRecord,
   type EvidencePackageManifest,
   type InventoryCategory,
   type InventoryEntry,
@@ -46,11 +54,12 @@ import { describeProfileBundleOmission, exportProfileBundle, isRetiredProfile } 
 import { EPCIS_GS1_ARTEFACTS } from '@bsv/dpp-credentials'
 import { exportEpcisPublicEvidence, exportEpcisRecovery, type EpcisExchangeStorage, type EpcisSourceCredential, type ExportedEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'
 import type { Config } from '../config.js'
+import { acceptanceMatchesOffer } from '../custody.js'
 import { describeEpcisSource, type EpcisSourceConfig } from '../epcis/sources.js'
 import type { Platform } from '../platform.js'
 import { isProfileId } from '../profiles.js'
 import type { PassportReading } from '../reader.js'
-import { isEpcisLifecycleRecord, type PassportRecord } from '../store.js'
+import { isEpcisLifecycleRecord, isInterrupted, type OfferRecord, type PassportRecord } from '../store.js'
 import {
   APPLICATION_EXPORT_DESCRIPTOR,
   APPLICATION_EXPORT_FORMAT,
@@ -64,6 +73,7 @@ import {
   entryOf,
   exportScopeId,
   passportFolder,
+  readNestedAcceptance,
   recordBytes,
   sha256Hex,
   utf8,
@@ -82,6 +92,8 @@ export interface ExportApplicationInput {
   /** The exchange's store and the sources this deployment was configured with. The credentials are read to search for them, and are written nowhere. */
   epcis: { storage: EpcisExchangeStorage; sources: EpcisSourceConfig[] }
   access: ApplicationExportAccess
+  /** The successor carriage rules apply only when explicitly selected. */
+  custodyProfile?: typeof MANAGED_CUSTODY_EXPORT_PROFILE
   /** The passports to cover. Default: every passport in the journal. */
   passportIds?: readonly string[]
   /**
@@ -151,8 +163,9 @@ function configuredSecrets(config: Config, credentials: readonly EpcisSourceCred
 }
 
 /** The first file that holds a configured secret, in any of the forms a secret is passed around in. */
-function secretCarrier(files: ReadonlyMap<string, Uint8Array>, manifestText: string, secrets: readonly string[]): string | undefined {
+function secretCarrier(files: ReadonlyMap<string, Uint8Array>, manifestText: string, secrets: readonly string[], rawDigests: readonly string[] = []): string | undefined {
   const forms = secrets.flatMap((secret) => [secret, encodeURIComponent(secret), Buffer.from(secret, 'utf8').toString('base64'), Buffer.from(secret, 'utf8').toString('base64url'), Buffer.from(secret, 'utf8').toString('hex')]).map((form) => Buffer.from(form, 'utf8'))
+  forms.push(...rawDigests.map(digest => Buffer.from(digest, 'hex')))
   const holds = (bytes: Uint8Array): boolean => {
     const buffer = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength)
     return forms.some((form) => buffer.includes(form))
@@ -165,7 +178,7 @@ function secretCarrier(files: ReadonlyMap<string, Uint8Array>, manifestText: str
 /** What the index gave for one passport, placed under the passport's folder and checked. */
 interface IndexEvidence {
   summary: ExportedPassport['index']
-  files: Array<{ path: string; bytes: Uint8Array; category: InventoryCategory; mediaType: string; represents?: string; representation?: string }>
+  files: Array<{ path: string; bytes: Uint8Array; category: InventoryCategory; mediaType: string; represents?: string; representation?: string; acceptance?: ManagedAcceptanceRecord }>
   snapshots: EvidencePackageManifest['completeness']['snapshots']
   absent: string[]
   sources: SourceObservation[]
@@ -194,8 +207,8 @@ async function indexEvidenceFor(input: ExportApplicationInput, passportId: strin
     throw new PortabilityRefused('index-evidence-refused', `The index's evidence for ${passportId} does not check: ${detail} Nothing was exported.`, { passportId, failures })
   }
   const place = (base: string, manifest: EvidencePackageManifest, encoded: Record<string, string>, into: IndexEvidence['files']): void => {
+    const carriesAcceptances = manifest.inventory.some(entry => ACCEPTANCE_RECORD_REPRESENTATIONS.some(format => entry.representation === format))
     if (input.access === 'public-evidence') {
-      const carriesAcceptances = manifest.inventory.some(entry => ACCEPTANCE_RECORD_REPRESENTATIONS.some(format => entry.representation === format))
       if (manifest.disclosure.scope !== 'public' || manifest.disclosure.recoveryBackup || carriesAcceptances) {
         refuse('its disclosure scope or acceptance records cannot be carried by this public export.', [])
       }
@@ -203,7 +216,10 @@ async function indexEvidenceFor(input: ExportApplicationInput, passportId: strin
     into.push({ path: `${base}/manifest.json`, bytes: utf8(JSON.stringify(manifest)), category: 'reports', mediaType: JSON_MEDIA_TYPE, represents: passportId, representation: APPLICATION_REPRESENTATIONS.indexManifest })
     for (const entry of manifest.inventory) {
       const bytes = Uint8Array.from(Buffer.from(encoded[entry.path] ?? '', 'base64'))
-      into.push({ path: `${base}/${entry.path}`, bytes, category: entry.category, mediaType: entry.mediaType, ...(entry.represents == null ? {} : { represents: entry.represents }), ...(entry.representation == null ? {} : { representation: entry.representation }) })
+      const acceptance = input.custodyProfile === MANAGED_CUSTODY_EXPORT_PROFILE && input.access === 'authorised-recovery'
+        ? readNestedAcceptance(entry, bytes, passportId, input.platform.wallet.identityKey) : undefined
+      const representation = acceptance == null ? entry.representation : APPLICATION_REPRESENTATIONS.nestedAuthority
+      into.push({ path: `${base}/${entry.path}`, bytes, category: entry.category, mediaType: entry.mediaType, ...(entry.represents == null ? {} : { represents: entry.represents }), ...(representation == null ? {} : { representation }), ...(acceptance == null ? {} : { acceptance }) })
     }
   }
   const signerFor = (manifest: EvidencePackageManifest): string | undefined => {
@@ -294,10 +310,125 @@ async function readJournals(input: ExportApplicationInput): Promise<PassportReco
   return first
 }
 
+/** The transfers anyone can read in the index files actually included for this passport. */
+function publicTransfers(evidence: IndexEvidence, passportId: string): DppStateV2[] {
+  const transfers: DppStateV2[] = []
+  for (const file of evidence.files) {
+    if (file.category !== 'transactions' || file.representation !== 'raw-transaction') continue
+    for (const { state } of findDppOutputs(Transaction.fromBinary(Array.from(file.bytes)))) {
+      if (state.version === '2' && state.op === 'TRANSFER' && state.passportId === passportId && state.authorisationCommitment) transfers.push(state)
+    }
+  }
+  return transfers
+}
+
+/** Only a successful network answer (or the test wallet's dry run) completes a journalled handover. */
+function journalTransfers(passport: PassportRecord, publisherKey: string) {
+  const completed: DppStateV2[] = []
+  const interrupted: DppStateV2[] = []
+  for (const [at, entry] of passport.states.entries()) {
+    let tx: Transaction
+    try {
+      tx = Transaction.fromHex(entry.rawTx)
+    } catch {
+      throw new PortabilityRefused('record-invalid', 'A journal transaction cannot be decoded.', { passportId: passport.passportId, txid: entry.txid })
+    }
+    const outputs = findDppOutputs(tx)
+    const output = outputs[0]
+    if (tx.id('hex') !== entry.txid || outputs.length !== 1 || output?.outputIndex !== entry.outputIndex
+      || output.state.passportId !== passport.passportId || output.state.op !== entry.op) {
+      throw new PortabilityRefused('records-inconsistent', 'A journal entry differs from its transaction.', { passportId: passport.passportId, txid: entry.txid })
+    }
+    const { state } = output
+    if (state.version !== '2' || state.op !== 'TRANSFER' || !state.authorisationCommitment) continue
+    const prior = passport.states[at - 1]
+    if (prior == null || state.previousTxid !== prior.txid || state.previousOutputIndex !== prior.outputIndex
+      || !tx.inputs.some(input => input.sourceTXID === prior.txid && input.sourceOutputIndex === prior.outputIndex)
+      || !verifyUserSignature(state) || !verifyServerSignature(state, publisherKey)) {
+      throw new PortabilityRefused('records-inconsistent', 'A transfer does not verify for its journal predecessor and publisher.', { passportId: passport.passportId, txid: entry.txid })
+    }
+    if (entry.network === 'accepted' || entry.network === 'dry-run') completed.push(state)
+    else if (isInterrupted(entry)) interrupted.push(state)
+    else throw new PortabilityRefused('records-inconsistent', 'The transfer has an unrecognised send outcome.', { passportId: passport.passportId, txid: entry.txid })
+  }
+  return { completed, interrupted }
+}
+
+/** Resolve commitment dispositions and recovery copies from the records this custodian actually holds. */
+function custodyEvidence(passport: PassportRecord, offers: OfferRecord[], transfers: DppStateV2[], custodian: string, nested: ManagedAcceptanceRecord[], interrupted?: DppStateV2[]) {
+  const authorised = interrupted != null
+  const held = new Map<string, ManagedAcceptanceRecord>()
+  for (const record of [...passport.acceptanceRecords, ...passport.states.flatMap(entry => entry.acceptance ?? []), ...offers.flatMap(offer => offer.record ?? [])]) {
+    held.set(acceptanceCommitment(record), record)
+  }
+  const referenced = new Map(transfers.map(state => [state.authorisationCommitment, state]))
+  for (const record of nested) {
+    const commitment = acceptanceCommitment(record)
+    const state = referenced.get(commitment)
+    if (state == null || bindAcceptanceToState(record, state).length > 0) {
+      throw new PortabilityRefused('index-evidence-refused', 'A signed index acceptance does not bind to a completed transfer in the supplied history.', { passportId: passport.passportId, commitment })
+    }
+    held.set(commitment, record)
+  }
+  const byRequest = new Map(Array.from(held.values(), record => [record.requestId, record]))
+  const authority = new Map<string, ManagedAcceptanceRecord>()
+  const absent: string[] = []
+  const withheld: string[] = []
+  for (const state of transfers) {
+    const commitment = state.authorisationCommitment
+    const reference = `acceptance:sha256:${commitment}`
+    const record = held.get(commitment)
+    if (record == null) {
+      absent.push(reference)
+      continue
+    }
+    if (inspectManagedAcceptance(record, { custodians: [custodian] }).failures.length || bindAcceptanceToState(record, state).length) {
+      throw new PortabilityRefused('records-inconsistent', 'A held acceptance does not verify for the transfer that commits to it.', { passportId: passport.passportId, commitment })
+    }
+    if (authorised) authority.set(commitment, record)
+    else withheld.push(`${reference} not-public`)
+  }
+
+  // Reattach the original record to its offer if the journal holds the only copy.
+  const offerCopies: OfferRecord[] = []
+  if (authorised) {
+    const acceptedOffers = new Map<string, ManagedAcceptanceRecord>()
+    for (const offer of offers) {
+      const accepted = offer.status === 'accepted' || offer.status === 'transferred'
+      const record = offer.record ?? (accepted ? byRequest.get(offer.requestId) : undefined)
+      if (record != null && (!accepted || !acceptanceMatchesOffer(offer, record, passport, custodian))) {
+        throw new PortabilityRefused('records-inconsistent', 'A signed acceptance does not verify for its retained offer.', { requestId: offer.requestId })
+      }
+      if (offer.status === 'accepted') {
+        if (record == null) throw new PortabilityRefused('records-inconsistent', 'An accepted offer has lost its signed record.', { requestId: offer.requestId })
+        acceptedOffers.set(acceptanceCommitment(record), record)
+      }
+      offerCopies.push(record != null && offer.record == null ? { ...offer, record } : offer)
+    }
+    for (const state of interrupted) {
+      const record = acceptedOffers.get(state.authorisationCommitment)
+      if (record == null || bindAcceptanceToState(record, state).length > 0) {
+        throw new PortabilityRefused('records-inconsistent', 'An interrupted transfer lacks its matching signed offer.', { passportId: passport.passportId })
+      }
+    }
+  }
+  const pending = authorised ? [] : offers.flatMap(offer => {
+    const record = offer.record ?? byRequest.get(offer.requestId)
+    if (offer.status !== 'accepted' || record == null) return []
+    const commitment = acceptanceCommitment(record)
+    return referenced.has(commitment) ? [] : [commitment]
+  })
+  return { authority: [...authority.values()], offers: offerCopies, absent, withheld, pending }
+}
+
 export async function exportApplication(input: ExportApplicationInput): Promise<ExportedApplication> {
   const { platform, access } = input
   const { config, store, wallet, profiles } = platform
   const authorised = access === 'authorised-recovery'
+  if (input.custodyProfile != null && input.custodyProfile !== MANAGED_CUSTODY_EXPORT_PROFILE) {
+    throw new PortabilityRefused('not-selected', 'The requested custody export profile is unavailable.')
+  }
+  const v3 = input.custodyProfile === MANAGED_CUSTODY_EXPORT_PROFILE
   const exportedAt = (input.now?.() ?? new Date()).toISOString()
   const credentials = input.epcis.sources.flatMap((source) => (source.credentials == null ? [] : [source.credentials()]))
 
@@ -320,6 +451,8 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
   const exportId = exportScopeId(journals.map((record) => record.passportId))
   const exporterKey = journals.length === 0 ? undefined : (config.indexExport.exporterKey ?? (await platform.index.exporterIdentityKey().catch(() => undefined)))
   const passports: ExportedPassport[] = []
+  const journalCopies: PassportRecord[] = []
+  const pendingCommitments: string[] = []
   const brandIds = new Set<string>()
   let offers = 0
   let claims = 0
@@ -332,31 +465,50 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
     snapshots.push(...evidence.snapshots)
     // Each nested manifest states what the index holds. The writer may hold a record the index lacks.
     const passportOffers = await store.listOffers({ passportId: record.passportId })
-    const heldAcceptances = new Set(record.acceptanceRecords.map(acceptance => `acceptance:sha256:${acceptanceCommitment(acceptance)}`))
-    for (const offer of passportOffers) {
-      if (offer.record != null) heldAcceptances.add(`acceptance:sha256:${acceptanceCommitment(offer.record)}`)
-    }
-    absent.push(...evidence.absent.filter(reference => !heldAcceptances.has(reference)))
-    sources.push(...evidence.sources)
-
-    if (!authorised) {
-      // The exported index transactions are public. Offers still waiting for a transfer are private.
-      for (const file of evidence.files) {
-        if (file.category !== 'transactions' || file.representation !== 'raw-transaction') continue
-        const outputs = findDppOutputs(Transaction.fromBinary(Array.from(file.bytes)))
-        for (const { state } of outputs) {
-          if (state.version !== '2' || state.op !== 'TRANSFER' || state.passportId !== record.passportId || !state.authorisationCommitment) continue
+    let journal = record
+    let offerCopies = passportOffers
+    if (v3) {
+      // A handover may have changed the journal between its snapshot and the offer read.
+      if (sha256Hex(recordBytes(record)) !== sha256Hex(recordBytes(await store.getPassport(record.passportId) ?? null))) {
+        throw new PortabilityRefused('store-unstable', 'The passport changed while its custody offers were being read.', { passportId: record.passportId })
+      }
+      const history = authorised ? journalTransfers(record, wallet.identityKey) : undefined
+      let transfers = history?.completed
+      if (transfers == null) {
+        try {
+          transfers = evidence.files.flatMap(file => publicCustodyTransfers(file, file.bytes)).filter(state => state.passportId === record.passportId)
+        } catch {
+          throw new PortabilityRefused('index-evidence-refused', 'The index evidence cannot be carried as public custody evidence.', { passportId: record.passportId })
+        }
+      }
+      const custody = custodyEvidence(record, passportOffers, transfers, wallet.identityKey, evidence.files.flatMap(file => file.acceptance ?? []), history?.interrupted)
+      journal = { ...record, acceptanceRecords: custody.authority }
+      offerCopies = custody.offers
+      // The nested signature retains the index's dispositions. The outer signature states the custodian's.
+      absent.push(...evidence.absent.filter(reference => !/^acceptance:sha256:[0-9a-f]{64}$/.test(reference)), ...custody.absent)
+      withheld.push(...custody.withheld)
+      pendingCommitments.push(...custody.pending)
+    } else {
+      const heldAcceptances = new Set(record.acceptanceRecords.map(acceptance => `acceptance:sha256:${acceptanceCommitment(acceptance)}`))
+      for (const offer of passportOffers) {
+        if (offer.record != null) heldAcceptances.add(`acceptance:sha256:${acceptanceCommitment(offer.record)}`)
+      }
+      absent.push(...evidence.absent.filter(reference => !heldAcceptances.has(reference)))
+      if (!authorised) {
+        for (const state of publicTransfers(evidence, record.passportId)) {
           const reference = `acceptance:sha256:${state.authorisationCommitment}`
           if (heldAcceptances.has(reference)) withheld.push(`${reference} not-public`)
           else absent.push(reference)
         }
       }
     }
+    sources.push(...evidence.sources)
+    journalCopies.push(journal)
 
     // How the passport verifies here, now, as any reader would find it. The index only finds the bytes.
     let reading: ExportedReading | undefined
     try {
-      reading = summariseReading(await platform.read(record.passportId), platform.chainTracker)
+      reading = summariseReading(await platform.read(record.passportId, v3 ? journal.acceptanceRecords : undefined), platform.chainTracker)
     } catch (cause) {
       absent.push(`reading:${record.passportId} (${cause instanceof Error ? cause.message : String(cause)})`)
     }
@@ -365,8 +517,8 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
     const held = await store.listClaims({ passportId: record.passportId })
     if (authorised) {
       // The journal carries each state's bytes and its sealed owner tier. The tier is ciphertext, sealed to its holder's key, and stays so here.
-      add(`${folder}/journal.json`, 'reports', JSON_MEDIA_TYPE, recordBytes(record), { represents: record.passportId, representation: APPLICATION_REPRESENTATIONS.journal })
-      for (const acceptance of record.acceptanceRecords) {
+      add(`${folder}/journal.json`, 'reports', JSON_MEDIA_TYPE, recordBytes(journal), { represents: record.passportId, representation: APPLICATION_REPRESENTATIONS.journal })
+      for (const acceptance of journal.acceptanceRecords) {
         const commitment = acceptanceCommitment(acceptance)
         const path = `${folder}/authority/${commitment}.json`
         if (!files.has(path)) add(path, 'authority', JSON_MEDIA_TYPE, recordBytes(acceptance), { represents: `sha256:${commitment}`, representation: acceptance.acceptanceFormat })
@@ -379,7 +531,7 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
         if (isEpcisLifecycleRecord(claim)) add(`application/lifecycle-claims/${sha256Hex(claim.id)}.json`, 'native-claims', EPCIS_LIFECYCLE_MEDIA_TYPE, new TextEncoder().encode(claim.bytes), { represents: claim.attestationId, representation: EPCIS_LIFECYCLE_REPRESENTATION })
         claims += 1
       }
-      for (const offer of passportOffers) {
+      for (const offer of offerCopies) {
         add(`application/offers/${sha256Hex(offer.requestId)}.json`, 'reports', JSON_MEDIA_TYPE, recordBytes(offer), { represents: offer.requestId, representation: APPLICATION_REPRESENTATIONS.offer })
         offers += 1
       }
@@ -397,7 +549,7 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
       genesis: record.states[0]!.txid,
       tip: tip.txid,
       index: evidence.summary,
-      acceptanceRecords: authorised ? record.acceptanceRecords.length : 0,
+      acceptanceRecords: authorised ? journal.acceptanceRecords.length : 0,
       claims: authorised ? held.length : 0,
     })
   }
@@ -413,7 +565,7 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
       add(`application/brands/${sha256Hex(brand.id)}.json`, 'reports', JSON_MEDIA_TYPE, recordBytes(brand), { represents: brand.id, representation: APPLICATION_REPRESENTATIONS.brand })
       brands += 1
     }
-    snapshots.push({ source: 'application-records', snapshotId: sha256Hex(recordBytes(journals)), completeForSnapshot: true, scope: `${journals.length} passport journal${journals.length === 1 ? '' : 's'} with the brands, offers and claims that belong to them, read twice and found equal` })
+    snapshots.push({ source: 'application-records', snapshotId: sha256Hex(recordBytes(journalCopies)), completeForSnapshot: true, scope: `${journals.length} passport journal${journals.length === 1 ? '' : 's'} with the brands, offers and claims that belong to them, read twice and found equal` })
   }
 
   /* ---- the profiles those records declare ---- */
@@ -521,7 +673,7 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
   /* ---- the manifest, signed under the publisher key ---- */
 
   const signer = evidencePackageSigner(wallet.identityKey, exportId)
-  const manifestProfiles = [...new Set([...bundleProfiles, ...named])].filter((profile) => /^[a-z][a-z0-9.-]*@[0-9][0-9a-z.-]*$/.test(profile)).sort()
+  const manifestProfiles = [...new Set([...bundleProfiles, ...named, ...(v3 ? [MANAGED_CUSTODY_EXPORT_PROFILE] : [])])].filter((profile) => /^[a-z][a-z0-9.-]*@[0-9][0-9a-z.-]*$/.test(profile)).sort()
   const manifest = await signEvidenceManifest(
     {
       format: EVIDENCE_PACKAGE_FORMAT,
@@ -545,6 +697,9 @@ export async function exportApplication(input: ExportApplicationInput): Promise<
   const inspection = inspectEvidencePackage(manifest, asNumberArrays(files), { expectedPassportId: exportId, expectedSigner: signer })
   if (!inspection.structureValid || !inspection.inventoryVerified || inspection.signatureValid !== true || inspection.failures.length > 0) {
     throw new PortabilityRefused('export-unsound', `The export does not inspect as the package it should be: ${inspection.failures.map((failure) => failure.detail).join('; ')}. Nothing is handed over.`, { failures: inspection.failures.map((failure) => failure.reason) })
+  }
+  if (pendingCommitments.length > 0 && secretCarrier(files, JSON.stringify(manifest), pendingCommitments, pendingCommitments) != null) {
+    throw new PortabilityRefused('export-unsound', 'The public export exposes a commitment held only with a pending offer.')
   }
   const carrier = secretCarrier(files, JSON.stringify(manifest), configuredSecrets(config, credentials))
   if (carrier != null) throw new PortabilityRefused('secret-in-export', `The file ${carrier} holds a secret this deployment was configured with. Nothing is handed over. Find how it reached a record or a retained source, and rotate it.`, { path: carrier })
