@@ -30,7 +30,7 @@ jobs:
       # publishing with OIDC. Pin the same npm the other publish workflows use.
       - run: npm install --global npm@11.19.0
       - run: npm ci
-      - run: npm run build -w @bsv/create-dpp-app
+      - run: npm run build
       - run: npm test -w @bsv/create-dpp-app
       - run: npm run starter:check -- --registry-dependencies
       - run: npm pack --dry-run -w @bsv/create-dpp-app
