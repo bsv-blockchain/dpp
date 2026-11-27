@@ -25,6 +25,10 @@ on:
         description: Candidate filename under release; empty selects the current set
         required: false
         default: ""
+      sourceRevision:
+        description: Full release commit SHA in the dispatch ref's history (defaults to the dispatch commit)
+        type: string
+        required: false
       dryRun:
         description: Build, check and rehearse without pushing
         type: boolean
@@ -49,6 +53,24 @@ jobs:
       APPROVED_PLAN: ${{ inputs.approval }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out the release commit
+        if: ${{ inputs.sourceRevision != '' }}
+        env:
+          SOURCE_REVISION: ${{ inputs.sourceRevision }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$SOURCE_REVISION" =~ ^[0-9a-f]{40}$ ]] || [[ "$(git cat-file -t "$SOURCE_REVISION")" != commit ]]; then
+            echo "Use a full lowercase commit SHA from the dispatch history." >&2
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$SOURCE_REVISION" "$GITHUB_SHA"; then
+            echo "The release commit must be an ancestor of the dispatch commit." >&2
+            exit 1
+          fi
+          git switch --detach "$SOURCE_REVISION"
       - uses: actions/setup-node@v7
         with:
           node-version: 22.23.4
@@ -80,7 +102,7 @@ jobs:
           const overlay = set.images.own.find((image) => image.service === 'overlay')
           const validator = set.images.own.find((image) => image.service === 'validator')
           const base = [...new Set(set.images.own.map((image) => image.runtime.baseImage))]
-          if (overlay == null || validator == null || base.length !== 1 || !/^node:[0-9.]+-slim$/.test(base[0])) throw new Error('the set does not name the index and validator images on one base image')
+          if (overlay == null || validator == null || base.length !== 1 || !/^node:[0-9.]+-slim(?:@sha256:[0-9a-f]{64})?$/.test(base[0])) throw new Error('the set does not name the index and validator images on one base image')
           appendFileSync(process.env.GITHUB_OUTPUT, `path=${path}\nselection=${set.selection}\nregistry=${set.images.registry}\nhost=${set.images.registry.split('/')[0]}\nbase=${base[0]}\noverlay=${overlay.name}\nvalidator=${validator.name}\n`)
           JS
       - name: Pack, qualify and plan
@@ -95,6 +117,12 @@ jobs:
           node scripts/publish-candidates.mjs
           node scripts/release-images.mjs check
           node scripts/publish-images.mjs
+      - name: Confirm the rebuilt publication plan
+        if: ${{ !inputs.dryRun }}
+        run: |
+          set -euo pipefail
+          printf '%s  release/publication-plan.json\n' "$APPROVED_PLAN" | sha256sum -c -
+          jq -e --arg revision "$(git rev-parse HEAD)" '.sourceRevision == $revision and .sourceState == "committed"' release/publication-plan.json
       # The base image comes from the first registry that serves it, in the
       # same order as every other workflow: Google's Docker Hub mirror, Amazon
       # ECR Public, then Docker Hub. All three serve the same manifest digests.
