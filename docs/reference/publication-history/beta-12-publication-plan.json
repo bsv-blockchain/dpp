@@ -1,0 +1,46 @@
+{
+  "releaseSet": "dpp-release-2026-11",
+  "releaseSetSha256": "a64f80d76bc0f485166e041354a3477f0a7ffa4ac17b4126280586ffc704e6c4",
+  "sourceRevision": "7b697a385c13890768cea5c8b2c36029671b8291",
+  "sourceState": "committed",
+  "selection": "conformance/selections/dpp-release-2026-11.json",
+  "selectionSha256": "b72d7fbee09f3eb9bf404990005c1530d3dc952854d7c6c44affb2d7171ca0f5",
+  "registry": "https://registry.npmjs.org/",
+  "access": "public",
+  "tag": "latest",
+  "provenance": true,
+  "candidates": [
+    {
+      "name": "@bsv/dpp-protocol",
+      "version": "0.3.0-beta.10",
+      "filename": "bsv-dpp-protocol-0.3.0-beta.10.tgz",
+      "sha256": "4532fffc0758e1ce10507914ed06fd1c620a533612f5014035986f31d630af4c",
+      "integrity": "sha512-HlZGjm+gGLS8s2AXQo9VJFRGqto1f5p0xf51lnD7oCvcY9yX/X2T4N2AmtPgriKGmUGOJ4lZJIxhnaZN9h2kkA==",
+      "size": 155350
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.3.0-beta.10",
+      "filename": "bsv-dpp-profiles-0.3.0-beta.10.tgz",
+      "sha256": "0293a0e42fc0f838fc1dbbc6498a723636200fb9bd354f7fff8fdb549af6fb1e",
+      "integrity": "sha512-rFr52pzVBgBZSf4RIAyQs+ck/JU0gR36apOBoVFlygtAivzLplytl1k8KegVXegM12pb40Rc9yB+mLFnjPsa/g==",
+      "size": 697323
+    },
+    {
+      "name": "@bsv/dpp-overlay",
+      "version": "0.4.0-beta.13",
+      "filename": "bsv-dpp-overlay-0.4.0-beta.13.tgz",
+      "sha256": "d0b4f8fdd33f6d332cf4d01e02b358eca70fd64aaf668224ac56faff711be223",
+      "integrity": "sha512-d6PqUYQjHG949bFJvmTsPEA4yiVtsDj8iep7D2meJMU/pkAgGnr+FHEi3hwQcHFcIslM6vilfU6alCWYv/qSKg==",
+      "size": 217749
+    },
+    {
+      "name": "@bsv/dpp-credentials",
+      "version": "0.2.0-beta.6",
+      "filename": "bsv-dpp-credentials-0.2.0-beta.6.tgz",
+      "sha256": "c525fcb95e18f0c5ac7b7fa8987ba26b3c3f80848b2cd87741350d63d068e4fc",
+      "integrity": "sha512-dA9CQSQOn3Zn5X0TShkVOigIIhG5xUXh4Ywx2jHf7NCzRggT8tKKFYyIMr+rYDrGvFb7SEQYS6qT28WxfeNuGQ==",
+      "size": 284741
+    }
+  ]
+}

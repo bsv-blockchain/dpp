@@ -1,12 +1,10 @@
 # Changelog
 
-This file records what a consumer of the `@bsv/dpp-*` packages, the contracts and the fixtures needs: the changes in the unpublished candidate and the releases already published. Every package is an experimental beta prerelease whose API may change significantly. The standard is pre-1.0, so breaking changes are expected and recorded here without apology until version 1.0 is declared, as `GOVERNANCE.md` states. [Migration](docs/migration.md) gives the steps for each change that needs one.
+This file records what a consumer of the `@bsv/dpp-*` packages, the contracts and the fixtures needs: the changes in each runtime release and the starter that consumes it. Every package is an experimental beta prerelease whose API may change significantly. The standard is pre-1.0, so breaking changes are expected and recorded here without apology until version 1.0 is declared, as `GOVERNANCE.md` states. [Migration](docs/migration.md) gives the steps for each change that needs one.
 
-## Unpublished: dpp-release-2026-11
+## November runtime release and application starter
 
-`dpp-release-2026-11` is the current candidate: `@bsv/dpp-protocol` and `@bsv/dpp-profiles` `0.3.0-beta.10`, `@bsv/dpp-overlay` `0.4.0-beta.13`, `@bsv/dpp-credentials` `0.2.0-beta.6` and `@bsv/create-dpp-app` `0.1.0-beta.2`. Each line below is a change since the last publication, `dpp-release-2026-10-10` on 16 October 2026. A step number is a step of [test the November source candidate](docs/migration.md#test-the-november-source-candidate).
-
-What this candidate adds, in short:
+The four runtime packages in `dpp-release-2026-11` were published on 27 November 2026. The application starter `@bsv/create-dpp-app@0.1.0-beta.2` is a separate release. The following changes are relative to the October runtime set. Numbered migration steps refer to [test the November source candidate](docs/migration.md#test-the-november-source-candidate). [Beta.12 publication receipt](docs/reference/publication-history/beta-12-publication.md)
 
 - **Bound sector profiles.** `eu-battery@1` and `eu-textile@1` replace the retired hand-written battery and textile profiles. A product document is validated against its binding's schema, contexts and SHACL shapes, the product is checked against its passport, and the document is split into a public and a restricted part.
 - **Sector binding successors.** New sector passports use `eu-battery@2` or `eu-textile@2`. Each checks the root class of the identified product, including recognised subclasses. Existing passports continue to use the version and digest they were issued under.
@@ -170,6 +168,7 @@ Each set is published to npm with its receipt; [release history](docs/reference/
 
 | Published | Set | Packages | What changed for a consumer |
 |---|---|---|---|
+| 27 November 2026 | `dpp-release-2026-11` | Protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` and credentials `0.2.0-beta.6` | Bound sector profiles and signed EPCIS lifecycle claims. [Publication receipt](docs/reference/publication-history/beta-12-publication.md) |
 | 20 October 2026 | The starters | `@bsv/create-dpp-app` and `@bsv/create-dpp-index` `0.1.0-beta.1`, under `latest` | Generate an application or an index project pinned to `dpp-release-2026-10-10`. |
 | 16 October 2026 | `dpp-release-2026-10-10` | `@bsv/dpp-protocol` and `@bsv/dpp-profiles` `0.3.0-beta.9`, `@bsv/dpp-overlay` `0.4.0-beta.12`, `@bsv/dpp-credentials` `0.2.0-beta.5` | The first under the current names, formerly `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/vsc`; overlay `0.4.0-beta.11` differed from the approved bytes and is deprecated ([renames](docs/migration.md#rename-dpp-overlay-topics-to-dpp-overlay-and-vsc-to-dpp-credentials), [dpp-protocol](docs/migration.md#rename-dpp-core-to-dpp-protocol)). |
 | 9 and 10 October 2026 | `dpp-release-2026-10-7` | Core and profiles `0.3.0-beta.8`, overlay topics `0.4.0-beta.10`, VSC `0.2.0-beta.5` | Record version 3, since parked, overlay contract `0.11.0-draft`, opt-in peer discovery, advertising and retry, and `single-operator@2` ([beta.9 to beta.10](docs/migration.md#from-beta9-to-beta10)). |
