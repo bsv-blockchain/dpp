@@ -8,8 +8,8 @@ The transfer walkthrough follows the unpublished November source candidate. Pack
 
 | Release or deployment | Custody profile | Acceptance signature and format |
 |---|---|---|
-| Published October set and hosted index's current declaration | `managed-custody@1` | Directly under custodian identity key; `dpp-managed-acceptance@1` |
-| November source candidate | `managed-custody@2` | BRC-42 derived key through a BRC-100 wallet; `dpp-managed-acceptance@2` |
+| Published October set and the reference index at `dpp-overlay.bsvb.net` | `managed-custody@1` | Custodian signs `dpp-managed-acceptance@1` with its identity key |
+| November source candidate and the [testnet and mainnet registration indexes](../deployment.md#services) | `managed-custody@2` | Custodian signs `dpp-managed-acceptance@2` with a BRC-42 derived key through a BRC-100 wallet |
 
 | Task | Required input and source |
 |---|---|

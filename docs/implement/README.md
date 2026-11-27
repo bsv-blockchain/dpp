@@ -16,7 +16,7 @@ Implementers can use this starting kit to write the DPP rules in any language wi
 | Node 22 and npm | Your environment, for reference examples beside your results; your implementation needs neither |
 | BSV building blocks | An SDK for your language or your own code, listed below |
 | Reader | Nothing else: no account, wallet, funds or network |
-| Later live writer | A funded BRC-100 wallet and an index of your own |
+| Later live writer | A funded BRC-100 wallet and an index that admits your publisher key. Run your own or [register with a compatible hosted index](../deployment.md#registration-and-operator-keys). |
 
 A fixture is a JSON file of inputs and expected results, including inputs your code must refuse.
 
