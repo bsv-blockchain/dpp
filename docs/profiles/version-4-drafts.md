@@ -37,7 +37,7 @@ The definitions stay published, byte for byte, at the digests the [frozen invent
 
 ## A record that declares a draft
 
-A stored record that declares a draft is not rewritten and cannot be erased. A reader built from this candidate checks its signatures, links and proofs as for any passport, and reports its payload under `schema` as `unknown` with `schema-unavailable` and the cause `profile-retired`. It does not label the values from the draft's manifest as if the profile were supported ([read a stored payload under its profile](README.md#read-a-stored-payload-under-its-profile)).
+A stored record that declares a draft is not rewritten and cannot be erased. A reader on the November packages checks its signatures, links and proofs as for any passport, and reports its payload under `schema` as `unknown` with `schema-unavailable` and the cause `profile-retired`. It does not label the values from the draft's manifest as if the profile were supported ([read a stored payload under its profile](README.md#read-a-stored-payload-under-its-profile)).
 
 The hosted reference holds demonstration passports that declare `battery@4` and `textile@4` ([hosted reference](../deployment.md)). They stay on chain as written.
 

@@ -22,12 +22,10 @@ Open the **Local** URL printed in the terminal. With the development defaults, c
 
 ## Go live on testnet
 
-The published starter, `0.1.0-beta.1`, uses manual setup. Set `NETWORK=test` before creating or funding the wallet and follow the [published starter’s testnet setup](../packages/create-dpp-app.md#run-the-published-starter-on-testnet-or-mainnet) to connect a compatible index.
-
-The November source candidate includes the following command. Run it from a project generated with that candidate after configuring its wallet and index.
+The starter writes `.env` with the default testnet index. Run the following command from the app folder.
 
 ```sh
 npm run go-live
 ```
 
-The command checks wallet funding and publisher admission. See the [candidate setup](../packages/create-dpp-app.md#run-the-november-source-candidate) for the compatible index and registration requirements.
+The command requests publisher registration and checks wallet funding and index admission. It names the fix for each check that fails and enables publishing once every check passes. See [testnet and mainnet setup](../packages/create-dpp-app.md#run-on-testnet-or-mainnet) for the compatible index and registration requirements. An app created with the earlier `0.1.0-beta.1` starter has no go-live command: follow the [earlier starter’s setup](../packages/create-dpp-app.md#run-the-earlier-starter).

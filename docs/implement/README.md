@@ -6,7 +6,7 @@ Implementers can use this starting kit to write the DPP rules in any language wi
 
 | Compatibility target | Source and rule |
 |---|---|
-| Current source candidate | `dpp-release-2026-11`, including `managed-custody@2`; not yet published |
+| Current release | `dpp-release-2026-11`, including `managed-custody@2`; published on 27 November 2026 |
 | Installed October release | Keep its source revision, fixtures and `managed-custody@1` rules together |
 | Both targets | [Release sets](../reference/release-sets.md) |
 

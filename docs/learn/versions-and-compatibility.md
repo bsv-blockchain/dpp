@@ -16,10 +16,10 @@ A [release set](../reference/release-sets.md) is one tested combination, declare
 
 | Scope | Set and source |
 |---|---|
-| Current source candidate | `dpp-release-2026-11`, declared in `release/dpp-release-2026-11.json`; not yet published. |
-| Last published set | `dpp-release-2026-10-10`, published on 16 October 2026. The [beta.11 receipt](../reference/publication-history/beta-11-publication.md) preserves its approved plan and source revision. |
+| Current set | `dpp-release-2026-11`, declared in `release/dpp-release-2026-11.json`. Its four runtime packages were published on 27 November 2026; the [beta.12 receipt](../reference/publication-history/beta-12-publication.md) preserves its approved plan and source revision. |
+| Previous set | `dpp-release-2026-10-10`, published on 16 October 2026 and now superseded. The [beta.11 receipt](../reference/publication-history/beta-11-publication.md) preserves its approved plan and source revision. |
 
-The candidate inventory below gives each release-set field and the exact spelling in an index's `GET /capabilities` answer.
+The inventory of the current set below gives each release-set field and the exact spelling in an index's `GET /capabilities` answer.
 
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|
@@ -29,9 +29,9 @@ The candidate inventory below gives each release-set field and the exact spellin
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |
 | Anchor | `bsv-attestation-anchor-v1` | `wire.anchor` | `protocols`: `bsv-attestation-anchor` version `1`; `anchorFormats` lists it as `current` |
 | Acceptance record | `dpp-managed-acceptance@2`; a reader also reads `dpp-managed-acceptance@1` under its superseded rule | `wire.acceptanceRecord` | Implied by the custody profile |
-| Verification report | Version `2`; the published sets name version `1` | `wire.verificationReport` | Not advertised; each report carries `reportVersion` |
+| Verification report | Version `2`; earlier sets name version `1` | `wire.verificationReport` | Not advertised; each report carries `reportVersion` |
 | Index contract | `0.14.0-draft` | `wire.overlayContract` | `protocols`: `overlay-http` version `0.14.0-draft` |
-| Custody profile | `managed-custody@2`; the published October set selects `managed-custody@1` | `custody.selected` | `profiles`: the entry of kind `custody`, id `managed-custody`, version `2`, with its options |
+| Custody profile | `managed-custody@2`; the October set selects `managed-custody@1` | `custody.selected` | `profiles`: the entry of kind `custody`, id `managed-custody`, version `2`, with its options |
 | Industry profiles | Current: `general@2`, and `eu-battery@2` and `eu-textile@2`, held by bindings. Retired from 14 November 2026: `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4`, whose records read as unsupported | The frozen manifests and the bundled bindings in `@bsv/dpp-profiles` | Not advertised by an index; each state's payload declares its own `profile` and `profile_version` |
 
 Versions move independently. Installing a package never selects a record format or industry profile, or rewrites stored records. Its prerelease number is not a specification, wire-format or profile version. A reader may need both record decoders within one release set; an industry profile does not select a different blockchain format.
@@ -78,7 +78,7 @@ custody managed-custody 2 {"acceptanceCommitment":"required","controlAuthorities
 
 | Check | Match required | Mismatch or limit |
 |---|---|---|
-| Record versions and contract | Protocols include every record version you write and your client's `overlay-http` version. | An index on a published overlay from beta.10 to beta.12 also prints `dpp-record` version `3`, the token carrier, which is now parked: write no version 3 state to it. The published beta.9 index prints an earlier contract. |
+| Record versions and contract | Protocols include every record version you write and your client's `overlay-http` version. | An index on an overlay from beta.10 to beta.12 also prints `dpp-record` version `3`, the token carrier, which is now parked: write no version 3 state to it. A beta.9 index prints an earlier contract. |
 | Custody | Match your transfer workflow to the selected profile. | `managed-custody` with `acceptanceCommitment: required` refuses a version 2 `TRANSFER` without an acceptance commitment. An index admitting version 2 without one declares `record-model-baseline@2`. |
 | Publisher key | Before writing, find your countersigning key in `publisherPolicy.publisherKeys`. | A missing key blocks this write workflow. |
 | Implementation | Compare advertised capabilities, not the release-set name. | Services can run older packages. Until 3 October 2026, the hosted `@bsv/dpp-overlay@0.4.0-beta.3` read and wrote the same record formats but used an earlier contract: no refusal reasons or GS1 key lookup. |

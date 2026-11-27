@@ -15,13 +15,13 @@
 
 ## Install
 
-This is a pre-1.0 candidate. The published version is `@bsv/dpp-credentials@0.2.0-beta.5`, selected by the October set; this source tree is the November candidate, `0.2.0-beta.6`, which is not yet published. It no longer contains the parked VSC compatibility profile or the EPCIS-to-SEAL mappings ([parked code](#parked-the-vsc-compatibility-profile-and-the-epcis-to-seal-mappings)). Install the exact published version from npm:
+This is a pre-1.0 prerelease. The published version is `@bsv/dpp-credentials@0.2.0-beta.6`, selected by the November set, `dpp-release-2026-11`, and on npm since 27 November 2026. It no longer contains the parked VSC compatibility profile or the EPCIS-to-SEAL mappings ([parked code](#parked-the-vsc-compatibility-profile-and-the-epcis-to-seal-mappings)); `0.2.0-beta.5`, selected by the October set, still does and stays on npm. Install the exact published version from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5
+npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
 ```
 
-[Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test the candidate; after publication, `npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6` applies.
+To test unreleased changes from a checkout, [install local archives](../../docs/packages/README.md#test-unreleased-source).
 
 The runtime and its exchange and EPCIS subpaths require Node >=22 and ECMAScript modules. Browser runtime use is unsupported; artefact exports are plain data. No repository checkout or package build is needed after installation.
 
@@ -95,7 +95,7 @@ The `vsc-draft-compat/0.1.0` profile and the EPCIS-to-SEAL mappings `epcis-vsc@1
 
 What stays is what the parked manifests pin: `artifacts/context-0.1.0.jsonld`, `artifacts/seal-0.1.0.schema.json`, `artifacts/disclosure-0.1.0.schema.json` and the profile record `artifacts/profile-0.1.0.json` with their digests, as published, so the parked manifests stay verifiable. The vectors of both mappings stay as published in `fixtures/vectors/dpp/interoperability/epcis/`.
 
-The code stays in the repository history: commit [`8c82c5e6ca31cd991e701d1051047153c7395eae`](https://github.com/bsv-blockchain/dpp/tree/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials) on `main` carries it, with its tests and the generators of the mapping vectors, and its package guide there documents the calls. The published `@bsv/dpp-credentials@0.2.0-beta.5` still exports the profile and `epcis-vsc@1`. The `dpp-release-2026-11` candidate claims neither; earlier sets, including the published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`. New work that verifies credentials from other issuers belongs on `@bsv/dpp-credentials/exchange`.
+The code stays in the repository history: commit [`8c82c5e6ca31cd991e701d1051047153c7395eae`](https://github.com/bsv-blockchain/dpp/tree/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials) on `main` carries it, with its tests and the generators of the mapping vectors, and its package guide there documents the calls. The earlier `@bsv/dpp-credentials@0.2.0-beta.5` still exports the profile and `epcis-vsc@1`. The `dpp-release-2026-11` set claims neither; earlier sets, up to `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`. New work that verifies credentials from other issuers belongs on `@bsv/dpp-credentials/exchange`.
 
 ## Licence
 

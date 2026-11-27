@@ -91,7 +91,7 @@ State and claim results are independent. Passing state checks with `unknown` cla
 | Declared profile and caller-supplied payload validator, such as `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles` | Checks the state's `payload_public` against its industry profile |
 | No payload validator | `unknown` with `schema-unavailable` |
 | Payload declares no profile | `unknown` with `profile-undeclared`, with or without a validator |
-| Payload declares a retired profile, such as `battery@2`, in the source candidate | `unknown` with `schema-unavailable`. The validator's detail names the cause `profile-retired` and the replacement. The payload is neither passed nor failed, and every other check is made as usual ([retired profiles](../profiles/README.md#retired-profiles)) |
+| Payload declares a retired profile, such as `battery@2`, from the November release | `unknown` with `schema-unavailable`. The validator's detail names the cause `profile-retired` and the replacement. The payload is neither passed nor failed, and every other check is made as usual ([retired profiles](../profiles/README.md#retired-profiles)) |
 
 ## Results you will see first
 

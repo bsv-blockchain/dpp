@@ -18,17 +18,13 @@ rather than rewritten.
 
 ## Install and consume
 
-This is a pre-1.0 source candidate. The package was renamed from `@bsv/dpp-core`. Existing consumers must [migrate their imports and schema paths](../../docs/migration.md#rename-dpp-core-to-dpp-protocol); the active release contains no wrapper under the old name. The published version under the new name is `@bsv/dpp-protocol@0.3.0-beta.9`, selected by the October set since 16 October 2026:
-
-```sh
-npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10
-```
-
-This source tree is the November candidate, `0.3.0-beta.10`, not yet published. [Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test it. After publication, install these exact versions from npm:
+This is a pre-1.0 prerelease. The package was renamed from `@bsv/dpp-core`. Existing consumers must [migrate their imports and schema paths](../../docs/migration.md#rename-dpp-core-to-dpp-protocol); the active release contains no wrapper under the old name. The published version is `@bsv/dpp-protocol@0.3.0-beta.10`, selected by the November set, `dpp-release-2026-11`, and on npm since 27 November 2026. Install these exact versions:
 
 ```sh
 npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@2.8.10
 ```
+
+The October set selected `0.3.0-beta.9`, which stays on npm. To test unreleased changes from a checkout, [install local archives](../../docs/packages/README.md#test-unreleased-source).
 
 Node >=22 and ECMAScript modules are supported. Browser use of the runtime is untested. The installed archive includes the built package.
 

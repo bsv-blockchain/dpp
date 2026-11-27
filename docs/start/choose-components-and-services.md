@@ -26,7 +26,7 @@ The standard defines roles and rules; packages implement some rules; services ru
 
 ## Pick only the packages your task uses
 
-1. For a new application, use [the application starter](../packages/create-dpp-app.md). `@bsv/create-dpp-app` creates the app and declares selected dependencies. Deployment needs an existing index provider or an index of your own. In the source candidate the app validates in its own process or, by one setting, through a validator service, and its `export` and `restore` commands move it to another deployment.
+1. For a new application, use [the application starter](../packages/create-dpp-app.md). `@bsv/create-dpp-app` creates the app and declares selected dependencies. Deployment needs an existing index provider or an index of your own. From starter `0.1.0-beta.2` the app validates in its own process or, by one setting, through a validator service, and its `export` and `restore` commands move it to another deployment.
 2. For a new reference index, use [Run an index from source](../operate/README.md). The repository's Docker Compose preset runs the `@bsv/dpp-overlay` image with MongoDB and the validator service, each image pinned by digest; do not install the runtime separately. The retired index starter is [replaced by it](../packages/create-dpp-index.md).
 3. To connect to an existing compatible index over HTTP, use its operator-supplied connection settings. No index package is needed.
 
@@ -44,7 +44,7 @@ These libraries are code components. Dependencies included by a starter or anoth
 | Decision | Requirement |
 |---|---|
 | Installation | Use exact versions from [install the selected release](../packages/README.md) |
-| Published or source | The published set is `dpp-release-2026-10-10`; `dpp-release-2026-11` is an unpublished source candidate. Check [release sets](../reference/release-sets.md). |
+| Published or source | The published set is `dpp-release-2026-11`, on npm since 27 November 2026; `dpp-release-2026-10-10` is superseded. Check [release sets](../reference/release-sets.md). |
 | SDK | Declare `@bsv/sdk` directly when your code imports it |
 | Runtime | Node.js 22 or later with ESM |
 | Browser | Check [supported entry points](../packages/support-table.md); JavaScript alone does not establish browser module support |

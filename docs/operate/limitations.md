@@ -6,11 +6,11 @@ Developers, operators and product teams can use these limits to decide whether a
 
 | Input | Source and scope |
 |---|---|
-| Installed release | Your package selection. The last published set is `dpp-release-2026-10-10`, including `@bsv/dpp-overlay@0.4.0-beta.12`. |
-| Source candidate | Your checkout. `dpp-release-2026-11` supersedes the published set for development; it is not yet published. Candidate-only features are labelled below. |
+| Installed release | Your package selection. The current set is `dpp-release-2026-11`, published on 27 November 2026, including `@bsv/dpp-overlay@0.4.0-beta.13`. Rows that apply only from this release say November. |
+| Earlier release | `dpp-release-2026-10-10`, including `@bsv/dpp-overlay@0.4.0-beta.12`. It stays on npm, and a deployment may still run it. |
 | Hosted version | The [hosted reference](../deployment.md)'s capability document. Source changes do not upgrade that deployment. |
 
-Limits apply to both releases unless a row names a version. [Resolved questions](#resolved-in-the-november-candidate) remain separate from open ones.
+Limits apply to both releases unless a row names a version. [Resolved questions](#resolved-in-the-november-release) remain separate from open ones.
 
 ## Writing
 
@@ -19,18 +19,18 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 | Only a refused passport state says why | `X-Admission-Refusal` names the failed `tm_dpp` check. A refused `tm_attestation` anchor, or any refusal on an earlier index, answers `none`; only the operator's log gives the reason. | Before announcing an anchor, check that `GET /capabilities` accepts its anchoring service. For older indexes, check the [refusal causes](../packages/build-an-application.md#when-the-index-refuses-a-state) and request the log line. |
 | Capability publisher keys lack windows and signatures | `GET /capabilities` is the index's word. It may refuse a listed key outside its timestamp window. | Check `GET /publisher-policy`'s signed chain against the operator's identity key ([tell operators apart](federation.md#tell-operators-apart)). Earlier indexes serve it only in evidence packages. |
 | Hosted services use mainnet | Every hosted write, including a signed-in demonstration brand's write, costs satoshis. Sample brands write nothing to the chain. | Test with dry runs, a local index using `NETWORK=test`, and identifiers under GS1 demonstration prefix 952. |
-| Published acceptance records use older signing | `managed-custody@1` signs directly with the custodian identity key. The November candidate writes `managed-custody@2` acceptance records with derived keys through a BRC-100 wallet. | Preserve old records and verify each under its own rule. Follow [candidate migration](../migration.md#test-the-november-source-candidate) before changing signers. |
-| Candidate acceptance records have no dedicated retrieval route | With the chain alone, a stranger reads `evidenceAvailability` `unknown`, `referenced-artefact-unavailable` on a managed `TRANSFER`. Neither index nor registry serves individual records. | Export the custodian's evidence package: records travel under `authority`; read them with `acceptanceRecordsInPackage` from `@bsv/dpp-protocol`. |
+| Earlier acceptance records use older signing | `managed-custody@1` signs directly with the custodian identity key. The November release writes `managed-custody@2` acceptance records with derived keys through a BRC-100 wallet. | Preserve old records and verify each under its own rule. Follow the [November migration](../migration.md#move-to-the-november-release) before changing signers. |
+| November acceptance records have no dedicated retrieval route | With the chain alone, a stranger reads `evidenceAvailability` `unknown`, `referenced-artefact-unavailable` on a managed `TRANSFER`. Neither index nor registry serves individual records. | Export the custodian's evidence package: records travel under `authority`; read them with `acceptanceRecordsInPackage` from `@bsv/dpp-protocol`. |
 | Owner tier ciphertext has no fixed location | The state holds only its hash; holders and later recipients need another source. | Serve its UHRP content address, already given by that hash ([record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md), section 7). |
 
 ## Index host
 
 | Limit | Effect | Action |
 |---|---|---|
-| Candidate registration retains every policy entry | Each registration appends a `dpp-publisher-policy@1` version containing every earlier entry, including retired entries. The served chain grows with the square of the entry count. | Prefer `REGISTRATION=approval` on publicly reachable indexes. |
-| Candidate registration has a 256-entry cap | Each policy version holds at most 256 publishers. At the cap, the index answers `503 registration-unavailable`; revocation frees no space. | Ask the operator to start a new scope before reaching the cap. |
-| Candidate command-line policy updates are not immediate | A version appended by the operator reaches the running index at its next registration request, `GET /publisher-policy` or restart. | Account for that delay when changing admission. |
-| Operator tokens are shared secrets | Everyone given `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN` or `EXPORT_TOKEN` shares its value; requests cannot be distinguished. Candidate per-publisher tokens (`dpp-index connection` or `dpp-index tokens issue`) distinguish `/submit`, `/retract` and `/arc-ingest` writers. Complete exports still use only shared `EXPORT_TOKEN`. | On the candidate, issue per-publisher tokens; reserve operator tokens for operator tools. Limit outside export access in time, then replace `EXPORT_TOKEN`. |
+| Registration retains every policy entry | Each registration appends a `dpp-publisher-policy@1` version containing every earlier entry, including retired entries. The served chain grows with the square of the entry count. | Prefer `REGISTRATION=approval` on publicly reachable indexes. |
+| Registration has a 256-entry cap | Each policy version holds at most 256 publishers. At the cap, the index answers `503 registration-unavailable`; revocation frees no space. | Ask the operator to start a new scope before reaching the cap. |
+| Command-line policy updates are not immediate | A version appended by the operator reaches the running index at its next registration request, `GET /publisher-policy` or restart. | Account for that delay when changing admission. |
+| Operator tokens are shared secrets | Everyone given `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN` or `EXPORT_TOKEN` shares its value; requests cannot be distinguished. From overlay `0.4.0-beta.13`, per-publisher tokens (`dpp-index connection` or `dpp-index tokens issue`) distinguish `/submit`, `/retract` and `/arc-ingest` writers. Complete exports still use only shared `EXPORT_TOKEN`. | From that version, issue per-publisher tokens; reserve operator tokens for operator tools. Limit outside export access in time, then replace `EXPORT_TOKEN`. |
 | WhatsOnChain is the only header source | Inclusion trusts its headers. Anonymous access allows a few requests a second. Outages drop proven states during synchronisation; five failed rounds leave them behind until retry. | Set `WOC_API_KEY`; no alternative-header setting exists. [Move checkpoints back](federation.md#move-a-checkpoint-back) for missed states rather than waiting. |
 | No published operator image | Operators build from a checkout. | Use the Compose preset in [run a service](README.md). |
 | History/export snapshots expire after ten minutes | Longer pauses require restarting pagination; process restarts or another answering replica also lose the cursor. | Page promptly; restart when the cursor is lost. |
@@ -99,7 +99,7 @@ The overlay package keeps SHIP peer discovery and SHIP/SLAP advertising as optio
 
 | Limit | Effect | Action |
 |---|---|---|
-| Candidate token-payload schema checks need a caller validator | Published readers do not check token payload profiles. Without policy `payloadValidator`, candidate `schema` is `unknown` for every token state. A payload declaring no profile produces `unknown`, `profile-undeclared` either way. | Supply `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles` as `payloadValidator` ([profiles](../packages/dpp-profiles.md#check-a-payload-against-its-profile)); declare `profile` and `profile_version` in every payload. |
+| Token-payload schema checks need a caller validator | Readers before protocol `0.3.0-beta.10` do not check token payload profiles. From that version, without policy `payloadValidator`, `schema` is `unknown` for every token state. A payload declaring no profile produces `unknown`, `profile-undeclared` either way. | Supply `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles` as `payloadValidator` ([profiles](../packages/dpp-profiles.md#check-a-payload-against-its-profile)); declare `profile` and `profile_version` in every payload. |
 | Identity assurance is Ring 0 | The platform vouches for account and brand name; nobody checks legal identity. | Treat the name as the [platform's statement](../learn/identity-and-authority.md). |
 
 ## The hosted reference
@@ -110,11 +110,11 @@ The overlay package keeps SHIP peer discovery and SHIP/SLAP advertising as optio
 | `dpp.bsvb.net/verify` reads only the hosted index | Your index's passports remain not found until the hosted index pulls them. | Use [your own reader](../quick-start.md#read-a-live-passport). |
 | Hosted registry capabilities omit its anchoring key | Verifiers cannot obtain the key there. | Use the [documented key](../deployment.md#where-the-hosted-services-fall-short). |
 
-## Resolved in the November candidate
+## Resolved in the November release
 
-These rules have source implementation support. They remain unavailable through an npm upgrade; applications must integrate the workflow.
+These rules are implemented in the November packages on npm. An npm upgrade alone does not apply them; applications must integrate the workflow.
 
-| Former open question | Candidate rule |
+| Former open question | November rule |
 |---|---|
 | Disclosure of the `legitimate` and `authority` tiers | One owner commitment covers the restricted object. Each disclosure is re-encrypted to an authorised reader's identity key and includes only their entitled tiers ([record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md), section 7). |
 | Writing for a holder after a hand on | A custodian's update or retirement for a managed holder depends on custody: the chain cannot show that the holder asked, and the verification report's limits say so. The instruction record that once recorded the request is parked outside the standard ([parked instruction records](../reference/parked/managed-instruction/README.md)). |

@@ -17,7 +17,7 @@ Teams with GS1 Digital Links, EPCIS events, W3C Verifiable Credentials or produc
 | Credentials from other issuers (VC Data Model 2.0, `did:web`) | Verifies them and folds the result into the passport report | `vc-di-ecdsa-rdfc-2019@1` | Verify only; there is no issuance (`@bsv/dpp-credentials/exchange`) | [`node examples/verify-external-credential.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-external-credential.mjs) | [External credentials](external-credentials.md) |
 | Product data by model, batch and item | Computes a reproducible product view for a passport page | None: a projection is a data document and a reference feature of the package, outside the standard | Project and check the digest (`@bsv/dpp-profiles`) | [`node examples/project-passport.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/project-passport.mjs) | [Projections](projections.md) |
 
-The current candidate, `dpp-release-2026-11`, carries the EPCIS route's strict parsing, schema validation, event digests and arrival classification. From 12 November 2026 its selection claims no optional profile, so it withholds `epcis-source-import-1`, the claim on that route. The earlier `epcis-source-exchange-1`, which also covered the parked mapping, moved to the ledger archive the same day.
+The current set, `dpp-release-2026-11`, carries the EPCIS route's strict parsing, schema validation, event digests and arrival classification. From 12 November 2026 its selection claims no optional profile, so it withholds `epcis-source-import-1`, the claim on that route. The earlier `epcis-source-exchange-1`, which also covered the parked mapping, moved to the ledger archive the same day.
 
 ## What each route's output feeds
 
@@ -36,7 +36,7 @@ Keep original sources and mapping results so participants can see what survived 
 
 | Integration | Status and evidence |
 |---|---|
-| United Nations Transparency Protocol (UNTP) exchange | Proposed, outside this release. The published beta.4 [selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json), now superseded, withholds `untp-0.7.0-pilot` with its reason, and the current candidate's selection withholds it too. The [profile source](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/exchange) records the proposal. |
+| United Nations Transparency Protocol (UNTP) exchange | Proposed, outside this release. The published beta.4 [selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json), now superseded, withholds `untp-0.7.0-pilot` with its reason, and the current set's selection withholds it too. The [profile source](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/exchange) records the proposal. |
 | European Standard (EN) 18223 serialisation and Union DPP Registry integration | Not implemented, and the standard makes no European system conformance claim. An operator-supplied registration reference does not prove registration occurred. |
 
 ## Parked: compatibility profiles

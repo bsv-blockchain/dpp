@@ -12,7 +12,7 @@ An app connecting to an existing index over HTTP needs its URL and access settin
 
 | Procedure | Input and source |
 |---|---|
-| Direct installation | Node 22 or later; the exact packages listed in Install. Candidate archives come from a checkout containing `packages/dpp-protocol`. |
+| Direct installation | Node 22 or later; the exact packages listed in Install. |
 | Embedded example | Installed project; the script supplies synthetic keys and funding. No network, wallet or checkout needed. |
 | Admission-only example | `fixtures/chain-v2.json` in the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`. Save and run `admit.mjs` at its root. |
 | Source service | The same built checkout; publisher public key, route tokens, storage and accepted anchoring-service keys from the operator. |
@@ -29,7 +29,7 @@ An app connecting to an existing index over HTTP needs its URL and access settin
 
 ## Library or service
 
-The source candidate exports its library at `@bsv/dpp-overlay` and HTTP host at `@bsv/dpp-overlay/server`; neither starts on import. `dpp-index` runs the configured operator process; `dpp-index connection` writes an application's connection file. Earlier published versions need repository or container startup.
+From `0.4.0-beta.13` the package exports its library at `@bsv/dpp-overlay` and HTTP host at `@bsv/dpp-overlay/server`; neither starts on import. `dpp-index` runs the configured operator process; `dpp-index connection` writes an application's connection file. Earlier versions need repository or container startup.
 
 | Route | Use it when | Start here |
 |---|---|---|
@@ -40,19 +40,13 @@ The source candidate exports its library at `@bsv/dpp-overlay` and HTTP host at 
 
 Install directly for custom embedding or configuration. The Compose preset runs the same runtime as an image and needs no installation: the npm package and the image are the same built files ([images](../reference/release-sets.md#images)).
 
-**Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now:
-
-1. At the checkout root, run `npm ci`, `node scripts/release-candidates.mjs` and `node scripts/consumer-check.mjs` to build, pack and test archives in a separate project. Nothing is published.
-2. In your application, use `npm install /absolute/path/to/the-produced-package.tgz` with protocol, profiles and overlay archive paths together to resolve unpublished dependencies locally. Find `bsv-dpp-overlay-0.4.0-beta.13.tgz` in `release/candidates`; retain archives and lockfile.
-3. Declare direct imports of the SDK and upstream overlay package at the versions below.
-
-The npm command below applies once these exact versions have been published. Run it in your project:
+`@bsv/dpp-overlay@0.4.0-beta.13` has been on npm since 27 November 2026. Declare direct imports of the SDK and the upstream overlay package at the versions below. Run this in your project:
 
 ```sh
 npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.13 @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
 ```
 
-The package already depends on `@bsv/overlay` 2.3.1; declare it directly because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay` selects `latest`, the newest beta. Pin versions so upgrades are your choice, and keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
+The package already depends on `@bsv/overlay` 2.3.1; declare it directly because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay` selects `latest`, the newest beta. Pin versions so upgrades are your choice, and keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies. To test unreleased changes from a checkout in place of the npm versions, [pack and install local archives](README.md#test-unreleased-source).
 
 ## Embed an index
 

@@ -31,7 +31,7 @@ The preset builds nothing: it pulls three images, each by digest, so `compose.ym
 
 To run the index and its database without the validator service, name the index: `docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d overlay` starts `overlay` and `mongo` and nothing else.
 
-`/health` names the topics and services; `/capabilities` is the capability document (`contracts/capabilities.schema.json`), which says which custody profiles this node admits (`managed-custody@2` when `ACCEPTANCE_COMMITMENT=required` in this source candidate, `managed-custody@1` in the published October set, otherwise the record model's baseline), whether it exports, and whether it synchronises.
+`/health` names the topics and services; `/capabilities` is the capability document (`contracts/capabilities.schema.json`), which says which custody profiles this node admits (`managed-custody@2` when `ACCEPTANCE_COMMITMENT=required` in this release, `managed-custody@1` in the October set, otherwise the record model's baseline), whether it exports, and whether it synchronises.
 
 The header source is the trust boundary of the inclusion check. Left empty, `CHAIN_TRACKER` is WhatsOnChain on `NETWORK`, a third party's headers; the node has no setting for another header service yet, and `WOC_API_KEY` raises WhatsOnChain's rate limit. `CHAIN_TRACKER=scripts-only` is a local fixture and demonstration setting: it admits unproven ancestry, verifies no merkle path, and every state it serves reads `pending` to a verifier. It never claims inclusion, and a reachable deployment must not run it.
 

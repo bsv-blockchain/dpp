@@ -4,17 +4,13 @@
 
 ## Install
 
-This is a pre-1.0 candidate. The published version is `@bsv/dpp-profiles@0.3.0-beta.9`, selected by the October set. Install it from npm:
-
-```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.9
-```
-
-**Publication pending:** this source tree is the November candidate, `0.3.0-beta.10`. [Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test it. The following npm command applies after publication.
+This is a pre-1.0 prerelease. The published version is `@bsv/dpp-profiles@0.3.0-beta.10`, selected by the November set, `dpp-release-2026-11`, and on npm since 27 November 2026. Install it from npm:
 
 ```sh
 npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.10
 ```
+
+The October set selected `0.3.0-beta.9`, which stays on npm. To test unreleased changes from a checkout, [install local archives](../../docs/packages/README.md#test-unreleased-source).
 
 The runtime requires Node >=22 and ECMAScript modules. The JSON data exports can be read in other runtimes. No repository checkout or package build is needed after installation.
 

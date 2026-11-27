@@ -2,15 +2,15 @@
 
 Implementers can use this index to select rules for their release. For an introduction, use the [passport model](../start/architecture.md), [quick start](../quick-start.md) or [implementer start](../implement/README.md).
 
-The same passport format and verification rules apply on BSV testnet and mainnet. To select a network, fund a wallet and connect the published app to an index, follow [Testnet and mainnet setup](../packages/create-dpp-app.md#run-the-published-starter-on-testnet-or-mainnet).
+The same passport format and verification rules apply on BSV testnet and mainnet. To select a network, fund a wallet and connect the published app to an index, follow [Testnet and mainnet setup](../packages/create-dpp-app.md#run-on-testnet-or-mainnet).
 
 ## Before selecting a source
 
 | Target | Source to use |
 |---|---|
-| Reviewed November source candidate | Links below describe `dpp-release-2026-11`, not yet published |
+| Current release | Links below describe `dpp-release-2026-11`, whose runtime packages were published on 27 November 2026 |
 | Installed package | Specification and contract revisions in its [release set and publication receipt](release-sets.md) |
-| Published October set | Still selects `managed-custody@1` |
+| Superseded October set | Selects `managed-custody@1` |
 
 ## What is normative
 

@@ -88,17 +88,17 @@ The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/b60
 
 ## Parked: the VSC SEAL
 
-The Verifiable Supply Chain (VSC) SEAL, profile `vsc-draft-compat/0.1.0`, is an optional compatibility profile that no release requires and the programme does not currently develop. Its code left `@bsv/dpp-credentials` in 0.2.0-beta.6 and stays in the repository history ([parked profile](../packages/dpp-credentials.md#parked-the-vsc-compatibility-profile)), the current candidate, `dpp-release-2026-11`, does not claim it, and the parked [VSC profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/vsc-profile.md) defines it.
+The Verifiable Supply Chain (VSC) SEAL, profile `vsc-draft-compat/0.1.0`, is an optional compatibility profile that no release requires and the programme does not currently develop. Its code left `@bsv/dpp-credentials` in 0.2.0-beta.6 and stays in the repository history ([parked profile](../packages/dpp-credentials.md#parked-the-vsc-compatibility-profile)), the current set, `dpp-release-2026-11`, does not claim it, and the parked [VSC profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/vsc-profile.md) defines it.
 
 | Representation | What you could do | Entry point | Ledger |
 |---|---|---|---|
-| VSC SEAL, profile `vsc-draft-compat/0.1.0` | Issue and verify, with `Ed25519Signature2020` or `bbs-2023` proofs, in the published 0.2.0-beta.5 only | None from 0.2.0-beta.6 | Rows `VSC-2-structure` and `VSC-3-proofs`, in the ledger archive from 12 November 2026 |
+| VSC SEAL, profile `vsc-draft-compat/0.1.0` | Issue and verify, with `Ed25519Signature2020` or `bbs-2023` proofs, in the earlier 0.2.0-beta.5 only | None from 0.2.0-beta.6 | Rows `VSC-2-structure` and `VSC-3-proofs`, in the ledger archive from 12 November 2026 |
 
 - A **SEAL** is the credential the VSC profile uses to carry a signed supply chain event, its subjects and supporting references.
 - **`Ed25519Signature2020`** is an Ed25519 signature over the credential's canonical form.
 - **`bbs-2023`** is a BBS signature that lets a holder later present only some of the claims, through a derived proof bound to one presentation request. Proving that the presenter is the holder, and an HTTPS transport for presentations, are not implemented.
 
-Issuing a SEAL takes the event and product subject, the issuer's DID document, a status entry and a signing key that document authorises for assertion. The suites need their own keys; a wallet's BSV key is not interchangeable. An existing caller of `issueSealEd25519`, `issueSealBbs` or `verifySeal` stays on the published `0.2.0-beta.5`; the [package guide](https://github.com/bsv-blockchain/dpp/blob/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials/README.md) at commit `8c82c5e`, which carries the profile, shows the calls with their document loader and policies.
+Issuing a SEAL takes the event and product subject, the issuer's DID document, a status entry and a signing key that document authorises for assertion. The suites need their own keys; a wallet's BSV key is not interchangeable. An existing caller of `issueSealEd25519`, `issueSealBbs` or `verifySeal` stays on the earlier `0.2.0-beta.5`; the [package guide](https://github.com/bsv-blockchain/dpp/blob/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials/README.md) at commit `8c82c5e`, which carries the profile, shows the calls with their document loader and policies.
 
 The exact upstream VSC context and its test suite were never available, so the parked profile declared its own context; rows `VSC-context-upstream` and `VSC-conformance-suite`, never assessable, are in the ledger archive with the profile.
 

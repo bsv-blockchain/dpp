@@ -9,7 +9,7 @@ This profile accepts VC Data Model 2.0, a `did:web` issuer, one identified subje
 | Input or setup | Source and requirement |
 |---|---|
 | Example runtime | Node 22 or later; [set up the checkout](../quick-start.md#get-the-code) with `npm ci` and `npm run build`. Run the commands from its root. |
-| Package provenance | In the checkout, `@bsv/dpp-credentials` resolves to the workspace build. The same code gives the same answers against candidate version 0.2.0-beta.6. |
+| Package provenance | In the checkout, `@bsv/dpp-credentials` resolves to the workspace build. The same code gives the same answers against the published version 0.2.0-beta.6. |
 | Credential bytes | Keep the exact received bytes from the issuer. A proof covers meaning; an anchor commits to these bytes. |
 | Expected product identifier | Your caller's own context. |
 | Issuer DID document | Retrieve it in advance or use a bounded `did:web` resolver you configure. |

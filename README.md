@@ -75,11 +75,11 @@ Records can remain verifiable after a provider disappears if their transactions,
 
 ## Reference packages
 
-For a new application, use [`@bsv/create-dpp-app`](docs/packages/create-dpp-app.md), published at `0.1.0-beta.1`. It creates the web app, API and application database configuration. Connect to an existing compatible index or run your own.
+For a new application, use [`@bsv/create-dpp-app`](docs/packages/create-dpp-app.md), published at `0.1.0-beta.2`. It creates the web app, API and application database configuration. Connect to an existing compatible index or run your own.
 
 For a new index, use the [operator preset](deploy/README.md): the overlay image and a persistent MongoDB on Docker Compose. The index starter `@bsv/create-dpp-index` is retired; its published `0.1.0-beta.1` stays on npm ([what replaces it](docs/packages/create-dpp-index.md)).
 
-The packages below are reusable components. Select them directly when integrating their APIs into your own code. An application using an existing index over HTTP needs no hosting runtime.
+The packages below are reusable components. Select them directly when integrating their APIs into your own code. The current release set, `dpp-release-2026-11`, has been on npm since 27 November 2026: protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` and credentials `0.2.0-beta.6`. An application using an existing index over HTTP needs no hosting runtime.
 
 | Package | Purpose |
 |---|---|
@@ -88,9 +88,9 @@ The packages below are reusable components. Select them directly when integratin
 | [`@bsv/dpp-profiles`](packages/dpp-profiles/README.md) | Versioned product-data profiles: the general manifest profile, the battery and textile bindings and the retired sector manifests as frozen files, plus identifier, mapping and projection helpers. |
 | [`@bsv/dpp-credentials`](packages/dpp-credentials/README.md) | Verify W3C Verifiable Credentials other parties issue in the supported external profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers) and import EPCIS 2.0.1 source documents. |
 
-The shared library is published as `@bsv/dpp-protocol`, the new name for `@bsv/dpp-core`; [install local candidate archives](docs/packages/README.md#use-the-renamed-source-candidate) to test unpublished changes. Existing applications migrate their imports and schema paths from `@bsv/dpp-core`; the active release uses only the new name. See [migration](docs/migration.md#rename-dpp-core-to-dpp-protocol).
+The shared library is published as `@bsv/dpp-protocol`, the new name for `@bsv/dpp-core`; install the [exact versions from npm](docs/packages/README.md#install-from-npm), or [local archives](docs/packages/README.md#test-unreleased-source) to test unreleased changes. Existing applications migrate their imports and schema paths from `@bsv/dpp-core`; the active release uses only the new name. See [migration](docs/migration.md#rename-dpp-core-to-dpp-protocol).
 
-Build from this checkout or use the packed candidates described in the [release guide](release/README.md), which records compatible package and protocol versions.
+The [release guide](release/README.md) records compatible package and protocol versions, and how to build and pack archives from this checkout.
 
 Applications can reuse these packages or implement the standard from the specifications and fixtures. An independent implementation must reproduce the DPP rules without importing, copying or calling the reference DPP logic. Generic blockchain, cryptography and wallet libraries may be shared.
 

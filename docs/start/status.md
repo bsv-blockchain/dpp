@@ -4,8 +4,8 @@ Application teams and operators can use this page to choose a release and identi
 
 | Status fact | Value |
 |---|---|
-| Updated | **12 November 2026** |
-| Evidence checked on that date | [Merged source](https://github.com/bsv-blockchain/dpp/tree/08bdfa0a056d970c64b1749064b92bd1e6ae9d67), npm versions and hosted capability documents. |
+| npm versions checked | **28 November 2026** |
+| Hosted capability documents and merged source checked | **12 November 2026**, against [merged source](https://github.com/bsv-blockchain/dpp/tree/08bdfa0a056d970c64b1749064b92bd1e6ae9d67). |
 | Standard and packages | Working draft before version 1.0; experimental packages under the Apache 2.0 licence. |
 | Available work | Build passport applications, readers, writers and indexes; implement a registry against the published contract. |
 
@@ -18,20 +18,20 @@ Application teams and operators can use this page to choose a release and identi
 
 Source changes do not upgrade installed packages or hosted services.
 
-## Published and in development
+## Published versions
 
-Install **`dpp-release-2026-10-10`** from npm: the latest published runtime set has been under `latest` since 16 October 2026. It is superseded as the source development target. Its [publication receipt](../reference/publication-history/beta-11-publication.md) records the source revision, archive digests and verification results.
+Install **`dpp-release-2026-11`** from npm: its four runtime packages have been under `latest` since 27 November 2026. Its [publication receipt](../reference/publication-history/beta-12-publication.md) records the source revision, archive digests and verification results.
 
-| Package | Published on npm | November source candidate |
+| Package | Published on npm, under `latest` | Previous version, still on npm |
 |---|---|---|
-| `@bsv/dpp-protocol` | `0.3.0-beta.9` | `0.3.0-beta.10` |
-| `@bsv/dpp-profiles` | `0.3.0-beta.9` | `0.3.0-beta.10` |
-| `@bsv/dpp-overlay` | `0.4.0-beta.12` | `0.4.0-beta.13` |
-| `@bsv/dpp-credentials` | `0.2.0-beta.5` | `0.2.0-beta.6` |
-| `@bsv/create-dpp-app` | `0.1.0-beta.1` | `0.1.0-beta.2` |
-| `@bsv/create-dpp-index` | `0.1.0-beta.1` | Retired: run the index from the Compose preset |
+| `@bsv/dpp-protocol` | `0.3.0-beta.10` | `0.3.0-beta.9` |
+| `@bsv/dpp-profiles` | `0.3.0-beta.10` | `0.3.0-beta.9` |
+| `@bsv/dpp-overlay` | `0.4.0-beta.13` | `0.4.0-beta.12` |
+| `@bsv/dpp-credentials` | `0.2.0-beta.6` | `0.2.0-beta.5` |
+| `@bsv/create-dpp-app` | `0.1.0-beta.2` | `0.1.0-beta.1` |
+| `@bsv/create-dpp-index` | `0.1.0-beta.1`, retired | Run the index from the Compose preset |
 
-Both starters were published on 20 October and pin generated projects to the published runtimes. The index starter is retired: its published version stays on npm and a new index runs from the [Compose preset](../operate/README.md) ([what replaces it](../packages/create-dpp-index.md)). The current source candidate is **`dpp-release-2026-11`**; its runtimes and updated application starter are not yet published. Pin exact versions; consult [release sets](../reference/release-sets.md) and [migration](../migration.md) when choosing or upgrading.
+The application starter `0.1.0-beta.2` was published on 27 November and pins generated projects to this set. The index starter is retired: its published version stays on npm, pinned to the superseded `dpp-release-2026-10-10`, and a new index runs from the [Compose preset](../operate/README.md) ([what replaces it](../packages/create-dpp-index.md)). The index and validator images of this set are not published yet, so the preset builds them from source. Pin exact versions; consult [release sets](../reference/release-sets.md) and [migration](../migration.md) when choosing or upgrading.
 
 ## Works today
 
@@ -40,13 +40,13 @@ Both starters were published on 20 October and pin generated projects to the pub
 - **Write** record version 2 with a BRC-100 wallet, and continue a version 1 passport through the version 2 upgrade; a new passport never starts at version 1. Announce to an index before sending and push proofs ([build an application](../packages/build-an-application.md)). Record version 3, the token carrier, is [parked](../reference/parked/token-carrier/README.md).
 - **Run an index** with Docker from the [Compose preset](../operate/README.md): lookups, history, evidence packages, complete exports, proof ingestion and configured-peer synchronisation. Operators can select retries for outputs left behind, and the package keeps SHIP peer discovery and SHIP/SLAP advertising as options parked outside the standard ([federation](../operate/federation.md)).
 - **Sign, anchor and validate claims** about a passport, kept apart from the passport itself ([passport states and attestations](../learn/passport-and-attestations.md)).
-- **Carry product data** under the current `general@2` profile. In the source candidate, battery and textile data go under `eu-battery@2` and `eu-textile@2`, held by bindings, and the earlier manifest profiles `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` are retired: the application starter writes nothing under them, `@bsv/dpp-profiles` prepares and validates nothing under them, and a record that declares one reads as unsupported ([profiles](../profiles/README.md#retired-profiles)). An index does not judge profiles, so a state another writer issues under one is still indexed.
+- **Carry product data** under the current `general@2` profile. Battery and textile data go under `eu-battery@2` and `eu-textile@2`, held by bindings, and the earlier manifest profiles `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` are retired: the application starter writes nothing under them, `@bsv/dpp-profiles` prepares and validates nothing under them, and a record that declares one reads as unsupported ([profiles](../profiles/README.md#retired-profiles)). An index does not judge profiles, so a state another writer issues under one is still indexed.
 - **Connect other standards**: GS1 Digital Link identifiers and discovery, EPCIS 2.0.1 event import and selected W3C credential formats, with passport projections as a reference feature of the profiles package ([interoperability](../interoperability/README.md)).
 - **Try hosted services:** [demonstration and deployments](../deployment.md). Index capabilities still report `@bsv/dpp-overlay@0.4.0-beta.12`, `managed-custody@1` and static peers. Discovery and advertising are off. Its peer shares its administration, so these observations do not establish independent federation.
 
-## Merged into source, not yet published
+## New in the November release
 
-These features require a build from the November source candidate. They establish neither npm publication, a hosted upgrade nor completed interoperability testing with another implementing party.
+These features are in the November packages on npm. Publication establishes neither a hosted upgrade nor completed interoperability testing with another implementing party.
 
 | Feature | Behaviour | Default, limit or remaining evidence |
 |---|---|---|
@@ -63,14 +63,14 @@ Match these gaps to your version using [known limitations and open questions](..
 
 - nothing tells a reader which index or registry holds a publisher's records;
 - a later proof does not follow synchronisation;
-- published readers do not yet have the November candidate's token-payload schema check, and candidate readers must opt in with a validator;
+- readers on the October packages have no token-payload schema check, and readers on the November packages must opt in with a validator;
 - identity assurance in the reference application is Ring 0: an account and brand name do not establish a verified legal identity;
 - no public registry implementation package or operator image is published, and the hosted registry does not serve a complete export;
 - independently administered replication, deployment recovery objectives and Union DPP Registry integration remain unproven or unimplemented.
 
 ## Conformance evidence
 
-The [reviewed ledger](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/manifest.json) records implementation and evidence per requirement; read it with the [November candidate selection](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/conformance/selections/dpp-release-2026-11.json). Conformance claims are separate from passport lifecycle claims.
+The [reviewed ledger](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/manifest.json) records implementation and evidence per requirement; read it with the [November selection](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/conformance/selections/dpp-release-2026-11.json). Conformance claims are separate from passport lifecycle claims.
 
 | Evidence | Ledger status | What remains |
 |---|---|---|
