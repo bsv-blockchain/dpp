@@ -109,7 +109,12 @@ for (const [path, bytes] of files) {
     body: new Uint8Array(bytes),
   })
   if (!answer.ok) throw new Error(`POST /submit answered ${answer.status} for ${path}: ${await answer.text()}`)
-  console.log(path, answer.status, answer.headers.get('x-admission'))
+  const admission = answer.headers.get('x-admission')
+  if (admission !== 'tm_dpp=admitted' && admission !== 'tm_dpp=duplicate') {
+    const reason = answer.headers.get('x-admission-refusal') ?? admission ?? 'missing X-Admission'
+    throw new Error(`Restore stopped at ${path} (${reason})`)
+  }
+  console.log(path, answer.status, admission)
 }
 ```
 
@@ -133,7 +138,7 @@ The package lists states oldest first, so `proofs/` files restore each predecess
 | Result | Meaning and action |
 |---|---|
 | `tm_dpp=duplicate` | The replacement already holds the state; rerunning produces this on each line. |
-| `tm_dpp=none` | The replacement refused the state, most often because it does not admit its publisher key; the reason is only in the replacement's log. Stop and inspect that log. |
+| `Restore stopped at proofs/...` | Check the reported refusal reason or the replacement's log. If the admission header is missing, check the transaction in the replacement's history. Once the cause is resolved, rerun the restore. Previously admitted states return `tm_dpp=duplicate`. |
 | `signatureValid` | The manifest was signed by the key it names. This alone does not check the expected signer. |
 | `failures` containing `signer-unexpected` | The signer differs from the expected key. Check `failures`, not only `signatureValid`, and do not restore a refused package. |
 
@@ -187,7 +192,12 @@ for (const [path, bytes] of joined.files) {
     body: new Uint8Array(bytes),
   })
   if (!answer.ok) throw new Error(`POST /submit answered ${answer.status} for ${path}: ${await answer.text()}`)
-  console.log(path, answer.status, answer.headers.get('x-admission'))
+  const admission = answer.headers.get('x-admission')
+  if (admission !== 'tm_dpp=admitted' && admission !== 'tm_dpp=duplicate') {
+    const reason = answer.headers.get('x-admission-refusal') ?? admission ?? 'missing X-Admission'
+    throw new Error(`Restore stopped at ${path} (${reason})`)
+  }
+  console.log(path, answer.status, admission)
 }
 ```
 
