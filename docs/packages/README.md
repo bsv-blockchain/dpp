@@ -27,7 +27,7 @@ The published release uses **`@bsv/dpp-protocol`**, the new name for the library
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
 | Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay.md) | Install the runtime directly as an alternative to the Compose preset |
 
-The application starter is published at `0.1.0-beta.1`; unpublished source `0.1.0-beta.2` pins the candidate. Its guide covers npm creation and source checks. Generated projects already declare dependencies and pins: follow their README. Continue below for direct library selection or source development.
+The application starter is published at `0.1.0-beta.1`; unpublished source `0.1.0-beta.2` pins the November runtime packages. Its guide covers npm creation and source checks. Generated projects already declare dependencies and pins: follow their README. Continue below for direct library selection or source development.
 
 ## Use the renamed source candidate
 
@@ -41,7 +41,7 @@ node scripts/consumer-check.mjs
 
 The commands publish nothing. Expect archives in `release/candidates/`, source revision and digests in `release/candidates.json`, and a consumer check in a separate project ending `Every sentence above holds.` Stop if packing or checking fails.
 
-2. In your application directory, install the selected archives together so npm resolves unpublished dependencies locally. Replace `/absolute/path/to/dpp` with the checkout path:
+2. In your application directory, install the selected archives together so npm resolves dependencies from the selected archives. Replace `/absolute/path/to/dpp` with the checkout path:
 
 ```sh
 npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
@@ -53,26 +53,26 @@ Use the exact npm versions below for published installations.
 
 ## Install from npm
 
-The latest complete publication with a receipt here is `dpp-release-2026-10-10` ([beta.11 receipt](../reference/publication-history/beta-11-publication.md)); candidate `dpp-release-2026-11` supersedes it for source development. Exact published versions remain available even if mutable tags move.
+The four runtime packages in `dpp-release-2026-11` are available on npm. Exact published versions remain available if tags move. [Beta.12 publication receipt](../reference/publication-history/beta-12-publication.md)
 
-| Library | Published npm version | Candidate archive version | Select for |
-|---|---|---|---|
-| Protocol | `@bsv/dpp-protocol@0.3.0-beta.9` | `0.3.0-beta.10` | Passport records, verification and native lifecycle claims |
-| Profiles | `@bsv/dpp-profiles@0.3.0-beta.9` | `0.3.0-beta.10` | Manifests, payload schemas and supported projection/discovery helpers |
-| Credentials | `@bsv/dpp-credentials@0.2.0-beta.5` | `0.2.0-beta.6` | W3C credential verification, EPCIS source import and the EPCIS lifecycle claim; the candidate no longer contains the parked VSC profile. Unnecessary for native lifecycle-claim signing |
-| Overlay | `@bsv/dpp-overlay@0.4.0-beta.12` | `0.4.0-beta.13` | Embedded topic managers/lookup services; starters declare it, HTTP clients need none |
-| SDK | `@bsv/sdk@2.8.10` | `2.8.10` | Declare directly when importing wallet or transaction APIs |
+| Library | Published npm version | Select for |
+|---|---|---|
+| Protocol | `@bsv/dpp-protocol@0.3.0-beta.10` | Passport records, verification and native lifecycle claims |
+| Profiles | `@bsv/dpp-profiles@0.3.0-beta.10` | Manifests, payload schemas and supported projection/discovery helpers |
+| Credentials | `@bsv/dpp-credentials@0.2.0-beta.6` | W3C credential verification, EPCIS source import and the EPCIS lifecycle claim; this release no longer contains the parked VSC profile. Unnecessary for native lifecycle-claim signing |
+| Overlay | `@bsv/dpp-overlay@0.4.0-beta.13` | Embedded topic managers/lookup services; starters declare it, HTTP clients need none |
+| SDK | `@bsv/sdk@2.8.10` | Declare directly when importing wallet or transaction APIs |
 
 Install only what your code uses. Start with protocol:
 
 ```sh
-npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10
 ```
 
 For a published installation using the protocol helpers, profiles and the SDK:
 
 ```sh
-npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/dpp-profiles@0.3.0-beta.9 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/dpp-profiles@0.3.0-beta.10 @bsv/sdk@2.8.10
 ```
 
 Releases publish to `latest` until version 1.0; exact versions and the lockfile define the tested installation. An [independent implementation](../implement/README.md) needs none of these packages.
@@ -112,7 +112,7 @@ npm ci
 npm run build
 ```
 
-Source includes later work: publisher registration, per-publisher write tokens and the `managed-custody@2` signing rule. Opt-in index discovery and advertising were already in the published overlay beta.12. Building it does not reproduce npm archives, even with unchanged version strings. Reproduce published packages at their [receipt's revision](../reference/release-sets.md).
+The November runtime release includes publisher registration, per-publisher write tokens and the `managed-custody@2` signing rule. To reproduce its npm archives, check out the exact revision and use the toolchain in the [beta.12 receipt](../reference/publication-history/beta-12-publication.md#verification).
 
 This historical beta.4 example reproduces all four packages: the beta.4 `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/dpp-profiles` and `@bsv/vsc@0.2.0-beta.3`, under the names the overlay and credentials packages were published with at the time. They repack byte for byte from `f9d8e98658c7cf406702d49194ec5a8480cbca73`, recorded in the [beta.4 receipt](../reference/publication-history/beta-4-publication.md). Its examples predate the current quick start.
 

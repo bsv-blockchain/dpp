@@ -1,6 +1,12 @@
+---
+hidden: true
+---
+
 # Beta.11 publication receipt
 
-Reviewers and maintainers can reproduce the successful archive and consumer checks for `dpp-release-2026-10-10` with this receipt. Its four packages are publicly available under their new names and `latest`.
+> Archived release. The [beta.12 receipt](beta-12-publication.md) records the November publication.
+
+Reviewers and maintainers can reproduce the successful archive and consumer checks for `dpp-release-2026-10-10` with this receipt. Its four packages were published under their new names and the `latest` tag. Their exact versions remain available from npm.
 
 ## Before reproducing the verification
 

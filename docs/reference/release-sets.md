@@ -16,13 +16,13 @@ Installers, implementers and reviewers can use this page to select a release set
 
 | | `dpp-release-2026-11` |
 |---|---|
-| Declaration | `release/dpp-release-2026-11.json`; its source revision is recorded when a publication plan binds it |
-| Status | Candidate. Nothing of it is published; the last published set is `dpp-release-2026-10-10`, under `latest` since 16 October 2026 ([beta.11 receipt](publication-history/beta-11-publication.md)) |
+| Declaration | `release/dpp-release-2026-11.json`; published from `7b697a385c13890768cea5c8b2c36029671b8291` |
+| Status | All four runtime packages were published to npm under `latest` on 27 November 2026. The application starter and operator images have separate publication workflows. |
 | Main packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-credentials@0.2.0-beta.6`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 for the packages and for this repository's code in both images. The operator preset also runs MongoDB Community Server, which is under the Server Side Public License ([the operator preset](../contribute/licence.md#the-operator-preset)) |
 | Images | `dpp-overlay` and `dpp-validator`, unpublished: the set records each with the word `unpublished` in place of a digest ([images](#images)) |
 | npm tag | `latest`; install exact versions and retain the lockfile |
-| Receipt | None yet; the [beta.11 receipt](publication-history/beta-11-publication.md) covers the last published set |
+| Receipt | [Beta.12 publication receipt](publication-history/beta-12-publication.md) and [approved plan](publication-history/beta-12-publication-plan.json) |
 | Selection | `conformance/selections/dpp-release-2026-11.json`. From 12 November 2026 it requires one claim per role under `native-baseline@2`, the one baseline a claim names, with `gs1-identifier-discipline` and `profile-governance`, and withholds every other claim with its reason ([conformance](conformance.md)) |
 
 Compared with the superseded `dpp-release-2026-10-10`, this set carries the seven decisions of bsv-blockchain/dpp#177:
@@ -39,7 +39,7 @@ Compared with the superseded `dpp-release-2026-10-10`, this set carries the seve
 | Specification scope | From 12 November 2026 passport projections and the publication policy are reference features of the profiles package ([parked material](parked/passport-projections/README.md)), the GS1 discovery specification keeps only the DPP identifier rules, the publisher policy chain, write tokens, registration operations and synchronisation are reference features of the overlay package with SHIP/SLAP discovery and `federated-operators@1` parked, the drafts `battery@3`, `textile@3` and `textile@4` are parked, and since retired with the other sector profiles, and `spec/rules.md` §4 is the one definition of the canonical JSON the native documents use. No wire byte changes. |
 | Record version 3 | Parked outside the standard ([parked material](parked/token-carrier/README.md)): the packages read and write versions 1 and 2, the index declares no `dpp-record` version `3` and has no token id lookup, and the verification report is version 2, without the carrier's two reason codes. |
 | Directly signed EPCIS events | Parked on 14 November 2026 while the representation is reconsidered: the `epcis-event-vc@1` module stays in the repository and `@bsv/dpp-protocol` no longer exports it ([parked: sign an event](../interoperability/epcis.md#parked-sign-an-event)). Its manifest reads `parked`, its vectors stay as published, and its rows and claim are in the ledger archive. No published set exported it. |
-| Sector profiles | Retired on 14 November 2026: `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4`. Their manifests and generated files stay in the profiles package byte for byte. The application starter writes nothing under them, `@bsv/dpp-profiles` prepares and validates nothing under them, and a payload that declares one reads `unknown` with the cause `profile-retired`. An index does not judge profiles, so a state another writer issues under one is still indexed, and still reads as unsupported. `eu-battery@1` and `eu-textile@1`, held by bundled bindings, were the first replacements. Both remain readable. The candidate starter issues new sector passports under `eu-battery@2` and `eu-textile@2` ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)). `general@1` and `general@2` are unaffected. The battery demonstration row is in the ledger archive, and `profile-governance` requires the retirement rule. No published set retired a profile. |
+| Sector profiles | Retired on 14 November 2026: `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4`. Their manifests and generated files stay in the profiles package byte for byte. The application starter writes nothing under them, `@bsv/dpp-profiles` prepares and validates nothing under them, and a payload that declares one reads `unknown` with the cause `profile-retired`. An index does not judge profiles, so a state another writer issues under one is still indexed, and still reads as unsupported. `eu-battery@1` and `eu-textile@1`, held by bundled bindings, were the first replacements. Both remain readable. The candidate starter issues new sector passports under `eu-battery@2` and `eu-textile@2` ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)). `general@1` and `general@2` are unaffected. The battery demonstration row is in the ledger archive, and `profile-governance` requires the retirement rule. This is the first published set to retire a profile. |
 | Durable EPCIS import | From 14 November 2026 `@bsv/dpp-credentials` has the `./epcis-exchange` entry point: file import into storage the application supplies, with exact-byte retention, idempotent requests, arrival records, conflict decisions, a rebuildable associations index, original-byte export and recovery ([durable EPCIS import](../packages/dpp-credentials.md#durable-epcis-import)). The import record contract is version 2, which requires the request digest, with version 1 kept as `contracts/epcis-import-v1.schema.json`, and `contracts/epcis-exchange-records.schema.json` defines the other durable records. It is no EPCIS repository. |
 | Validator service | From 15 November 2026 `@bsv/dpp-profiles` has the `./validator-service` and `./validator-client` entry points and the `dpp-validator` executable: the JSON-LD and SHACL engines in another process under the `dpp-validator/1` contract, `contracts/validator.schema.json`, with an image of their own built from `packages/dpp-profiles/validator-image/Dockerfile`. An application chooses between the service and the engines in its own process by configuration, and a service it cannot use reads `unknown`, never `pass` ([run the engines as a service](../packages/dpp-profiles.md#run-the-engines-as-a-service)). The image is built and checked here and is not published |
 | Images and the operator preset | From 15 November 2026 the set names its images in an `images` member: `dpp-overlay` and `dpp-validator`, each with its Dockerfile, the exact Node version it runs and its digest, and the MongoDB image the preset runs, by tag and digest. The preset pulls each image by digest, includes the validator service, and builds nothing; `deploy/compose.build.yml` builds from source. Both images are labelled with the source revision, the release set and the package version, and the index image carries `NOTICE` and `PATENTS` beside `LICENSE`. The index and the validator service were held to their npm deliveries by `scripts/delivery-parity.mjs` ([images](#images)). `@bsv/dpp-overlay` now names the `mongodb` driver at exactly 7.6.0, the version the image installs. |
@@ -59,16 +59,16 @@ These are experimental prereleases: APIs may change during testing. Package vers
 
 ## Verify a published release
 
-The last published set is `dpp-release-2026-10-10`: protocol and profiles beta.9, overlay beta.12 and credentials beta.5 under their new names, on `latest` since 16 October 2026. Its [beta.11 receipt](publication-history/beta-11-publication.md) records the approved source revision `0e45ac32da351c1e877431d55e2e9c0c41f54c33`, original release-set input, archive digests and verification results.
+The November runtime packages are published under `latest`. The [release history](release-history.md) links earlier publications.
 
-Reproduce the published packages with the receipt's [verification steps](publication-history/beta-11-publication.md#verification):
+Reproduce the published packages with the receipt's [verification steps](publication-history/beta-12-publication.md#verification):
 
-1. Use a clean checkout at `0e45ac32da351c1e877431d55e2e9c0c41f54c33` with the toolchain above.
+1. Set `umask 022` before creating the clean checkout at `7b697a385c13890768cea5c8b2c36029671b8291`. Use Node `22.23.4` and npm `11.19.0` to reproduce the tarball bytes.
 2. Run the receipt's commands from that checkout's root:
 
 ```sh
 npm ci
-node scripts/release-candidates.mjs release/dpp-release-2026-10-10.json
+node scripts/release-candidates.mjs release/dpp-release-2026-11.json
 node scripts/publish-candidates.mjs --verify-registry
 node scripts/consumer-check.mjs --registry
 ```
