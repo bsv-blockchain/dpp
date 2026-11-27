@@ -4,16 +4,16 @@ Platform designers and operators can use this page to choose who holds passport 
 
 ## Before you start
 
-The transfer walkthrough follows the unpublished November source candidate. Package publication and hosted upgrades are separate ([release sets](../reference/release-sets.md)). Choose the rules for your release before configuring a writer.
+The transfer walkthrough uses the November runtime packages published on 27 November 2026. Before configuring a writer, check the custody profile declared by your index. [Release sets](../reference/release-sets.md)
 
 | Release or deployment | Custody profile | Acceptance signature and format |
 |---|---|---|
 | Published October set and the reference index at `dpp-overlay.bsvb.net` | `managed-custody@1` | Custodian signs `dpp-managed-acceptance@1` with its identity key |
-| November source candidate and the [testnet and mainnet registration indexes](../deployment.md#services) | `managed-custody@2` | Custodian signs `dpp-managed-acceptance@2` with a BRC-42 derived key through a BRC-100 wallet |
+| Published November runtime packages and the [testnet and mainnet registration indexes](../deployment.md#services) | `managed-custody@2` | Custodian signs `dpp-managed-acceptance@2` with a BRC-42 derived key through a BRC-100 wallet |
 
 | Task | Required input and source |
 |---|---|
-| Connect or change writers | Index `GET /capabilities`; follow [candidate migration](../migration.md#test-the-november-source-candidate) |
+| Connect or change writers | Index `GET /capabilities`; follow the [migration checks](../migration.md#test-the-november-source-candidate) |
 | Follow the managed transfer | Custodian's BRC-100 wallet, holder's request, recipient acceptance and retained acceptance record |
 | Check acceptance authority | Reader's own `acceptanceCustodians` list and the retained record |
 | Run the optional offline exercise | Node.js 22 or later; checkout prepared with `npm ci` and `npm run build` |
@@ -75,7 +75,7 @@ A transfer, also called a hand on, has three steps under `managed-custody@2`. On
 | Key identifier | Record's `requestId` |
 | Counterparty | `anyone` |
 
-Retain the record for the passport's life so readers can check the transfer. The November candidate carries acceptance records in evidence packages under `authority`; `acceptanceRecordsInPackage` retrieves them for the reader. Retain and share packages under deployment access policy. No dedicated index or registry route serves acceptance records alone.
+Retain the record for the passport's life so readers can check the transfer. The November runtime packages carry acceptance records in evidence packages under `authority`; `acceptanceRecordsInPackage` retrieves them for the reader. Retain and share packages under deployment access policy. No dedicated index or registry route serves acceptance records alone.
 
 | Condition | Outcome or stop point |
 |---|---|
@@ -139,7 +139,7 @@ A restored account may lack keys; restored keys may lack evidence. Evidence arch
 
 ## Not settled yet
 
-The November candidate specifies the locking key and derived-key signatures. The remaining deployment questions are how to obtain retained evidence and how an application offers key portability ([known limitations](../operate/limitations.md)).
+The November specification defines the locking key and derived-key signatures. The remaining deployment questions are how to obtain retained evidence and how an application offers key portability ([known limitations](../operate/limitations.md)).
 
 | Remaining question | What to do now |
 |---|---|
