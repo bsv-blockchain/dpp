@@ -90,7 +90,7 @@ Each part names a disposition, and each disposition says what was decided and wh
 
 A licence the script has not been told was reviewed stops it, and so does a package that names a licence file at a version nobody read. `node scripts/deployment-inventory.mjs --release` exits 1 while any disposition is open, and a release set that is no longer a candidate must pass it.
 
-One disposition is open in the current set:
+One disposition is open in the current candidate:
 
 | Disposition | What it waits on |
 |---|---|
