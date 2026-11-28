@@ -6,7 +6,7 @@ npm create @bsv/dpp-app
 
 Paste the command into a terminal with Node.js 22.23.4 and npm installed. It creates your app in `my-dpp`.
 
-**Launch the app** with `cd my-dpp && npm run dev`, then open the **Local** URL printed in the terminal. [Issue your first test passport](start/app-quick-start.md#issue-and-view-a-local-passport). When you are ready to write to the blockchain, follow [Testnet and mainnet setup](packages/create-dpp-app.md#run-the-published-starter-on-testnet-or-mainnet).
+**Launch the app** with `cd my-dpp && npm run dev`, then open the **Local** URL printed in the terminal. [Issue your first test passport](start/app-quick-start.md#issue-and-view-a-local-passport). When you are ready to write to the blockchain, follow [Testnet and mainnet setup](packages/create-dpp-app.md#run-on-testnet-or-mainnet).
 
 ## Explore the standard
 
@@ -90,7 +90,7 @@ Consult the [glossary](start/glossary.md) as needed; you need not learn every te
 |---|---|
 | Standard | Working draft before version 1.0 |
 | Reference packages | Published under the Apache 2.0 licence |
-| Version choice | Pin exact versions from the [selected release](reference/release-sets.md); repository source may contain unpublished or undeployed changes |
+| Version choice | Pin exact versions from the [selected release](reference/release-sets.md); repository source may contain unreleased or undeployed changes |
 
 Before committing to a production design, read [current status](start/status.md) and your route's limits. [Plan your platform](start/plan-your-platform.md) puts those dependencies in the initial brief.
 

@@ -9,7 +9,7 @@ JavaScript and TypeScript application builders can use `@bsv/dpp-protocol` to bu
 | Procedure | Input and source |
 |---|---|
 | All scripts | Node 22 or later; packages from Install, including directly imported `@bsv/sdk`. Save complete files as `.mjs` for top-level `await`. |
-| Candidate installation | A source checkout containing `packages/dpp-protocol`, from [source access](README.md#source-access). |
+| Testing unreleased source | A source checkout containing `packages/dpp-protocol`, from [source access](README.md#source-access). Not needed for an npm installation. |
 | Setup decoding | Network access to the repository fixture URL embedded in `check-setup.mjs`. |
 | Live gathering | Network access to the hosted index, registry and WhatsOnChain block headers; sample addresses and passport identifier are in `gather.mjs`. |
 | Live trust policy | Genesis issuer, claim issuer and anchoring-service keys from your trusted list, never the evidence. The script names its sample's writers. |
@@ -18,22 +18,13 @@ JavaScript and TypeScript application builders can use `@bsv/dpp-protocol` to bu
 
 ## Install
 
-**Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now:
-
-1. At the checkout root, run `npm ci`, `node scripts/release-candidates.mjs` and `node scripts/consumer-check.mjs` to build, pack and test archives in a separate project. Nothing is published.
-2. In your application, install protocol, profiles and SDK together below. Replace `/absolute/path/to/dpp` with the checkout's absolute path; retain archives and lockfile.
-
-```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
-```
-
-The npm command below applies once these exact versions have been published. Run it in your project:
+`@bsv/dpp-protocol@0.3.0-beta.10` has been on npm since 27 November 2026. Run this in your project:
 
 ```sh
 npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@2.8.10
 ```
 
-Pin versions, keep the lockfile and review compatibility before upgrading. After publication, a bare `npm install @bsv/dpp-protocol` selects `latest`, the newest beta. The [support table](support-table.md) lists entry-point support; browser use is untested.
+Pin versions, keep the lockfile and review compatibility before upgrading. A bare `npm install @bsv/dpp-protocol` selects `latest`, the newest beta. To test unreleased changes from a checkout in place of the npm versions, [pack and install local archives](README.md#test-unreleased-source). The [support table](support-table.md) lists entry-point support; browser use is untested.
 
 | Complete file | Run in the installed project | Data source | Expected result |
 |---|---|---|---|

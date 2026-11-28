@@ -16,7 +16,7 @@ See npm's [prerequisites](https://docs.npmjs.com/cli/v11/commands/npm-trust/#pre
 
 ## Rehearse step 1 without changing anything
 
-This historical rehearsal uses the published beta.4 set and its [receipt's source revision](publication-history/beta-4-publication.md). The [latest published set](publication-history/beta-11-publication.md) has separate verification steps. From a clean checkout root:
+This historical rehearsal uses the published beta.4 set and its [receipt's source revision](publication-history/beta-4-publication.md). The [latest published set](publication-history/beta-12-publication.md#verification) has separate verification steps. From a clean checkout root:
 
 ```sh
 git checkout --detach f9d8e98658c7cf406702d49194ec5a8480cbca73

@@ -1,6 +1,6 @@
 # Install the selected release
 
-Application developers can use this guide to install an exact DPP package selection and check its archives. Choose the npm release for a published installation or local archives to test the source candidate.
+Application developers can use this guide to install an exact DPP package selection and check its archives. Install the published release from npm, or pack local archives to test unreleased source.
 
 **Experimental prerelease:** These packages support implementation and interoperability testing; they are not declared production-ready. APIs may change significantly before stability. Package, specification, wire-format and frozen-profile versions are separate. Pin exact packages and retain the lockfile.
 
@@ -10,12 +10,12 @@ The published release uses **`@bsv/dpp-protocol`**, the new name for the library
 
 | Context | Input and source |
 |---|---|
-| All consumers | Select components with [choose packages and services](../start/choose-components-and-services.md), then use [release status](../reference/release-sets.md) to distinguish published and candidate versions. |
+| All consumers | Select components with [choose packages and services](../start/choose-components-and-services.md), then use [release status](../reference/release-sets.md) to confirm the published versions. |
 | Application installation | Node >=22 and a project using ECMAScript modules. All four DPP packages use ECMAScript modules; npm installation needs no repository clone. |
-| Candidate packing | Source checkout containing `packages/dpp-protocol`; Node 22 or later. |
+| Packing local archives | Source checkout containing `packages/dpp-protocol`; Node 22 or later. |
 | Archive reproduction | Node 22, npm 11.19.0 and the receipt's exact revision. Different compression implementations can change archive digests. Keep a separate checkout to retain both current and historical revisions. |
 | Hosted writer | A wallet toolbox accepting the selected SDK ([choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet)). |
-| Runtime/deployment | Check the candidate's [supported entry points](support-table.md). Node support does not establish browser support. |
+| Runtime/deployment | Check the release's [supported entry points](support-table.md). Node support does not establish browser support. |
 
 ## Choose your starting point
 
@@ -27,29 +27,7 @@ The published release uses **`@bsv/dpp-protocol`**, the new name for the library
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
 | Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay.md) | Install the runtime directly as an alternative to the Compose preset |
 
-The application starter is published at `0.1.0-beta.1`; unpublished source `0.1.0-beta.2` pins the November runtime packages. Its guide covers npm creation and source checks. Generated projects already declare dependencies and pins: follow their README. Continue below for direct library selection or source development.
-
-## Use the renamed source candidate
-
-1. From the candidate checkout root, build, pack and check:
-
-```sh
-npm ci
-node scripts/release-candidates.mjs
-node scripts/consumer-check.mjs
-```
-
-The commands publish nothing. Expect archives in `release/candidates/`, source revision and digests in `release/candidates.json`, and a consumer check in a separate project ending `Every sentence above holds.` Stop if packing or checking fails.
-
-2. In your application directory, install the selected archives together so npm resolves dependencies from the selected archives. Replace `/absolute/path/to/dpp` with the checkout path:
-
-```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
-```
-
-3. To embed an index, include `bsv-dpp-overlay-0.4.0-beta.13.tgz` from the same directory. HTTP-only clients need no index package. Retain the selected archives and resulting lockfile.
-
-Use the exact npm versions below for published installations.
+The application starter is published at `0.1.0-beta.2`, which pins the November runtime packages. Its guide covers npm creation and source checks. Generated projects already declare dependencies and pins: follow their README. Continue below for direct library selection or source development.
 
 ## Install from npm
 
@@ -79,6 +57,30 @@ Releases publish to `latest` until version 1.0; exact versions and the lockfile 
 
 A trial consumer builds a second index, registry and application from these docs and published packages; its findings lead to fixes here. Shared administration makes it a reference consumer, not an independent implementation.
 
+## Test unreleased source
+
+A checkout of `main` can carry changes merged after the last publication. To test them before they reach npm, install archives packed from the checkout in place of the npm versions.
+
+1. From the checkout root, build, pack and check:
+
+```sh
+npm ci
+node scripts/release-candidates.mjs
+node scripts/consumer-check.mjs
+```
+
+The commands publish nothing. Expect archives in `release/candidates/`, source revision and digests in `release/candidates.json`, and a consumer check in a separate project ending `Every sentence above holds.` Stop if packing or checking fails.
+
+2. In your application directory, install the selected archives together so npm resolves dependencies from the selected archives. Replace `/absolute/path/to/dpp` with the checkout path:
+
+```sh
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
+```
+
+3. To embed an index, include `bsv-dpp-overlay-0.4.0-beta.13.tgz` from the same directory. HTTP-only clients need no index package. Retain the selected archives and resulting lockfile.
+
+Archive names follow the versions in the checkout's package manifests. Use the exact npm versions above for published installations.
+
 ## Application responsibilities and package boundaries
 
 Use this workflow map, then follow [build an application](build-an-application.md) for call order from first read to publication.
@@ -101,7 +103,7 @@ Keep server packages on the backend; use the [support table](support-table.md) f
 
 ## Source access
 
-The public repository supplies the current source candidate used by the examples and [quick start](../quick-start.md):
+The public repository supplies the source used by the examples and [quick start](../quick-start.md):
 
 ```sh
 git clone https://github.com/bsv-blockchain/dpp.git
@@ -139,7 +141,7 @@ node scripts/release-candidates.mjs
 node scripts/consumer-check.mjs
 ```
 
-The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/scripts/release-candidates.mjs) records revision and digests in `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/scripts/consumer-check.mjs) installs and exercises the tarballs in a separate project. Require `Every sentence above holds.` before using them; stop on failure.
+The [packing tool](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/scripts/release-candidates.mjs) records revision and digests in `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/scripts/consumer-check.mjs) installs and exercises the tarballs in a separate project. Require `Every sentence above holds.` before using them; stop on failure.
 
 To print the produced tarball paths, run:
 
@@ -152,7 +154,7 @@ for (const candidate of record.candidates) console.log(candidate.name, resolve('
 JS
 ```
 
-In the application directory, use `npm install /absolute/path/to/the-produced-package.tgz` with the printed paths for selected packages, installing candidate archives together as above. Retain the lockfile. Run [quick starts](../quick-start.md) from the checkout or select a guide:
+In the application directory, use `npm install /absolute/path/to/the-produced-package.tgz` with the printed paths for selected packages, installing the packed archives together as above. Retain the lockfile. Run [quick starts](../quick-start.md) from the checkout or select a guide:
 
 | Task | Package |
 |---|---|

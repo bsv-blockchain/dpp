@@ -8,7 +8,7 @@ A lifecycle claim states something about one passport, such as a repair or recyc
 
 | You need | For | Where it comes from |
 |---|---|---|
-| Node 22 and the [published packages](README.md), including `@bsv/sdk@2.8.10` | Signing and checking | Exact versions from npm, or local candidate archives for unpublished source |
+| Node 22 and the [published packages](README.md), including `@bsv/sdk@2.8.10` | Signing and checking | Exact versions from npm, or local archives for unreleased source |
 | Built source checkout | Optional offline exercises | [Get the code](../quick-start.md#get-the-code), then `npm ci` and `npm run build`; run from the checkout root |
 | Network access to the hosted index and registry | Step 2 and the hosted reader example | The URLs in those examples |
 | The passport identifier | The claim's subject | The product's label or data carrier, never a lookup result |

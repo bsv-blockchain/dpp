@@ -7,11 +7,11 @@ Application developers can generate an editable passport app with `@bsv/create-d
 | Step | Requirements and source |
 |---|---|
 | Create a project | Node 22 or later, npm, network access to install dependencies and a new or empty destination; non-empty directories are refused |
-| Check a source candidate | A DPP repository checkout and a new app directory; run the source commands below from the repository root |
-| Offline lifecycle exercise | The generated project and installed dependencies; no wallet, funds, Docker or network. In the source candidate `npm test` also tests EPCIS exchange, and its first run fetches the three pinned GS1 files and a MongoDB test binary once ([EPCIS exchange](#epcis-exchange)) |
-| Activate live writes | Set up the wallet, funds and index admission for the selected network. [Testnet and mainnet setup](#run-the-published-starter-on-testnet-or-mainnet) |
+| Check unreleased source | A DPP repository checkout and a new app directory; run the source commands below from the repository root |
+| Offline lifecycle exercise | The generated project and installed dependencies; no wallet, funds, Docker or network. `npm test` also tests EPCIS exchange, and its first run fetches the three pinned GS1 files and a MongoDB test binary once ([EPCIS exchange](#epcis-exchange)) |
+| Activate live writes | Set up the wallet, funds and index admission for the selected network. [Testnet and mainnet setup](#run-on-testnet-or-mainnet) |
 
-**Run the starter once.** It already declares and pins `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/sdk` and, for the offline exercise only, `@bsv/dpp-overlay`. The source candidate also declares the three validation libraries a profile held by a binding needs, `jsonld@9.0.0`, `n3@2.13.12` and `shacl-engine@1.1.3`, and `@bsv/dpp-credentials` for EPCIS exchange. Do not add any of them again.
+**Run the starter once.** It already declares and pins `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/sdk` and, for the offline exercise only, `@bsv/dpp-overlay`. It also declares the three validation libraries a profile held by a binding needs, `jsonld@9.0.0`, `n3@2.13.12` and `shacl-engine@1.1.3`, and `@bsv/dpp-credentials` for EPCIS exchange. Do not add any of them again.
 
 | Part | What it does | Your action |
 | --- | --- | --- |
@@ -19,21 +19,21 @@ Application developers can generate an editable passport app with `@bsv/create-d
 | Your generated project | Holds the web app, the API, its wallet, configuration and deployment files | Run its commands to develop, test and deploy |
 | `@bsv/dpp-protocol` and `@bsv/dpp-profiles` | Write and read passports inside that project | Included automatically with the project's dependencies |
 
-The app’s Compose file starts its database. For live writes, connect over HTTP to an index compatible with your starter version. The [network setup guide](#run-the-published-starter-on-testnet-or-mainnet) covers hosted and self-hosted indexes for the published starter.
+The app’s Compose file starts its database. For live writes, connect over HTTP to an index compatible with your starter version. The [network setup guide](#run-on-testnet-or-mainnet) covers hosted and self-hosted indexes.
 
 ## Create your project
 
 | Starter route | Pinned release | Runtime versions |
 |---|---|---|
-| Published `0.1.0-beta.1` | `dpp-release-2026-10-10`, superseded as the source target but the last published set; also used by the published, now retired, index starter | Protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.12`, SDK `2.8.10` |
-| Source | Current candidate `dpp-release-2026-11`, not yet published | Protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` |
+| Current, `0.1.0-beta.2` | `dpp-release-2026-11`, the current set; starter and runtime packages published on 27 November 2026 | Protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13`, credentials `0.2.0-beta.6`, SDK `2.8.10` |
+| Earlier, `0.1.0-beta.1` | `dpp-release-2026-10-10`, superseded; also used by the retired index starter | Protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.12`, SDK `2.8.10` |
 
 ### Create and check offline
 
 The published starter installs its dependencies when it creates the project. Run its offline lifecycle exercise, then start the development server.
 
 ```sh
-npm create @bsv/dpp-app@0.1.0-beta.1 my-app
+npm create @bsv/dpp-app@0.1.0-beta.2 my-app
 cd my-app
 npm test
 npm run dev
@@ -43,7 +43,7 @@ Open the **Local** URL. To issue a first test passport with the development defa
 
 If another service uses port `3000`, stop the starter with `Ctrl+C`. On macOS or Linux, run `PORT=3001 API_URL=http://127.0.0.1:3001 npm run dev` from the generated app folder to use port `3001` for the API.
 
-To test a source candidate instead, run these commands from the DPP repository root, choosing a new directory for the app:
+To test unreleased source instead, run these commands from the DPP repository root, choosing a new directory for the app:
 
 ```sh
 npm ci
@@ -65,11 +65,15 @@ The dependency record identifies the generator and all four installed runtime ar
 
 ### Stop before activating live writes
 
-Choose the instructions for the starter you installed. The published starter uses manual network configuration. The November source candidate adds a go-live command.
+Choose the instructions for the starter you installed. The current starter, `0.1.0-beta.2`, has a go-live command. The earlier `0.1.0-beta.1` uses manual network configuration.
 
-### Run the published starter on testnet or mainnet
+### Run on testnet or mainnet
 
-The passport format and verification rules are the same on both networks. The published starter (`0.1.0-beta.1`) reads its network from the generated app’s `.env`. Copy `.env.example` to `.env` for a new installation. The example defaults to `NETWORK=main`, so set the network explicitly before creating or funding the wallet.
+`npm run go-live` requests publisher registration and checks wallet funding and index admission. Its check requires an index that admits under `managed-custody@2`. For hosted testnet, use `NETWORK=test` with `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`. For hosted mainnet, use `NETWORK=main` with `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net`. Confirm the network at `/health` and the custody profile at `/capabilities` before registering. To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. Both commands enable publishing when all checks pass. [Connect an application](../operate/README.md#connect-an-application)
+
+### Run the earlier starter
+
+The passport format and verification rules are the same on both networks. The earlier starter, `0.1.0-beta.1`, has no go-live command and reads its network from the generated app’s `.env`. Copy `.env.example` to `.env` for a new installation. The example defaults to `NETWORK=main`, so set the network explicitly before creating or funding the wallet.
 
 | Setting | Testnet | Mainnet |
 |---|---|---|
@@ -77,7 +81,7 @@ The passport format and verification rules are the same on both networks. The pu
 | Wallet funding | Free testnet BSV from the [BSV faucet](https://bsvfaucet.com/) | A payment from a funded mainnet BSV wallet |
 | Index access | Arrange a testnet index with an operator or [run your own matching index](#run-your-own-matching-index). | The hosted mainnet index allows public reads. Arrange write access with an operator or run your own index. [Hosted services and access](../deployment.md) |
 
-1. **Configure one app per network.** Give each its own `.env`, `WALLET_ROOT_KEY`, `WALLET_FILE` and `MONGO_DB`. Generate each wallet root key with `openssl rand -hex 32`. Keep `LIVE_PUBLISHING=false` while you set up MongoDB, the identity secrets and the WhatsOnChain header service (`WOC_API_KEY`). [Published starter setup](https://github.com/bsv-blockchain/dpp/blob/0e45ac32da351c1e877431d55e2e9c0c41f54c33/packages/create-dpp-app/template/README.md#going-live)
+1. **Configure one app per network.** Give each its own `.env`, `WALLET_ROOT_KEY`, `WALLET_FILE` and `MONGO_DB`. Generate each wallet root key with `openssl rand -hex 32`. Keep `LIVE_PUBLISHING=false` while you set up MongoDB, the identity secrets and the WhatsOnChain header service (`WOC_API_KEY`). [Beta.1 starter setup](https://github.com/bsv-blockchain/dpp/blob/0e45ac32da351c1e877431d55e2e9c0c41f54c33/packages/create-dpp-app/template/README.md#going-live)
 2. Run `npm run wallet` from the generated app. Check for **Wallet: toolbox on test** or **Wallet: toolbox on main** before sending funds. Save the funding command it prints. It contains the receiving address and its derivation prefix and suffix. Give the index operator the **public publisher key** printed separately.
 3. On testnet, open the faucet, choose **Get testnet BSV**, sign in and paste the funding address as the destination. On mainnet, pay the mainnet funding address from your own wallet. Keep the payment transaction ID. Run the command below with that ID and the address, prefix and suffix from step 2. Run `npm run wallet` again to confirm the balance.
 
@@ -85,12 +89,12 @@ The passport format and verification rules are the same on both networks. The pu
    npm run wallet -- fund <txid> <address> <prefix> <suffix>
    ```
 
-4. **Connect the index.** Ask its operator to admit your public publisher key and provide the server-side settings `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. Check the index’s `/health` for the selected network and `/capabilities` for your publisher key and the published starter’s `managed-custody@1` profile.
+4. **Connect the index.** Ask its operator to admit your public publisher key and provide the server-side settings `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. Check the index’s `/health` for the selected network and `/capabilities` for your publisher key and this starter’s `managed-custody@1` profile.
 5. **Enable publishing.** For real products, set `GS1_PREFIX` to your licensed GS1 company prefix and `PASSPORT_HOST` to a domain you control. Once you have confirmed the wallet balance and index access, set `LIVE_PUBLISHING=true` and restart the app. Testnet writes use test coins. Mainnet writes spend real BSV.
 
 #### Run your own matching index
 
-From the parent directory of your app, run the command below. At the prompts, supply the public publisher key from `npm run wallet` and choose `test` or `main` to match the app. This generator provides the `managed-custody@1` profile used by the published starter.
+From the parent directory of your app, run the command below. At the prompts, supply the public publisher key from `npm run wallet` and choose `test` or `main` to match the app. This generator provides the `managed-custody@1` profile used by the beta.1 starter.
 
 ```sh
 npm create @bsv/dpp-index@0.1.0-beta.1 my-index
@@ -105,10 +109,6 @@ npm run doctor -- --online
 npm run connection
 ```
 
-### Run the November source candidate
-
-The source candidate adds `npm run go-live` to request publisher registration and check wallet funding and index admission. Its go-live check requires `managed-custody@2`. For hosted testnet, use `NETWORK=test` with `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`. For hosted mainnet, use `NETWORK=main` with `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net`. Confirm the network at `/health` and the custody profile at `/capabilities` before registering. To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. Both commands enable publishing when all checks pass. [Connect an application](../operate/README.md#connect-an-application)
-
 ## What is included
 
 | Included | Your choice |
@@ -119,13 +119,13 @@ The source candidate adds `npm run go-live` to request publisher registration an
 | MongoDB for records, journal and sign-in, started by the app's Compose file | A managed database |
 | A journal-driven worker for proofs and re-announcements | Scheduling and monitoring |
 | GS1 Digital Link identifiers under the demonstration prefix 952 | A licensed GS1 prefix |
-| In the source candidate: a GS1 resolver for those identifiers at the passport host, with the passport page as each item's default link | Further links, such as your own product page |
-| In the source candidate: forms, validation and structured display for current and historical battery and textile passports, and registration of a bound profile from a folder | Your own forms, and the profiles you trust |
-| In the source candidate: EPCIS file import, a configured pull and exact export, over a MongoDB storage adapter | Your sources, and what you do with the events |
-| In the source candidate: a choice of validation engine by setting, in the API's process or in a validator service | Which service, and who runs it |
-| In the source candidate: `export` and `restore` commands that move the whole application as one signed evidence package | Where the package is kept, and the keys and credentials you carry separately |
+| A GS1 resolver for those identifiers at the passport host, with the passport page as each item's default link | Further links, such as your own product page |
+| Forms, validation and structured display for current and historical battery and textile passports, and registration of a bound profile from a folder | Your own forms, and the profiles you trust |
+| EPCIS file import, a configured pull and exact export, over a MongoDB storage adapter | Your sources, and what you do with the events |
+| A choice of validation engine by setting, in the API's process or in a validator service | Which service, and who runs it |
+| `export` and `restore` commands that move the whole application as one signed evidence package | Where the package is kept, and the keys and credentials you carry separately |
 
-**The starter's passport host resolves its identifiers.** In the source candidate the API answers each identifier it issued at the identifier's own path, as [GS1 discovery](../interoperability/gs1-discovery.md#do-you-need-a-resolver) asks of the host a GS1 Digital Link identifier is minted under. The published `0.1.0-beta.1` answers that path with the passport page and is not a resolver.
+**The starter's passport host resolves its identifiers.** The API answers each identifier it issued at the identifier's own path, as [GS1 discovery](../interoperability/gs1-discovery.md#do-you-need-a-resolver) asks of the host a GS1 Digital Link identifier is minted under. The earlier `0.1.0-beta.1` answers that path with the passport page and is not a resolver.
 
 | Request to the generated application | Answer |
 |---|---|
@@ -142,7 +142,7 @@ Change any of these files; the standard prefers none of these choices. [Issue an
 
 ## Product documents under a binding
 
-This section describes the source candidate `0.1.0-beta.2`. The published `0.1.0-beta.1` writes manifest profiles only.
+This section applies from `0.1.0-beta.2`. The earlier `0.1.0-beta.1` writes manifest profiles only.
 
 The generated application offers `eu-battery@2` and `eu-textile@2` for new sector passports. The version 2 bindings check the identified product's type against their pinned ontology. An existing `eu-battery@1` or `eu-textile@1` passport retains its signed binding and can be read, updated or handed on. Each profile names a data model. [EU battery and textile bindings](../profiles/eu-sector-bindings.md)
 
@@ -182,7 +182,7 @@ The folder is registered at start with no source change. A folder whose digest i
 
 On a managed transfer the giver checks the restricted bytes against the signed predecessor, encrypts their contents to the recipient and commits the new ciphertext. The recipient can open it immediately. An older transfer that kept the original ciphertext still needs the key used for that ciphertext.
 
-### What the candidate does not do
+### What the starter does not do
 
 - It captures no EPCIS events, subscribes to none, reads no EPCIS XML and maps no event to a passport state ([EPCIS exchange](#epcis-exchange)).
 - It writes nothing under a retired profile. `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` are not offered, a write under one is refused with `profile-retired`, and a record that declares one reads as not checked, with the replacement named. `general@2` works as before ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)).
@@ -192,7 +192,7 @@ On a managed transfer the giver checks the restricted bytes against the signed p
 
 ## Lifecycle claims
 
-This section describes the source candidate `0.1.0-beta.2`. The published `0.1.0-beta.1` issues native `dpp-lifecycle-v1` claims with one of four event types.
+This section applies from `0.1.0-beta.2`. The earlier `0.1.0-beta.1` issues native `dpp-lifecycle-v1` claims with one of four event types.
 
 The generated application issues lifecycle claims only as EPCIS lifecycle claims, `dpp-epcis-lifecycle@1` ([the EPCIS lifecycle claim](add-a-claim.md#the-epcis-lifecycle-claim)). A signed-in member signs one EPCIS 2.0.1 event of the five types, either one they enter on the passport's page or one the EPCIS exchange retained. A retained event is signed exactly as received, with a link back to its import, and never as the observer. Nothing is made from a passport operation, a metadata edit or a sale.
 
@@ -214,7 +214,7 @@ This replaces lifecycle issuance in the starter only. Other producers of native 
 
 ## EPCIS exchange
 
-This section describes the source candidate `0.1.0-beta.2`. The published `0.1.0-beta.1` has no EPCIS exchange.
+This section applies from `0.1.0-beta.2`. The earlier `0.1.0-beta.1` has no EPCIS exchange.
 
 The generated application imports EPCIS 2.0 documents, pulls events from a source you configure and exports what it received, byte for byte. It does this by calling `@bsv/dpp-credentials/epcis-exchange` ([durable EPCIS import](dpp-credentials.md#durable-epcis-import) and [EPCIS query pull](dpp-credentials.md#epcis-query-pull)). The application supplies the storage, the routes and the pages. It holds no second import, pull or export of its own.
 
@@ -273,7 +273,7 @@ The generated project's tests run `epcisStorageAdapterSuite`, the suite the modu
 
 ## The validation engine
 
-In the source candidate the engine that checks a product document under a binding is chosen by two settings.
+From `0.1.0-beta.2` the engine that checks a product document under a binding is chosen by two settings.
 
 | `VALIDATOR_URL` | Where the JSON-LD and SHACL engines run |
 |---|---|
@@ -286,7 +286,7 @@ An engine that cannot be used is never a pass, in either mode. Libraries that di
 
 ## Export and restore
 
-In the source candidate the whole application can be exported as one `dpp-evidence-package@1` and restored into another deployment. Both are operator commands, run on the host with the API stopped. The API serves neither: it has no operator role, and a signed-in member of a brand is not the operator of the deployment.
+From `0.1.0-beta.2` the whole application can be exported as one `dpp-evidence-package@1` and restored into another deployment. Both are operator commands, run on the host with the API stopped. The API serves neither: it has no operator role, and a signed-in member of a brand is not the operator of the deployment.
 
 | Command | What it does |
 |---|---|
@@ -302,7 +302,7 @@ The new deployment can keep the exchange in another store and read its profiles 
 ## Automated setup
 
 ```sh
-npx @bsv/create-dpp-app@0.1.0-beta.1 my-app --yes --no-install
+npx @bsv/create-dpp-app@0.1.0-beta.2 my-app --yes --no-install
 ```
 
 Use `--help` for every flag. A successful offline exercise does not establish readiness for production; complete the generated guide and [prepare for production](../operate/production-readiness.md).

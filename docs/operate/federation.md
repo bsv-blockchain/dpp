@@ -251,7 +251,7 @@ The copy stays in both indexes until `down -v` on a preset removes everything th
 
 ### 7. Confirm both hold the same records
 
-`POST /requestSyncResponse` lists current outputs by topic: at most 500 per page, each with a score; the next page repeats the last score. A passport counts once by its tip. This script also compares whole histories from `GET /history`, including spent states. Save it as `compare-indexes.mjs` at the checkout root, or in a project with `@bsv/dpp-protocol@0.3.0-beta.9` installed:
+`POST /requestSyncResponse` lists current outputs by topic: at most 500 per page, each with a score; the next page repeats the last score. A passport counts once by its tip. This script also compares whole histories from `GET /history`, including spent states. Save it as `compare-indexes.mjs` at the checkout root, or in a project with `@bsv/dpp-protocol@0.3.0-beta.10` installed:
 
 ```js
 // Compare what two indexes hold on every topic, and each passport's whole history, and fail on a difference older than the grace period:
@@ -417,7 +417,7 @@ Before adding another operator's keys, compare them and obtain its identity key 
 
 Capabilities cannot distinguish operators: the operator name is unbound text, and `publisherPolicy` gives the version and keys without a chain digest or signer. Matching names and keys may mean two indexes under one operator, or a copy.
 
-Save this as `check-policy-chain.mjs` at the root of the checkout, or in a project with `@bsv/dpp-protocol@0.3.0-beta.9` installed:
+Save this as `check-policy-chain.mjs` at the root of the checkout, or in a project with `@bsv/dpp-protocol@0.3.0-beta.10` installed:
 
 ```js
 // Check another operator's signed publisher policy chain against the identity key the operator gave you.

@@ -30,7 +30,7 @@ Readers, application teams and operators can use this glossary to interpret DPP 
 | Index | Admits passport states and claim anchors and answers lookups. Finds records but does not establish their truth. Preferred here over the BSV software term overlay. |
 | Lineage | All the states of one passport, from its genesis to its tip. |
 | Lookup | A question to an index, such as "every state of this passport" (`ls_dpp`) or "every anchor about this passport" (`ls_attestation`). |
-| Managed custody | Custody profile `managed-custody@2` (`managed-custody@1` in the published October set). A custodian holds keys, records and signs the recipient's acceptance of a hand-on; the `TRANSFER` commits to that record. |
+| Managed custody | Custody profile `managed-custody@2` (`managed-custody@1` in the October set). A custodian holds keys, records and signs the recipient's acceptance of a hand-on; the `TRANSFER` commits to that record. |
 | Merkle path | The proof that a transaction is in a block (also called a proof or a BUMP). |
 | Outpoint | One output, named by its transaction identifier and output index. |
 | Overlay | The BSV software name for an index. See Index. |

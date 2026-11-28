@@ -12,7 +12,7 @@ The maintained DPP index runtime.
 
 For a custom integration, install the runtime directly. The operator preset builds it from source instead and needs no installation.
 
-**Publication pending:** [install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test this version. The following npm command applies after publication.
+The published version is `@bsv/dpp-overlay@0.4.0-beta.13`, selected by the November set, `dpp-release-2026-11`, and on npm since 27 November 2026. To test unreleased changes from a checkout, [install local archives](../../docs/packages/README.md#test-unreleased-source).
 
 ```sh
 npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.13

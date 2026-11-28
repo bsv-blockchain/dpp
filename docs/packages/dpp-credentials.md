@@ -43,9 +43,9 @@ npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
 | Release fact | Value |
 |---|---|
 | Package | `@bsv/dpp-credentials` 0.2.0-beta.6 |
-| Current source candidate | `dpp-release-2026-11`; the [release page](../reference/release-sets.md) distinguishes it from the latest published set. |
+| Release set | `dpp-release-2026-11`, published on 27 November 2026 ([release page](../reference/release-sets.md)). |
 | Change | The parked VSC compatibility profile and the EPCIS-to-SEAL mappings leave the package, with the Ed25519 and BBS suites they used ([removed names](#removed-names)). External credential verification is unchanged; the EPCIS source helpers lose only `readEpcisSourceReference` and `EPCIS_MAPPING_PROFILES`, which served the mappings. |
-| Other candidate packages | Protocol and profiles beta.10; overlay beta.13. Each package numbers its own prereleases. |
+| Other packages in the set | Protocol and profiles beta.10; overlay beta.13. Each package numbers its own prereleases. |
 | Runtime | Node only, ECMAScript modules; artefact files are plain data ([support table](support-table.md)). |
 
 A bare `npm install @bsv/dpp-credentials` selects `latest`, the newest beta. Pin the exact version so upgrades are your choice, and keep the lockfile.
@@ -215,11 +215,11 @@ The profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are p
 
 | If you | Then |
 |---|---|
-| Import any of the [removed names](#removed-names) | Stay on the published `0.2.0-beta.5`, which exports the profile and `epcis-vsc@1`, or take the code from the repository history at commit [`8c82c5e`](https://github.com/bsv-blockchain/dpp/tree/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials), which also carries `epcis-vsc@2` and the tests. |
+| Import any of the [removed names](#removed-names) | Stay on the earlier `0.2.0-beta.5`, which exports the profile and `epcis-vsc@1`, or take the code from the repository history at commit [`8c82c5e`](https://github.com/bsv-blockchain/dpp/tree/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials), which also carries `epcis-vsc@2` and the tests. |
 | Verify credentials other parties issue | Use `@bsv/dpp-credentials/exchange`, which is not parked. |
 | Import EPCIS events | Use `@bsv/dpp-credentials/epcis-exchange`, which records each event's mapping outcome as `not-attempted`; `@bsv/dpp-credentials/epcis-source` holds the parsing and validation it runs on. |
 
-The current candidate's selection, `conformance/selections/dpp-release-2026-11.json`, withholds `epcis-source-import-1`, the claim on the source helpers, from 12 November 2026, because it claims no optional profile, and the claims of the profile and both mappings moved to the ledger archive the same day, with `epcis-source-exchange-1`, whose rows included the `epcis-vsc@1` mapping; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`. A credential's own claim that its issuer is trusted is never enough; the [package guide](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/packages/dpp-credentials/README.md) of an earlier commit shows the SEAL calls with each policy.
+The current set's selection, `conformance/selections/dpp-release-2026-11.json`, withholds `epcis-source-import-1`, the claim on the source helpers, from 12 November 2026, because it claims no optional profile, and the claims of the profile and both mappings moved to the ledger archive the same day, with `epcis-source-exchange-1`, whose rows included the `epcis-vsc@1` mapping; earlier sets, up to `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`. A credential's own claim that its issuer is trusted is never enough; the [package guide](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/packages/dpp-credentials/README.md) of an earlier commit shows the SEAL calls with each policy.
 
 ### Removed names
 
@@ -235,7 +235,7 @@ These names left the root `@bsv/dpp-credentials` in 0.2.0-beta.6. The three mark
 
 | Limit | Meaning |
 |---|---|
-| Parked VSC subset | Not in this package from 0.2.0-beta.6, and not claimed by the current candidate, `dpp-release-2026-11`; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset on the tests of that time. Whole-draft conformance was never claimed, because the upstream context and test suite were unavailable for comparison ([earlier release selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json)). Passing tests is not product qualification. |
+| Parked VSC subset | Not in this package from 0.2.0-beta.6, and not claimed by the current set, `dpp-release-2026-11`; earlier sets, up to `dpp-release-2026-10-10`, claimed the implemented subset on the tests of that time. Whole-draft conformance was never claimed, because the upstream context and test suite were unavailable for comparison ([earlier release selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json)). Passing tests is not product qualification. |
 | Ring 0 identity | A passing proof identifies the signing key, not the claimed issuer. Only the platform account vouches for the key holder ([identity and authority](../learn/identity-and-authority.md)). |
 
 [Known limitations](../operate/limitations.md) lists the reference services' other open gaps.

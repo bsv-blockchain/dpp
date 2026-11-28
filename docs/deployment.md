@@ -32,7 +32,7 @@ The beta.12 reference index names peers statically. beta.12 supports opt-in disc
 
 ## Registration and operator keys
 
-Use the testnet or mainnet beta.13 host above with a starter that writes `managed-custody@2`. Check the network at `GET /health` and the custody profile and registration mode at `GET /capabilities`. The published beta.1 starter uses different setup. [Starter network setup](packages/create-dpp-app.md#run-the-published-starter-on-testnet-or-mainnet)
+Use the testnet or mainnet beta.13 host above with a starter that writes `managed-custody@2`. Check the network at `GET /health` and the custody profile and registration mode at `GET /capabilities`. The published starter, `@bsv/create-dpp-app@0.1.0-beta.2`, is one. The earlier beta.1 starter writes `managed-custody@1` and uses different setup. [Starter network setup](packages/create-dpp-app.md#run-on-testnet-or-mainnet)
 
 The November starter’s `npm run go-live` sends a wallet-signed `POST /register` request. Testnet returns HTTP 201 and two credentials on acceptance. Mainnet returns HTTP 202 for a new request. After operator approval, run the command again to sign a fresh request and collect the credentials. Each host accepts up to ten registration requests per source address per hour and returns HTTP 429 above that limit.
 
@@ -60,7 +60,7 @@ The index entries in the following tables apply to the beta.12 reference at `dpp
 
 | Verification input | Value and use |
 |---|---|
-| Evidence-package and export-part signer | `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`, the raw key of the release the index runs; pass as `expectedSigner`. From the November candidate an index signs each passport's packages with the child of its exporter identity key, named as `exporterIdentityKey` in its capability document; packages signed with this key still inspect with it. |
+| Evidence-package and export-part signer | `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`, the raw key of the release the index runs; pass as `expectedSigner`. From the November release an index signs each passport's packages with the child of its exporter identity key, named as `exporterIdentityKey` in its capability document; packages signed with this key still inspect with it. |
 | Operator identity key | Establish independently to check a signed publisher policy, then check its key windows before announcing. |
 | Publisher keys | The index admits public keys; it supplies no private countersigning capability. |
 
@@ -70,7 +70,7 @@ The beta.12 reference operator does not distribute tokens for general use. To pu
 
 ## Run the same services yourself
 
-The reference application uses the October packages. The registration indexes run the November candidate. The same index is delivered two ways, as the npm package `@bsv/dpp-overlay` with its `dpp-index` command and as the `dpp-overlay` image, and they are the same runtime.
+The reference application uses the October packages. The registration indexes run the November overlay, `0.4.0-beta.13`. The same index is delivered two ways, as the npm package `@bsv/dpp-overlay` with its `dpp-index` command and as the `dpp-overlay` image, and they are the same runtime.
 
 | You want | Use | Leaves out |
 |---|---|---|
@@ -79,7 +79,7 @@ The reference application uses the October packages. The registration indexes ru
 | An index as an operator | The [Compose preset](operate/README.md), starting the `overlay` service by name | The validator service |
 | An index and a validator service | The whole [Compose preset](operate/README.md) | Your application, which calls both over the network |
 
-The preset pulls each image by digest. The images of the current candidate set are not published yet, so today the preset [builds them from source](operate/README.md#build-from-source). The preset's database is MongoDB Community Server under the Server Side Public License, which is not this repository's licence ([the operator preset](contribute/licence.md#the-operator-preset)).
+The preset pulls each image by digest. The images of the current set are not published yet, so today the preset [builds them from source](operate/README.md#build-from-source). The preset's database is MongoDB Community Server under the Server Side Public License, which is not this repository's licence ([the operator preset](contribute/licence.md#the-operator-preset)).
 
 ## Passports to try
 
@@ -90,7 +90,7 @@ Two live passports to look up with the [passport lookup](reference/contracts.md#
 | `https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180` | A version 2 lineage: issue, a repair and a managed transfer, with three anchored claims. Its payload declares the draft `textile@4`, retired from 14 November 2026 |
 | `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | A version 2 lineage: issue and two updates recording installation and a firmware repair, with three anchored claims. Its payload declares the draft `battery@4`, retired from the same day |
 
-Use these to test reading and verifying, not as payload examples. Both carry the demonstration `notice`, and both declare a profile that is retired ([retired profiles](profiles/README.md#retired-profiles)). They stay on chain as written. A report made with the candidate profiles package's payload validator reads `schema` as `unknown` with `schema-unavailable` and the cause `profile-retired` for each of them, never `pass` and never `fail`, and one made without a validator reads `unknown` as well; every other check is unaffected ([the profiles package](packages/dpp-profiles.md#retired-profiles)). Start your own payload from `node examples/sample-payload.mjs general@2`, or from a product document under `eu-battery@2` or `eu-textile@2` ([EU battery and textile bindings](profiles/eu-sector-bindings.md)).
+Use these to test reading and verifying, not as payload examples. Both carry the demonstration `notice`, and both declare a profile that is retired ([retired profiles](profiles/README.md#retired-profiles)). They stay on chain as written. A report made with the November profiles package's payload validator reads `schema` as `unknown` with `schema-unavailable` and the cause `profile-retired` for each of them, never `pass` and never `fail`, and one made without a validator reads `unknown` as well; every other check is unaffected ([the profiles package](packages/dpp-profiles.md#retired-profiles)). Start your own payload from `node examples/sample-payload.mjs general@2`, or from a product document under `eu-battery@2` or `eu-textile@2` ([EU battery and textile bindings](profiles/eu-sector-bindings.md)).
 
 To verify the first passport, run the existing reader from the checkout root:
 

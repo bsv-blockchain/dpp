@@ -2,7 +2,7 @@
 
 Scaffold a Digital Product Passport application on BSV in one command.
 
-This starter and its renamed protocol dependency are source candidates pending publication. The npm command below applies after both are published; use the development commands below to test them from this checkout.
+The published version is `@bsv/create-dpp-app@0.1.0-beta.2`, on npm since 27 November 2026 and pinned to the November runtime set. To test unreleased changes, use the development commands below from a checkout.
 
 ```sh
 npm create @bsv/dpp-app@0.1.0-beta.2 my-app
@@ -13,7 +13,7 @@ npm run dev
 
 You get a working application: a React web app with a brand dashboard, passport pages, hand-on acceptance and public verification; an Express API that owns a platform wallet, writes and reads passports with the `@bsv/dpp` packages, keeps a journal and runs the unattended duties; and a Compose service for the application database. The first run is a test of a whole passport lifecycle, with no wallet, funds or Docker. The template's README explains the rest, including the route to writing real passports.
 
-In this source candidate the application also imports EPCIS 2.0 documents, pulls events from a configured source and exports what it received, byte for byte, by calling `@bsv/dpp-credentials/epcis-exchange`. Its tests of that fetch two things once and keep them: the three EPCIS files GS1 publishes, from `https://ref.gs1.org`, and a MongoDB server binary for the storage tests. The generated README's **EPCIS exchange** section covers the pages, the settings and the store.
+The application also imports EPCIS 2.0 documents, pulls events from a configured source and exports what it received, byte for byte, by calling `@bsv/dpp-credentials/epcis-exchange`. Its tests of that fetch two things once and keep them: the three EPCIS files GS1 publishes, from `https://ref.gs1.org`, and a MongoDB server binary for the storage tests. The generated README's **EPCIS exchange** section covers the pages, the settings and the store.
 
 It writes and reads passports under the manifest profile `general@2` and under profiles held by a binding: the current `eu-battery@2` and `eu-textile@2`, each with a form for its nested product data, and a profile of your own registered from a folder whose binding digest you trust. Under a binding the product document is split into a public part, on chain for good, and a restricted part, sealed off chain. The earlier sector manifest profiles are retired: the application offers none of them and refuses a write under one with `profile-retired`. The generated README's **Product documents under a binding** section covers the forms, the two views a reader is shown and the validation engine. Existing `eu-battery@1` and `eu-textile@1` passports remain readable and can be maintained under their signed bindings. Explicit new issuance under either historical binding names its version 2 successor.
 
@@ -45,11 +45,11 @@ Every opinion is a file you can change. The standard itself prefers none of them
 
 ## Versions
 
-Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-11`: protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13`, credentials `0.2.0-beta.6` and SDK `2.8.10`, the runtime the repository's index image builds. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
+Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This version uses `dpp-release-2026-11`: protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13`, credentials `0.2.0-beta.6` and SDK `2.8.10`, the runtime the repository's index image builds. The generated app imports `@bsv/dpp-protocol` directly. A new release set requires a new starter version.
 
 ## Development
 
-This package is a workspace of the DPP standard's repository, published separately from its four runtime packages. Publish the pinned runtime set before the starter. From the repository root, test the source candidate:
+This package is a workspace of the DPP standard's repository, published separately from its four runtime packages. Publish the pinned runtime set before the starter. From the repository root, test the source:
 
 ```sh
 npm ci

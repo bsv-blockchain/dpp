@@ -154,7 +154,7 @@ The [profile specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a6
 
 The reference application's source is not public. It follows step 3, declaring exact dependencies in its web application and service. After updating the reviewed selection and lockfile, it runs a mirror script to generate profile documents and reference content from installed artefacts, inspects the diff and checks the copies against the package. Those steps establish neither UI support nor writer activation.
 
-Its service was built on `battery@2` and `textile@2`, which are retired from 14 November 2026. Adopting this candidate there therefore includes moving its sector workflows to `eu-battery@2` and `eu-textile@2` ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)). That is a separate application change, with its own adapters, forms, backend rules and tests, and mirrored documentation does not establish workflow compatibility.
+Its service was built on `battery@2` and `textile@2`, which are retired from 14 November 2026. Adopting the November release there therefore includes moving its sector workflows to `eu-battery@2` and `eu-textile@2` ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)). That is a separate application change, with its own adapters, forms, backend rules and tests, and mirrored documentation does not establish workflow compatibility.
 
 ## Next
 

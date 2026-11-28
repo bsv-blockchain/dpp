@@ -28,7 +28,7 @@ Public read access does not imply submission, callback or export access.
 
 | Boundary | Record |
 |---|---|
-| Source | Checkout revision and candidate release. A feature on `main` may be unpublished. |
+| Source | Checkout revision and release set. A feature on `main` may be unreleased. |
 | Published | Exact package versions and publication evidence. |
 | Deployed | Service URL, reported version, enabled features and access. Publication does not establish a hosted upgrade. |
 

@@ -26,11 +26,13 @@ Choose a route before gathering inputs. Docker, index secrets and index header s
 | A passport identifier under GS1 prefix 952, on a host you control | It is written into every state and cannot change afterwards | "Make an identifier", below |
 | Two secrets for your index, a submit token and a callback token | The index refuses writes and proofs without them | Generated in step 2 |
 
-Repository examples use the packages the checkout links. For your own application, [pack the source candidate](README.md#use-the-renamed-source-candidate), then install these exact versions. Replace `/absolute/path/to/dpp` with the checkout path. This uses source archives rather than published versions and leaves upgrades to you:
+Repository examples use the packages the checkout links. For your own application, install these exact versions from npm. Pinning leaves upgrades to you:
 
 ```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/dpp-profiles@0.3.0-beta.10 @bsv/sdk@2.8.10
 ```
+
+To test unreleased source instead, [pack and install local archives](README.md#test-unreleased-source).
 
 Validate the payload against its declared profile with the [profile checker](dpp-profiles.md#check-a-payload-against-its-profile); signatures and linkage do not validate product data. Keep the journal and evidence from steps 3 and 5. The packages do not supply your full application, permissions or background scheduler.
 
@@ -68,7 +70,7 @@ It prints `https://passports.example.com/01/09521234567899/21/DEMO0001`. Never u
 1. Create an application from the published starter:
 
 ```sh
-npm create @bsv/dpp-app@0.1.0-beta.1 my-app
+npm create @bsv/dpp-app@0.1.0-beta.2 my-app
 ```
 
 The command installs the generated application's dependencies from npm.
@@ -83,7 +85,7 @@ npm run dev
 
 Complete the offline exercise before proceeding to live deployment in the generated README.
 
-To test a source candidate instead, run these commands from the DPP repository root with a new app directory:
+To test unreleased source instead, run these commands from the DPP repository root with a new app directory:
 
 ```sh
 npm ci
@@ -91,9 +93,9 @@ npm run build
 npm run starter:check -- --directory ../my-app
 ```
 
-The candidate check installs the packed generator, creates the app at the chosen directory, installs local runtime archives, then builds, typechecks and tests it. The application starter pins `dpp-release-2026-11`, including `@bsv/dpp-protocol`; keep those versions together. Local archives test unpublished source independently of the public npm command.
+The source check installs the packed generator, creates the app at the chosen directory, installs local runtime archives, then builds, typechecks and tests it. The application starter pins `dpp-release-2026-11`, including `@bsv/dpp-protocol`; keep those versions together. Local archives test unreleased source independently of the public npm command.
 
-The candidate application also writes and reads product documents under `eu-battery@2`, `eu-textile@2` and a bound profile of your own, with the document split into a public and a restricted part ([product documents under a binding](create-dpp-app.md#product-documents-under-a-binding)).
+The generated application also writes and reads product documents under `eu-battery@2`, `eu-textile@2` and a bound profile of your own, with the document split into a public and a restricted part ([product documents under a binding](create-dpp-app.md#product-documents-under-a-binding)).
 
 It also imports EPCIS 2.0 documents, pulls events from a source you configure and exports what it received, byte for byte ([EPCIS exchange](create-dpp-app.md#epcis-exchange)). It does this by calling `@bsv/dpp-credentials/epcis-exchange` and supplies only the storage, the routes and the pages. Keep that boundary when you build on it:
 
@@ -108,7 +110,7 @@ It can be moved. Its `export` command writes the whole application as one signed
 | Show an event as supplied data | A valid document passed a check of its format. It is not signed, and it is not evidence of the passport |
 | Keep a source's credential on the server | It never belongs in the database, an answer, a log line or the browser |
 
-The candidate's first `npm test` fetches the three pinned GS1 files and a MongoDB test binary once, for the EPCIS tests. The passport lifecycle exercise itself needs no network.
+The application's first `npm test` fetches the three pinned GS1 files and a MongoDB test binary once, for the EPCIS tests. The passport lifecycle exercise itself needs no network.
 
 For deployment, connect a compatible index or [run your own](../operate/README.md) from the repository's Compose preset. The app's Compose file starts its database; the preset builds the maintained index runtime and needs no additional overlay installation. Offline success does not establish production readiness: complete the generated guide and [production checks](../operate/production-readiness.md).
 
@@ -123,7 +125,7 @@ For deployment, connect a compatible index or [run your own](../operate/README.m
 | Journal | Your record of every operation, so a retry continues instead of repeating | For writing |
 | Claim issuer, registry and anchoring service | Sign a claim, retain it and publish a separate anchor; these roles can be supplied together or separately | Only for the selected claim workflow |
 
-[Words you will meet](../README.md#words-you-will-meet) defines the core terms; this page defines the rest as they appear. You write record version 2 under `managed-custody@2`, the custody profile the November source candidate selects; the published October set selects `managed-custody@1`. Version 1 lineages still verify ([custody](../learn/custody.md) explains the difference).
+[Words you will meet](../README.md#words-you-will-meet) defines the core terms; this page defines the rest as they appear. You write record version 2 under `managed-custody@2`, the custody profile the November release selects; the October set selects `managed-custody@1`. Version 1 lineages still verify ([custody](../learn/custody.md) explains the difference).
 
 ## 1. Read a passport
 
@@ -246,7 +248,7 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | `ARC_CALLBACK_TOKEN` | The second secret | Guards `POST /arc-ingest`, where a writer pushes a mined state's merkle path. Optional in the same way |
 | `WOC_API_KEY` | Your WhatsOnChain key | The header source for every state the index admits |
 | `NETWORK` | `main`, the default | The chain the index checks headers on. It must be your wallet's chain |
-| `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects the managed custody profile, `managed-custody@2` in this candidate: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
+| `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects the managed custody profile, `managed-custody@2` in this release: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
 | `CHAIN_TRACKER` | Empty | `scripts-only` is a fixture setting that admits unproven history and claims no inclusion |
 
 `SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys or retire one, give the index a signed publisher policy ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run an index from source](../operate/README.md) explains the other settings.

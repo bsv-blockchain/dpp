@@ -74,7 +74,7 @@ node --input-type=module -e "import { PrivateKey } from '@bsv/sdk'; const key = 
 
 The hosted reference supports this route. Its passports require the replacement to admit `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24` and `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`.
 
-1. Save this as `restore-package.mjs` at the checkout root, or in a project with the [protocol candidate archive](../packages/README.md#use-the-renamed-source-candidate) installed:
+1. Save this as `restore-package.mjs` at the checkout root, or in a project with [`@bsv/dpp-protocol@0.3.0-beta.10`](../packages/README.md#install-from-npm) installed:
 
 ```js
 // Copy one passport from an index's bounded evidence package into another index.

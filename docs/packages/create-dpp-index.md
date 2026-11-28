@@ -22,7 +22,7 @@ Most of what the starter set up has a place in the preset. The rows marked as di
 
 ## The published starter
 
-`@bsv/create-dpp-index@0.1.0-beta.1` stays on npm and still creates the project it always did, pinned to the superseded `dpp-release-2026-10-10` runtime. It receives no further versions, and its unpublished source candidate is withdrawn. Marking the package deprecated on npm, with a message pointing here, is a maintainer action.
+`@bsv/create-dpp-index@0.1.0-beta.1` stays on npm and still creates the project it always did, pinned to the superseded `dpp-release-2026-10-10` runtime. It receives no further versions, and its unpublished source was withdrawn. Marking the package deprecated on npm, with a message pointing here, is a maintainer action.
 
 ## Move a generated project
 

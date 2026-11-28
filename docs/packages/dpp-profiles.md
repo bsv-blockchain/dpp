@@ -9,7 +9,7 @@ Developers and data reviewers can use `@bsv/dpp-profiles` to build, validate and
 | Procedure | Input and source |
 |---|---|
 | All module examples | Node 22 or later and this package installed in your project. |
-| Candidate installation | A source checkout containing `packages/dpp-protocol`, from [source access](README.md#source-access). |
+| Testing unreleased source | A source checkout containing `packages/dpp-protocol`, from [source access](README.md#source-access). Not needed for an npm installation. |
 | Payload validation | `ajv@8.20.0` and `ajv-formats@3.0.1`, installed below. The package supplies no validator library. |
 | Report fragment | `@bsv/dpp-protocol@0.3.0-beta.10`; your reader's `evidence`, `expected` and `policy` ([report reference](dpp-protocol.md#what-the-report-takes)). |
 | Stored payload example | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/sdk@2.8.10` and access to the hosted index named in `show-payload.mjs`. |
@@ -18,22 +18,19 @@ Developers and data reviewers can use `@bsv/dpp-profiles` to build, validate and
 
 ## Install
 
-**Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now:
-
-1. At the checkout root, run `npm ci`, `node scripts/release-candidates.mjs` and `node scripts/consumer-check.mjs` to build, pack and test archives in a separate project. Nothing is published.
-2. In your application, install profiles plus protocol/SDK for the stored-payload example below. Replace `/absolute/path/to/dpp` with the checkout's absolute path; retain archives and lockfile.
-
-```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
-```
-
-The npm command below applies once these exact versions have been published. Run it in your project:
+`@bsv/dpp-profiles@0.3.0-beta.10` has been on npm since 27 November 2026. Run this in your project:
 
 ```sh
 npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.10
 ```
 
-Use 0.3.0-beta.4 or later: earlier readers accept identifiers the package does not publish. A bare `npm install @bsv/dpp-profiles` selects `latest`, the newest beta. Pin versions, keep the lockfile and review compatibility before upgrading. The [support table](support-table.md) distinguishes Node modules from data entry points.
+The stored-payload example below also needs the protocol package and the SDK:
+
+```sh
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@2.8.10
+```
+
+Use 0.3.0-beta.4 or later: earlier readers accept identifiers the package does not publish. A bare `npm install @bsv/dpp-profiles` selects `latest`, the newest beta. Pin versions, keep the lockfile and review compatibility before upgrading. The [support table](support-table.md) distinguishes Node modules from data entry points. To test unreleased changes from a checkout in place of the npm versions, [pack and install local archives](README.md#test-unreleased-source).
 
 Each JavaScript example below is a complete file: save it under the name given and run `node <name>.mjs` in that project. Only commands naming `examples/` need a repository checkout.
 
@@ -263,7 +260,7 @@ docker run --rm -p 127.0.0.1:8090:8090 --read-only --tmpfs /tmp --cap-drop ALL -
 
 The [operator preset](../operate/README.md#give-an-application-the-validator) runs the same image as its `validator` service, pinned by digest, with no published port: an application joins the preset's `validation` network, or the operator publishes the port on purpose behind a token.
 
-Each prints one JSON line naming its address, engine and limits, then one line per request. Neither the command nor the image is published yet: both are in the unpublished candidate `dpp-release-2026-11`.
+Each prints one JSON line naming its address, engine and limits, then one line per request. The command is in `@bsv/dpp-profiles` from `0.3.0-beta.10`. The image is not published yet: build it from a checkout.
 
 2. Check it from another terminal:
 
