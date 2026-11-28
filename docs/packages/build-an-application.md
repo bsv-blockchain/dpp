@@ -46,7 +46,7 @@ Use a [supported wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) 
 | Live write | A real, permanent BSV mainnet transaction with a miner fee, as the example's first line warns |
 | Example cost | Two states of about one kilobyte each cost a little over 200 satoshis at the `@bsv/wallet-toolbox` default of 100 satoshis per kilobyte |
 | Current output | One satoshi stays in the passport's current output |
-| Network choice | The programme runs no test network. The example writes to whichever chain the wallet uses |
+| Network choice | Use a wallet and index on the same network. The generated app can register with the [hosted testnet index](../deployment.md#registration-and-operator-keys) |
 | Untested rehearsal | A test-network wallet and index with `NETWORK=test` should run without real money; the example has not been run that way |
 
 ### Make an identifier

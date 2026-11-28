@@ -131,7 +131,8 @@ test('an open disposition blocks a release, and a set that is no longer a candid
 test('the licence page names each open disposition and no other as open', () => {
   const page = readFileSync(join(root, 'docs', 'contribute', 'licence.md'), 'utf8')
   const section = page.slice(page.indexOf('## The whole deployment'))
-  const listed = [...section.slice(section.indexOf('open in the current candidate')).matchAll(/^\| `([a-z0-9-]+)` \|/gm)].map((m) => m[1])
+  const dispositions = section.split('| Disposition | What it waits on |')[1]?.split('\n\n', 1)[0] ?? ''
+  const listed = [...dispositions.matchAll(/^\| `([a-z0-9-]+)` \|/gm)].map((m) => m[1])
   assert.deepEqual(listed.sort(), inventory.dispositions.filter((d) => d.status === 'open').map((d) => d.id).sort())
 })
 
