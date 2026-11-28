@@ -69,7 +69,13 @@ Choose the instructions for the starter you installed. The current starter, `0.1
 
 ### Run on testnet or mainnet
 
-`npm run go-live` requests publisher registration and checks wallet funding and index admission. Its check requires an index that admits under `managed-custody@2`. For hosted testnet, use `NETWORK=test` with `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`. For hosted mainnet, use `NETWORK=main` with `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net`. Confirm the network at `/health` and the custody profile at `/capabilities` before registering. To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. Both commands enable publishing when all checks pass. [Connect an application](../operate/README.md#connect-an-application)
+Use a separate project configuration, wallet and database for each network. Beta.2 defaults to `NETWORK=test` and `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`. For mainnet set `NETWORK=main` and `INDEX_URL=https://dpp-overlay-mainnet.bsvb.net` before running the command or funding the wallet. For a mainnet installation, set `GS1_PREFIX` to your licensed company prefix and `PASSPORT_HOST` to a domain you serve. Configure MongoDB for sign-in and persistence and set `WOC_API_KEY` for wallet monitoring and header checks. [Released starter setup](https://github.com/bsv-blockchain/dpp/blob/d725269144d202c37d3bb7f362219f3c02509fef/packages/create-dpp-app/template/README.md#going-live)
+
+1. Stop the development server and run `npm run go-live`. The command checks the index network and `managed-custody@2` profile. It creates the wallet key on first use, signs a registration request and saves the two write tokens in the server-side `.env` after acceptance. Testnet registration is open. On mainnet, rerun the command after the operator approves the request. [Registration and operator keys](../deployment.md#registration-and-operator-keys)
+2. If the balance is below 500 satoshis, fund the printed address on the selected network. Use the [BSV testnet faucet](https://bsvfaucet.com/) for test coins or a funded mainnet wallet for mainnet BSV. Keep the transaction ID and use it in the printed funding command with the same address, derivation prefix and suffix.
+3. Run `npm run go-live` again. Once funding and publisher admission pass, it writes `LIVE_PUBLISHING=true`. Restart the app. Its next passport write spends satoshis on the selected network.
+
+To use another compatible index, run `npm run connect-index -- --from <file>` with the connection file from its operator. [Connect an application](../operate/README.md#connect-an-application)
 
 ### Run the earlier starter
 

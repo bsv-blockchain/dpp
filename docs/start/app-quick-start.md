@@ -1,6 +1,6 @@
 # Application quick start
 
-Use Node.js 22.23.4 and npm. The starter installs its dependencies and creates an application in `my-dpp`.
+Use Node.js 22.23.4 and npm 11.19.0. The published starter (`0.1.0-beta.2`) creates `my-dpp`, installs its dependencies and writes a private `.env` configured for testnet.
 
 ## Create and test the app
 
@@ -10,7 +10,7 @@ cd my-dpp
 npm test
 ```
 
-The tests exercise the passport lifecycle locally. They run without a funded wallet.
+The tests exercise the passport lifecycle locally using a development wallet. The first run downloads three GS1 reference files and a MongoDB test binary.
 
 ## Issue and view a local passport
 
@@ -22,10 +22,14 @@ Open the **Local** URL printed in the terminal. With the development defaults, c
 
 ## Go live on testnet
 
-The starter writes `.env` with the default testnet index. Run the following command from the app folder.
+Stop the development server with `Ctrl+C`. In the generated project run the following command.
 
 ```sh
 npm run go-live
 ```
 
-The command requests publisher registration and checks wallet funding and index admission. It names the fix for each check that fails and enables publishing once every check passes. See [testnet and mainnet setup](../packages/create-dpp-app.md#run-on-testnet-or-mainnet) for the compatible index and registration requirements. An app created with the earlier `0.1.0-beta.1` starter has no go-live command: follow the [earlier starter’s setup](../packages/create-dpp-app.md#run-the-earlier-starter).
+The app opens its wallet, signs a publisher registration request and collects its tokens from the hosted testnet index. Registration is open. On the first run with an empty wallet, send testnet BSV to the **funding address** the command prints. You can obtain test coins from the [BSV testnet faucet](https://bsvfaucet.com/).
+
+Use the payment transaction ID in the printed `npm run wallet fund` command, keeping the address and both derivation values from that payment. Run `npm run go-live` again. When the wallet has at least 500 satoshis and the index admits its publisher key, the app enables live publishing.
+
+Restart `npm run dev` and issue another sample with a new serial. Open its public page to inspect the testnet transaction and its verification results. For mainnet or an existing beta.1 app, use the [starter network guide](../packages/create-dpp-app.md#run-on-testnet-or-mainnet).

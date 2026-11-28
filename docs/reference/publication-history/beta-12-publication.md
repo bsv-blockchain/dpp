@@ -38,4 +38,6 @@ node scripts/consumer-check.mjs --registry
 
 The archive check ends with `Every npm tarball matches the candidate bytes.` and the consumer check ends with `Every sentence above holds.` Compare the generated `release/publication-plan.json` with the [archived plan](beta-12-publication-plan.json). Keep logs outside the checkout so the plan records a clean source tree.
 
-The [installation guide](../../packages/README.md#install-from-npm) lists the four runtime dependencies. The application starter and operator images have their own publication workflows. The [release guide](../release-sets.md) records their status.
+The [installation guide](../../packages/README.md#install-from-npm) lists the four runtime dependencies. The application starter `@bsv/create-dpp-app@0.1.0-beta.2` was published separately on 27 November 2026 from `d725269144d202c37d3bb7f362219f3c02509fef`. It pins the four versions above. [Starter publication](https://github.com/bsv-blockchain/dpp/actions/runs/46050225749) · [Signed starter provenance](https://registry.npmjs.org/-/npm/v1/attestations/@bsv%2fcreate-dpp-app@0.1.0-beta.2)
+
+The [release guide](../release-sets.md) records the operator images and their publication status.

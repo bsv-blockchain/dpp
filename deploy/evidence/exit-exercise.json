@@ -1,13 +1,13 @@
 {
   "check": "packages/create-dpp-app/template/apps/api/test/exit-exercise.test.ts",
-  "recordedAt": "2026-11-18",
-  "node": "v26.13.1",
+  "recordedAt": "2026-11-28",
+  "node": "v22.23.4",
   "releaseSet": "dpp-release-2026-11",
-  "sourceRevision": "f9683628a6ff281f4600aee4ec06cc4b04015a45",
+  "sourceRevision": "7b697a385c13890768cea5c8b2c36029671b8291",
   "sourceState": "committed",
   "failures": 0,
   "exercised": [
-    "Deployment A built two passports under eu-battery@1 and eu-textile@1, each with a public and a restricted part, and an EPCIS exchange with three source scopes, two of which share an event identifier, one conflict decided with both observations kept, and a pull interrupted after two of four pages.",
+    "Deployment A built two passports under eu-battery@2 and eu-textile@2, each with a public and a restricted part, and an EPCIS exchange with three source scopes, two of which share an event identifier, one conflict decided with both observations kept, and a pull interrupted after two of four pages.",
     "A was exported in the authorised form with npm run export, run as its own process, and in the public form with the same command called in the test process, then switched off: its API, its database and its index were stopped.",
     "Eleven packages that must be refused were refused by name with nothing written: a substituted and more permissive profile under a correct exporter signature, with and without its digest trusted, another exporter key, a pull checkpoint without its import, a conflict decision without its observation, an altered original under the genuine and under a re-signed manifest, a missing journal under the genuine and under a re-signed manifest, the public package, and a file the manifest does not list.",
     "The authorised package was restored with the restore command into deployment B, which keeps the exchange in the file-system adapter and resolves profiles from the installed bundle. A second restore, with npm run restore run as its own process, wrote nothing.",
@@ -15,6 +15,7 @@
     "In B every original was returned byte for byte, every import record, observation, decision and pull page equalled A's, and the associations rebuilt at B equalled the ones A held.",
     "A request A had acknowledged answered the same import in B with no new receipt, and the same request identifier with other content conflicted.",
     "The pull was refused by the source until its credential was configured in B, then replayed from its retained bounds without a cursor and finished with no event held twice.",
+    "After B restarted and replayed its pull, the shared identifier still had one observation in each supplier scope. A scoped retry returned its original receipt, changed bytes under that request were refused, and both originals named by the conflict decision remained readable.",
     "An UPDATE of the battery passport was written in B and the two-state lineage verified.",
     "The same package was restored into deployment C, which holds none of A's keys. C verified both passports with every finding as in A except the issuer's authority, which it does not confirm, read them, did not open their restricted parts, and refused an UPDATE and a RETIRE by name with nothing written."
   ],
@@ -22,7 +23,7 @@
     "export": {
       "authorised": {
         "files": 63,
-        "bytes": 1481700,
+        "bytes": 1482113,
         "inventoryEntries": 62,
         "withheldLines": 12,
         "absentLines": 2,
@@ -30,7 +31,7 @@
       },
       "public": {
         "files": 37,
-        "bytes": 1371735,
+        "bytes": 1372239,
         "inventoryEntries": 36,
         "valuesSearchedFor": 63
       }
@@ -68,6 +69,7 @@
       "altered-resigned": "Refused (epcis-refused)",
       "lacking": "Refused (package-incomplete)",
       "lacking-resigned": "Refused (package-incomplete)",
+      "custody-edition": "Refused (not-selected)",
       "public": "Refused (not-a-recovery-package)",
       "extra": "Refused (file-unlisted)"
     },
@@ -105,6 +107,12 @@
       "pageRecordsAfter": 6,
       "importsThosePagesStandOn": 4,
       "importsAddedInB": 2
+    },
+    "afterReplay": {
+      "scopedRetry": 200,
+      "changedBytes": 409,
+      "scopesHoldingSharedId": 2,
+      "conflictOriginalsRead": 2
     },
     "update": {
       "op": "UPDATE",
